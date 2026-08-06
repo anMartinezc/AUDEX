@@ -1,0 +1,326 @@
+/* =========================================================
+   PANEL DE PEDIDOS ESCALABLE
+========================================================= */
+
+.gestion-resumen__tarjeta {
+    padding: 20px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    border: 1px solid var(--borde);
+    border-radius: 15px;
+
+    background: var(--color-fondo-secundario);
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.gestion-resumen__tarjeta:hover,
+.gestion-resumen__tarjeta--activa {
+    border-color: var(--borde-azul);
+    background: rgba(54, 169, 214, 0.07);
+    transform: translateY(-3px);
+}
+
+.gestion-resumen__tarjeta span {
+    color: var(--color-gris);
+}
+
+.gestion-resumen__tarjeta strong {
+    color: var(--color-azul-claro);
+    font-size: 1.35rem;
+}
+
+
+/* PENDIENTES DE PAGO */
+
+.gestion-pendientes {
+    margin-bottom: 28px;
+    padding: 17px 20px;
+
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 15px;
+
+    border: 1px solid rgba(255, 193, 7, 0.22);
+    border-radius: 15px;
+
+    background: rgba(255, 193, 7, 0.055);
+}
+
+.gestion-pendientes__icono {
+    width: 46px;
+    height: 46px;
+
+    display: grid;
+    place-items: center;
+
+    color: #ffd66b;
+
+    border-radius: 13px;
+    background: rgba(255, 193, 7, 0.09);
+}
+
+.gestion-pendientes strong {
+    display: block;
+    font-size: 0.83rem;
+}
+
+.gestion-pendientes span {
+    display: block;
+    margin-top: 4px;
+
+    color: var(--color-gris);
+    font-size: 0.7rem;
+}
+
+
+/* BANDEJAS */
+
+.bandeja-pedidos {
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.bandeja-pedidos__cabecera {
+    min-height: 66px;
+    margin: 0;
+    padding: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid var(--borde);
+}
+
+.bandeja-pedidos__cabecera > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bandeja-pedidos__cabecera i {
+    color: var(--color-azul-claro);
+}
+
+.bandeja-pedidos__cabecera h2 {
+    font-size: 1rem;
+}
+
+.bandeja-pedidos__cabecera > span {
+    min-width: 28px;
+    height: 28px;
+
+    display: grid;
+    place-items: center;
+
+    color: #041017;
+    font-size: 0.75rem;
+    font-weight: 800;
+
+    border-radius: 999px;
+    background: var(--color-azul-claro);
+}
+
+.bandeja-pedidos__contenido {
+    padding: 15px;
+}
+
+.bandeja-pedidos__pie {
+    padding: 13px 15px;
+
+    border-top: 1px solid var(--borde);
+}
+
+.bandeja-pedidos__pie a {
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    color: var(--color-azul-claro);
+    font-size: 0.75rem;
+    font-weight: 800;
+
+    border-radius: 11px;
+    background: rgba(54, 169, 214, 0.07);
+
+    transition:
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.bandeja-pedidos__pie a:hover {
+    background: rgba(54, 169, 214, 0.13);
+    transform: translateY(-2px);
+}
+
+
+/* BUSCADOR */
+
+.gestion-buscador button {
+    min-height: 48px;
+    padding: 0 17px;
+
+    color: #041017;
+    font-weight: 800;
+
+    border-radius: 12px;
+    background: var(--color-azul-claro);
+}
+
+
+/* LISTADO COMPLETO */
+
+.gestion-listado {
+    margin-top: 30px;
+}
+
+.gestion-listado__cabecera {
+    margin-bottom: 22px;
+}
+
+.gestion-listado__cabecera h2 {
+    margin-top: 10px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 2rem;
+}
+
+.gestion-listado__cabecera p {
+    margin-top: 7px;
+    color: var(--color-gris);
+}
+
+.gestion-listado__pedidos {
+    overflow: hidden;
+
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-medio);
+
+    background: var(--color-fondo-secundario);
+}
+
+.pedido-admin-fila {
+    min-height: 92px;
+    padding: 17px 20px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(130px, 0.8fr)
+        minmax(190px, 1.3fr)
+        minmax(140px, 0.8fr)
+        90px
+        minmax(140px, 0.9fr)
+        minmax(100px, 0.6fr)
+        20px;
+
+    align-items: center;
+    gap: 18px;
+
+    border-bottom: 1px solid var(--borde);
+
+    transition:
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.pedido-admin-fila:last-child {
+    border-bottom: 0;
+}
+
+.pedido-admin-fila:hover {
+    background: rgba(54, 169, 214, 0.055);
+}
+
+.pedido-admin-fila > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.pedido-admin-fila span {
+    color: var(--color-gris);
+    font-size: 0.65rem;
+}
+
+.pedido-admin-fila strong {
+    font-size: 0.77rem;
+    overflow-wrap: anywhere;
+}
+
+.pedido-admin-fila small {
+    color: var(--color-gris);
+    font-size: 0.65rem;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.pedido-admin-fila__total strong {
+    color: var(--color-azul-claro);
+    font-size: 0.9rem;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1050px) {
+    .pedido-admin-fila {
+        grid-template-columns:
+            minmax(130px, 1fr)
+            minmax(170px, 1fr)
+            minmax(120px, 0.8fr)
+            minmax(100px, 0.7fr)
+            20px;
+    }
+
+    .pedido-admin-fila__productos,
+    .pedido-admin-fila__fecha {
+        display: none !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .pedido-admin-fila {
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+    }
+
+    .pedido-admin-fila__cliente,
+    .pedido-admin-fila__estado,
+    .pedido-admin-fila__productos,
+    .pedido-admin-fila__fecha {
+        grid-column: 1 / -1;
+    }
+
+    .pedido-admin-fila__total {
+        grid-column: 1;
+    }
+
+    .pedido-admin-fila > i {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .gestion-pendientes {
+        grid-template-columns: 42px minmax(0, 1fr);
+    }
+
+    .gestion-pendientes > i:last-child {
+        display: none;
+    }
+}

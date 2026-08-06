@@ -1,0 +1,416 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+Análisis de stock | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/analitica.css' %}?v=1"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="analitica">
+    <div class="contenedor analitica__contenedor">
+
+        <header class="analitica__encabezado">
+            <div>
+                <span class="analitica__etiqueta">
+                    Gestión Audex
+                </span>
+
+                <h1>Análisis de stock</h1>
+
+                <p>
+                    Controla disponibilidad, velocidad de salida,
+                    cobertura y cantidades sugeridas para reponer.
+                </p>
+            </div>
+
+            <nav class="analitica__navegacion">
+                <a href="{% url 'core:analisis_ventas' %}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    Ventas
+                </a>
+
+                <a
+                    href="{% url 'core:analisis_stock' %}"
+                    class="activo"
+                >
+                    <i class="bi bi-box-seam"></i>
+                    Stock
+                </a>
+            </nav>
+        </header>
+
+        <div class="analitica-aviso">
+            <i class="bi bi-info-circle"></i>
+
+            <p>
+                El gráfico temporal representa
+                <strong>salidas de stock por ventas aprobadas</strong>.
+                Para reconstruir existencias históricas exactas será
+                necesario registrar también compras, devoluciones y ajustes.
+            </p>
+        </div>
+
+        <form
+            method="get"
+            class="analitica-filtros analitica-filtros--stock"
+        >
+            <label>
+                <span>Desde</span>
+
+                <input
+                    type="date"
+                    name="desde"
+                    value="{{ desde }}"
+                >
+            </label>
+
+            <label>
+                <span>Hasta</span>
+
+                <input
+                    type="date"
+                    name="hasta"
+                    value="{{ hasta }}"
+                >
+            </label>
+
+            <label>
+                <span>Categoría</span>
+
+                <select name="categoria">
+                    <option value="">
+                        Todas
+                    </option>
+
+                    {% for categoria in categorias %}
+                        <option
+                            value="{{ categoria.pk }}"
+                            {% if categoria_id == categoria.pk %}selected{% endif %}
+                        >
+                            {{ categoria.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                <span>Stock crítico</span>
+
+                <input
+                    type="number"
+                    name="stock_critico"
+                    min="0"
+                    value="{{ stock_critico }}"
+                >
+            </label>
+
+            <label>
+                <span>Plazo reposición</span>
+
+                <input
+                    type="number"
+                    name="plazo_reposicion"
+                    min="1"
+                    value="{{ plazo_reposicion }}"
+                >
+            </label>
+
+            <label>
+                <span>Días de seguridad</span>
+
+                <input
+                    type="number"
+                    name="dias_seguridad"
+                    min="0"
+                    value="{{ dias_seguridad }}"
+                >
+            </label>
+
+            <button
+                type="submit"
+                class="analitica-filtros__boton"
+            >
+                <i class="bi bi-funnel"></i>
+                Aplicar filtros
+            </button>
+        </form>
+
+        <div class="analitica-kpis">
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-boxes"></i>
+                </div>
+
+                <span>Stock total</span>
+
+                <strong>
+                    {{ total_stock|intcomma }}
+                </strong>
+
+                <small>
+                    Unidades registradas
+                </small>
+            </article>
+
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+
+                <span>Disponible</span>
+
+                <strong>
+                    {{ total_disponible|intcomma }}
+                </strong>
+
+                <small>
+                    Descontando reservas
+                </small>
+            </article>
+
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <span>Alertas</span>
+
+                <strong>
+                    {{ cantidad_criticos|add:cantidad_agotados }}
+                </strong>
+
+                <small>
+                    Críticos y agotados
+                </small>
+            </article>
+
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+
+                <span>Valor inventario</span>
+
+                <strong>
+                    ${{ valor_inventario|floatformat:0|intcomma }}
+                </strong>
+
+                <small>
+                    Valor estimado de venta
+                </small>
+            </article>
+        </div>
+
+        <article class="analitica-destacado">
+            <div class="analitica-destacado__icono">
+                <i class="bi bi-cart-plus"></i>
+            </div>
+
+            <div>
+                <span>Reposición sugerida</span>
+
+                <strong>
+                    {{ reposicion_sugerida_total|intcomma }}
+                    unidades
+                </strong>
+
+                <p>
+                    Calculado con {{ plazo_reposicion }} días de plazo
+                    y {{ dias_seguridad }} días de seguridad.
+                </p>
+            </div>
+        </article>
+
+        <div class="analitica-graficos">
+            <article class="analitica-panel analitica-panel--grande">
+                <header>
+                    <div>
+                        <span>Movimiento</span>
+                        <h2>Salidas por ventas</h2>
+                    </div>
+
+                    <i class="bi bi-graph-down-arrow"></i>
+                </header>
+
+                <div class="analitica-grafico analitica-grafico--alto">
+                    <canvas id="graficoSalidas"></canvas>
+                </div>
+            </article>
+
+            <article class="analitica-panel">
+                <header>
+                    <div>
+                        <span>Disponibilidad</span>
+                        <h2>Productos con menor stock</h2>
+                    </div>
+
+                    <i class="bi bi-box"></i>
+                </header>
+
+                <div class="analitica-grafico">
+                    <canvas id="graficoStock"></canvas>
+                </div>
+            </article>
+
+            <article class="analitica-panel">
+                <header>
+                    <div>
+                        <span>Demanda</span>
+                        <h2>Mayor consumo</h2>
+                    </div>
+
+                    <i class="bi bi-fire"></i>
+                </header>
+
+                <div class="analitica-grafico">
+                    <canvas id="graficoConsumo"></canvas>
+                </div>
+            </article>
+
+            <article class="analitica-panel">
+                <header>
+                    <div>
+                        <span>Inventario</span>
+                        <h2>Stock por categoría</h2>
+                    </div>
+
+                    <i class="bi bi-pie-chart"></i>
+                </header>
+
+                <div class="analitica-grafico">
+                    <canvas id="graficoCategoriasStock"></canvas>
+                </div>
+            </article>
+        </div>
+
+        <article class="analitica-tabla-panel">
+            <header>
+                <div>
+                    <span>Planificación</span>
+                    <h2>Estado y sugerencias de reposición</h2>
+                </div>
+
+                <small>
+                    Basado en los últimos {{ cantidad_dias }} días
+                </small>
+            </header>
+
+            <div class="analitica-tabla-contenedor">
+                <table class="analitica-tabla">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Estado</th>
+                            <th>Stock</th>
+                            <th>Reservado</th>
+                            <th>Disponible</th>
+                            <th>Vendidas</th>
+                            <th>Venta/día</th>
+                            <th>Cobertura</th>
+                            <th>Reponer</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for producto in productos_analisis %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ producto.nombre }}
+                                    </strong>
+
+                                    <small class="analitica-tabla__subtexto">
+                                        {{ producto.categoria }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <span
+                                        class="
+                                            analitica-estado
+                                            analitica-estado--{{ producto.estado }}
+                                        "
+                                    >
+                                        {{ producto.estado|title }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ producto.stock }}
+                                </td>
+
+                                <td>
+                                    {{ producto.reservado }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ producto.disponible }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ producto.vendidas }}
+                                </td>
+
+                                <td>
+                                    {{ producto.velocidad_diaria }}
+                                </td>
+
+                                <td>
+                                    {% if producto.dias_cobertura is not None %}
+                                        {{ producto.dias_cobertura }} días
+                                    {% else %}
+                                        Sin consumo
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if producto.reponer > 0 %}
+                                        <strong class="analitica-tabla__alerta">
+                                            {{ producto.reponer }}
+                                        </strong>
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9">
+                                    No existen productos para el filtro elegido.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+</section>
+
+{{ grafico_stock|json_script:"datos-grafico-stock" }}
+{{ grafico_salidas|json_script:"datos-grafico-salidas" }}
+{{ grafico_consumo|json_script:"datos-grafico-consumo" }}
+{{ grafico_categorias|json_script:"datos-grafico-categorias-stock" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
+></script>
+
+<script
+    src="{% static 'core/js/analisis_stock.js' %}?v=1"
+></script>
+{% endblock %}

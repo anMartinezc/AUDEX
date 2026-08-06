@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+build/
+dist/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+credentials.json
+service-account.json
+
+# Django local
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+static_root/
+*.log
+
+# macOS
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+
+# Pruebas
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/

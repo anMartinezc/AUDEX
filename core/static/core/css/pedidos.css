@@ -1,0 +1,1051 @@
+.pedidos-pagina,
+.gestion-pedidos {
+    padding: 70px 0 90px;
+}
+
+.pedidos-cabecera,
+.seguimiento-cabecera,
+.gestion-cabecera,
+.detalle-admin__cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+.pedidos-cabecera h1,
+.seguimiento-cabecera h1,
+.gestion-cabecera h1,
+.detalle-admin__cabecera h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.8rem);
+    line-height: 1;
+}
+
+.pedidos-cabecera p,
+.seguimiento-cabecera p,
+.gestion-cabecera p {
+    margin-top: 15px;
+    color: var(--color-gris);
+}
+
+.pedidos-filtros {
+    margin: 35px 0 26px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+}
+
+.pedidos-filtros a {
+    min-width: max-content;
+    padding: 10px 15px;
+    color: var(--color-gris);
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+}
+
+.pedidos-filtros a.activo {
+    color: #041017;
+    border-color: transparent;
+    background: var(--color-azul-claro);
+}
+
+.pedidos-lista {
+    display: grid;
+    gap: 18px;
+}
+
+.pedido-historial,
+.seguimiento-tarjeta,
+.buscar-pedido,
+.bandeja-pedidos {
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-medio);
+    background: var(--color-fondo-secundario);
+}
+
+.pedido-historial {
+    padding: 25px;
+}
+
+.pedido-historial__superior,
+.pedido-historial__acciones,
+.seguimiento-producto,
+.seguimiento-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.pedido-historial__superior span,
+.pedido-historial__datos span {
+    color: var(--color-gris);
+    font-size: 0.72rem;
+}
+
+.pedido-historial__superior h2 {
+    margin-top: 4px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.pedido-historial__datos {
+    margin: 22px 0;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.pedido-historial__datos div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pedido-historial__productos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.pedido-historial__productos span {
+    padding: 7px 10px;
+    color: var(--color-gris-claro);
+    font-size: 0.72rem;
+    border-radius: 9px;
+    background: rgba(54, 169, 214, 0.07);
+}
+
+.pedido-historial__acciones {
+    margin-top: 22px;
+    justify-content: flex-end;
+}
+
+.pedido-estado {
+    padding: 8px 12px;
+    color: var(--color-azul-claro);
+    font-size: 0.7rem;
+    font-weight: 800;
+    border: 1px solid var(--borde-azul);
+    border-radius: 999px;
+    background: rgba(54, 169, 214, 0.08);
+}
+
+.pedido-estado--entregado {
+    color: #75e3a0;
+    border-color: rgba(37, 211, 102, 0.3);
+}
+
+.pedido-estado--cancelado {
+    color: #ff9098;
+    border-color: rgba(255, 91, 101, 0.35);
+}
+
+.pedidos-vacio,
+.buscar-pedido {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 55px;
+    text-align: center;
+}
+
+.pedidos-vacio > i,
+.buscar-pedido__icono {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 22px;
+    display: grid;
+    place-items: center;
+    color: var(--color-azul-claro);
+    font-size: 2rem;
+    border: 1px solid var(--borde-azul);
+    border-radius: 50%;
+    background: rgba(54, 169, 214, 0.08);
+}
+
+.buscar-pedido h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+}
+
+.buscar-pedido > p {
+    margin: 16px auto 30px;
+    max-width: 500px;
+    color: var(--color-gris);
+}
+
+.buscar-pedido__form,
+.form-admin {
+    display: grid;
+    gap: 17px;
+    text-align: left;
+}
+
+.campo {
+    display: grid;
+    gap: 8px;
+}
+
+.campo label {
+    color: var(--color-gris-claro);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.campo input,
+.campo select,
+.campo textarea,
+.gestion-buscador input {
+    width: 100%;
+    padding: 14px 16px;
+    color: var(--color-blanco);
+    border: 1px solid var(--borde);
+    border-radius: 13px;
+    outline: none;
+    background: rgba(5, 10, 14, 0.7);
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+    border-color: var(--color-azul-claro);
+}
+
+.form-error,
+.errorlist {
+    color: #ff969e;
+    font-size: 0.75rem;
+    list-style: none;
+}
+
+.seguimiento-grid,
+.detalle-admin__grid {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.seguimiento-lateral,
+.detalle-admin__lateral,
+.detalle-admin__principal {
+    display: grid;
+    gap: 18px;
+}
+
+.seguimiento-tarjeta {
+    padding: 27px;
+}
+
+.seguimiento-tarjeta h2 {
+    margin-bottom: 22px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.timeline-pedido {
+    display: grid;
+}
+
+.timeline-paso {
+    position: relative;
+    min-height: 95px;
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 15px;
+    opacity: 0.35;
+}
+
+.timeline-paso:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 48px;
+    left: 23px;
+    width: 1px;
+    height: 47px;
+    background: var(--borde);
+}
+
+.timeline-paso--completado {
+    opacity: 1;
+}
+
+.timeline-paso__icono {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    color: var(--color-gris);
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+}
+
+.timeline-paso--completado .timeline-paso__icono {
+    color: #041017;
+    border-color: transparent;
+    background: var(--color-azul-claro);
+}
+
+.timeline-paso p,
+.timeline-paso time,
+.seguimiento-tarjeta p {
+    margin-top: 5px;
+    color: var(--color-gris);
+    font-size: 0.76rem;
+}
+
+.seguimiento-producto {
+    padding: 13px 0;
+    border-bottom: 1px solid var(--borde);
+    font-size: 0.8rem;
+}
+
+.seguimiento-total {
+    margin-top: 18px;
+    font-size: 1.1rem;
+}
+
+.seguimiento-total strong {
+    color: var(--color-azul-claro);
+    font-size: 1.4rem;
+}
+
+.gestion-cabecera {
+    align-items: center;
+}
+
+.gestion-buscador {
+    min-width: min(420px, 100%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gestion-buscador i {
+    color: var(--color-azul-claro);
+}
+
+.gestion-resumen {
+    margin: 30px 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.gestion-resumen div {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid var(--borde);
+    border-radius: 15px;
+    background: var(--color-fondo-secundario);
+}
+
+.gestion-resumen span {
+    color: var(--color-gris);
+}
+
+.gestion-resumen strong {
+    color: var(--color-azul-claro);
+    font-size: 1.35rem;
+}
+
+.tablero-pedidos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(270px, 1fr));
+    gap: 17px;
+    overflow-x: auto;
+    align-items: start;
+}
+
+.bandeja-pedidos {
+    min-height: 500px;
+    padding: 16px;
+}
+
+.bandeja-pedidos > header {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.bandeja-pedidos > header span {
+    min-width: 27px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+    color: #041017;
+    border-radius: 50%;
+    background: var(--color-azul-claro);
+}
+
+.tarjeta-pedido-admin {
+    margin-bottom: 12px;
+    padding: 15px;
+    display: block;
+    border: 1px solid var(--borde);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.025);
+    transition: 0.25s ease;
+}
+
+.tarjeta-pedido-admin:hover {
+    border-color: var(--borde-azul);
+    transform: translateY(-3px);
+}
+
+.tarjeta-pedido-admin > div,
+.tarjeta-pedido-admin footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.tarjeta-pedido-admin span,
+.tarjeta-pedido-admin p,
+.tarjeta-pedido-admin time {
+    color: var(--color-gris);
+    font-size: 0.68rem;
+}
+
+.tarjeta-pedido-admin h3 {
+    margin: 13px 0 5px;
+    font-size: 0.85rem;
+}
+
+.tarjeta-pedido-admin footer {
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid var(--borde);
+}
+
+.bandeja-vacia {
+    padding: 25px;
+    color: var(--color-gris);
+    text-align: center;
+}
+
+.gestion-volver {
+    display: inline-flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    color: var(--color-gris-claro);
+}
+
+.historial-estado {
+    position: relative;
+    padding: 0 0 25px 28px;
+}
+
+.historial-estado__punto {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-azul-claro);
+}
+
+.historial-estado:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 5px;
+    width: 1px;
+    height: calc(100% - 10px);
+    background: var(--borde);
+}
+
+.historial-estado time,
+.historial-estado small {
+    display: block;
+    margin-top: 5px;
+    color: var(--color-gris);
+    font-size: 0.68rem;
+}
+
+.paginacion {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    color: var(--color-gris);
+}
+
+.paginacion a {
+    color: var(--color-azul-claro);
+}
+
+@media (max-width: 900px) {
+    .seguimiento-grid,
+    .detalle-admin__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gestion-resumen {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .pedidos-cabecera,
+    .seguimiento-cabecera,
+    .gestion-cabecera,
+    .detalle-admin__cabecera {
+        flex-direction: column;
+    }
+
+    .pedido-historial__datos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .gestion-resumen {
+        grid-template-columns: 1fr;
+    }
+
+    .buscar-pedido {
+        padding: 35px 20px;
+    }
+
+    .gestion-buscador {
+        min-width: 100%;
+    }
+}
+
+
+/* =========================================================
+   MIS COMPRAS — PAGADAS Y PENDIENTES
+========================================================= */
+
+.mis-compras {
+    position: relative;
+}
+
+.mis-compras::before {
+    content: "";
+
+    position: absolute;
+    top: -230px;
+    left: 50%;
+
+    width: 900px;
+    height: 600px;
+
+    border-radius: 50%;
+
+    background: radial-gradient(
+        circle,
+        rgba(54, 169, 214, 0.11),
+        transparent 68%
+    );
+
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.mis-compras > .contenedor {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* =========================================================
+   RESUMEN PRINCIPAL
+========================================================= */
+
+.mis-compras__resumen {
+    margin-top: 34px;
+}
+
+.mis-compras__confirmadas {
+    min-height: 105px;
+    padding: 22px 24px;
+
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-medio);
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(54, 169, 214, 0.09),
+            rgba(255, 255, 255, 0.015)
+        ),
+        var(--color-fondo-secundario);
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        box-shadow var(--transicion),
+        transform var(--transicion);
+}
+
+.mis-compras__confirmadas:hover,
+.mis-compras__confirmadas--activa {
+    border-color: var(--borde-azul);
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(54, 169, 214, 0.14),
+            rgba(255, 255, 255, 0.02)
+        ),
+        var(--color-fondo-secundario);
+
+    box-shadow:
+        0 20px 45px rgba(54, 169, 214, 0.08);
+
+    transform: translateY(-3px);
+}
+
+.mis-compras__resumen-icono {
+    width: 54px;
+    height: 54px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-azul-claro);
+    font-size: 1.3rem;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 15px;
+
+    background: rgba(54, 169, 214, 0.09);
+}
+
+.mis-compras__resumen-texto {
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 4px 13px;
+}
+
+.mis-compras__resumen-texto > span {
+    color: var(--color-gris-claro);
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.mis-compras__resumen-texto > strong {
+    color: var(--color-azul-claro);
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 1.55rem;
+}
+
+.mis-compras__resumen-texto > small {
+    grid-column: 1 / -1;
+
+    color: var(--color-gris);
+    font-size: 0.72rem;
+}
+
+.mis-compras__confirmadas > i:last-child {
+    color: var(--color-azul-claro);
+
+    transition: transform var(--transicion);
+}
+
+.mis-compras__confirmadas:hover > i:last-child {
+    transform: translateX(5px);
+}
+
+
+/* =========================================================
+   AVISO DE PAGOS PENDIENTES
+========================================================= */
+
+.mis-compras__pendientes {
+    margin-top: 16px;
+    padding: 18px 21px;
+
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+
+    border: 1px solid rgba(255, 193, 7, 0.28);
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(255, 193, 7, 0.08),
+            rgba(255, 255, 255, 0.012)
+        ),
+        var(--color-fondo-secundario);
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        box-shadow var(--transicion),
+        transform var(--transicion);
+}
+
+.mis-compras__pendientes:hover,
+.mis-compras__pendientes--activa {
+    border-color: rgba(255, 210, 92, 0.55);
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(255, 193, 7, 0.13),
+            rgba(255, 255, 255, 0.018)
+        ),
+        var(--color-fondo-secundario);
+
+    box-shadow:
+        0 18px 40px rgba(255, 193, 7, 0.07);
+
+    transform: translateY(-2px);
+}
+
+.mis-compras__pendientes-icono {
+    width: 48px;
+    height: 48px;
+
+    display: grid;
+    place-items: center;
+
+    color: #ffd66b;
+    font-size: 1.1rem;
+
+    border: 1px solid rgba(255, 193, 7, 0.22);
+    border-radius: 14px;
+
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.mis-compras__pendientes-texto strong {
+    display: block;
+
+    color: var(--color-blanco);
+    font-size: 0.84rem;
+}
+
+.mis-compras__pendientes-texto span {
+    display: block;
+    margin-top: 5px;
+
+    color: var(--color-gris);
+    font-size: 0.71rem;
+}
+
+.mis-compras__pendientes > i:last-child {
+    color: #ffd66b;
+
+    transition: transform var(--transicion);
+}
+
+.mis-compras__pendientes:hover > i:last-child {
+    transform: translateX(5px);
+}
+
+
+/* =========================================================
+   CABECERA DE SECCIÓN
+========================================================= */
+
+.mis-compras__seccion-cabecera {
+    margin-top: 42px;
+    margin-bottom: 23px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 25px;
+}
+
+.pedidos-cabecera__eyebrow {
+    display: block;
+    margin-bottom: 8px;
+
+    color: var(--color-azul-claro);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.mis-compras__seccion-cabecera h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.08;
+}
+
+.mis-compras__seccion-cabecera p {
+    margin-top: 9px;
+
+    color: var(--color-gris);
+    font-size: 0.82rem;
+}
+
+.mis-compras__contador {
+    min-width: max-content;
+    padding: 9px 13px;
+
+    color: var(--color-azul-claro);
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 999px;
+
+    background: rgba(54, 169, 214, 0.08);
+}
+
+.mis-compras__volver {
+    margin-bottom: 17px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    color: var(--color-gris-claro);
+    font-size: 0.76rem;
+
+    transition: color var(--transicion);
+}
+
+.mis-compras__volver:hover {
+    color: var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   FILTROS
+========================================================= */
+
+.mis-compras .pedidos-filtros {
+    margin-top: 0;
+    margin-bottom: 25px;
+    padding-bottom: 3px;
+}
+
+.mis-compras .pedidos-filtros a {
+    transition:
+        color var(--transicion),
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.mis-compras .pedidos-filtros a:hover {
+    color: var(--color-azul-claro);
+    border-color: var(--borde-azul);
+    background: rgba(54, 169, 214, 0.07);
+    transform: translateY(-2px);
+}
+
+.mis-compras .pedidos-filtros a.activo {
+    color: #041017;
+    border-color: transparent;
+
+    background: linear-gradient(
+        135deg,
+        var(--color-azul-claro),
+        var(--color-azul)
+    );
+}
+
+
+/* =========================================================
+   GRID DE COMPRAS
+========================================================= */
+
+.pedidos-lista--compras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+}
+
+.pedidos-lista--compras .pedido-historial {
+    min-width: 0;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        box-shadow var(--transicion),
+        transform var(--transicion);
+}
+
+.pedidos-lista--compras .pedido-historial:hover {
+    border-color: var(--borde-azul);
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.2);
+
+    transform: translateY(-4px);
+}
+
+.pedido-historial--pendiente {
+    border-color: rgba(255, 193, 7, 0.22);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 193, 7, 0.04),
+            transparent 55%
+        ),
+        var(--color-fondo-secundario);
+}
+
+.pedidos-lista--compras .pedido-historial__datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pedidos-lista--compras .pedido-historial__productos {
+    flex: 1;
+}
+
+.pedidos-lista--compras .pedido-historial__acciones {
+    margin-top: 25px;
+}
+
+
+/* =========================================================
+   ESTADOS DE PAGO
+========================================================= */
+
+.pedido-estado--pago-pendiente {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #ffd66b;
+
+    border-color: rgba(255, 193, 7, 0.3);
+
+    background: rgba(255, 193, 7, 0.08);
+}
+
+.pedido-historial__pago-aprobado,
+.pedido-historial__pago-pendiente {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pedido-historial__pago-aprobado {
+    color: #75e3a0;
+}
+
+.pedido-historial__pago-pendiente {
+    color: #ffd66b;
+}
+
+
+/* =========================================================
+   VACÍO
+========================================================= */
+
+.pedidos-lista--compras > .pedidos-vacio {
+    grid-column: 1 / -1;
+}
+
+
+/* =========================================================
+   PAGINACIÓN
+========================================================= */
+
+.mis-compras .paginacion {
+    align-items: center;
+}
+
+.mis-compras .paginacion a {
+    min-height: 42px;
+    padding: 0 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-weight: 800;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 11px;
+
+    background: rgba(54, 169, 214, 0.07);
+
+    transition:
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.mis-compras .paginacion a:hover {
+    background: rgba(54, 169, 214, 0.14);
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+    .pedidos-lista--compras {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .mis-compras__confirmadas,
+    .mis-compras__pendientes {
+        grid-template-columns: 48px minmax(0, 1fr);
+    }
+
+    .mis-compras__confirmadas > i:last-child,
+    .mis-compras__pendientes > i:last-child {
+        display: none;
+    }
+
+    .mis-compras__resumen-icono {
+        width: 48px;
+        height: 48px;
+    }
+
+    .mis-compras__seccion-cabecera {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pedidos-lista--compras .pedido-historial__datos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 430px) {
+    .pedidos-lista--compras .pedido-historial {
+        padding: 21px 18px;
+    }
+
+    .pedido-historial__superior {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pedidos-lista--compras .pedido-historial__datos {
+        grid-template-columns: 1fr;
+    }
+
+    .pedido-historial__acciones .boton {
+        width: 100%;
+    }
+
+
+}

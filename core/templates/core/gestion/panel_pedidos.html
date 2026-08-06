@@ -1,0 +1,471 @@
+{% extends 'core/base.html' %}
+{% load static humanize %}
+
+{% block title %}
+    Gestión de pedidos | Audex
+{% endblock %}
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/pedidos.css' %}?v=4"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/panel_pedidos.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="gestion-pedidos">
+
+    <div class="contenedor gestion-pedidos__contenedor">
+
+        <!-- =====================================================
+             CABECERA
+        ====================================================== -->
+
+        <header class="gestion-cabecera">
+
+            <div>
+                <span class="etiqueta-seccion">
+                    <i class="bi bi-kanban"></i>
+                    Administración
+                </span>
+
+                <h1>
+                    Gestión de pedidos
+                </h1>
+
+                <p>
+                    Controla cada venta desde la confirmación
+                    hasta la entrega.
+                </p>
+            </div>
+
+
+            <form
+                method="get"
+                class="gestion-buscador"
+            >
+
+                {% if bandeja_actual %}
+                    <input
+                        type="hidden"
+                        name="bandeja"
+                        value="{{ bandeja_actual }}"
+                    >
+                {% endif %}
+
+                <i class="bi bi-search"></i>
+
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ busqueda }}"
+                    placeholder="Pedido, cliente, RUT o correo"
+                    autocomplete="off"
+                >
+
+                <button
+                    type="submit"
+                    aria-label="Buscar pedidos"
+                >
+                    Buscar
+                </button>
+
+            </form>
+
+        </header>
+
+
+        <!-- =====================================================
+             RESUMEN
+        ====================================================== -->
+
+        <div class="gestion-resumen">
+
+            <a
+                href="?bandeja=nuevos"
+                class="
+                    gestion-resumen__tarjeta
+                    {% if bandeja_actual == 'nuevos' %}
+                        gestion-resumen__tarjeta--activa
+                    {% endif %}
+                "
+            >
+                <span>Nuevos pagados</span>
+                <strong>{{ total_principal }}</strong>
+            </a>
+
+            <a
+                href="?bandeja=operacion"
+                class="
+                    gestion-resumen__tarjeta
+                    {% if bandeja_actual == 'operacion' %}
+                        gestion-resumen__tarjeta--activa
+                    {% endif %}
+                "
+            >
+                <span>En operación</span>
+                <strong>{{ total_operacion }}</strong>
+            </a>
+
+            <a
+                href="?bandeja=despacho"
+                class="
+                    gestion-resumen__tarjeta
+                    {% if bandeja_actual == 'despacho' %}
+                        gestion-resumen__tarjeta--activa
+                    {% endif %}
+                "
+            >
+                <span>En despacho</span>
+                <strong>{{ total_despacho }}</strong>
+            </a>
+
+            <a
+                href="?bandeja=finalizados"
+                class="
+                    gestion-resumen__tarjeta
+                    {% if bandeja_actual == 'finalizados' %}
+                        gestion-resumen__tarjeta--activa
+                    {% endif %}
+                "
+            >
+                <span>Finalizados</span>
+                <strong>{{ total_cerrados }}</strong>
+            </a>
+
+        </div>
+
+
+        <!-- PENDIENTES DE PAGO -->
+
+        {% if total_pendientes_pago > 0 %}
+
+            <a
+                href="?bandeja=pendientes"
+                class="gestion-pendientes"
+            >
+                <div class="gestion-pendientes__icono">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+
+                <div>
+                    <strong>
+                        {{ total_pendientes_pago }}
+                        pedido{{ total_pendientes_pago|pluralize }}
+                        pendiente{{ total_pendientes_pago|pluralize }}
+                        de pago
+                    </strong>
+
+                    <span>
+                        Estos pedidos todavía no cuentan como
+                        ventas confirmadas.
+                    </span>
+                </div>
+
+                <i class="bi bi-arrow-right"></i>
+            </a>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             VISTA DE BANDEJA COMPLETA
+        ====================================================== -->
+
+        {% if bandeja_actual and page_obj %}
+
+            <section class="gestion-listado">
+
+                <header class="gestion-listado__cabecera">
+
+                    <div>
+                        <a
+                            href="{% url 'core:panel_pedidos' %}"
+                            class="gestion-volver"
+                        >
+                            <i class="bi bi-arrow-left"></i>
+                            Volver al tablero
+                        </a>
+
+                        <h2>
+                            {{ titulo_bandeja }}
+                        </h2>
+
+                        <p>
+                            {{ page_obj.paginator.count }}
+                            pedido{{ page_obj.paginator.count|pluralize }}
+                            en esta bandeja.
+                        </p>
+                    </div>
+
+                </header>
+
+
+                <div class="gestion-listado__pedidos">
+
+                    {% for pedido in page_obj %}
+
+                        <a
+                            href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
+                            class="pedido-admin-fila"
+                        >
+
+                            <div class="pedido-admin-fila__numero">
+
+                                <span>Pedido</span>
+
+                                <strong>
+                                    {{ pedido.numero }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="pedido-admin-fila__cliente">
+
+                                <span>Cliente</span>
+
+                                <strong>
+                                    {{ pedido.nombre }}
+                                    {{ pedido.apellido }}
+                                </strong>
+
+                                <small>
+                                    {{ pedido.email }}
+                                </small>
+
+                            </div>
+
+
+                            <div class="pedido-admin-fila__estado">
+
+                                <span>Estado</span>
+
+                                <strong
+                                    class="
+                                        pedido-estado
+                                        pedido-estado--{{ pedido.estado }}
+                                    "
+                                >
+                                    {{ pedido.get_estado_display }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="pedido-admin-fila__productos">
+
+                                <span>Productos</span>
+
+                                <strong>
+                                    {{ pedido.items.count }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="pedido-admin-fila__fecha">
+
+                                <span>Actualizado</span>
+
+                                <strong>
+                                    {{ pedido.actualizado|date:"d/m/Y H:i" }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="pedido-admin-fila__total">
+
+                                <span>Total</span>
+
+                                <strong>
+                                    ${{ pedido.total|floatformat:0|intcomma }}
+                                </strong>
+
+                            </div>
+
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+                    {% empty %}
+
+                        <div class="bandeja-vacia">
+                            No hay pedidos en esta bandeja.
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- PAGINACIÓN -->
+
+                {% if page_obj.paginator.num_pages > 1 %}
+
+                    <nav class="paginacion">
+
+                        {% if page_obj.has_previous %}
+
+                            <a
+                                href="?bandeja={{ bandeja_actual }}&page={{ page_obj.previous_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                            >
+                                <i class="bi bi-arrow-left"></i>
+                                Anterior
+                            </a>
+
+                        {% endif %}
+
+
+                        <span>
+                            Página {{ page_obj.number }}
+                            de {{ page_obj.paginator.num_pages }}
+                        </span>
+
+
+                        {% if page_obj.has_next %}
+
+                            <a
+                                href="?bandeja={{ bandeja_actual }}&page={{ page_obj.next_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                            >
+                                Siguiente
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+
+                        {% endif %}
+
+                    </nav>
+
+                {% endif %}
+
+            </section>
+
+
+        <!-- =====================================================
+             TABLERO GENERAL
+        ====================================================== -->
+
+        {% else %}
+
+            <div class="tablero-pedidos">
+
+                {% for bandeja in bandejas %}
+
+                    <section class="bandeja-pedidos">
+
+                        <header class="bandeja-pedidos__cabecera">
+
+                            <div>
+                                <i class="bi {{ bandeja.icono }}"></i>
+
+                                <h2>
+                                    {{ bandeja.nombre }}
+                                </h2>
+                            </div>
+
+                            <span>
+                                {{ bandeja.total }}
+                            </span>
+
+                        </header>
+
+
+                        <div class="bandeja-pedidos__contenido">
+
+                            {% for pedido in bandeja.pedidos %}
+
+                                <a
+                                    href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
+                                    class="tarjeta-pedido-admin"
+                                >
+
+                                    <div class="tarjeta-pedido-admin__superior">
+
+                                        <strong>
+                                            {{ pedido.numero }}
+                                        </strong>
+
+                                        <span>
+                                            {{ pedido.get_estado_display }}
+                                        </span>
+
+                                    </div>
+
+
+                                    <h3>
+                                        {{ pedido.nombre }}
+                                        {{ pedido.apellido }}
+                                    </h3>
+
+
+                                    <p>
+                                        {{ pedido.items.count }}
+                                        producto{{ pedido.items.count|pluralize }}
+                                    </p>
+
+
+                                    <footer>
+
+                                        <time>
+                                            {{ pedido.actualizado|date:"d/m H:i" }}
+                                        </time>
+
+                                        <strong>
+                                            ${{ pedido.total|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    </footer>
+
+                                </a>
+
+                            {% empty %}
+
+                                <p class="bandeja-vacia">
+                                    No hay pedidos.
+                                </p>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        {% if bandeja.total > 0 %}
+
+                            <footer class="bandeja-pedidos__pie">
+
+                                <a
+                                    href="?bandeja={{ bandeja.clave }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                                >
+                                    {% if bandeja.hay_mas %}
+                                        Ver los {{ bandeja.total }} pedidos
+                                    {% else %}
+                                        Ver bandeja
+                                    {% endif %}
+
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+
+                            </footer>
+
+                        {% endif %}
+
+                    </section>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

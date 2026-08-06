@@ -1,0 +1,22 @@
+<div class="campo-contenedor">
+    <label for="{{ campo.id_for_label }}">
+        {{ campo.label }}
+
+        {% if campo.field.required %}
+            <span class="campo-obligatorio">*</span>
+        {% endif %}
+    </label>
+
+    {{ campo }}
+
+    {% if campo.help_text %}
+        <small>{{ campo.help_text }}</small>
+    {% endif %}
+
+    {% for error in campo.errors %}
+        <span class="campo-error">
+            <i class="bi bi-exclamation-circle"></i>
+            {{ error }}
+        </span>
+    {% endfor %}
+</div>

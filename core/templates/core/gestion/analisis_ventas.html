@@ -1,0 +1,434 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+Análisis de ventas | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/analitica.css' %}?v=1"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="analitica">
+    <div class="contenedor analitica__contenedor">
+
+        <header class="analitica__encabezado">
+            <div>
+                <span class="analitica__etiqueta">
+                    Gestión Audex
+                </span>
+
+                <h1>Análisis de ventas</h1>
+
+                <p>
+                    Revisa ingresos, unidades vendidas,
+                    productos líderes y comportamiento por período.
+                </p>
+            </div>
+
+            <nav class="analitica__navegacion">
+                <a
+                    href="{% url 'core:analisis_ventas' %}"
+                    class="activo"
+                >
+                    <i class="bi bi-graph-up-arrow"></i>
+                    Ventas
+                </a>
+
+                <a
+                    href="{% url 'core:analisis_stock' %}"
+                >
+                    <i class="bi bi-box-seam"></i>
+                    Stock
+                </a>
+            </nav>
+        </header>
+
+        <form
+            method="get"
+            class="analitica-filtros"
+        >
+            <label>
+                <span>Desde</span>
+
+                <input
+                    type="date"
+                    name="desde"
+                    value="{{ desde }}"
+                >
+            </label>
+
+            <label>
+                <span>Hasta</span>
+
+                <input
+                    type="date"
+                    name="hasta"
+                    value="{{ hasta }}"
+                >
+            </label>
+
+            <label>
+                <span>Agrupar</span>
+
+                <select name="agrupar">
+                    <option
+                        value="dia"
+                        {% if agrupacion == "dia" %}selected{% endif %}
+                    >
+                        Por día
+                    </option>
+
+                    <option
+                        value="mes"
+                        {% if agrupacion == "mes" %}selected{% endif %}
+                    >
+                        Por mes
+                    </option>
+                </select>
+            </label>
+
+            <label>
+                <span>Categoría</span>
+
+                <select name="categoria">
+                    <option value="">
+                        Todas
+                    </option>
+
+                    {% for categoria in categorias %}
+                        <option
+                            value="{{ categoria.pk }}"
+                            {% if categoria_id == categoria.pk %}selected{% endif %}
+                        >
+                            {{ categoria.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                <span>Producto</span>
+
+                <select name="producto">
+                    <option value="">
+                        Todos
+                    </option>
+
+                    {% for producto in productos %}
+                        <option
+                            value="{{ producto.pk }}"
+                            {% if producto_id == producto.pk %}selected{% endif %}
+                        >
+                            {{ producto.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <button
+                type="submit"
+                class="analitica-filtros__boton"
+            >
+                <i class="bi bi-funnel"></i>
+                Aplicar filtros
+            </button>
+        </form>
+
+        <div class="analitica-kpis">
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+
+                <span>Ventas de productos</span>
+
+                <strong>
+                    ${{ ingresos|floatformat:0|intcomma }}
+                </strong>
+
+                <small>
+                    Suma de los productos vendidos
+                </small>
+            </article>
+
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+
+                <span>Pedidos aprobados</span>
+
+                <strong>
+                    {{ cantidad_pedidos|intcomma }}
+                </strong>
+
+                <small>
+                    Pedidos incluidos en el filtro
+                </small>
+            </article>
+
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-box2-heart"></i>
+                </div>
+
+                <span>Unidades vendidas</span>
+
+                <strong>
+                    {{ unidades|intcomma }}
+                </strong>
+
+                <small>
+                    Cantidad total de productos
+                </small>
+            </article>
+
+            <article class="analitica-kpi">
+                <div class="analitica-kpi__icono">
+                    <i class="bi bi-receipt"></i>
+                </div>
+
+                <span>Venta promedio</span>
+
+                <strong>
+                    ${{ ticket_promedio|floatformat:0|intcomma }}
+                </strong>
+
+                <small>
+                    Ingreso promedio por pedido
+                </small>
+            </article>
+        </div>
+
+        {% if producto_lider %}
+            <article class="analitica-destacado">
+                <div class="analitica-destacado__icono">
+                    <i class="bi bi-trophy"></i>
+                </div>
+
+                <div>
+                    <span>Producto líder</span>
+
+                    <strong>
+                        {{ producto_lider.nombre }}
+                    </strong>
+
+                    <p>
+                        {{ producto_lider.unidades }}
+                        unidades vendidas en
+                        {{ producto_lider.pedidos }}
+                        pedidos.
+                    </p>
+                </div>
+
+                <div class="analitica-destacado__monto">
+                    ${{ producto_lider.ingresos|intcomma }}
+                </div>
+            </article>
+        {% endif %}
+
+        <div class="analitica-graficos">
+            <article class="analitica-panel analitica-panel--grande">
+                <header>
+                    <div>
+                        <span>Evolución</span>
+                        <h2>Ventas por período</h2>
+                    </div>
+
+                    <i class="bi bi-graph-up"></i>
+                </header>
+
+                <div class="analitica-grafico analitica-grafico--alto">
+                    <canvas id="graficoVentas"></canvas>
+                </div>
+            </article>
+
+            <article class="analitica-panel">
+                <header>
+                    <div>
+                        <span>Ranking</span>
+                        <h2>Productos más vendidos</h2>
+                    </div>
+
+                    <i class="bi bi-bar-chart"></i>
+                </header>
+
+                <div class="analitica-grafico">
+                    <canvas id="graficoProductos"></canvas>
+                </div>
+            </article>
+
+            <article class="analitica-panel">
+                <header>
+                    <div>
+                        <span>Distribución</span>
+                        <h2>Ventas por categoría</h2>
+                    </div>
+
+                    <i class="bi bi-pie-chart"></i>
+                </header>
+
+                <div class="analitica-grafico">
+                    <canvas id="graficoCategorias"></canvas>
+                </div>
+            </article>
+
+            <article class="analitica-panel">
+                <header>
+                    <div>
+                        <span>Pagos</span>
+                        <h2>Métodos utilizados</h2>
+                    </div>
+
+                    <i class="bi bi-credit-card"></i>
+                </header>
+
+                <div class="analitica-grafico">
+                    <canvas id="graficoMetodos"></canvas>
+                </div>
+            </article>
+        </div>
+
+        <article class="analitica-tabla-panel">
+            <header>
+                <div>
+                    <span>Detalle</span>
+                    <h2>Productos con mejor desempeño</h2>
+                </div>
+            </header>
+
+            <div class="analitica-tabla-contenedor">
+                <table class="analitica-tabla">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Pedidos</th>
+                            <th>Unidades</th>
+                            <th>Ingresos</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for producto in top_productos %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ producto.nombre }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ producto.categoria }}
+                                </td>
+
+                                <td>
+                                    {{ producto.pedidos }}
+                                </td>
+
+                                <td>
+                                    {{ producto.unidades }}
+                                </td>
+
+                                <td>
+                                    <strong class="analitica-tabla__monto">
+                                        ${{ producto.ingresos|intcomma }}
+                                    </strong>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    No existen ventas para los filtros elegidos.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="analitica-tabla-panel">
+            <header>
+                <div>
+                    <span>Actividad</span>
+                    <h2>Pedidos recientes</h2>
+                </div>
+            </header>
+
+            <div class="analitica-tabla-contenedor">
+                <table class="analitica-tabla">
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Método</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for pedido in pedidos_recientes %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ pedido.numero }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ pedido.nombre_completo }}
+                                </td>
+
+                                <td>
+                                    {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+                                </td>
+
+                                <td>
+                                    {{ pedido.get_metodo_pago_display }}
+                                </td>
+
+                                <td>
+                                    <strong class="analitica-tabla__monto">
+                                        ${{ pedido.total|floatformat:0|intcomma }}
+                                    </strong>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    No existen pedidos en el período.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+</section>
+
+{{ grafico_ventas|json_script:"datos-grafico-ventas" }}
+{{ grafico_productos|json_script:"datos-grafico-productos" }}
+{{ grafico_categorias|json_script:"datos-grafico-categorias" }}
+{{ grafico_metodos|json_script:"datos-grafico-metodos" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
+></script>
+
+<script
+    src="{% static 'core/js/analisis_ventas.js' %}?v=1"
+></script>
+{% endblock %}

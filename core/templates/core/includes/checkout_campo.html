@@ -1,0 +1,29 @@
+<div
+    class="
+        checkout-campo
+        {% if campo.errors %}
+            checkout-campo--error
+        {% endif %}
+    "
+>
+    <label for="{{ campo.id_for_label }}">
+        {{ campo.label }}
+
+        {% if campo.field.required %}
+            <span>*</span>
+        {% endif %}
+    </label>
+
+    {{ campo }}
+
+    {% if campo.help_text %}
+        <small>{{ campo.help_text }}</small>
+    {% endif %}
+
+    {% for error in campo.errors %}
+        <span class="checkout-error-campo">
+            <i class="bi bi-exclamation-circle"></i>
+            {{ error }}
+        </span>
+    {% endfor %}
+</div>

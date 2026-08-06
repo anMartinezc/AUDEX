@@ -1,0 +1,1682 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Audex, tienda especializada en audífonos EarFun. Encuentra audífonos inalámbricos, deportivos y con cancelación de ruido."
+    >
+
+    <meta
+        name="keywords"
+        content="Audex, EarFun, audífonos, audífonos bluetooth, audífonos inalámbricos, ecommerce Chile"
+    >
+
+    <meta
+        name="author"
+        content="Audex"
+    >
+
+    <title>
+        {% block title %}
+            Audex | Audífonos EarFun
+        {% endblock %}
+    </title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="{% static 'core/img/favicon.png' %}"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        href="{% static 'core/img/apple-touch-icon.png' %}"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/estilos.css' %}?v=23"
+    >
+
+
+    {% block extra_css %}
+    {% endblock %}
+
+    <!-- Se carga al final para que nada sobrescriba
+         el diálogo ni los botones flotantes. -->
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/logout.css' %}?v=2"
+    >
+
+    <style>
+        /* Controles móviles del header */
+        .menu-movil-boton {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+
+            display: none;
+            place-items: center;
+
+            color: var(--color-blanco);
+            font-size: 1.3rem;
+
+            border: 1px solid var(--borde);
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.035);
+
+            transition:
+                color var(--transicion),
+                border-color var(--transicion),
+                background var(--transicion),
+                transform var(--transicion);
+        }
+
+        .menu-movil-boton:hover {
+            color: var(--color-azul-claro);
+            border-color: var(--borde-azul);
+            background: rgba(54, 169, 214, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .menu-movil-boton i {
+            display: block;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .menu-movil__cerrar {
+            width: 42px;
+            height: 42px;
+            padding: 0;
+
+            display: grid;
+            place-items: center;
+
+            color: var(--color-blanco);
+            font-size: 1.15rem;
+
+            border: 1px solid var(--borde);
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.035);
+
+            transition:
+                color var(--transicion),
+                border-color var(--transicion),
+                background var(--transicion),
+                transform var(--transicion);
+        }
+
+        .menu-movil__cerrar:hover {
+            color: var(--color-azul-claro);
+            border-color: var(--borde-azul);
+            background: rgba(54, 169, 214, 0.08);
+            transform: rotate(4deg);
+        }
+
+        .boton-favoritos.activo {
+            color: #ff7180;
+            border-color: rgba(255, 91, 101, 0.48);
+            background: rgba(255, 91, 101, 0.1);
+        }
+
+        @media (max-width: 1100px) {
+            .menu-movil-boton {
+                display: grid;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         BARRA PROMOCIONAL
+    ====================================================== -->
+
+    <div class="topbar">
+
+        <div class="contenedor topbar__contenido">
+
+            <p>
+                <i class="bi bi-truck"></i>
+                Despacho gratis por compras superiores a $50.000
+            </p>
+
+            <div class="topbar__links">
+
+                <a href="#">
+                    <i class="bi bi-shield-check"></i>
+                    Compra segura
+                </a>
+
+                <a href="#">
+                    <i class="bi bi-headset"></i>
+                    Soporte
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         HEADER — SOLO UNA BARRA PRINCIPAL
+    ====================================================== -->
+
+<header
+    class="header"
+    id="header"
+>
+    <div class="contenedor header__contenido">
+
+        <!-- =====================================================
+             LOGO
+        ====================================================== -->
+
+        <a
+            href="{% url 'core:inicio' %}"
+            class="logo"
+            aria-label="Ir al inicio de Audex"
+        >
+            <div
+                class="logo__simbolo"
+                aria-hidden="true"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="logo__texto">
+                <strong>Audex</strong>
+                <small>Contigo a todas</small>
+            </div>
+        </a>
+
+        {% with url_actual=request.resolver_match.url_name %}
+
+            <!-- =================================================
+                 NAVEGACIÓN PRINCIPAL
+            ================================================== -->
+
+            <nav
+                class="nav-principal"
+                aria-label="Navegación principal"
+            >
+                <a
+                    href="{% url 'core:inicio' %}"
+                    class="
+                        nav-principal__link
+                        {% if url_actual == 'inicio' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    Inicio
+                </a>
+
+                <a
+                    href="{% url 'core:productos' %}"
+                    class="
+                        nav-principal__link
+                        {% if url_actual == 'productos' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    Productos
+                </a>
+
+                <a
+                    href="{% url 'core:categorias' %}"
+                    class="
+                        nav-principal__link
+                        {% if url_actual == 'categorias' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    Categorías
+                </a>
+
+                <a
+                    href="{% url 'core:ofertas' %}"
+                    class="
+                        nav-principal__link
+                        {% if url_actual == 'ofertas' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    Ofertas
+                </a>
+
+                <a
+                    href="{% url 'core:nosotros' %}"
+                    class="
+                        nav-principal__link
+                        {% if url_actual == 'nosotros' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    Nosotros
+                </a>
+
+                <!-- =============================================
+                     CUENTA
+                ============================================== -->
+
+                {% if request.user.is_authenticated %}
+
+                    <a
+                        href="{% url 'core:mis_compras' %}"
+                        class="
+                            nav-principal__link
+                            nav-principal__link--cuenta
+                            {% if url_actual == 'mis_compras' %}
+                                activo
+                            {% endif %}
+                        "
+                    >
+                        Mis compras
+                    </a>
+
+                    <a
+                        href="{% url 'core:mi_perfil' %}"
+                        class="
+                            nav-principal__link
+                            nav-principal__link--cuenta
+                            {% if url_actual == 'mi_perfil' %}
+                                activo
+                            {% endif %}
+                        "
+                    >
+                        Mi perfil
+                    </a>
+
+                {% else %}
+
+                    <a
+                        href="{% url 'core:seguimiento_pedido' %}"
+                        class="
+                            nav-principal__link
+                            nav-principal__link--cuenta
+                            {% if url_actual == 'seguimiento_pedido' or url_actual == 'seguimiento_pedido_numero' %}
+                                activo
+                            {% endif %}
+                        "
+                    >
+                        Seguir pedido
+                    </a>
+
+                {% endif %}
+
+                <!-- =============================================
+                     MENÚ DE GESTIÓN
+                ============================================== -->
+
+                {% if request.user.is_staff %}
+<div
+    id="navGestion"
+    class="
+        nav-gestion
+        {% if url_actual == 'panel_pedidos' or url_actual == 'panel_pedido_detalle' or url_actual == 'analisis_ventas' or url_actual == 'analisis_stock' or url_actual == 'gestion_descuentos' %}
+            nav-gestion--activo
+        {% endif %}
+    "
+    style="
+        position: relative;
+        z-index: 5100;
+    "
+>
+    <button
+        type="button"
+        id="gestionMenuBoton"
+        class="
+            nav-principal__link
+            nav-gestion__boton
+        "
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls="gestionMenu"
+    >
+        <span>Gestión</span>
+
+        <i
+            class="
+                bi
+                bi-chevron-down
+                nav-gestion__flecha
+            "
+            aria-hidden="true"
+        ></i>
+    </button>
+
+    <div
+        id="gestionMenu"
+        class="nav-gestion__menu"
+        role="menu"
+        aria-labelledby="gestionMenuBoton"
+        aria-hidden="true"
+        style="
+            display: none;
+            position: absolute;
+            top: calc(100% + 18px);
+            right: 0;
+            z-index: 5200;
+            width: 340px;
+            max-width: calc(100vw - 32px);
+        "
+    >
+        <div class="nav-gestion__encabezado">
+            <span>
+                Panel administrativo
+            </span>
+
+            <strong>
+                Gestión Audex
+            </strong>
+        </div>
+
+        <div class="nav-gestion__opciones">
+
+            <!-- =================================================
+                 PEDIDOS
+            ================================================== -->
+
+            <a
+                href="{% url 'core:panel_pedidos' %}"
+                role="menuitem"
+                class="
+                    nav-gestion__opcion
+                    {% if url_actual == 'panel_pedidos' or url_actual == 'panel_pedido_detalle' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                <span class="nav-gestion__icono">
+                    <i
+                        class="bi bi-bag-check"
+                        aria-hidden="true"
+                    ></i>
+                </span>
+
+                <span class="nav-gestion__texto">
+                    <strong>
+                        Pedidos
+                    </strong>
+
+                    <small>
+                        Revisar compras y estados
+                    </small>
+                </span>
+
+                <i
+                    class="
+                        bi
+                        bi-chevron-right
+                        nav-gestion__acceso
+                    "
+                    aria-hidden="true"
+                ></i>
+            </a>
+
+            <!-- =================================================
+                 ANÁLISIS DE VENTAS
+            ================================================== -->
+
+            <a
+                href="{% url 'core:analisis_ventas' %}"
+                role="menuitem"
+                class="
+                    nav-gestion__opcion
+                    {% if url_actual == 'analisis_ventas' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                <span class="nav-gestion__icono">
+                    <i
+                        class="bi bi-graph-up-arrow"
+                        aria-hidden="true"
+                    ></i>
+                </span>
+
+                <span class="nav-gestion__texto">
+                    <strong>
+                        Análisis de ventas
+                    </strong>
+
+                    <small>
+                        Ingresos, productos y tendencias
+                    </small>
+                </span>
+
+                <i
+                    class="
+                        bi
+                        bi-chevron-right
+                        nav-gestion__acceso
+                    "
+                    aria-hidden="true"
+                ></i>
+            </a>
+
+            <!-- =================================================
+                 ANÁLISIS DE STOCK
+            ================================================== -->
+
+            <a
+                href="{% url 'core:analisis_stock' %}"
+                role="menuitem"
+                class="
+                    nav-gestion__opcion
+                    {% if url_actual == 'analisis_stock' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                <span class="nav-gestion__icono">
+                    <i
+                        class="bi bi-box-seam"
+                        aria-hidden="true"
+                    ></i>
+                </span>
+
+                <span class="nav-gestion__texto">
+                    <strong>
+                        Análisis de stock
+                    </strong>
+
+                    <small>
+                        Existencias y reposición
+                    </small>
+                </span>
+
+                <i
+                    class="
+                        bi
+                        bi-chevron-right
+                        nav-gestion__acceso
+                    "
+                    aria-hidden="true"
+                ></i>
+            </a>
+
+            <!-- =================================================
+                 DESCUENTOS Y FIDELIDAD
+            ================================================== -->
+
+            <a
+                href="{% url 'core:gestion_descuentos' %}"
+                role="menuitem"
+                class="
+                    nav-gestion__opcion
+                    {% if url_actual == 'gestion_descuentos' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                <span class="nav-gestion__icono">
+                    <i
+                        class="bi bi-ticket-perforated"
+                        aria-hidden="true"
+                    ></i>
+                </span>
+
+                <span class="nav-gestion__texto">
+                    <strong>
+                        Descuentos
+                    </strong>
+
+                    <small>
+                        Códigos, campañas y fidelidad
+                    </small>
+                </span>
+
+                <i
+                    class="
+                        bi
+                        bi-chevron-right
+                        nav-gestion__acceso
+                    "
+                    aria-hidden="true"
+                ></i>
+            </a>
+
+        </div>
+    </div>
+</div>
+                {% endif %}
+
+            </nav>
+
+            <!-- =================================================
+                 ACCIONES DEL HEADER
+            ================================================== -->
+
+            <div class="header__acciones">
+
+                <!-- BUSCAR -->
+
+                <button
+                    type="button"
+                    class="
+                        boton-icono
+                        boton-buscar
+                    "
+                    id="abrirBusqueda"
+                    aria-label="Abrir búsqueda"
+                    title="Buscar"
+                >
+                    <i
+                        class="bi bi-search"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+
+                <!-- FAVORITOS -->
+
+                <a
+                    href="{% url 'core:mis_favoritos' %}"
+                    class="
+                        boton-icono
+                        boton-favoritos
+                        {% if url_actual == 'mis_favoritos' %}
+                            activo
+                        {% endif %}
+                    "
+                    aria-label="Abrir mis favoritos"
+                    title="Mis favoritos"
+                >
+                    {% if url_actual == 'mis_favoritos' %}
+                        <i
+                            class="bi bi-heart-fill"
+                            aria-hidden="true"
+                        ></i>
+                    {% else %}
+                        <i
+                            class="bi bi-heart"
+                            aria-hidden="true"
+                        ></i>
+                    {% endif %}
+                </a>
+
+                <!-- INICIAR O CERRAR SESIÓN -->
+
+                {% if request.user.is_authenticated %}
+
+                    <form
+                        method="post"
+                        action="{% url 'core:logout' %}"
+                        class="
+                            header__form-logout
+                            js-logout-form
+                        "
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="
+                                boton-icono
+                                boton-cuenta
+                            "
+                            aria-label="Cerrar sesión"
+                            title="Cerrar sesión"
+                        >
+                            <i
+                                class="bi bi-box-arrow-right"
+                                aria-hidden="true"
+                            ></i>
+                        </button>
+                    </form>
+
+                {% else %}
+
+                    <a
+                        href="{% url 'core:login' %}"
+                        class="
+                            boton-icono
+                            boton-cuenta
+                        "
+                        aria-label="Iniciar sesión"
+                        title="Iniciar sesión"
+                    >
+                        <i
+                            class="bi bi-person"
+                            aria-hidden="true"
+                        ></i>
+                    </a>
+
+                {% endif %}
+
+                <!-- CARRITO -->
+
+                <button
+                    type="button"
+                    class="
+                        boton-icono
+                        boton-carrito
+                    "
+                    id="abrirCarrito"
+                    aria-label="Abrir carrito de compras"
+                    title="Carrito"
+                >
+                    <i
+                        class="bi bi-bag"
+                        aria-hidden="true"
+                    ></i>
+
+                    <span
+                        class="carrito-contador"
+                        id="carritoContador"
+                    >
+                        0
+                    </span>
+                </button>
+
+                <!-- MENÚ MÓVIL -->
+
+                <button
+                    type="button"
+                    class="menu-movil-boton"
+                    id="abrirMenu"
+                    aria-label="Abrir menú"
+                    aria-expanded="false"
+                    title="Abrir menú"
+                >
+                    <i
+                        class="bi bi-list"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+
+            </div>
+
+        {% endwith %}
+
+    </div>
+</header>
+
+<!-- =========================================================
+     CONTROL DIRECTO DEL MENÚ DE GESTIÓN
+========================================================== -->
+
+<script>
+    (function () {
+        "use strict";
+
+        const contenedor = document.getElementById(
+            "navGestion"
+        );
+
+        const boton = document.getElementById(
+            "gestionMenuBoton"
+        );
+
+        const menu = document.getElementById(
+            "gestionMenu"
+        );
+
+        /*
+         * Para usuarios que no son staff estos elementos
+         * no existen, por lo que se termina sin errores.
+         */
+        if (!contenedor || !boton || !menu) {
+            return;
+        }
+
+        function estaAbierto() {
+            return (
+                boton.getAttribute(
+                    "aria-expanded"
+                ) === "true"
+            );
+        }
+
+        function abrirMenuGestion() {
+            menu.style.display = "block";
+
+            menu.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+            boton.setAttribute(
+                "aria-expanded",
+                "true"
+            );
+
+            contenedor.classList.add(
+                "nav-gestion--abierto"
+            );
+        }
+
+        function cerrarMenuGestion() {
+            menu.style.display = "none";
+
+            menu.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            boton.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+
+            contenedor.classList.remove(
+                "nav-gestion--abierto"
+            );
+        }
+
+        function alternarMenuGestion() {
+            if (estaAbierto()) {
+                cerrarMenuGestion();
+                return;
+            }
+
+            abrirMenuGestion();
+        }
+
+        boton.addEventListener(
+            "click",
+            function (evento) {
+                evento.preventDefault();
+                evento.stopPropagation();
+
+                alternarMenuGestion();
+            }
+        );
+
+        menu.addEventListener(
+            "click",
+            function (evento) {
+                evento.stopPropagation();
+            }
+        );
+
+        document.addEventListener(
+            "click",
+            function (evento) {
+                if (
+                    estaAbierto()
+                    && !contenedor.contains(
+                        evento.target
+                    )
+                ) {
+                    cerrarMenuGestion();
+                }
+            }
+        );
+
+        document.addEventListener(
+            "keydown",
+            function (evento) {
+                if (
+                    evento.key === "Escape"
+                    && estaAbierto()
+                ) {
+                    cerrarMenuGestion();
+                    boton.focus();
+                }
+            }
+        );
+
+        menu.querySelectorAll(
+            ".nav-gestion__opcion"
+        ).forEach(
+            function (opcion) {
+                opcion.addEventListener(
+                    "click",
+                    cerrarMenuGestion
+                );
+            }
+        );
+
+        window.addEventListener(
+            "resize",
+            function () {
+                if (
+                    window.innerWidth <= 1100
+                    && estaAbierto()
+                ) {
+                    cerrarMenuGestion();
+                }
+            }
+        );
+
+        cerrarMenuGestion();
+    })();
+</script>
+
+    <!-- =====================================================
+         MENÚ MÓVIL — NO ES UNA SEGUNDA NAV DE ESCRITORIO
+    ====================================================== -->
+
+    <div
+        class="menu-movil"
+        id="menuMovil"
+        aria-hidden="true"
+    >
+
+        <div class="menu-movil__encabezado">
+
+            <span>
+                Menú
+            </span>
+
+            <button
+                type="button"
+                class="menu-movil__cerrar"
+                id="cerrarMenu"
+                aria-label="Cerrar menú"
+                title="Cerrar menú"
+            >
+                <i
+                    class="bi bi-x-lg"
+                    aria-hidden="true"
+                ></i>
+            </button>
+
+        </div>
+
+
+        <nav
+            class="menu-movil__nav"
+            aria-label="Navegación móvil"
+        >
+
+            <a
+                href="{% url 'core:inicio' %}"
+                class="
+                    {% if request.resolver_match.url_name == 'inicio' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                Inicio
+            </a>
+
+            <a
+                href="{% url 'core:productos' %}"
+                class="
+                    {% if request.resolver_match.url_name == 'productos' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                Productos
+            </a>
+
+            <a
+                href="{% url 'core:categorias' %}"
+                class="
+                    {% if request.resolver_match.url_name == 'categorias' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                Categorías
+            </a>
+
+            <a
+                href="{% url 'core:ofertas' %}"
+                class="
+                    {% if request.resolver_match.url_name == 'ofertas' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                Ofertas
+            </a>
+
+            <a
+                href="{% url 'core:nosotros' %}"
+                class="
+                    {% if request.resolver_match.url_name == 'nosotros' %}
+                        activo
+                    {% endif %}
+                "
+            >
+                Nosotros
+            </a>
+
+
+            <div class="menu-movil__separador"></div>
+
+
+            {% if request.user.is_authenticated %}
+
+                <span class="menu-movil__titulo">
+                    Mi cuenta
+                </span>
+
+                <a
+                    href="{% url 'core:mi_perfil' %}"
+                    class="
+                        menu-movil__link--cuenta
+                        {% if request.resolver_match.url_name == 'mi_perfil' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    <i class="bi bi-person"></i>
+                    Mi perfil
+                </a>
+
+                <a
+                    href="{% url 'core:mis_compras' %}"
+                    class="
+                        menu-movil__link--cuenta
+                        {% if request.resolver_match.url_name == 'mis_compras' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    <i class="bi bi-bag-check"></i>
+                    Mis compras
+                </a>
+
+
+                <a
+                    href="{% url 'core:mis_favoritos' %}"
+                    class="
+                        menu-movil__link--cuenta
+                        {% if request.resolver_match.url_name == 'mis_favoritos' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    <i class="bi bi-heart"></i>
+                    Mis favoritos
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{% url 'core:seguimiento_pedido' %}"
+                    class="
+                        menu-movil__link--cuenta
+                        {% if request.resolver_match.url_name == 'seguimiento_pedido' or request.resolver_match.url_name == 'seguimiento_pedido_numero' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    <i class="bi bi-box-seam"></i>
+                    Seguir pedido
+                </a>
+
+
+                <a
+                    href="{% url 'core:mis_favoritos' %}"
+                    class="
+                        menu-movil__link--cuenta
+                        {% if request.resolver_match.url_name == 'mis_favoritos' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    <i class="bi bi-heart"></i>
+                    Mis favoritos
+                </a>
+
+            {% endif %}
+
+
+            {% if request.user.is_staff %}
+
+                <a
+                    href="{% url 'core:panel_pedidos' %}"
+                    class="
+                        {% if request.resolver_match.url_name == 'panel_pedidos' or request.resolver_match.url_name == 'panel_pedido_detalle' %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    Gestión de pedidos
+                </a>
+
+            {% endif %}
+
+
+            <div class="menu-movil__separador"></div>
+
+
+            {% if request.user.is_authenticated %}
+
+                <form
+                    method="post"
+                    action="{% url 'core:logout' %}"
+                    class="menu-movil__cuenta-form js-logout-form"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="menu-movil__cuenta-boton"
+                    >
+                        <i
+                            class="bi bi-box-arrow-right"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span>
+                            Cerrar sesión
+                        </span>
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <a
+                    href="{% url 'core:login' %}"
+                    class="menu-movil__cuenta-boton"
+                >
+                    <i
+                        class="bi bi-person"
+                        aria-hidden="true"
+                    ></i>
+
+                    <span>
+                        Iniciar sesión
+                    </span>
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+    </div>
+
+
+    <div
+        class="overlay"
+        id="overlay"
+    ></div>
+
+
+    <!-- =====================================================
+         BUSCADOR
+    ====================================================== -->
+
+    <section
+        class="buscador-modal"
+        id="buscadorModal"
+        aria-hidden="true"
+    >
+
+        <div class="buscador-modal__contenido">
+
+            <button
+                type="button"
+                class="buscador-modal__cerrar"
+                id="cerrarBusqueda"
+                aria-label="Cerrar búsqueda"
+                title="Cerrar búsqueda"
+            >
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            <span class="etiqueta-seccion">
+                Encuentra tu sonido
+            </span>
+
+            <h2>
+                ¿Qué audífonos estás buscando?
+            </h2>
+
+            <form
+                action="{% url 'core:productos' %}"
+                method="get"
+                class="buscador-formulario"
+            >
+
+                <label
+                    for="busquedaProducto"
+                    class="sr-only"
+                >
+                    Buscar productos
+                </label>
+
+                <input
+                    type="search"
+                    id="busquedaProducto"
+                    name="q"
+                    placeholder="Ejemplo: EarFun Air Pro 4"
+                    autocomplete="off"
+                >
+
+                <button type="submit">
+                    Buscar
+                </button>
+
+            </form>
+
+            <div class="busquedas-populares">
+
+                <span>
+                    Más buscados:
+                </span>
+
+                <a href="{% url 'core:productos' %}?q=Air+Pro+4">
+                    Air Pro 4
+                </a>
+
+                <a href="{% url 'core:productos' %}?q=Free+Pro+3">
+                    Free Pro 3
+                </a>
+
+                <a href="{% url 'core:productos' %}?q=Wave+Pro">
+                    Wave Pro
+                </a>
+
+                <a href="{% url 'core:productos' %}?q=cancelación+de+ruido">
+                    Cancelación de ruido
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="footer">
+
+        <div class="contenedor footer__grid">
+
+            <div class="footer__marca">
+
+                <a
+                    href="{% url 'core:inicio' %}"
+                    class="logo logo--footer"
+                >
+
+                    <div
+                        class="logo__simbolo"
+                        aria-hidden="true"
+                    >
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                    <div class="logo__texto">
+                        <strong>Audex</strong>
+                        <small>Contigo a todas</small>
+                    </div>
+
+                </a>
+
+                <p>
+                    Tecnología y sonido para acompañarte
+                    en cada momento. Descubre audífonos
+                    EarFun seleccionados para ti.
+                </p>
+
+                <div class="footer__redes">
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+
+                    <a href="#" aria-label="Facebook">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+
+                    <a href="#" aria-label="TikTok">
+                        <i class="bi bi-tiktok"></i>
+                    </a>
+
+                    <a href="#" aria-label="WhatsApp">
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="footer__columna">
+
+                <h3>Comprar</h3>
+
+                <a href="{% url 'core:productos' %}">
+                    Todos los productos
+                </a>
+
+                <a href="{% url 'core:categorias' %}">
+                    Audífonos inalámbricos
+                </a>
+
+                <a href="{% url 'core:categorias' %}">
+                    Audífonos deportivos
+                </a>
+
+                <a href="{% url 'core:categorias' %}">
+                    Audífonos over-ear
+                </a>
+
+                <a href="{% url 'core:ofertas' %}">
+                    Ofertas
+                </a>
+
+            </div>
+
+
+            <div class="footer__columna">
+
+                <h3>Ayuda</h3>
+
+                <a href="#">Preguntas frecuentes</a>
+                <a href="#">Despachos</a>
+                <a href="#">Cambios y devoluciones</a>
+                <a href="#">Garantía</a>
+                <a href="#">Contacto</a>
+
+            </div>
+
+
+            <div class="footer__columna">
+
+                <h3>Información</h3>
+
+                <a href="{% url 'core:nosotros' %}">
+                    Sobre Audex
+                </a>
+
+                <a href="#">Términos y condiciones</a>
+                <a href="#">Política de privacidad</a>
+                <a href="#">Política de cookies</a>
+
+                <a href="{% url 'core:mis_favoritos' %}">
+                    Mis favoritos
+                </a>
+
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'core:mi_perfil' %}">
+                        Mi perfil
+                    </a>
+                {% endif %}
+
+            </div>
+
+
+            <div class="footer__contacto">
+
+                <h3>Contáctanos</h3>
+
+                <p>
+                    <i class="bi bi-envelope"></i>
+                    contacto@audex.cl
+                </p>
+
+                <p>
+                    <i class="bi bi-telephone"></i>
+                    +56 9 0000 0000
+                </p>
+
+                <p>
+                    <i class="bi bi-clock"></i>
+                    Lunes a viernes, 09:00 a 18:00
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="contenedor footer__inferior">
+
+            <p>
+                &copy; {% now "Y" %} Audex.
+                Todos los derechos reservados.
+            </p>
+
+            <div class="footer__pagos">
+
+                <span>Pago seguro</span>
+
+                <i class="bi bi-credit-card"></i>
+                <i class="bi bi-bank"></i>
+                <i class="bi bi-wallet2"></i>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =====================================================
+         CARRITO LATERAL
+    ====================================================== -->
+
+    <aside
+        class="carrito-lateral"
+        id="carritoLateral"
+        aria-hidden="true"
+        data-url-estado="{% url 'core:carrito_estado' %}"
+        data-url-agregar="{% url 'core:carrito_agregar' %}"
+        data-url-actualizar="{% url 'core:carrito_actualizar' %}"
+        data-url-eliminar="{% url 'core:carrito_eliminar' %}"
+        data-url-vaciar="{% url 'core:carrito_vaciar' %}"
+    >
+
+        <div class="carrito-lateral__encabezado">
+
+            <div>
+                <span>Tu compra</span>
+                <h2>Carrito</h2>
+            </div>
+
+            <button
+                type="button"
+                id="cerrarCarrito"
+                aria-label="Cerrar carrito"
+                title="Cerrar carrito"
+            >
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+        </div>
+
+
+        <div class="carrito-lateral__barra">
+
+            <p id="carritoMensajeEnvio">
+                Agrega productos para comenzar tu compra.
+            </p>
+
+            <div class="carrito-lateral__progreso">
+                <span id="carritoProgresoEnvio"></span>
+            </div>
+
+        </div>
+
+
+        <div
+            class="carrito-lateral__productos"
+            id="carritoProductos"
+            aria-live="polite"
+        >
+
+            <div class="carrito-cargando">
+                <span class="carrito-cargando__spinner"></span>
+                <p>Cargando carrito...</p>
+            </div>
+
+        </div>
+
+
+        <div class="carrito-lateral__resumen">
+
+            <div class="carrito-lateral__fila">
+
+                <span>Subtotal</span>
+
+                <strong id="carritoSubtotal">
+                    $0
+                </strong>
+
+            </div>
+
+            <p>
+                El costo de despacho se calculará
+                al finalizar la compra.
+            </p>
+
+            <a
+                href="{% url 'core:carrito_completo' %}"
+                class="
+                    boton
+                    boton--primario
+                    boton--completo
+                    carrito-finalizar
+                "
+                id="finalizarCompra"
+            >
+                Finalizar compra
+            </a>
+
+            <button
+                type="button"
+                class="carrito-vaciar-boton"
+                id="vaciarCarrito"
+                hidden
+            >
+                Vaciar carrito
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <div
+        class="carrito-confirmacion"
+        id="carritoConfirmacion"
+        aria-live="polite"
+        aria-hidden="true"
+    >
+
+        <div class="carrito-confirmacion__icono">
+            <i class="bi bi-check-lg"></i>
+        </div>
+
+        <div>
+            <strong>Agregado al carrito</strong>
+            <span id="carritoConfirmacionTexto"></span>
+        </div>
+
+    </div>
+
+
+    <a
+        href="https://wa.me/56900000000"
+        class="whatsapp-flotante"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Contactar por WhatsApp"
+    >
+        <i class="bi bi-whatsapp"></i>
+
+        <span>
+            ¿Necesitas ayuda?
+        </span>
+    </a>
+
+
+    <button
+        type="button"
+        class="volver-arriba"
+        id="volverArriba"
+        aria-label="Volver al inicio"
+        title="Volver al inicio"
+    >
+        <i class="bi bi-chevron-up"></i>
+    </button>
+
+
+    {% if messages %}
+
+        <div class="mensajes-django">
+
+            {% for message in messages %}
+
+                <div class="mensaje mensaje--{{ message.tags }}">
+
+                    <span>
+                        {{ message }}
+                    </span>
+
+                    <button
+                        type="button"
+                        class="mensaje__cerrar"
+                        aria-label="Cerrar mensaje"
+                    >
+                        Cerrar
+                    </button>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <form
+        id="formularioCsrf"
+        hidden
+        aria-hidden="true"
+    >
+        {% csrf_token %}
+    </form>
+
+
+    <!-- =====================================================
+         CONFIRMACIÓN NATIVA PARA CERRAR SESIÓN
+    ====================================================== -->
+
+    <dialog
+        class="logout-dialog"
+        id="logoutModal"
+        aria-labelledby="logoutModalTitulo"
+        aria-describedby="logoutModalDescripcion"
+    >
+
+        <section class="logout-dialog__tarjeta">
+
+            <button
+                type="button"
+                class="logout-dialog__cerrar"
+                id="cerrarLogoutModal"
+                aria-label="Cerrar confirmación"
+                title="Cerrar confirmación"
+            >
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+
+            <div
+                class="logout-dialog__icono"
+                aria-hidden="true"
+            >
+                <i class="bi bi-box-arrow-right"></i>
+            </div>
+
+
+            <span class="logout-dialog__etiqueta">
+                Mi cuenta Audex
+            </span>
+
+
+            <h2 id="logoutModalTitulo">
+                ¿Cerrar sesión?
+            </h2>
+
+
+            <p id="logoutModalDescripcion">
+                Estás a punto de cerrar tu sesión.
+                Para volver a revisar tus compras tendrás
+                que iniciar sesión nuevamente.
+            </p>
+
+
+            <div class="logout-dialog__acciones">
+
+                <button
+                    type="button"
+                    class="boton boton--secundario"
+                    id="cancelarLogout"
+                >
+                    Permanecer conectado
+                </button>
+
+
+                <button
+                    type="button"
+                    class="logout-dialog__confirmar"
+                    id="confirmarLogout"
+                >
+                    Cerrar sesión
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+
+            </div>
+
+        </section>
+
+    </dialog>
+
+
+    <script src="{% static 'core/js/app.js' %}?v=11"></script>
+
+    <script src="{% static 'core/js/carrito.js' %}?v=4"></script>
+
+    <script src="{% static 'core/js/logout.js' %}?v=6"></script>
+
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+
+</html>

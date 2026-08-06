@@ -1,0 +1,226 @@
+{% extends 'core/base.html' %}
+{% load static humanize %}
+
+{% block title %}
+    Seguimiento de pedido | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/pedidos.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="pedidos-pagina">
+
+    <div class="contenedor">
+
+        {% if not pedido %}
+
+            <div class="buscar-pedido">
+
+                <div class="buscar-pedido__icono">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+
+                <span class="etiqueta-seccion">
+                    Seguimiento Audex
+                </span>
+
+                <h1>¿Dónde está tu pedido?</h1>
+
+                <p>
+                    Ingresa el número del pedido y el correo
+                    utilizado al realizar la compra.
+                </p>
+
+
+                <form method="post" class="buscar-pedido__form">
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+
+                        <div class="form-error">
+                            {{ form.non_field_errors }}
+                        </div>
+
+                    {% endif %}
+
+                    <div class="campo">
+                        <label for="{{ form.numero.id_for_label }}">
+                            {{ form.numero.label }}
+                        </label>
+
+                        {{ form.numero }}
+
+                        {{ form.numero.errors }}
+                    </div>
+
+                    <div class="campo">
+                        <label for="{{ form.email.id_for_label }}">
+                            {{ form.email.label }}
+                        </label>
+
+                        {{ form.email }}
+
+                        {{ form.email.errors }}
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="boton boton--primario boton--completo"
+                    >
+                        Buscar pedido
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                </form>
+
+            </div>
+
+        {% else %}
+
+            <header class="seguimiento-cabecera">
+
+                <div>
+                    <span class="etiqueta-seccion">
+                        <i class="bi bi-box-seam"></i>
+                        Seguimiento
+                    </span>
+
+                    <h1>{{ pedido.numero }}</h1>
+
+                    <p>
+                        Pedido realizado el
+                        {{ pedido.creado|date:"d/m/Y H:i" }}.
+                    </p>
+                </div>
+
+                <span
+                    class="
+                        pedido-estado
+                        pedido-estado--{{ pedido.estado }}
+                    "
+                >
+                    {{ pedido.get_estado_display }}
+                </span>
+
+            </header>
+
+
+            <div class="seguimiento-grid">
+
+                <article class="seguimiento-tarjeta">
+
+                    <h2>Estado de tu pedido</h2>
+
+                    <div class="timeline-pedido">
+
+                        {% for paso in timeline %}
+
+                            <div
+                                class="
+                                    timeline-paso
+                                    {% if paso.completado %}
+                                        timeline-paso--completado
+                                    {% endif %}
+                                    {% if paso.activo %}
+                                        timeline-paso--activo
+                                    {% endif %}
+                                "
+                            >
+
+                                <div class="timeline-paso__icono">
+                                    <i class="bi {{ paso.icono }}"></i>
+                                </div>
+
+                                <div>
+                                    <strong>{{ paso.titulo }}</strong>
+
+                                    <p>{{ paso.descripcion }}</p>
+
+                                    {% if paso.fecha %}
+                                        <time>
+                                            {{ paso.fecha|date:"d/m/Y H:i" }}
+                                        </time>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </article>
+
+
+                <aside class="seguimiento-lateral">
+
+                    <article class="seguimiento-tarjeta">
+
+                        <h2>Resumen</h2>
+
+                        {% for item in pedido.items.all %}
+
+                            <div class="seguimiento-producto">
+
+                                <span>
+                                    {{ item.nombre_producto }}
+                                    × {{ item.cantidad }}
+                                </span>
+
+                                <strong>
+                                    ${{ item.total|floatformat:0|intcomma }}
+                                </strong>
+
+                            </div>
+
+                        {% endfor %}
+
+                        <div class="seguimiento-total">
+                            <span>Total</span>
+
+                            <strong>
+                                ${{ pedido.total|floatformat:0|intcomma }}
+                            </strong>
+                        </div>
+
+                    </article>
+
+
+                    <article class="seguimiento-tarjeta">
+
+                        <h2>Dirección de despacho</h2>
+
+                        <p>
+                            {{ pedido.direccion }}
+                            {{ pedido.numero_direccion }}
+
+                            {% if pedido.departamento %}
+                                , {{ pedido.departamento }}
+                            {% endif %}
+
+                            <br>
+
+                            {{ pedido.comuna }},
+                            {{ pedido.region }}
+                        </p>
+
+                    </article>
+
+                </aside>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

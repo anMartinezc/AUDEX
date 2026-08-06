@@ -1,0 +1,344 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}
+    Confirmar correo | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/cuenta.css' %}?v=3"
+    >
+
+    <style>
+    .cuenta-login__acciones {
+        margin-top: 24px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .cuenta-login__enlace {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 48px;
+        padding: 0 18px;
+        color: var(--color-azul-claro);
+        font-size: 0.8rem;
+        font-weight: 800;
+        border: 1px solid var(--borde-azul);
+        border-radius: 14px;
+        background: rgba(54, 169, 214, 0.07);
+        transition:
+            color var(--transicion),
+            border-color var(--transicion),
+            background var(--transicion),
+            transform var(--transicion);
+    }
+
+    .cuenta-login__enlace:hover {
+        color: var(--color-blanco);
+        border-color: rgba(54, 169, 214, 0.55);
+        background: rgba(54, 169, 214, 0.14);
+        transform: translateY(-2px);
+    }
+
+    .cuenta-login__mensaje {
+        margin: 22px 0 0;
+        padding: 16px 18px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        color: var(--color-gris-claro);
+        font-size: 0.78rem;
+        line-height: 1.6;
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.025);
+    }
+
+    .cuenta-login__mensaje i {
+        margin-top: 2px;
+        color: var(--color-azul-claro);
+        font-size: 1rem;
+    }
+
+    .cuenta-login__mensaje--error {
+        border-color: rgba(255, 91, 101, 0.28);
+        background: rgba(255, 91, 101, 0.07);
+    }
+
+    .cuenta-login__mensaje--error i {
+        color: #ff9ca4;
+    }
+
+    .cuenta-login__correo {
+        color: var(--color-blanco);
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .cuenta-formulario__errores {
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        color: #ffb3ba;
+        font-size: 0.76rem;
+        line-height: 1.55;
+        border: 1px solid rgba(255, 91, 101, 0.28);
+        border-radius: 14px;
+        background: rgba(255, 91, 101, 0.07);
+    }
+
+    .cuenta-formulario__errores ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .cuenta-login__separador {
+        position: relative;
+        margin: 24px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cuenta-login__separador::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--borde);
+    }
+
+    .cuenta-login__separador span {
+        position: relative;
+        z-index: 1;
+        padding: 0 13px;
+        color: var(--color-gris);
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: var(--color-fondo-secundario);
+    }
+
+    .cuenta-login__google-form {
+        width: 100%;
+        margin: 0;
+    }
+
+    .cuenta-login__google {
+        width: 100%;
+        min-height: 52px;
+        padding: 0 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 11px;
+        color: var(--color-blanco);
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 800;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.045);
+        transition:
+            border-color var(--transicion),
+            background var(--transicion),
+            transform var(--transicion);
+    }
+
+    .cuenta-login__google:hover {
+        border-color: var(--borde-azul);
+        background: rgba(54, 169, 214, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .cuenta-login__google i {
+        color: var(--color-azul-claro);
+        font-size: 1.05rem;
+    }
+
+    @media (max-width: 560px) {
+        .cuenta-login__acciones {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="cuenta-pagina">
+
+    <div class="contenedor">
+
+        <div class="cuenta-login">
+
+            <div class="cuenta-login__visual">
+
+                <span class="etiqueta-seccion">
+                    <i class="bi bi-patch-check"></i>
+                    Verificación de correo
+                </span>
+
+                <h1>
+                    Confirma tu
+                    <span>cuenta.</span>
+                </h1>
+
+                <p>
+                    La verificación protege tu identidad y permite
+                    recuperar tu acceso de forma segura.
+                </p>
+
+                <div class="cuenta-login__beneficios">
+
+                    <div>
+                        <i class="bi bi-shield-check"></i>
+                        <span>Protección de tu identidad</span>
+                    </div>
+
+                    <div>
+                        <i class="bi bi-envelope-check"></i>
+                        <span>Correo asociado de forma segura</span>
+                    </div>
+
+                    <div>
+                        <i class="bi bi-bag-check"></i>
+                        <span>Acceso a tus compras y pedidos</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="cuenta-login__formulario">
+
+                {% if confirmation %}
+
+                    <div class="cuenta-login__icono">
+                        <i class="bi bi-patch-check"></i>
+                    </div>
+
+                    <span class="cuenta-login__eyebrow">
+                        Confirmación de identidad
+                    </span>
+
+                    <h2>
+                        Confirmar correo electrónico
+                    </h2>
+
+                    <p>
+                        Confirma que deseas asociar esta dirección
+                        a tu cuenta Audex:
+                    </p>
+
+
+                    <div class="cuenta-login__mensaje">
+
+                        <i class="bi bi-envelope"></i>
+
+                        <span class="cuenta-login__correo">
+                            {{ confirmation.email_address.email }}
+                        </span>
+
+                    </div>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'account_confirm_email' confirmation.key %}"
+                        class="cuenta-formulario"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="boton boton--primario boton--completo"
+                        >
+                            Confirmar correo
+                            <i class="bi bi-check2-circle"></i>
+                        </button>
+
+                    </form>
+
+
+                    <div class="cuenta-login__acciones">
+
+                        <a
+                            href="{% url 'core:inicio' %}"
+                            class="cuenta-login__enlace"
+                        >
+                            Cancelar y volver al inicio
+                        </a>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="cuenta-login__icono">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+
+                    <span class="cuenta-login__eyebrow">
+                        Enlace no disponible
+                    </span>
+
+                    <h2>
+                        No pudimos confirmar el correo
+                    </h2>
+
+                    <p>
+                        Este enlace venció, ya fue utilizado
+                        o no corresponde a una confirmación válida.
+                    </p>
+
+
+                    <div class="cuenta-login__mensaje cuenta-login__mensaje--error">
+
+                        <i class="bi bi-exclamation-circle"></i>
+
+                        <span>
+                            Inicia sesión para solicitar una nueva
+                            verificación de correo.
+                        </span>
+
+                    </div>
+
+
+                    <div class="cuenta-login__acciones">
+
+                        <a
+                            href="{% url 'core:login' %}"
+                            class="boton boton--primario boton--completo"
+                        >
+                            Iniciar sesión
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+
+                        <a
+                            href="{% url 'core:inicio' %}"
+                            class="cuenta-login__enlace"
+                        >
+                            Volver al inicio
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

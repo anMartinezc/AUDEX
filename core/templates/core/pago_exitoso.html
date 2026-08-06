@@ -1,0 +1,754 @@
+{% extends 'core/base.html' %}
+{% load static humanize %}
+
+
+{% block title %}
+    Compra confirmada | Audex
+{% endblock %}
+
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/pago_exitoso.css' %}?v=6"
+    >
+{% endblock %}
+
+
+{% block content %}
+
+<section class="pago-exitoso">
+
+    <div class="contenedor">
+
+        <!-- =====================================================
+             CABECERA DE CONFIRMACIÓN
+        ====================================================== -->
+
+        <div class="pago-exitoso__hero">
+
+            <div class="pago-exitoso__brillo"></div>
+
+            <div class="pago-exitoso__contenido">
+
+                <div class="pago-exitoso__icono">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+
+                <span class="hero__etiqueta pago-exitoso__etiqueta">
+                    <i class="bi bi-shield-check"></i>
+                    Pago confirmado
+                </span>
+
+                <h1>
+                    ¡Tu compra fue
+                    <span>confirmada!</span>
+                </h1>
+
+                <p class="pago-exitoso__descripcion">
+                    Recibimos correctamente el pago de tu pedido.
+                    Ahora comenzaremos a preparar tus productos para
+                    enviarlos lo antes posible.
+                </p>
+
+                <div class="pago-exitoso__numero">
+
+                    <span>
+                        Número de pedido
+                    </span>
+
+                    <strong>
+                        {{ pedido.numero }}
+                    </strong>
+
+                    <button
+                        type="button"
+                        class="pago-exitoso__copiar"
+                        data-numero-pedido="{{ pedido.numero }}"
+                        aria-label="Copiar número del pedido"
+                        title="Copiar número del pedido"
+                    >
+                        <i class="bi bi-copy"></i>
+                    </button>
+
+                </div>
+
+                <div class="pago-exitoso__acciones">
+
+                    <a
+                        href="/productos/"
+                        class="boton boton--primario"
+                    >
+                        Seguir comprando
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                    <a
+                        href="/"
+                        class="boton boton--secundario"
+                    >
+                        <i class="bi bi-house"></i>
+                        Volver al inicio
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             RESUMEN DEL PEDIDO
+        ====================================================== -->
+
+        <div class="pago-exitoso__grid">
+
+            <article class="pago-tarjeta pago-tarjeta--productos">
+
+                <div class="pago-tarjeta__encabezado">
+
+                    <div>
+                        <span class="etiqueta-seccion">
+                            <i class="bi bi-bag-check"></i>
+                            Resumen del pedido
+                        </span>
+
+                        <h2>
+                            Productos comprados
+                        </h2>
+                    </div>
+
+                    <span class="pago-tarjeta__estado">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Confirmado
+                    </span>
+
+                </div>
+
+
+                <div class="pago-productos">
+
+                    {% for item in pedido.items.all %}
+
+                        <article class="pago-producto">
+
+                            <div class="pago-producto__imagen">
+
+                                {% if item.producto and item.producto.imagen_mostrable %}
+
+                                    <img
+                                        src="{{ item.producto.imagen_mostrable }}"
+                                        alt="{{ item.nombre_producto }}"
+                                        loading="lazy"
+                                    >
+
+                                {% else %}
+
+                                    <div class="pago-producto__sin-imagen">
+                                        <i class="bi bi-headphones"></i>
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="pago-producto__informacion">
+
+                                <span class="pago-producto__categoria">
+
+                                    {% if item.producto and item.producto.categoria %}
+                                        {{ item.producto.categoria.nombre }}
+                                    {% else %}
+                                        Producto Audex
+                                    {% endif %}
+
+                                </span>
+
+                                <h3>
+                                    {{ item.nombre_producto }}
+                                </h3>
+
+                                <p>
+                                    Cantidad:
+                                    <strong>
+                                        {{ item.cantidad }}
+                                    </strong>
+                                </p>
+
+                                <span class="pago-producto__unitario">
+                                    Precio unitario:
+                                    ${{ item.precio_unitario|floatformat:0|intcomma }}
+                                </span>
+
+                            </div>
+
+
+                            <strong class="pago-producto__total">
+                                ${{ item.total|floatformat:0|intcomma }}
+                            </strong>
+
+                        </article>
+
+                    {% empty %}
+
+                        <div class="pago-productos__vacio">
+
+                            <i class="bi bi-box-seam"></i>
+
+                            <p>
+                                No se encontraron productos asociados
+                                al pedido.
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- TOTALES -->
+
+                <div class="pago-totales">
+
+                    <div class="pago-totales__fila">
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <strong>
+                            ${{ pedido.subtotal|floatformat:0|intcomma }}
+                        </strong>
+                    </div>
+
+
+                    {% if pedido.descuento > 0 %}
+
+                        <div
+                            class="
+                                pago-totales__fila
+                                pago-totales__fila--descuento
+                            "
+                        >
+                            <span>
+                                <i class="bi bi-tag"></i>
+                                Descuento
+                            </span>
+
+                            <strong>
+                                -${{ pedido.descuento|floatformat:0|intcomma }}
+                            </strong>
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="pago-totales__fila">
+
+                        <span>
+                            Despacho
+                        </span>
+
+                        <strong>
+                            {% if pedido.despacho > 0 %}
+                                ${{ pedido.despacho|floatformat:0|intcomma }}
+                            {% else %}
+                                Gratis
+                            {% endif %}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="pago-totales__separador"></div>
+
+
+                    <div
+                        class="
+                            pago-totales__fila
+                            pago-totales__fila--total
+                        "
+                    >
+                        <span>
+                            Total pagado
+                        </span>
+
+                        <strong>
+                            ${{ pedido.total|floatformat:0|intcomma }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- =================================================
+                 COLUMNA DERECHA
+            ================================================== -->
+
+            <aside class="pago-exitoso__lateral">
+
+                <!-- ESTADO DEL PEDIDO -->
+
+                <article class="pago-tarjeta">
+
+                    <div class="pago-tarjeta__icono">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+
+                    <span class="pago-tarjeta__eyebrow">
+                        Estado del pedido
+                    </span>
+
+                    <h2>
+                        Comenzamos a prepararlo
+                    </h2>
+
+                    <div class="pago-seguimiento">
+
+                        <div
+                            class="
+                                pago-seguimiento__item
+                                pago-seguimiento__item--activo
+                            "
+                        >
+
+                            <div class="pago-seguimiento__punto">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Pago confirmado
+                                </strong>
+
+                                <span>
+                                    Tu pago fue procesado correctamente.
+                                </span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="pago-seguimiento__linea"></div>
+
+
+                        <div class="pago-seguimiento__item">
+
+                            <div class="pago-seguimiento__punto">
+                                <i class="bi bi-box"></i>
+                            </div>
+
+                            <div>
+                                <strong>
+                                    En preparación
+                                </strong>
+
+                                <span>
+                                    Nuestro equipo preparará tu pedido.
+                                </span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="pago-seguimiento__linea"></div>
+
+
+                        <div class="pago-seguimiento__item">
+
+                            <div class="pago-seguimiento__punto">
+                                <i class="bi bi-truck"></i>
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Despacho
+                                </strong>
+
+                                <span>
+                                    Recibirás el seguimiento por correo.
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+
+                <!-- INFORMACIÓN DE PAGO -->
+
+                <article class="pago-tarjeta">
+
+                    <div class="pago-tarjeta__icono">
+                        <i class="bi bi-credit-card-2-front"></i>
+                    </div>
+
+                    <span class="pago-tarjeta__eyebrow">
+                        Información del pago
+                    </span>
+
+                    <h2>
+                        Mercado Pago
+                    </h2>
+
+                    <div class="pago-datos">
+
+                        <div class="pago-datos__fila">
+
+                            <span>
+                                Estado
+                            </span>
+
+                            <strong class="pago-datos__aprobado">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Aprobado
+                            </strong>
+
+                        </div>
+
+
+                        {% if pedido.mercadopago_payment_id %}
+
+                            <div class="pago-datos__fila">
+
+                                <span>
+                                    ID de pago
+                                </span>
+
+                                <strong>
+                                    {{ pedido.mercadopago_payment_id }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if pedido.fecha_pago %}
+
+                            <div class="pago-datos__fila">
+
+                                <span>
+                                    Fecha
+                                </span>
+
+                                <strong>
+                                    {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if pedido.mercadopago_payment_type %}
+
+                            <div class="pago-datos__fila">
+
+                                <span>
+                                    Medio
+                                </span>
+
+                                <strong>
+                                    {{ pedido.mercadopago_payment_type }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if pedido.mercadopago_transaction_amount %}
+
+                            <div class="pago-datos__fila">
+
+                                <span>
+                                    Monto
+                                </span>
+
+                                <strong>
+                                    ${{ pedido.mercadopago_transaction_amount|floatformat:0|intcomma }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+
+                <!-- CONFIRMACIÓN POR CORREO -->
+
+                <article class="pago-tarjeta">
+
+                    <div class="pago-tarjeta__icono">
+                        <i class="bi bi-envelope-check"></i>
+                    </div>
+
+                    <span class="pago-tarjeta__eyebrow">
+                        Confirmación
+                    </span>
+
+
+                    {% if pedido.correo_confirmacion_enviado %}
+
+                        <h2>
+                            Correo enviado
+                        </h2>
+
+                        <p class="pago-tarjeta__texto">
+                            Enviamos la confirmación de compra a:
+                        </p>
+
+                    {% else %}
+
+                        <h2>
+                            Correo en preparación
+                        </h2>
+
+                        <p class="pago-tarjeta__texto">
+                            Te enviaremos la confirmación y las novedades
+                            del pedido a:
+                        </p>
+
+                    {% endif %}
+
+
+                    <strong class="pago-tarjeta__correo">
+                        {{ pedido.email }}
+                    </strong>
+
+                </article>
+
+            </aside>
+
+        </div>
+
+
+        <!-- =====================================================
+             DIRECCIÓN DE DESPACHO
+        ====================================================== -->
+
+        <article class="pago-direccion">
+
+            <div class="pago-direccion__icono">
+                <i class="bi bi-geo-alt"></i>
+            </div>
+
+            <div class="pago-direccion__contenido">
+
+                <span class="pago-tarjeta__eyebrow">
+                    Dirección de despacho
+                </span>
+
+                <h2>
+                    {{ pedido.nombre }}
+                    {{ pedido.apellido }}
+                </h2>
+
+                <p>
+                    {{ pedido.direccion }}
+                    {{ pedido.numero_direccion }}
+
+                    {% if pedido.departamento %}
+                        , {{ pedido.departamento }}
+                    {% endif %}
+
+                    <br>
+
+                    {{ pedido.comuna }},
+                    {{ pedido.region }}
+                </p>
+
+
+                {% if pedido.referencia %}
+
+                    <span class="pago-direccion__referencia">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        {{ pedido.referencia }}
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            <div class="pago-direccion__escudo">
+
+                <i class="bi bi-shield-check"></i>
+
+                <span>
+                    Información protegida
+                </span>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     BENEFICIOS
+========================================================== -->
+
+<section class="beneficios pago-beneficios">
+
+    <div class="contenedor beneficios__grid">
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-truck"></i>
+            </div>
+
+            <div>
+                <h3>
+                    Despacho seguro
+                </h3>
+
+                <p>
+                    Prepararemos tu pedido con cuidado para
+                    que llegue en perfectas condiciones.
+                </p>
+            </div>
+
+        </article>
+
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-envelope-check"></i>
+            </div>
+
+            <div>
+                <h3>
+                    Notificaciones
+                </h3>
+
+                <p>
+                    Recibirás las novedades y el seguimiento
+                    directamente en tu correo.
+                </p>
+            </div>
+
+        </article>
+
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-shield-check"></i>
+            </div>
+
+            <div>
+                <h3>
+                    Compra protegida
+                </h3>
+
+                <p>
+                    Tu pago fue procesado de manera segura
+                    mediante Mercado Pago.
+                </p>
+            </div>
+
+        </article>
+
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-headset"></i>
+            </div>
+
+            <div>
+                <h3>
+                    ¿Necesitas ayuda?
+                </h3>
+
+                <p>
+                    Nuestro equipo está disponible para ayudarte
+                    con cualquier duda sobre el pedido.
+                </p>
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const botonCopiar = document.querySelector(
+            ".pago-exitoso__copiar"
+        );
+
+        if (!botonCopiar) {
+            return;
+        }
+
+        botonCopiar.addEventListener("click", async () => {
+            const numeroPedido =
+                botonCopiar.dataset.numeroPedido;
+
+            try {
+                await navigator.clipboard.writeText(
+                    numeroPedido
+                );
+
+                botonCopiar.innerHTML =
+                    '<i class="bi bi-check-lg"></i>';
+
+                botonCopiar.classList.add(
+                    "pago-exitoso__copiar--correcto"
+                );
+
+                botonCopiar.setAttribute(
+                    "aria-label",
+                    "Número copiado"
+                );
+
+                window.setTimeout(() => {
+                    botonCopiar.innerHTML =
+                        '<i class="bi bi-copy"></i>';
+
+                    botonCopiar.classList.remove(
+                        "pago-exitoso__copiar--correcto"
+                    );
+
+                    botonCopiar.setAttribute(
+                        "aria-label",
+                        "Copiar número del pedido"
+                    );
+                }, 1800);
+
+            } catch (error) {
+                console.error(
+                    "No fue posible copiar el pedido:",
+                    error
+                );
+            }
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,347 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+
+{% block title %}
+    Mis favoritos | Audex
+{% endblock %}
+
+
+{% block extra_css %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/cuenta_usuario.css' %}?v=1"
+    >
+
+{% endblock %}
+
+
+{% block content %}
+
+<section
+    class="cuenta-usuario-pagina"
+    id="favoritosPagina"
+    data-url-alternar="{% url 'core:favorito_alternar' %}"
+>
+
+    <div class="contenedor">
+
+        <header class="cuenta-usuario-cabecera">
+
+            <div class="cuenta-usuario-cabecera__texto">
+
+                <span class="etiqueta-seccion">
+                    <i class="bi bi-heart"></i>
+                    Selección personal
+                </span>
+
+                <h1>
+                    Mis favoritos
+                </h1>
+
+                <p>
+                    Guarda los productos que te interesan y vuelve
+                    a encontrarlos rápidamente cuando quieras.
+                </p>
+
+            </div>
+
+
+            <div class="cuenta-usuario-cabecera__resumen">
+
+                <span>
+                    Productos guardados
+                </span>
+
+                <strong id="favoritosPaginaCantidad">
+                    {{ cantidad_favoritos }}
+                </strong>
+
+            </div>
+
+        </header>
+
+
+        <nav
+            class="cuenta-usuario-nav"
+            aria-label="Navegación de mi cuenta"
+        >
+
+            {% if request.user.is_authenticated %}
+
+                <a href="{% url 'core:mi_perfil' %}">
+                    <i class="bi bi-person"></i>
+                    Mi perfil
+                </a>
+
+                <a href="{% url 'core:mis_compras' %}">
+                    <i class="bi bi-bag-check"></i>
+                    Mis compras
+                </a>
+
+            {% else %}
+
+                <a href="{% url 'core:login' %}">
+                    <i class="bi bi-person"></i>
+                    Iniciar sesión
+                </a>
+
+            {% endif %}
+
+            <a
+                href="{% url 'core:mis_favoritos' %}"
+                class="cuenta-usuario-nav__activo"
+                aria-current="page"
+            >
+                <i class="bi bi-heart-fill"></i>
+                Mis favoritos
+            </a>
+
+        </nav>
+
+
+        {% if not request.user.is_authenticated %}
+
+            <div class="favoritos-sesion-aviso">
+
+                <i class="bi bi-info-circle"></i>
+
+                <div>
+                    <strong>
+                        Tus favoritos están guardados en este navegador.
+                    </strong>
+
+                    <p>
+                        Inicia sesión para sincronizarlos con tu cuenta
+                        y recuperarlos desde otros dispositivos.
+                    </p>
+                </div>
+
+                <a href="{% url 'core:login' %}">
+                    Iniciar sesión
+                </a>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if productos_favoritos %}
+
+            <div
+                class="favoritos-grid"
+                id="favoritosPaginaGrid"
+            >
+
+                {% for producto in productos_favoritos %}
+
+                    <article
+                        class="favorito-card"
+                        data-favorito-item="{{ producto.id }}"
+                    >
+
+                        <div class="favorito-card__media">
+
+                            <a
+                                href="{{ producto.get_absolute_url }}"
+                                class="favorito-card__imagen"
+                            >
+
+                                {% if producto.imagen_mostrable %}
+
+                                    <img
+                                        src="{{ producto.imagen_mostrable }}"
+                                        alt="{{ producto.nombre }}"
+                                        loading="lazy"
+                                    >
+
+                                {% else %}
+
+                                    <div class="favorito-card__sin-imagen">
+                                        <i class="bi bi-earbuds"></i>
+                                        <span>
+                                            Imagen no disponible
+                                        </span>
+                                    </div>
+
+                                {% endif %}
+
+                            </a>
+
+
+                            {% if producto.en_oferta %}
+
+                                <span class="favorito-card__oferta">
+                                    -{{ producto.porcentaje_descuento }}%
+                                </span>
+
+                            {% endif %}
+
+
+                            <button
+                                type="button"
+                                class="favorito-card__quitar js-quitar-favorito-pagina"
+                                data-producto-id="{{ producto.id }}"
+                                aria-label="Eliminar {{ producto.nombre }} de favoritos"
+                                title="Eliminar de favoritos"
+                            >
+                                <i class="bi bi-heart-fill"></i>
+                            </button>
+
+                        </div>
+
+
+                        <div class="favorito-card__contenido">
+
+                            <div class="favorito-card__encabezado">
+
+                                <span>
+                                    {{ producto.categoria.nombre }}
+                                </span>
+
+                                {% if producto.stock > 0 %}
+
+                                    <small class="favorito-card__stock favorito-card__stock--disponible">
+                                        Disponible
+                                    </small>
+
+                                {% else %}
+
+                                    <small class="favorito-card__stock favorito-card__stock--agotado">
+                                        Agotado
+                                    </small>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <h2>
+                                <a href="{{ producto.get_absolute_url }}">
+                                    {{ producto.nombre }}
+                                </a>
+                            </h2>
+
+
+                            <p class="favorito-card__descripcion">
+                                {{ producto.descripcion_corta }}
+                            </p>
+
+
+                            <div class="favorito-card__precio">
+
+                                {% if producto.en_oferta %}
+
+                                    <span>
+                                        ${{ producto.precio|floatformat:0|intcomma }}
+                                    </span>
+
+                                    <strong>
+                                        ${{ producto.precio_oferta|floatformat:0|intcomma }}
+                                    </strong>
+
+                                {% else %}
+
+                                    <strong>
+                                        ${{ producto.precio|floatformat:0|intcomma }}
+                                    </strong>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="favorito-card__acciones">
+
+                                <a
+                                    href="{{ producto.get_absolute_url }}"
+                                    class="favorito-card__detalle"
+                                >
+                                    Ver detalle
+                                </a>
+
+                                <button
+                                    type="button"
+                                    class="agregar-carrito favorito-card__carrito"
+                                    data-producto-id="{{ producto.id }}"
+                                    data-producto="{{ producto.nombre|escape }}"
+                                    data-cantidad="1"
+                                    data-stock="{{ producto.stock }}"
+                                    {% if producto.stock <= 0 %}
+                                        disabled
+                                        aria-disabled="true"
+                                    {% else %}
+                                        aria-disabled="false"
+                                    {% endif %}
+                                >
+                                    <i class="bi bi-bag-plus"></i>
+
+                                    <span>
+                                        {% if producto.stock > 0 %}
+                                            Agregar
+                                        {% else %}
+                                            Sin stock
+                                        {% endif %}
+                                    </span>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <div
+            class="favoritos-vacio"
+            id="favoritosPaginaVacio"
+            {% if productos_favoritos %}
+                hidden
+            {% endif %}
+        >
+
+            <div class="favoritos-vacio__icono">
+                <i class="bi bi-heart"></i>
+            </div>
+
+            <h2>
+                Aún no tienes favoritos
+            </h2>
+
+            <p>
+                Explora el catálogo y presiona el corazón
+                de los productos que quieras guardar.
+            </p>
+
+            <a
+                href="{% url 'core:productos' %}"
+                class="boton boton--primario"
+            >
+                Explorar productos
+                <i class="bi bi-arrow-right"></i>
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script
+    src="{% static 'core/js/favoritos_pagina.js' %}?v=1"
+></script>
+
+{% endblock %}

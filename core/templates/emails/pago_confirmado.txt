@@ -1,0 +1,47 @@
+{% load humanize %}
+
+PAGO CONFIRMADO · AUDEX
+
+Hola {{ pedido.nombre_completo }},
+
+Recibimos correctamente el pago de tu pedido {{ pedido.numero }}.
+
+RESUMEN DEL PEDIDO
+------------------
+
+{% for item in items %}
+{{ item.nombre_producto }}
+{{ item.cantidad }} × ${{ item.precio_unitario|floatformat:0|intcomma }}
+Total: ${{ item.total|floatformat:0|intcomma }}
+
+{% endfor %}
+
+Subtotal: ${{ pedido.subtotal|floatformat:0|intcomma }}
+
+{% if pedido.descuento > 0 %}
+Descuento: -${{ pedido.descuento|floatformat:0|intcomma }}
+{% endif %}
+
+{% if pedido.despacho > 0 %}
+Despacho: ${{ pedido.despacho|floatformat:0|intcomma }}
+{% else %}
+Despacho: Gratis
+{% endif %}
+
+TOTAL PAGADO: ${{ pedido.total|floatformat:0|intcomma }}
+
+Método de pago: {{ pedido.get_metodo_pago_display }}
+
+DIRECCIÓN DE DESPACHO
+---------------------
+{{ pedido.nombre_completo }}
+{{ pedido.direccion_completa }}
+
+{% if pedido.referencia %}
+Referencia: {{ pedido.referencia }}
+{% endif %}
+
+Te avisaremos cuando tu pedido cambie de estado.
+
+Audex
+Contigo a todas

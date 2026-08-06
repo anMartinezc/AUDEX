@@ -1,0 +1,232 @@
+{% extends 'core/base.html' %}
+{% load static humanize %}
+
+{% block title %}
+    {{ pedido.numero }} | Gestión Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/pedidos.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="gestion-pedidos">
+
+    <div class="contenedor">
+
+        <a
+            href="{% url 'core:panel_pedidos' %}"
+            class="gestion-volver"
+        >
+            <i class="bi bi-arrow-left"></i>
+            Volver a las bandejas
+        </a>
+
+
+        <header class="detalle-admin__cabecera">
+
+            <div>
+                <span class="etiqueta-seccion">
+                    Pedido
+                </span>
+
+                <h1>{{ pedido.numero }}</h1>
+
+                <p>
+                    {{ pedido.nombre }}
+                    {{ pedido.apellido }}
+                </p>
+            </div>
+
+            <span
+                class="
+                    pedido-estado
+                    pedido-estado--{{ pedido.estado }}
+                "
+            >
+                {{ pedido.get_estado_display }}
+            </span>
+
+        </header>
+
+
+        <div class="detalle-admin__grid">
+
+            <div class="detalle-admin__principal">
+
+                <article class="seguimiento-tarjeta">
+
+                    <h2>Productos</h2>
+
+                    {% for item in pedido.items.all %}
+
+                        <div class="seguimiento-producto">
+                            <span>
+                                {{ item.nombre_producto }}
+                                × {{ item.cantidad }}
+                            </span>
+
+                            <strong>
+                                ${{ item.total|floatformat:0|intcomma }}
+                            </strong>
+                        </div>
+
+                    {% endfor %}
+
+                    <div class="seguimiento-total">
+                        <span>Total</span>
+
+                        <strong>
+                            ${{ pedido.total|floatformat:0|intcomma }}
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <article class="seguimiento-tarjeta">
+
+                    <h2>Historial del pedido</h2>
+
+                    <div class="historial-estados">
+
+                        {% for movimiento in historial %}
+
+                            <div class="historial-estado">
+
+                                <div class="historial-estado__punto"></div>
+
+                                <div>
+                                    <strong>
+                                        {{ movimiento.get_estado_nuevo_display }}
+                                    </strong>
+
+                                    <time>
+                                        {{ movimiento.creado|date:"d/m/Y H:i" }}
+                                    </time>
+
+                                    {% if movimiento.comentario %}
+                                        <p>
+                                            {{ movimiento.comentario }}
+                                        </p>
+                                    {% endif %}
+
+                                    {% if movimiento.usuario %}
+                                        <small>
+                                            Actualizado por
+                                            {{ movimiento.usuario }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+
+                        {% empty %}
+                            <p>No existen movimientos registrados.</p>
+                        {% endfor %}
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <aside class="detalle-admin__lateral">
+
+                <article class="seguimiento-tarjeta">
+
+                    <h2>Avanzar pedido</h2>
+
+                    {% if form.nuevo_estado.field.choices %}
+
+                        <form method="post" class="form-admin">
+
+                            {% csrf_token %}
+
+                            {{ form.non_field_errors }}
+
+                            <div class="campo">
+                                {{ form.nuevo_estado.label_tag }}
+                                {{ form.nuevo_estado }}
+                                {{ form.nuevo_estado.errors }}
+                            </div>
+
+                            <div class="campo">
+                                {{ form.comentario.label_tag }}
+                                {{ form.comentario }}
+                                {{ form.comentario.errors }}
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="boton boton--primario boton--completo"
+                            >
+                                Actualizar estado
+                            </button>
+
+                        </form>
+
+                    {% else %}
+
+                        <p>
+                            Este pedido se encuentra cerrado
+                            y no tiene más fases disponibles.
+                        </p>
+
+                    {% endif %}
+
+                </article>
+
+
+                <article class="seguimiento-tarjeta">
+
+                    <h2>Cliente</h2>
+
+                    <p>
+                        <strong>
+                            {{ pedido.nombre }}
+                            {{ pedido.apellido }}
+                        </strong>
+                    </p>
+
+                    <p>{{ pedido.rut }}</p>
+                    <p>{{ pedido.email }}</p>
+                    <p>{{ pedido.telefono }}</p>
+
+                </article>
+
+
+                <article class="seguimiento-tarjeta">
+
+                    <h2>Despacho</h2>
+
+                    <p>
+                        {{ pedido.direccion }}
+                        {{ pedido.numero_direccion }}
+
+                        {% if pedido.departamento %}
+                            , {{ pedido.departamento }}
+                        {% endif %}
+
+                        <br>
+
+                        {{ pedido.comuna }},
+                        {{ pedido.region }}
+                    </p>
+
+                </article>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,354 @@
+.gd {
+    min-height: 100vh;
+    padding: 65px 0 110px;
+
+    background:
+        radial-gradient(
+            circle at 85% 5%,
+            rgba(54, 169, 214, 0.13),
+            transparent 30%
+        ),
+        #070c11;
+}
+
+.gd__contenedor {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.gd__cabecera > span,
+.gd__panel > header span {
+    display: block;
+    margin-bottom: 7px;
+
+    color: #83d8f3;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.gd__cabecera h1 {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(2.4rem, 5vw, 4.6rem);
+    line-height: 1;
+    letter-spacing: -0.055em;
+}
+
+.gd__cabecera p,
+.gd__panel header p {
+    max-width: 760px;
+    margin: 14px 0 0;
+
+    color: #93a6b2;
+}
+
+.gd__kpis {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+}
+
+.gd__kpis article,
+.gd__panel {
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 19px;
+    background: #0d1720;
+}
+
+.gd__kpis article {
+    padding: 18px;
+}
+
+.gd__kpis span {
+    display: block;
+
+    color: #93a6b2;
+    font-size: 0.68rem;
+}
+
+.gd__kpis strong {
+    display: block;
+    margin-top: 7px;
+
+    color: #ffffff;
+    font-size: 1.45rem;
+}
+
+.gd__configuraciones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.gd__panel {
+    padding: 24px;
+    overflow: hidden;
+}
+
+.gd__panel h2 {
+    margin: 0;
+}
+
+.gd__formulario {
+    margin-top: 22px;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.gd__formulario label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.gd__formulario label > span {
+    color: #b8c9d1;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.gd__formulario input,
+.gd__formulario select,
+.gd__filtros input,
+.gd__filtros select {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 13px;
+
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 12px;
+    outline: none;
+    background: #132330;
+}
+
+.gd__formulario input:focus,
+.gd__formulario select:focus,
+.gd__filtros input:focus,
+.gd__filtros select:focus {
+    border-color: #36a9d6;
+}
+
+.gd__formulario input[type="checkbox"] {
+    width: 20px;
+    min-height: 20px;
+    accent-color: #83d8f3;
+}
+
+.gd__formulario small {
+    color: #93a6b2;
+    font-size: 0.63rem;
+}
+
+.gd__formulario > button {
+    min-height: 50px;
+    padding: 0 18px;
+    grid-column: 1 / -1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    color: #061017;
+    font-weight: 800;
+
+    border-radius: 13px;
+    background: linear-gradient(135deg, #83d8f3, #36a9d6);
+}
+
+.gd__tabla-cabecera {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.gd__filtros {
+    display: grid;
+    grid-template-columns: 220px 140px 140px auto;
+    gap: 8px;
+}
+
+.gd__filtros button,
+.gd__accion {
+    padding: 0 12px;
+
+    color: #83d8f3;
+    font-weight: 700;
+
+    border: 1px solid rgba(131, 216, 243, 0.22);
+    border-radius: 10px;
+    background: rgba(54, 169, 214, 0.08);
+}
+
+.gd__tabla-scroll {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.gd__tabla {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.gd__tabla th,
+.gd__tabla td {
+    padding: 13px 15px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.gd__tabla th {
+    color: #93a6b2;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    background: #101d27;
+}
+
+.gd__tabla td {
+    color: #b8c9d1;
+    font-size: 0.75rem;
+}
+
+.gd__tabla td > strong,
+.gd__tabla td > small {
+    display: block;
+}
+
+.gd__tabla td > strong {
+    color: #83d8f3;
+}
+
+.gd__tabla td > small {
+    margin-top: 3px;
+    color: #80959f;
+}
+
+.gd__estado {
+    padding: 5px 8px;
+    display: inline-flex;
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 999px;
+}
+
+.gd__estado--activo {
+    color: #7ce8a6;
+    background: rgba(52, 211, 122, 0.11);
+}
+
+.gd__estado--inactivo {
+    color: #ff8992;
+    background: rgba(255, 91, 101, 0.11);
+}
+
+.gd__estado--usado {
+    color: #83d8f3;
+    background: rgba(54, 169, 214, 0.12);
+}
+
+.gd__progreso {
+    width: 140px;
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.gd__progreso span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #36a9d6, #83d8f3);
+}
+
+.gd__usos {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.gd__uso {
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    background: #101d27;
+}
+
+.gd__uso summary {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    cursor: pointer;
+}
+
+.gd__uso summary > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.gd__uso summary strong {
+    color: #83d8f3;
+}
+
+.gd__uso summary span {
+    color: #93a6b2;
+    font-size: 0.7rem;
+}
+
+.gd__uso-resumen {
+    padding: 13px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    color: #b8c9d1;
+    font-size: 0.72rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+@media (max-width: 1100px) {
+    .gd__kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .gd__configuraciones {
+        grid-template-columns: 1fr;
+    }
+
+    .gd__tabla-cabecera {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .gd__filtros {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .gd__kpis,
+    .gd__formulario,
+    .gd__filtros {
+        grid-template-columns: 1fr;
+    }
+
+    .gd__uso summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

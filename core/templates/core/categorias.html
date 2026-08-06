@@ -1,0 +1,196 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+Categorías | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/categorias.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="categorias-hero">
+    <div class="contenedor categorias-hero__contenido">
+        <span class="etiqueta-seccion">
+            Compra según tu estilo
+        </span>
+
+        <h1>
+            Una categoría para
+            <span>cada forma de escuchar.</span>
+        </h1>
+
+        <p>
+            Encuentra audífonos para entrenar, viajar, trabajar,
+            jugar o disfrutar tu música favorita.
+        </p>
+    </div>
+</section>
+
+<section class="categorias-principales" id="categorias">
+    <div class="contenedor categorias-grid">
+
+        <article
+            class="categoria-card categoria-card--grande"
+            data-categoria="inalambricos"
+        >
+            <div class="categoria-card__contenido">
+                <span>Uso diario</span>
+                <h2>Inalámbricos</h2>
+
+                <p>
+                    Libertad total, llamadas claras y música
+                    sin cables.
+                </p>
+
+                <a href="{% url 'core:productos' %}">
+                    Ver modelos
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <img
+                src="https://m.media-amazon.com/images/I/61JJP+Mp5CL._AC_SL1500_.jpg"
+                alt="Audífonos inalámbricos EarFun"
+            >
+        </article>
+
+        <article
+            class="categoria-card"
+            data-categoria="over-ear"
+        >
+            <div class="categoria-card__contenido">
+                <span>Sonido envolvente</span>
+                <h2>Over-ear</h2>
+
+                <p>
+                    Máxima comodidad y aislamiento para sesiones largas.
+                </p>
+
+                <a href="{% url 'core:productos' %}">
+                    Explorar
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <img
+                src="https://m.media-amazon.com/images/I/61OfxWbSPfL._AC_SL1500_.jpg"
+                alt="Audífonos over-ear EarFun"
+            >
+        </article>
+
+        <article
+            class="categoria-card"
+            data-categoria="deportivos"
+        >
+            <div class="categoria-card__contenido">
+                <span>Movimiento</span>
+                <h2>Deportivos</h2>
+
+                <p>
+                    Ajuste seguro y resistencia para acompañar
+                    cada entrenamiento.
+                </p>
+
+                <a href="{% url 'core:productos' %}">
+                    Explorar
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <img
+                src="https://m.media-amazon.com/images/I/61-F3VX4FlL._AC_SL1500_.jpg"
+                alt="Audífonos deportivos EarFun"
+            >
+        </article>
+
+        <article
+            class="categoria-card categoria-card--horizontal"
+            data-categoria="cancelacion"
+        >
+            <div class="categoria-card__contenido">
+                <span>Concentración total</span>
+                <h2>Cancelación de ruido</h2>
+
+                <p>
+                    Reduce el ruido exterior y disfruta cada detalle.
+                </p>
+
+                <a href="{% url 'core:productos' %}">
+                    Ver audífonos ANC
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <img
+                src="https://m.media-amazon.com/images/I/61vzw-XR3cL._AC_SL1500_.jpg"
+                alt="Audífonos con cancelación de ruido"
+            >
+        </article>
+
+    </div>
+</section>
+
+<section class="selector-uso">
+    <div class="contenedor">
+        <div class="selector-uso__encabezado">
+            <span class="etiqueta-seccion">
+                Recomendador Audex
+            </span>
+
+            <h2>¿Para qué usarás tus audífonos?</h2>
+
+            <p>
+                Selecciona una opción y te mostraremos
+                nuestra recomendación.
+            </p>
+        </div>
+
+        <div class="selector-uso__botones">
+            <button data-uso="trabajo">
+                <i class="bi bi-laptop"></i>
+                Trabajo
+            </button>
+
+            <button data-uso="deporte">
+                <i class="bi bi-activity"></i>
+                Deporte
+            </button>
+
+            <button data-uso="viajes">
+                <i class="bi bi-airplane"></i>
+                Viajes
+            </button>
+
+            <button data-uso="gaming">
+                <i class="bi bi-controller"></i>
+                Gaming
+            </button>
+        </div>
+
+        <div class="recomendacion" id="recomendacionCategoria">
+            <div class="recomendacion__icono">
+                <i class="bi bi-headphones"></i>
+            </div>
+
+            <div>
+                <span>Recomendación Audex</span>
+                <h3>Selecciona una actividad</h3>
+                <p>
+                    Te ayudaremos a encontrar el modelo más adecuado.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/categorias.js' %}"></script>
+{% endblock %}

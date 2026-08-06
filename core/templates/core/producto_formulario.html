@@ -1,0 +1,199 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+{% if object %}
+Editar producto
+{% else %}
+Nuevo producto
+{% endif %}
+| Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/administracion.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="administracion">
+    <div class="contenedor administracion__contenedor">
+
+        <div class="administracion__encabezado">
+            <a
+                href="{% url 'core:productos' %}"
+                class="administracion__volver"
+            >
+                <i class="bi bi-arrow-left"></i>
+                Volver al catálogo
+            </a>
+
+            <span class="etiqueta-seccion">
+                Gestión de catálogo
+            </span>
+
+            <h1>
+                {% if object %}
+                    Editar producto
+                {% else %}
+                    Crear nuevo producto
+                {% endif %}
+            </h1>
+
+            <p>
+                Completa la información que se mostrará
+                en el catálogo de Audex.
+            </p>
+        </div>
+
+        <form
+            method="post"
+            enctype="multipart/form-data"
+            class="formulario-administracion"
+            novalidate
+        >
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="errores-formulario">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <section class="grupo-formulario">
+                <div class="grupo-formulario__titulo">
+                    <i class="bi bi-info-circle"></i>
+
+                    <div>
+                        <h2>Información principal</h2>
+                        <p>Nombre, categoría y descripción.</p>
+                    </div>
+                </div>
+
+                <div class="formulario-grid">
+                    {% include "core/includes/campo_formulario.html" with campo=form.categoria %}
+                    {% include "core/includes/campo_formulario.html" with campo=form.nombre %}
+                </div>
+
+                {% include "core/includes/campo_formulario.html" with campo=form.descripcion_corta %}
+                {% include "core/includes/campo_formulario.html" with campo=form.descripcion %}
+            </section>
+
+            <section class="grupo-formulario">
+                <div class="grupo-formulario__titulo">
+                    <i class="bi bi-image"></i>
+
+                    <div>
+                        <h2>Imagen</h2>
+                        <p>
+                            Puedes subir una imagen o usar una URL externa.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="formulario-grid">
+                    {% include "core/includes/campo_formulario.html" with campo=form.imagen %}
+                    {% include "core/includes/campo_formulario.html" with campo=form.imagen_url %}
+                </div>
+            </section>
+
+            <section class="grupo-formulario">
+                <div class="grupo-formulario__titulo">
+                    <i class="bi bi-currency-dollar"></i>
+
+                    <div>
+                        <h2>Precio y disponibilidad</h2>
+                        <p>
+                            Deja el precio oferta vacío cuando no exista descuento.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="formulario-grid formulario-grid--tres">
+                    {% include "core/includes/campo_formulario.html" with campo=form.precio %}
+                    {% include "core/includes/campo_formulario.html" with campo=form.precio_oferta %}
+                    {% include "core/includes/campo_formulario.html" with campo=form.stock %}
+                </div>
+            </section>
+
+            <section class="grupo-formulario">
+                <div class="grupo-formulario__titulo">
+                    <i class="bi bi-list-check"></i>
+
+                    <div>
+                        <h2>Características</h2>
+                        <p>
+                            Estas características aparecerán en la tarjeta.
+                        </p>
+                    </div>
+                </div>
+
+                {% include "core/includes/campo_formulario.html" with campo=form.caracteristica_1 %}
+                {% include "core/includes/campo_formulario.html" with campo=form.caracteristica_2 %}
+                {% include "core/includes/campo_formulario.html" with campo=form.caracteristica_3 %}
+
+                <div class="formulario-grid formulario-grid--tres">
+                    {% include "core/includes/campo_formulario.html" with campo=form.autonomia_horas %}
+                    {% include "core/includes/campo_formulario.html" with campo=form.bluetooth %}
+                    {% include "core/includes/campo_formulario.html" with campo=form.resistencia_agua %}
+                </div>
+            </section>
+
+            <section class="grupo-formulario">
+                <div class="grupo-formulario__titulo">
+                    <i class="bi bi-sliders"></i>
+
+                    <div>
+                        <h2>Configuración</h2>
+                        <p>Visibilidad y condiciones especiales.</p>
+                    </div>
+                </div>
+
+                <div class="opciones-formulario">
+                    <label>
+                        {{ form.cancelacion_ruido }}
+                        <span>Cancelación de ruido</span>
+                    </label>
+
+                    <label>
+                        {{ form.destacado }}
+                        <span>Producto destacado</span>
+                    </label>
+
+                    <label>
+                        {{ form.activo }}
+                        <span>Producto visible</span>
+                    </label>
+                </div>
+            </section>
+
+            <div class="formulario-acciones">
+                <a
+                    href="{% url 'core:productos' %}"
+                    class="boton boton--secundario"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-check-lg"></i>
+
+                    {% if object %}
+                        Guardar cambios
+                    {% else %}
+                        Crear producto
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

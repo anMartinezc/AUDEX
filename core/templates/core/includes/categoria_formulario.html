@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+Nueva categoría | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/administracion.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="administracion">
+    <div class="contenedor administracion__contenedor">
+
+        <div class="administracion__encabezado">
+            <a
+                href="{% url 'core:productos' %}"
+                class="administracion__volver"
+            >
+                <i class="bi bi-arrow-left"></i>
+                Volver al catálogo
+            </a>
+
+            <span class="etiqueta-seccion">
+                Organización del catálogo
+            </span>
+
+            <h1>Nueva categoría</h1>
+
+            <p>
+                Crea una categoría para agrupar productos relacionados.
+            </p>
+        </div>
+
+        <form
+            method="post"
+            class="formulario-administracion"
+            novalidate
+        >
+            {% csrf_token %}
+
+            <section class="grupo-formulario">
+                {% include "core/includes/campo_formulario.html" with campo=form.nombre %}
+                {% include "core/includes/campo_formulario.html" with campo=form.descripcion %}
+
+                <div class="formulario-grid">
+                    {% include "core/includes/campo_formulario.html" with campo=form.orden %}
+
+                    <div class="opciones-formulario">
+                        <label>
+                            {{ form.activa }}
+                            <span>Categoría activa</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <div class="formulario-acciones">
+                <a
+                    href="{% url 'core:productos' %}"
+                    class="boton boton--secundario"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-check-lg"></i>
+                    Crear categoría
+                </button>
+            </div>
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

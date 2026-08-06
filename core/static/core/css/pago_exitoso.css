@@ -1,0 +1,919 @@
+/* =========================================================
+   PÁGINA DE PAGO EXITOSO
+========================================================= */
+
+.pago-exitoso {
+    position: relative;
+    overflow: hidden;
+
+    padding: 75px 0 90px;
+}
+
+.pago-exitoso::before {
+    content: "";
+
+    position: absolute;
+    top: -250px;
+    left: 50%;
+
+    width: 850px;
+    height: 620px;
+
+    border-radius: 50%;
+
+    background: radial-gradient(
+        circle,
+        rgba(54, 169, 214, 0.17),
+        transparent 68%
+    );
+
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+
+/* -----------------------------
+   HERO DE CONFIRMACIÓN
+----------------------------- */
+
+.pago-exitoso__hero {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 520px;
+    padding: 75px 35px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: var(--radio-grande);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(54, 169, 214, 0.14),
+            rgba(13, 23, 32, 0.75) 48%,
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--color-fondo-secundario);
+
+    box-shadow:
+        var(--sombra),
+        var(--sombra-azul);
+}
+
+.pago-exitoso__hero::before,
+.pago-exitoso__hero::after {
+    content: "";
+
+    position: absolute;
+
+    border: 1px solid rgba(131, 216, 243, 0.11);
+    border-radius: 50%;
+}
+
+.pago-exitoso__hero::before {
+    width: 490px;
+    height: 490px;
+
+    right: -210px;
+    top: -220px;
+}
+
+.pago-exitoso__hero::after {
+    width: 330px;
+    height: 330px;
+
+    left: -160px;
+    bottom: -180px;
+}
+
+.pago-exitoso__brillo {
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(131, 216, 243, 0.08),
+            transparent 38%
+        );
+
+    pointer-events: none;
+}
+
+.pago-exitoso__contenido {
+    position: relative;
+    z-index: 2;
+
+    max-width: 780px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+
+    animation: pagoAparecer 0.7s ease both;
+}
+
+.pago-exitoso__icono {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 28px;
+
+    display: grid;
+    place-items: center;
+
+    color: #041017;
+    font-size: 2.7rem;
+
+    border: 7px solid rgba(131, 216, 243, 0.12);
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        var(--color-azul-claro),
+        var(--color-azul)
+    );
+
+    box-shadow:
+        0 0 0 11px rgba(54, 169, 214, 0.055),
+        0 24px 55px rgba(54, 169, 214, 0.28);
+
+    animation: pagoCheck 0.75s ease both;
+}
+
+.pago-exitoso__etiqueta {
+    margin-bottom: 23px;
+}
+
+.pago-exitoso__contenido h1 {
+    max-width: 760px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(2.8rem, 6vw, 5.4rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+}
+
+.pago-exitoso__contenido h1 span {
+    display: block;
+
+    margin-top: 10px;
+
+    background: linear-gradient(
+        90deg,
+        var(--color-azul-claro),
+        var(--color-azul),
+        #d8f4ff
+    );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+}
+
+.pago-exitoso__descripcion {
+    max-width: 640px;
+
+    margin-top: 26px;
+
+    color: var(--color-gris-claro);
+    font-size: 1.02rem;
+    line-height: 1.75;
+}
+
+.pago-exitoso__numero {
+    margin-top: 30px;
+    padding: 12px 13px 12px 18px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 13px;
+
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+
+    background: rgba(5, 10, 14, 0.5);
+    backdrop-filter: blur(12px);
+}
+
+.pago-exitoso__numero > span {
+    color: var(--color-gris);
+    font-size: 0.76rem;
+}
+
+.pago-exitoso__numero > strong {
+    color: var(--color-blanco);
+    font-size: 0.87rem;
+    letter-spacing: 0.07em;
+}
+
+.pago-exitoso__copiar {
+    width: 37px;
+    height: 37px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-azul-claro);
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 10px;
+
+    background: rgba(54, 169, 214, 0.08);
+
+    transition:
+        color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.pago-exitoso__copiar:hover {
+    color: #041017;
+
+    background: var(--color-azul-claro);
+
+    transform: translateY(-2px);
+}
+
+.pago-exitoso__copiar--correcto {
+    color: #051017;
+    background: #69e49b;
+}
+
+.pago-exitoso__acciones {
+    margin-top: 30px;
+
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 13px;
+}
+
+
+/* -----------------------------
+   GRID PRINCIPAL
+----------------------------- */
+
+.pago-exitoso__grid {
+    margin-top: 28px;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+}
+
+.pago-exitoso__lateral {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 18px;
+}
+
+.pago-exitoso__lateral .pago-tarjeta {
+    height: 100%;
+}
+
+/* -----------------------------
+   TARJETAS
+----------------------------- */
+
+.pago-tarjeta {
+    padding: 28px;
+
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-medio);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(54, 169, 214, 0.035),
+            transparent 45%
+        ),
+        var(--color-fondo-secundario);
+
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+
+    transition:
+        border-color var(--transicion),
+        transform var(--transicion),
+        box-shadow var(--transicion);
+}
+
+.pago-tarjeta:hover {
+    border-color: var(--borde-azul);
+
+    box-shadow:
+        0 22px 52px rgba(0, 0, 0, 0.28),
+        0 18px 40px rgba(54, 169, 214, 0.07);
+
+    transform: translateY(-3px);
+}
+
+.pago-tarjeta--productos {
+    padding: 32px;
+}
+
+.pago-tarjeta__encabezado {
+    margin-bottom: 28px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.pago-tarjeta__encabezado .etiqueta-seccion {
+    margin-bottom: 13px;
+}
+
+.pago-tarjeta h2,
+.pago-direccion h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 1.35rem;
+    line-height: 1.25;
+}
+
+.pago-tarjeta__estado {
+    min-height: 34px;
+    padding: 7px 12px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #74e5a1;
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    border: 1px solid rgba(37, 211, 102, 0.25);
+    border-radius: 999px;
+
+    background: rgba(37, 211, 102, 0.07);
+}
+
+.pago-tarjeta__icono {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 20px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-azul-claro);
+    font-size: 1.3rem;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 15px;
+
+    background: rgba(54, 169, 214, 0.09);
+}
+
+.pago-tarjeta__eyebrow {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--color-azul-claro);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.pago-tarjeta__texto {
+    margin-top: 12px;
+
+    color: var(--color-gris);
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+.pago-tarjeta__correo {
+    display: block;
+
+    margin-top: 11px;
+
+    color: var(--color-blanco);
+    font-size: 0.83rem;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* -----------------------------
+   PRODUCTOS COMPRADOS
+----------------------------- */
+
+.pago-productos {
+    display: grid;
+}
+
+.pago-producto {
+    padding: 20px 0;
+
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 17px;
+
+    border-bottom: 1px solid var(--borde);
+}
+
+.pago-producto:first-child {
+    padding-top: 0;
+}
+
+.pago-producto__imagen {
+    width: 88px;
+    height: 94px;
+    padding: 9px;
+
+    overflow: hidden;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(54, 169, 214, 0.13),
+            transparent 68%
+        ),
+        #eef2f4;
+}
+
+.pago-producto__imagen img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+}
+
+.pago-producto__sin-imagen {
+    color: var(--color-azul-medio);
+    font-size: 2rem;
+}
+
+.pago-producto__categoria {
+    color: var(--color-azul-claro);
+    font-size: 0.59rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pago-producto__informacion h3 {
+    margin: 6px 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.94rem;
+    line-height: 1.35;
+}
+
+.pago-producto__informacion p,
+.pago-producto__unitario {
+    color: var(--color-gris);
+    font-size: 0.72rem;
+}
+
+.pago-producto__informacion p strong {
+    color: var(--color-gris-claro);
+}
+
+.pago-producto__unitario {
+    display: block;
+    margin-top: 4px;
+}
+
+.pago-producto__total {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.95rem;
+}
+
+.pago-productos__vacio {
+    min-height: 180px;
+
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 15px;
+
+    color: var(--color-gris);
+
+    text-align: center;
+}
+
+.pago-productos__vacio i {
+    color: var(--color-azul-claro);
+    font-size: 2rem;
+}
+
+
+/* -----------------------------
+   TOTALES
+----------------------------- */
+
+.pago-totales {
+    margin-top: 26px;
+
+    display: grid;
+    gap: 13px;
+}
+
+.pago-totales__fila {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    color: var(--color-gris);
+    font-size: 0.82rem;
+}
+
+.pago-totales__fila strong {
+    color: var(--color-gris-claro);
+}
+
+.pago-totales__fila--descuento,
+.pago-totales__fila--descuento strong {
+    color: #74e5a1;
+}
+
+.pago-totales__separador {
+    height: 1px;
+    margin: 6px 0;
+
+    background: var(--borde);
+}
+
+.pago-totales__fila--total {
+    color: var(--color-blanco);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.pago-totales__fila--total strong {
+    color: var(--color-azul-claro);
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 1.55rem;
+}
+
+
+/* -----------------------------
+   SEGUIMIENTO
+----------------------------- */
+
+.pago-seguimiento {
+    margin-top: 24px;
+}
+
+.pago-seguimiento__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    opacity: 0.48;
+}
+
+.pago-seguimiento__item--activo {
+    opacity: 1;
+}
+
+.pago-seguimiento__punto {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-gris);
+    font-size: 0.78rem;
+
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.pago-seguimiento__item--activo .pago-seguimiento__punto {
+    color: #041017;
+
+    border-color: transparent;
+    background: var(--color-azul-claro);
+
+    box-shadow: 0 8px 22px rgba(54, 169, 214, 0.2);
+}
+
+.pago-seguimiento__item strong {
+    display: block;
+    margin-bottom: 4px;
+
+    font-size: 0.81rem;
+}
+
+.pago-seguimiento__item span {
+    color: var(--color-gris);
+    font-size: 0.7rem;
+    line-height: 1.45;
+}
+
+.pago-seguimiento__linea {
+    width: 1px;
+    height: 28px;
+
+    margin: 5px 0 5px 16px;
+
+    background: var(--borde);
+}
+
+
+/* -----------------------------
+   INFORMACIÓN DE PAGO
+----------------------------- */
+
+.pago-datos {
+    margin-top: 21px;
+
+    display: grid;
+    gap: 13px;
+}
+
+.pago-datos__fila {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+
+    color: var(--color-gris);
+    font-size: 0.73rem;
+}
+
+.pago-datos__fila strong {
+    max-width: 180px;
+
+    color: var(--color-gris-claro);
+
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.pago-datos__aprobado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #74e5a1 !important;
+}
+
+
+/* -----------------------------
+   DIRECCIÓN
+----------------------------- */
+
+.pago-direccion {
+    margin-top: 22px;
+    padding: 28px 31px;
+
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-medio);
+
+    background:
+        linear-gradient(
+            110deg,
+            rgba(54, 169, 214, 0.08),
+            rgba(255, 255, 255, 0.018)
+        ),
+        var(--color-fondo-secundario);
+}
+
+.pago-direccion__icono {
+    width: 54px;
+    height: 54px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-azul-claro);
+    font-size: 1.35rem;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 16px;
+
+    background: rgba(54, 169, 214, 0.08);
+}
+
+.pago-direccion__contenido p {
+    margin-top: 9px;
+
+    color: var(--color-gris-claro);
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+.pago-direccion__referencia {
+    margin-top: 10px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: var(--color-gris);
+    font-size: 0.7rem;
+}
+
+.pago-direccion__referencia i {
+    color: var(--color-azul-claro);
+}
+
+.pago-direccion__escudo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    color: var(--color-gris);
+    font-size: 0.7rem;
+}
+
+.pago-direccion__escudo i {
+    color: #74e5a1;
+    font-size: 1.2rem;
+}
+
+
+/* -----------------------------
+   BENEFICIOS
+----------------------------- */
+
+.pago-beneficios {
+    padding-top: 65px;
+}
+
+
+/* -----------------------------
+   ANIMACIONES
+----------------------------- */
+
+@keyframes pagoAparecer {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pagoCheck {
+    0% {
+        opacity: 0;
+        transform: scale(0.45) rotate(-18deg);
+    }
+
+    65% {
+        transform: scale(1.12) rotate(4deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+
+/* -----------------------------
+   RESPONSIVE
+----------------------------- */
+
+@media (max-width: 960px) {
+    .pago-exitoso__lateral {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pago-exitoso__lateral .pago-tarjeta:first-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .pago-exitoso {
+        padding: 35px 0 65px;
+    }
+
+    .pago-exitoso__hero {
+        min-height: auto;
+        padding: 55px 20px;
+    }
+
+    .pago-exitoso__contenido h1 {
+        font-size: clamp(2.65rem, 13vw, 4rem);
+    }
+
+    .pago-exitoso__descripcion {
+        font-size: 0.9rem;
+    }
+
+    .pago-exitoso__numero {
+        width: 100%;
+
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pago-exitoso__acciones {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .pago-exitoso__acciones .boton {
+        width: 100%;
+    }
+
+    .pago-tarjeta,
+    .pago-tarjeta--productos {
+        padding: 23px 20px;
+    }
+
+    .pago-tarjeta__encabezado {
+        flex-direction: column;
+    }
+
+    .pago-exitoso__lateral {
+        grid-template-columns: 1fr;
+    }
+
+    .pago-exitoso__lateral .pago-tarjeta:first-child {
+        grid-column: auto;
+    }
+
+    .pago-producto {
+        grid-template-columns: 76px minmax(0, 1fr);
+    }
+
+    .pago-producto__imagen {
+        width: 76px;
+        height: 84px;
+    }
+
+    .pago-producto__total {
+        grid-column: 2;
+    }
+
+    .pago-direccion {
+        grid-template-columns: 48px minmax(0, 1fr);
+        padding: 24px 20px;
+    }
+
+    .pago-direccion__icono {
+        width: 48px;
+        height: 48px;
+    }
+
+    .pago-direccion__escudo {
+        grid-column: 1 / -1;
+
+        padding-top: 18px;
+
+        border-top: 1px solid var(--borde);
+    }
+}
+
+@media (max-width: 430px) {
+    .pago-exitoso__numero > span {
+        width: 100%;
+
+        text-align: center;
+    }
+
+    .pago-producto {
+        grid-template-columns: 66px minmax(0, 1fr);
+        gap: 13px;
+    }
+
+    .pago-producto__imagen {
+        width: 66px;
+        height: 76px;
+    }
+
+    .pago-totales__fila--total strong {
+        font-size: 1.3rem;
+    }
+}

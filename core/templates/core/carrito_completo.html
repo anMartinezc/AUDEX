@@ -1,0 +1,486 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+Tu carrito | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/carrito_completo.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section
+    class="carrito-pagina"
+    id="carritoPagina"
+    data-url-estado="{% url 'core:carrito_estado' %}"
+    data-url-actualizar="{% url 'core:carrito_actualizar' %}"
+    data-url-eliminar="{% url 'core:carrito_eliminar' %}"
+    data-url-vaciar="{% url 'core:carrito_vaciar' %}"
+>
+
+    <div class="contenedor">
+
+        <!-- Breadcrumb -->
+        <nav
+            class="carrito-pagina__breadcrumb"
+            aria-label="Migas de navegación"
+        >
+            <a href="{% url 'core:inicio' %}">
+                Inicio
+            </a>
+
+            <i class="bi bi-chevron-right"></i>
+
+            <a href="{% url 'core:productos' %}">
+                Productos
+            </a>
+
+            <i class="bi bi-chevron-right"></i>
+
+            <span>Carrito</span>
+        </nav>
+
+        <!-- Cabecera -->
+        <header class="carrito-pagina__cabecera">
+
+            <div>
+                <span class="etiqueta-seccion">
+                    Tu selección
+                </span>
+
+                <h1>Carrito de compras</h1>
+
+                <p>
+                    Revisa tus productos, ajusta las cantidades
+                    y confirma el resumen antes de continuar.
+                </p>
+            </div>
+
+            <a
+                href="{% url 'core:productos' %}"
+                class="carrito-seguir-comprando"
+            >
+                <i class="bi bi-arrow-left"></i>
+                Seguir comprando
+            </a>
+
+        </header>
+
+        <!-- Pasos -->
+        <div class="carrito-pasos">
+
+            <article class="carrito-paso carrito-paso--activo">
+                <span>1</span>
+
+                <div>
+                    <strong>Carrito</strong>
+                    <small>Revisa tu compra</small>
+                </div>
+            </article>
+
+            <span class="carrito-pasos__linea"></span>
+
+            <article class="carrito-paso">
+                <span>2</span>
+
+                <div>
+                    <strong>Datos</strong>
+                    <small>Información de entrega</small>
+                </div>
+            </article>
+
+            <span class="carrito-pasos__linea"></span>
+
+            <article class="carrito-paso">
+                <span>3</span>
+
+                <div>
+                    <strong>Pago</strong>
+                    <small>Finalizar pedido</small>
+                </div>
+            </article>
+
+        </div>
+
+        <!-- Contenido -->
+        <div class="carrito-pagina__grid">
+
+            <!-- Productos -->
+            <section class="carrito-listado">
+
+                <div class="carrito-listado__encabezado">
+                    <div>
+                        <h2>Productos</h2>
+
+                        <span id="carritoPaginaCantidad">
+                            {{ carrito.cantidad_total }}
+                            producto{{ carrito.cantidad_total|pluralize }}
+                        </span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="carrito-pagina-vaciar"
+                        id="carritoPaginaVaciar"
+                        {% if carrito.vacio %}
+                            hidden
+                        {% endif %}
+                    >
+                        <i class="bi bi-trash3"></i>
+                        Vaciar carrito
+                    </button>
+                </div>
+
+                <div
+                    class="carrito-listado__productos"
+                    id="carritoPaginaProductos"
+                    aria-live="polite"
+                >
+                    {% if carrito.vacio %}
+
+                        <div class="carrito-pagina-vacio">
+                            <div class="carrito-pagina-vacio__icono">
+                                <i class="bi bi-bag"></i>
+                            </div>
+
+                            <h2>Tu carrito está vacío</h2>
+
+                            <p>
+                                Explora nuestro catálogo y agrega los
+                                audífonos que más te gusten.
+                            </p>
+
+                            <a
+                                href="{% url 'core:productos' %}"
+                                class="boton boton--primario"
+                            >
+                                Explorar productos
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+
+                    {% else %}
+
+                        {% for item in carrito.items %}
+
+                            <article
+                                class="carrito-producto"
+                                data-producto-id="{{ item.id }}"
+                            >
+
+                                <a
+                                    href="{{ item.url_detalle }}"
+                                    class="carrito-producto__imagen"
+                                >
+                                    {% if item.imagen %}
+                                        <img
+                                            src="{{ item.imagen }}"
+                                            alt="{{ item.nombre }}"
+                                        >
+                                    {% else %}
+                                        <i class="bi bi-earbuds"></i>
+                                    {% endif %}
+                                </a>
+
+                                <div class="carrito-producto__informacion">
+
+                                    <div class="carrito-producto__superior">
+
+                                        <div>
+                                            <div class="carrito-producto__etiquetas">
+
+                                                <span class="carrito-producto__categoria">
+                                                    {{ item.categoria }}
+                                                </span>
+
+                                                {% if item.en_oferta %}
+                                                    <span class="carrito-producto__oferta">
+                                                        Oferta
+                                                    </span>
+                                                {% endif %}
+
+                                            </div>
+
+                                            <h3>
+                                                <a href="{{ item.url_detalle }}">
+                                                    {{ item.nombre }}
+                                                </a>
+                                            </h3>
+
+                                            <span class="carrito-producto__unitario">
+                                                Precio unitario:
+                                                {{ item.precio_formateado }}
+                                            </span>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            class="carrito-producto__eliminar"
+                                            data-carrito-pagina-accion="eliminar"
+                                            aria-label="Eliminar {{ item.nombre }}"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+
+                                    </div>
+
+                                    <div class="carrito-producto__inferior">
+
+                                        <div class="carrito-producto__cantidad">
+
+                                            <span>Cantidad</span>
+
+                                            <div>
+                                                <button
+                                                    type="button"
+                                                    data-carrito-pagina-accion="restar"
+                                                    aria-label="Disminuir cantidad"
+                                                >
+                                                    <i class="bi bi-dash-lg"></i>
+                                                </button>
+
+                                                <strong>
+                                                    {{ item.cantidad }}
+                                                </strong>
+
+                                                <button
+                                                    type="button"
+                                                    data-carrito-pagina-accion="sumar"
+                                                    aria-label="Aumentar cantidad"
+                                                    {% if item.cantidad >= item.stock %}
+                                                        disabled
+                                                    {% endif %}
+                                                >
+                                                    <i class="bi bi-plus-lg"></i>
+                                                </button>
+                                            </div>
+
+                                            <small>
+                                                {{ item.stock }}
+                                                unidades disponibles
+                                            </small>
+
+                                        </div>
+
+                                        <div class="carrito-producto__total">
+                                            <span>Total</span>
+
+                                            <strong>
+                                                {{ item.total_formateado }}
+                                            </strong>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </article>
+
+                        {% endfor %}
+
+                    {% endif %}
+                </div>
+
+                <!-- Beneficios -->
+                <div class="carrito-listado__beneficios">
+
+                    <article>
+                        <i class="bi bi-shield-check"></i>
+
+                        <div>
+                            <strong>Compra protegida</strong>
+                            <span>Transacción segura</span>
+                        </div>
+                    </article>
+
+                    <article>
+                        <i class="bi bi-arrow-repeat"></i>
+
+                        <div>
+                            <strong>Cambios simples</strong>
+                            <span>Consulta las condiciones</span>
+                        </div>
+                    </article>
+
+                    <article>
+                        <i class="bi bi-headset"></i>
+
+                        <div>
+                            <strong>Atención Audex</strong>
+                            <span>Asesoría durante tu compra</span>
+                        </div>
+                    </article>
+
+                </div>
+
+            </section>
+
+            <!-- Resumen -->
+            <aside class="carrito-resumen">
+
+                <div class="carrito-resumen__titulo">
+                    <div>
+                        <span>Resumen</span>
+                        <h2>Tu pedido</h2>
+                    </div>
+
+                    <i class="bi bi-receipt"></i>
+                </div>
+
+                <!-- Despacho gratis -->
+                <div class="carrito-resumen__envio">
+
+                    <p id="carritoPaginaMensajeEnvio">
+                        {% if carrito.subtotal >= 50000 %}
+                            <i class="bi bi-check-circle-fill"></i>
+                            ¡Tienes despacho gratis!
+                        {% else %}
+                            Te faltan
+                            ${{ 50000|add:carrito.subtotal|stringformat:"d" }}
+                            para despacho gratis.
+                        {% endif %}
+                    </p>
+
+                    <div class="carrito-resumen__progreso">
+                        <span id="carritoPaginaProgreso"></span>
+                    </div>
+
+                </div>
+
+                <!-- Cupón 
+                <div class="carrito-cupon">
+                    <label for="codigoDescuento">
+                        ¿Tienes un código de descuento?
+                    </label>
+
+                    <div>
+                        <input
+                            type="text"
+                            id="codigoDescuento"
+                            placeholder="Ejemplo: AUDEX10"
+                            autocomplete="off"
+                        >
+
+                        <button
+                            type="button"
+                            id="aplicarCodigoDescuento"
+                        >
+                            Aplicar
+                        </button>
+                    </div>
+
+                    <small id="mensajeCodigoDescuento"></small>
+                </div>   -->
+
+                <!-- Valores -->
+                <div class="carrito-resumen__valores">
+
+                    <div>
+                        <span>Subtotal</span>
+
+                        <strong id="carritoPaginaSubtotal">
+                            {{ carrito.subtotal_formateado }}
+                        </strong>
+                    </div>
+
+                    <div
+                        class="carrito-resumen__descuento"
+                        id="filaDescuento"
+                        hidden
+                    >
+                        <span>Descuento</span>
+                        <strong id="carritoPaginaDescuento">-$0</strong>
+                    </div>
+
+                    <div>
+                        <span>Despacho</span>
+                        <strong id="carritoPaginaDespacho">
+                            Por calcular
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="carrito-resumen__total">
+                    <div>
+                        <span>Total estimado</span>
+
+                        <small>
+                            Impuestos incluidos
+                        </small>
+                    </div>
+
+                    <strong id="carritoPaginaTotal">
+                        {{ carrito.subtotal_formateado }}
+                    </strong>
+                </div>
+
+                <a
+                    href="{% url 'core:checkout' %}"
+                    class="
+                        carrito-continuar
+                        {% if carrito.vacio %}
+                            carrito-continuar--deshabilitado
+                        {% endif %}
+                    "
+                    id="continuarCompra"
+                    {% if carrito.vacio %}
+                        aria-disabled="true"
+                        tabindex="-1"
+                    {% endif %}
+                >
+                    <span>
+                        Continuar con la compra
+                    </span>
+
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+                <p class="carrito-resumen__seguridad">
+                    <i class="bi bi-lock"></i>
+                    Tus datos estarán protegidos durante el proceso.
+                </p>
+
+                <div class="carrito-resumen__pagos">
+                    <span>Medios de pago</span>
+
+                    <div>
+                        <i class="bi bi-credit-card"></i>
+                        <i class="bi bi-bank"></i>
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Confirmación -->
+<div
+    class="carrito-pagina-toast"
+    id="carritoPaginaToast"
+    aria-hidden="true"
+>
+    <i class="bi bi-check-circle-fill"></i>
+
+    <div>
+        <strong>Carrito actualizado</strong>
+        <span id="carritoPaginaToastTexto"></span>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/carrito_completo.js' %}"></script>
+{% endblock %}

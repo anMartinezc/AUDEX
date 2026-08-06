@@ -1,0 +1,475 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+
+{% block title %}
+    Iniciar sesión | Audex
+{% endblock %}
+
+
+{% block extra_css %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/cuenta.css' %}?v=3"
+    >
+
+    <style>
+        .cuenta-login__separador {
+            position: relative;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cuenta-login__separador::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .cuenta-login__separador span {
+            position: relative;
+            z-index: 1;
+            padding: 0 14px;
+            color: var(--color-gris);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: var(--color-fondo-secundario);
+        }
+
+        .cuenta-login__google-form {
+            width: 100%;
+            margin: 0;
+        }
+
+        .cuenta-login__google {
+            width: 100%;
+            min-height: 52px;
+            padding: 0 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 11px;
+            color: var(--color-blanco);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 800;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.045);
+            transition:
+                color var(--transicion),
+                border-color var(--transicion),
+                background var(--transicion),
+                transform var(--transicion),
+                box-shadow var(--transicion);
+        }
+
+        .cuenta-login__google:hover {
+            color: var(--color-blanco);
+            border-color: rgba(54, 169, 214, 0.42);
+            background: rgba(54, 169, 214, 0.1);
+            box-shadow:
+                0 14px 32px rgba(54, 169, 214, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .cuenta-login__google i {
+            color: var(--color-azul-claro);
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        .cuenta-login__registro {
+            margin-top: 24px;
+        }
+
+        .cuenta-login__registro a,
+        .cuenta-campo__encabezado a {
+            color: var(--color-azul-claro);
+        }
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="cuenta-pagina">
+
+    <div class="contenedor">
+
+        <div class="cuenta-login">
+
+            <div class="cuenta-login__visual">
+
+                <span class="etiqueta-seccion">
+                    <i class="bi bi-person-check"></i>
+                    Mi cuenta Audex
+                </span>
+
+                <h1>
+                    Bienvenido
+                    <span>nuevamente.</span>
+                </h1>
+
+                <p>
+                    Inicia sesión para revisar tus compras,
+                    seguir tus pedidos y acceder a beneficios
+                    exclusivos.
+                </p>
+
+                <div class="cuenta-login__beneficios">
+
+                    <div>
+                        <i class="bi bi-bag-check"></i>
+
+                        <span>
+                            Historial automático de compras
+                        </span>
+                    </div>
+
+                    <div>
+                        <i class="bi bi-box-seam"></i>
+
+                        <span>
+                            Seguimiento de tus pedidos
+                        </span>
+                    </div>
+
+                    <div>
+                        <i class="bi bi-tag"></i>
+
+                        <span>
+                            Descuentos para clientes frecuentes
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="cuenta-login__formulario">
+
+                <div class="cuenta-login__icono">
+                    <i class="bi bi-person"></i>
+                </div>
+
+                <span class="cuenta-login__eyebrow">
+                    Acceso de clientes
+                </span>
+
+                <h2>
+                    Iniciar sesión
+                </h2>
+
+                <p>
+                    Ingresa tus datos para acceder a tu cuenta.
+                </p>
+
+
+                {% if form.non_field_errors %}
+
+                    <div class="cuenta-login__error">
+
+                        <i class="bi bi-exclamation-circle"></i>
+
+                        <div>
+                            {% for error in form.non_field_errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <form
+                    method="post"
+                    class="cuenta-formulario"
+                >
+
+                    {% csrf_token %}
+
+
+                    {% if form.login %}
+
+                        <div class="cuenta-campo">
+
+                            <label for="{{ form.login.id_for_label }}">
+                                Correo electrónico
+                            </label>
+
+                            <div class="cuenta-campo__control">
+
+                                <i class="bi bi-envelope"></i>
+
+                                <input
+                                    type="email"
+                                    name="{{ form.login.html_name }}"
+                                    id="{{ form.login.id_for_label }}"
+                                    value="{{ form.login.value|default:'' }}"
+                                    placeholder="Ingresa tu correo electrónico"
+                                    autocomplete="email"
+                                    required
+                                    autofocus
+                                >
+
+                            </div>
+
+                            {% if form.login.errors %}
+
+                                <div class="cuenta-campo__error">
+
+                                    {% for error in form.login.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="cuenta-campo">
+
+                            <label for="{{ form.username.id_for_label }}">
+                                Usuario
+                            </label>
+
+                            <div class="cuenta-campo__control">
+
+                                <i class="bi bi-person"></i>
+
+                                <input
+                                    type="text"
+                                    name="{{ form.username.html_name }}"
+                                    id="{{ form.username.id_for_label }}"
+                                    value="{{ form.username.value|default:'' }}"
+                                    placeholder="Ingresa tu usuario"
+                                    autocomplete="username"
+                                    required
+                                    autofocus
+                                >
+
+                            </div>
+
+                            {% if form.username.errors %}
+
+                                <div class="cuenta-campo__error">
+
+                                    {% for error in form.username.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="cuenta-campo">
+
+                        <div class="cuenta-campo__encabezado">
+
+                            <label for="{{ form.password.id_for_label }}">
+                                Contraseña
+                            </label>
+
+                            <a href="{% url 'account_reset_password' %}">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+
+                        </div>
+
+                        <div class="cuenta-campo__control">
+
+                            <i class="bi bi-lock"></i>
+
+                            <input
+                                type="password"
+                                name="{{ form.password.html_name }}"
+                                id="{{ form.password.id_for_label }}"
+                                placeholder="Ingresa tu contraseña"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="cuenta-campo__mostrar"
+                                id="mostrarContrasena"
+                                aria-label="Mostrar contraseña"
+                                title="Mostrar contraseña"
+                            >
+                                <i class="bi bi-eye"></i>
+                            </button>
+
+                        </div>
+
+                        {% if form.password.errors %}
+
+                            <div class="cuenta-campo__error">
+
+                                {% for error in form.password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    {% if form.remember %}
+
+                        <label class="cuenta-formulario__recordar">
+
+                            {{ form.remember }}
+
+                            <span>
+                                Mantener mi sesión iniciada
+                            </span>
+
+                        </label>
+
+                    {% endif %}
+
+
+                    {% if redirect_field_value %}
+
+                        <input
+                            type="hidden"
+                            name="{{ redirect_field_name }}"
+                            value="{{ redirect_field_value }}"
+                        >
+
+                    {% elif next %}
+
+                        <input
+                            type="hidden"
+                            name="next"
+                            value="{{ next }}"
+                        >
+
+                    {% endif %}
+
+
+                    <button
+                        type="submit"
+                        class="boton boton--primario boton--completo"
+                    >
+                        Iniciar sesión
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+
+                </form>
+
+
+                <div class="cuenta-login__separador">
+                    <span>
+                        O continúa con
+                    </span>
+                </div>
+
+
+                <form
+                    method="post"
+                    action="{% url 'google_login' %}"
+                    class="cuenta-login__google-form"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="cuenta-login__google"
+                    >
+                        <i class="bi bi-google"></i>
+                        Iniciar sesión con Google
+                    </button>
+                </form>
+
+                <div class="cuenta-login__registro">
+
+                    <span>
+                        ¿Todavía no tienes una cuenta?
+                    </span>
+
+                    <a href="{% url 'account_signup' %}">
+                        Crear cuenta
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const botonMostrar = document.getElementById(
+            "mostrarContrasena"
+        );
+
+        const campoContrasena = document.getElementById(
+            "{{ form.password.id_for_label }}"
+        );
+
+        if (!botonMostrar || !campoContrasena) {
+            return;
+        }
+
+        botonMostrar.addEventListener("click", () => {
+            const estaOculta =
+                campoContrasena.type === "password";
+
+            campoContrasena.type =
+                estaOculta ? "text" : "password";
+
+            botonMostrar.innerHTML = estaOculta
+                ? '<i class="bi bi-eye-slash"></i>'
+                : '<i class="bi bi-eye"></i>';
+
+            botonMostrar.setAttribute(
+                "aria-label",
+                estaOculta
+                    ? "Ocultar contraseña"
+                    : "Mostrar contraseña"
+            );
+
+            botonMostrar.setAttribute(
+                "title",
+                estaOculta
+                    ? "Ocultar contraseña"
+                    : "Mostrar contraseña"
+            );
+        });
+    });
+</script>
+
+{% endblock %}

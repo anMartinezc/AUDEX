@@ -1,0 +1,167 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+Pedido confirmado | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/pedido_confirmacion.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="pedido-confirmacion">
+    <div class="contenedor pedido-confirmacion__contenedor">
+
+        <div class="pedido-confirmacion__icono">
+            <i class="bi bi-check-lg"></i>
+        </div>
+
+        <span class="etiqueta-seccion">
+            Pedido recibido
+        </span>
+
+        <h1>¡Gracias por tu compra!</h1>
+
+        <p class="pedido-confirmacion__introduccion">
+            Recibimos tu pedido correctamente. Enviaremos las
+            actualizaciones a
+            <strong>{{ pedido.email }}</strong>.
+        </p>
+
+        <div class="pedido-confirmacion__numero">
+            <span>Número del pedido</span>
+            <strong>{{ pedido.numero }}</strong>
+        </div>
+
+        <div class="pedido-confirmacion__grid">
+
+            <section>
+                <h2>Productos</h2>
+
+                {% for item in pedido.items.all %}
+                    <article class="pedido-confirmacion__producto">
+                        <div>
+                            <strong>
+                                {{ item.nombre_producto }}
+                            </strong>
+
+                            <span>
+                                {{ item.cantidad }}
+                                ×
+                                ${{ item.precio_unitario|floatformat:0|intcomma }}
+                            </span>
+                        </div>
+
+                        <strong>
+                            ${{ item.total|floatformat:0|intcomma }}
+                        </strong>
+                    </article>
+                {% endfor %}
+            </section>
+
+            <aside>
+                <h2>Resumen</h2>
+
+                <dl>
+                    <div>
+                        <dt>Subtotal</dt>
+                        <dd>
+                            ${{ pedido.subtotal|floatformat:0|intcomma }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Descuento</dt>
+                        <dd>
+                            -${{ pedido.descuento|floatformat:0|intcomma }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Despacho</dt>
+                        <dd>
+                            {% if pedido.despacho == 0 %}
+                                Gratis
+                            {% else %}
+                                ${{ pedido.despacho|floatformat:0|intcomma }}
+                            {% endif %}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Total</dt>
+                        <dd>
+                            ${{ pedido.total|floatformat:0|intcomma }}
+                        </dd>
+                    </div>
+                </dl>
+            </aside>
+
+        </div>
+
+        <div class="pedido-confirmacion__direccion">
+            <i class="bi bi-geo-alt"></i>
+
+            <div>
+                <strong>Dirección de despacho</strong>
+
+                <span>
+                    {{ pedido.direccion }}
+                    {{ pedido.numero_direccion }},
+                    {{ pedido.comuna }},
+                    {{ pedido.region }}
+                </span>
+            </div>
+        </div>
+
+        {% if pedido.metodo_pago == "transferencia" %}
+            <div class="pedido-confirmacion__transferencia">
+                <i class="bi bi-bank"></i>
+
+                <div>
+                    <strong>
+                        Pago mediante transferencia
+                    </strong>
+
+                    <p>
+                        Debes incorporar aquí los datos bancarios
+                        oficiales de Audex y solicitar que el cliente
+                        indique el número
+                        {{ pedido.numero }}
+                        en el comprobante.
+                    </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="pedido-confirmacion__transferencia">
+                <i class="bi bi-credit-card"></i>
+
+                <div>
+                    <strong>Pago Webpay pendiente</strong>
+
+                    <p>
+                        El pedido fue registrado. La integración real
+                        con Webpay se conectará en el siguiente paso.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+
+        <a
+            href="{% url 'core:productos' %}"
+            class="boton boton--primario"
+        >
+            Seguir comprando
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,506 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+Finalizar compra | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/checkout.css' %}?v=12"
+>
+{% endblock %}
+
+{% block content %}
+
+<section
+    class="checkout"
+    id="checkout"
+    data-subtotal="{{ carrito.subtotal }}"
+    data-meta-envio="50000"
+    data-costo-envio="4990"
+    data-resumen-url="{% url 'core:checkout_resumen_descuento' %}"
+    data-region-seleccionada="{{ form.region.value|default_if_none:'' }}"
+    data-comuna-seleccionada="{{ form.comuna.value|default_if_none:'' }}"
+>
+    <div class="contenedor">
+
+        <nav class="checkout-breadcrumb">
+            <a href="{% url 'core:inicio' %}">
+                Inicio
+            </a>
+
+            <i class="bi bi-chevron-right"></i>
+
+            <a href="{% url 'core:carrito_completo' %}">
+                Carrito
+            </a>
+
+            <i class="bi bi-chevron-right"></i>
+
+            <span>Checkout</span>
+        </nav>
+
+        <header class="checkout-cabecera">
+            <div>
+                <span class="etiqueta-seccion">
+                    Compra segura
+                </span>
+
+                <h1>Finalizar compra</h1>
+
+                <p>
+                    Completa tus datos para preparar
+                    y despachar tu pedido.
+                </p>
+            </div>
+
+            <a
+                href="{% url 'core:carrito_completo' %}"
+                class="checkout-volver"
+            >
+                <i class="bi bi-arrow-left"></i>
+                Volver al carrito
+            </a>
+        </header>
+
+        <div class="checkout-pasos">
+            <article class="checkout-paso checkout-paso--completado">
+                <span>
+                    <i class="bi bi-check-lg"></i>
+                </span>
+
+                <div>
+                    <strong>Carrito</strong>
+                    <small>Productos seleccionados</small>
+                </div>
+            </article>
+
+            <div></div>
+
+            <article class="checkout-paso checkout-paso--activo">
+                <span>2</span>
+
+                <div>
+                    <strong>Datos</strong>
+                    <small>Despacho y contacto</small>
+                </div>
+            </article>
+
+            <div></div>
+
+            <article class="checkout-paso">
+                <span>3</span>
+
+                <div>
+                    <strong>Confirmación</strong>
+                    <small>Pedido completado</small>
+                </div>
+            </article>
+        </div>
+
+        <form
+            method="post"
+            class="checkout-grid"
+            id="checkoutFormulario"
+            novalidate
+        >
+            {% csrf_token %}
+
+            <div class="checkout-formulario">
+
+                {% if form.non_field_errors %}
+                    <div class="checkout-error-general">
+                        <i class="bi bi-exclamation-circle"></i>
+
+                        <div>
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <section class="checkout-bloque">
+                    <div class="checkout-bloque__titulo">
+                        <div>
+                            <i class="bi bi-person"></i>
+                        </div>
+
+                        <div>
+                            <span>Paso 1</span>
+                            <h2>Datos de contacto</h2>
+
+                            <p>
+                                Usaremos esta información para enviarte
+                                la confirmación y actualizar el pedido.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="checkout-campos checkout-campos--dos">
+                        {% include "core/includes/checkout_campo.html" with campo=form.nombre %}
+                        {% include "core/includes/checkout_campo.html" with campo=form.apellido %}
+                        {% include "core/includes/checkout_campo.html" with campo=form.rut %}
+                        {% include "core/includes/checkout_campo.html" with campo=form.telefono %}
+                    </div>
+
+                    {% include "core/includes/checkout_campo.html" with campo=form.email %}
+                </section>
+
+                <section class="checkout-bloque">
+                    <div class="checkout-bloque__titulo">
+                        <div>
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+
+                        <div>
+                            <span>Paso 2</span>
+                            <h2>Dirección de despacho</h2>
+
+                            <p>
+                                Selecciona una región y luego una
+                                de sus comunas.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="checkout-campos checkout-campos--dos">
+                        {% include "core/includes/checkout_campo.html" with campo=form.region %}
+                        {% include "core/includes/checkout_campo.html" with campo=form.comuna %}
+                    </div>
+
+                    <div class="checkout-campos checkout-campos--direccion">
+                        {% include "core/includes/checkout_campo.html" with campo=form.direccion %}
+                        {% include "core/includes/checkout_campo.html" with campo=form.numero_direccion %}
+                        {% include "core/includes/checkout_campo.html" with campo=form.departamento %}
+                    </div>
+
+                    {% include "core/includes/checkout_campo.html" with campo=form.referencia %}
+                </section>
+
+                <section class="checkout-bloque">
+                    <div class="checkout-bloque__titulo">
+                        <div>
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+
+                        <div>
+                            <span>Paso 3</span>
+                            <h2>Método de pago</h2>
+
+                            <p>
+                                Selecciona cómo deseas pagar tu compra.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="checkout-metodos">
+                        {% for opcion in form.metodo_pago %}
+                            <label class="checkout-metodo">
+                                {{ opcion.tag }}
+
+                                <span class="checkout-metodo__icono">
+                                    {% if opcion.choice_value == "webpay" %}
+                                        <i class="bi bi-credit-card"></i>
+                                    {% elif opcion.choice_value == "mercadopago" %}
+                                        <i class="bi bi-wallet2"></i>
+                                    {% else %}
+                                        <i class="bi bi-bank"></i>
+                                    {% endif %}
+                                </span>
+
+                                <span>
+                                    <strong>
+                                        {{ opcion.choice_label }}
+                                    </strong>
+
+                                    <small>
+                                        {% if opcion.choice_value == "webpay" %}
+                                            Pago con tarjetas mediante Webpay.
+                                        {% elif opcion.choice_value == "mercadopago" %}
+                                            Pago seguro mediante Mercado Pago.
+                                        {% else %}
+                                            Recibirás los datos bancarios
+                                            al confirmar el pedido.
+                                        {% endif %}
+                                    </small>
+                                </span>
+
+                                <i class="bi bi-check-circle-fill"></i>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="checkout-bloque">
+                    <div class="checkout-bloque__titulo">
+                        <div>
+                            <i class="bi bi-chat-left-text"></i>
+                        </div>
+
+                        <div>
+                            <span>Opcional</span>
+                            <h2>Notas del pedido</h2>
+                        </div>
+                    </div>
+
+                    {% include "core/includes/checkout_campo.html" with campo=form.notas %}
+                </section>
+
+            </div>
+
+            <aside class="checkout-resumen">
+                <div class="checkout-resumen__titulo">
+                    <div>
+                        <span>Resumen</span>
+                        <h2>Tu compra</h2>
+                    </div>
+
+                    <i class="bi bi-receipt"></i>
+                </div>
+
+                <div class="checkout-productos">
+                    {% for item in carrito.items %}
+                        <article class="checkout-producto">
+                            <div class="checkout-producto__imagen">
+                                {% if item.imagen %}
+                                    <img
+                                        src="{{ item.imagen }}"
+                                        alt="{{ item.nombre }}"
+                                    >
+                                {% else %}
+                                    <i class="bi bi-earbuds"></i>
+                                {% endif %}
+
+                                <span>{{ item.cantidad }}</span>
+                            </div>
+
+                            <div>
+                                <strong>{{ item.nombre }}</strong>
+
+                                <small>
+                                    {{ item.categoria }}
+                                </small>
+                            </div>
+
+                            <strong>
+                                {{ item.total_formateado }}
+                            </strong>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                <div class="checkout-cupon">
+                    <label for="id_codigo_descuento">
+                        Código de descuento
+                    </label>
+
+                    <div class="checkout-cupon__control">
+                        <input
+                            type="text"
+                            name="codigo_descuento"
+                            id="id_codigo_descuento"
+                            value="{{ form.codigo_descuento.value|default_if_none:'' }}"
+                            maxlength="64"
+                            placeholder="Ejemplo: BIENVENIDA10"
+                            autocomplete="off"
+                            autocapitalize="characters"
+                            spellcheck="false"
+                            aria-describedby="checkoutMensajeCupon"
+                            class="
+                                checkout-cupon__input
+                                {% if form.codigo_descuento.errors %}
+                                    checkout-cupon__input--error
+                                {% endif %}
+                            "
+                        >
+
+                        <button
+                            type="button"
+                            id="checkoutAplicarCupon"
+                        >
+                            <span>Aplicar</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <small
+                        id="checkoutMensajeCupon"
+                        class="
+                            checkout-cupon__mensaje
+                            {% if resumen.error_descuento %}
+                                checkout-cupon__mensaje--error
+                            {% elif resumen.codigo_aplicado %}
+                                checkout-cupon__mensaje--exito
+                            {% endif %}
+                        "
+                        aria-live="polite"
+                    >
+                        {% if resumen.error_descuento %}
+                            {{ resumen.error_descuento }}
+                        {% elif resumen.codigo_aplicado %}
+                            Código {{ resumen.codigo_aplicado }} aplicado:
+                            {{ resumen.porcentaje_descuento|floatformat:0 }}%.
+                        {% else %}
+                            Puedes usar un código general o un premio personal.
+                        {% endif %}
+                    </small>
+
+                    {% for error in form.codigo_descuento.errors %}
+                        <span class="checkout-error-campo">
+                            {{ error }}
+                        </span>
+                    {% endfor %}
+                </div>
+
+                {% if codigos_fidelidad %}
+                    <div class="checkout-premios">
+                        <div class="checkout-premios__titulo">
+                            <i class="bi bi-award"></i>
+
+                            <div>
+                                <strong>
+                                    Tus premios disponibles
+                                </strong>
+
+                                <small>
+                                    Selecciona uno para aplicarlo.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="checkout-premios__lista">
+                            {% for codigo in codigos_fidelidad %}
+                                <button
+                                    type="button"
+                                    class="checkout-premio"
+                                    data-codigo="{{ codigo.codigo }}"
+                                >
+                                    <span>
+                                        <strong>
+                                            {{ codigo.codigo }}
+                                        </strong>
+
+                                        <small>
+                                            {{ codigo.porcentaje|floatformat:0 }}%
+                                            de descuento
+
+                                            {% if codigo.monto_minimo > 0 %}
+                                                · compra mínima
+                                                ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                            {% endif %}
+                                        </small>
+                                    </span>
+
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="checkout-valores">
+                    <div>
+                        <span>Subtotal</span>
+
+                        <strong id="checkoutSubtotal">
+                            ${{ resumen.subtotal|floatformat:0|intcomma }}
+                        </strong>
+                    </div>
+
+                    <div
+                        id="checkoutFilaDescuento"
+                        {% if not resumen.descuento %}
+                            hidden
+                        {% endif %}
+                    >
+                        <span>
+                            Descuento
+
+                            <small id="checkoutCodigoAplicado">
+                                {% if resumen.codigo_aplicado %}
+                                    {{ resumen.codigo_aplicado }}
+                                {% endif %}
+                            </small>
+                        </span>
+
+                        <strong
+                            class="checkout-valor-descuento"
+                            id="checkoutDescuento"
+                        >
+                            -${{ resumen.descuento|floatformat:0|intcomma }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Despacho</span>
+
+                        <strong id="checkoutDespacho">
+                            {% if resumen.despacho == 0 %}
+                                Gratis
+                            {% else %}
+                                ${{ resumen.despacho|floatformat:0|intcomma }}
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="checkout-total">
+                    <div>
+                        <span>Total</span>
+                        <small>Impuestos incluidos</small>
+                    </div>
+
+                    <strong id="checkoutTotal">
+                        ${{ resumen.total|floatformat:0|intcomma }}
+                    </strong>
+                </div>
+
+                <label class="checkout-terminos">
+                    {{ form.aceptar_terminos }}
+
+                    <span>
+                        {{ form.aceptar_terminos.label }}
+                    </span>
+                </label>
+
+                {% for error in form.aceptar_terminos.errors %}
+                    <span class="checkout-error-campo">
+                        {{ error }}
+                    </span>
+                {% endfor %}
+
+                <button
+                    type="submit"
+                    class="checkout-confirmar"
+                    id="checkoutConfirmar"
+                >
+                    <span>
+                        Confirmar pedido
+                    </span>
+
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+
+                <p class="checkout-seguridad">
+                    <i class="bi bi-lock"></i>
+                    Tu información está protegida.
+                </p>
+            </aside>
+        </form>
+
+    </div>
+</section>
+
+{{ comunas_por_region|json_script:"comunas-por-region" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="{% static 'core/js/checkout.js' %}?v=12"
+></script>
+{% endblock %}

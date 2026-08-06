@@ -1,0 +1,286 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    Mi perfil | Audex
+{% endblock %}
+
+
+{% block extra_css %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/cuenta_usuario.css' %}?v=1"
+    >
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="cuenta-usuario-pagina">
+
+    <div class="contenedor">
+
+        <header class="cuenta-usuario-cabecera">
+
+            <div class="cuenta-usuario-cabecera__texto">
+
+                <span class="etiqueta-seccion">
+                    <i class="bi bi-person-check"></i>
+                    Mi cuenta Audex
+                </span>
+
+                <h1>
+                    Mi perfil
+                </h1>
+
+                <p>
+                    Consulta la información básica asociada
+                    a tu cuenta.
+                </p>
+
+            </div>
+
+
+            <div class="perfil-avatar">
+
+                <i class="bi bi-person"></i>
+
+            </div>
+
+        </header>
+
+
+        <nav
+            class="cuenta-usuario-nav"
+            aria-label="Navegación de mi cuenta"
+        >
+
+            <a
+                href="{% url 'core:mi_perfil' %}"
+                class="cuenta-usuario-nav__activo"
+                aria-current="page"
+            >
+                <i class="bi bi-person-fill"></i>
+                Mi perfil
+            </a>
+
+            <a href="{% url 'core:mis_compras' %}">
+                <i class="bi bi-bag-check"></i>
+                Mis compras
+            </a>
+
+            <a href="{% url 'core:mis_favoritos' %}">
+                <i class="bi bi-heart"></i>
+                Mis favoritos
+            </a>
+
+        </nav>
+
+
+        <div class="perfil-layout">
+
+            <section class="perfil-tarjeta">
+
+                <div class="perfil-tarjeta__encabezado">
+
+                    <div>
+
+                        <span>
+                            Información personal
+                        </span>
+
+                        <h2>
+                            Datos de la cuenta
+                        </h2>
+
+                    </div>
+
+                    <i class="bi bi-shield-check"></i>
+
+                </div>
+
+
+                <dl class="perfil-datos">
+
+                    <div>
+
+                        <dt>
+                            Nombre
+                        </dt>
+
+                        <dd>
+                            {% if usuario_perfil.first_name %}
+                                {{ usuario_perfil.first_name }}
+                            {% else %}
+                                Sin registrar
+                            {% endif %}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Apellido
+                        </dt>
+
+                        <dd>
+                            {% if usuario_perfil.last_name %}
+                                {{ usuario_perfil.last_name }}
+                            {% else %}
+                                Sin registrar
+                            {% endif %}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Correo electrónico
+                        </dt>
+
+                        <dd class="perfil-datos__correo">
+                            {{ usuario_perfil.email|default:"Sin registrar" }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Nombre de usuario
+                        </dt>
+
+                        <dd>
+                            {{ usuario_perfil.username }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Miembro desde
+                        </dt>
+
+                        <dd>
+                            {{ usuario_perfil.date_joined|date:"d/m/Y" }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Último acceso
+                        </dt>
+
+                        <dd>
+                            {% if usuario_perfil.last_login %}
+                                {{ usuario_perfil.last_login|date:"d/m/Y H:i" }}
+                            {% else %}
+                                Primer acceso
+                            {% endif %}
+                        </dd>
+
+                    </div>
+
+                </dl>
+
+            </section>
+
+
+            <aside class="perfil-accesos">
+
+                <span class="perfil-accesos__eyebrow">
+                    Accesos rápidos
+                </span>
+
+                <h2>
+                    Gestiona tu cuenta
+                </h2>
+
+                <p>
+                    Revisa tus compras, favoritos
+                    y opciones de seguridad.
+                </p>
+
+
+                <div class="perfil-accesos__lista">
+
+                    <a href="{% url 'core:mis_compras' %}">
+
+                        <i class="bi bi-bag-check"></i>
+
+                        <span>
+                            <strong>
+                                Mis compras
+                            </strong>
+
+                            <small>
+                                Pedidos e historial
+                            </small>
+                        </span>
+
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+
+                    <a href="{% url 'core:mis_favoritos' %}">
+
+                        <i class="bi bi-heart"></i>
+
+                        <span>
+                            <strong>
+                                Mis favoritos
+                            </strong>
+
+                            <small>
+                                Productos guardados
+                            </small>
+                        </span>
+
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+
+                    <a href="{% url 'account_change_password' %}">
+
+                        <i class="bi bi-shield-lock"></i>
+
+                        <span>
+                            <strong>
+                                Cambiar contraseña
+                            </strong>
+
+                            <small>
+                                Seguridad de la cuenta
+                            </small>
+                        </span>
+
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

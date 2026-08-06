@@ -1,0 +1,547 @@
+{% extends 'core/base.html' %}
+{% load static humanize %}
+
+
+{% block title %}
+    Mis compras | Audex
+{% endblock %}
+
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/pedidos.css' %}?v=8"
+    >
+{% endblock %}
+
+
+{% block content %}
+
+<section class="pedidos-pagina mis-compras">
+
+    <div class="contenedor">
+
+        <!-- =====================================================
+             CABECERA
+        ====================================================== -->
+
+        <header class="pedidos-cabecera">
+
+            <div>
+
+                <span class="etiqueta-seccion">
+                    <i class="bi bi-bag-check"></i>
+                    Mi cuenta
+                </span>
+
+                <h1>
+                    Mis compras
+                </h1>
+
+                <p>
+                    Revisa tus compras confirmadas y consulta
+                    el seguimiento de cada pedido.
+                </p>
+
+            </div>
+
+
+            <a
+                href="{% url 'core:seguimiento_pedido' %}"
+                class="boton boton--secundario"
+            >
+                <i class="bi bi-search"></i>
+                Buscar otro pedido
+            </a>
+
+        </header>
+
+
+        <!-- =====================================================
+             RESUMEN DE COMPRAS PAGADAS
+        ====================================================== -->
+
+        <div class="mis-compras__resumen">
+
+            <a
+                href="{% url 'core:mis_compras' %}"
+                class="
+                    mis-compras__confirmadas
+                    {% if tipo_actual == 'pagados' %}
+                        mis-compras__confirmadas--activa
+                    {% endif %}
+                "
+            >
+
+                <div class="mis-compras__resumen-icono">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+
+                <div class="mis-compras__resumen-texto">
+
+                    <span>
+                        Compras confirmadas
+                    </span>
+
+                    <strong>
+                        {{ total_pagados }}
+                    </strong>
+
+                    <small>
+                        Pedidos pagados asociados a tu cuenta.
+                    </small>
+
+                </div>
+
+                <i class="bi bi-arrow-right"></i>
+
+            </a>
+
+        </div>
+
+
+        <!-- =====================================================
+             PEDIDOS PENDIENTES DE PAGO
+        ====================================================== -->
+
+        {% if total_pendientes_pago > 0 %}
+
+            <a
+                href="?tipo=pendientes"
+                class="
+                    mis-compras__pendientes
+                    {% if tipo_actual == 'pendientes' %}
+                        mis-compras__pendientes--activa
+                    {% endif %}
+                "
+            >
+
+                <div class="mis-compras__pendientes-icono">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+
+                <div class="mis-compras__pendientes-texto">
+
+                    <strong>
+                        {{ total_pendientes_pago }}
+                        pedido{{ total_pendientes_pago|pluralize }}
+                        pendiente{{ total_pendientes_pago|pluralize }}
+                        de pago
+                    </strong>
+
+                    <span>
+                        Estos pedidos todavía no cuentan como
+                        compras confirmadas.
+                    </span>
+
+                </div>
+
+                <i class="bi bi-arrow-right"></i>
+
+            </a>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             ENCABEZADO DE LA BANDEJA
+        ====================================================== -->
+
+        <div class="mis-compras__seccion-cabecera">
+
+            <div>
+
+                {% if tipo_actual == "pendientes" %}
+
+                    <a
+                        href="{% url 'core:mis_compras' %}"
+                        class="mis-compras__volver"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Volver a compras confirmadas
+                    </a>
+
+                    <span class="pedidos-cabecera__eyebrow">
+                        Pendientes de pago
+                    </span>
+
+                    <h2>
+                        Pedidos sin pago confirmado
+                    </h2>
+
+                    <p>
+                        Estos pedidos todavía no forman parte
+                        de tu historial de compras confirmadas.
+                    </p>
+
+                {% else %}
+
+                    <span class="pedidos-cabecera__eyebrow">
+                        Historial
+                    </span>
+
+                    <h2>
+                        Compras confirmadas
+                    </h2>
+
+                    <p>
+                        Aquí aparecen únicamente los pedidos
+                        cuyo pago fue aprobado.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+            <span class="mis-compras__contador">
+
+                {% if tipo_actual == "pendientes" %}
+                    {{ total_pendientes_pago }}
+                {% else %}
+                    {{ total_pagados }}
+                {% endif %}
+
+                pedido{{ page_obj.paginator.count|pluralize }}
+
+            </span>
+
+        </div>
+
+
+        <!-- =====================================================
+             FILTROS DE ESTADO
+        ====================================================== -->
+
+        {% if tipo_actual == "pagados" and total_pagados > 0 %}
+
+            <nav
+                class="pedidos-filtros"
+                aria-label="Filtrar compras por estado"
+            >
+
+                <a
+                    href="{% url 'core:mis_compras' %}"
+                    class="
+                        {% if not estado_actual %}
+                            activo
+                        {% endif %}
+                    "
+                >
+                    Todas
+                </a>
+
+
+                {% for valor, etiqueta in estados %}
+
+                    <a
+                        href="?tipo=pagados&estado={{ valor }}"
+                        class="
+                            {% if estado_actual == valor %}
+                                activo
+                            {% endif %}
+                        "
+                    >
+                        {{ etiqueta }}
+                    </a>
+
+                {% endfor %}
+
+            </nav>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             LISTADO
+        ====================================================== -->
+
+        <div class="pedidos-lista pedidos-lista--compras">
+
+            {% for pedido in page_obj %}
+
+                <article
+                    class="
+                        pedido-historial
+                        {% if not pedido.pagado %}
+                            pedido-historial--pendiente
+                        {% endif %}
+                    "
+                >
+
+                    <div class="pedido-historial__superior">
+
+                        <div>
+
+                            <span>
+                                Número de pedido
+                            </span>
+
+                            <h2>
+                                {{ pedido.numero }}
+                            </h2>
+
+                        </div>
+
+
+                        {% if pedido.pagado %}
+
+                            <span
+                                class="
+                                    pedido-estado
+                                    pedido-estado--{{ pedido.estado }}
+                                "
+                            >
+                                {{ pedido.get_estado_display }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="pedido-estado pedido-estado--pago-pendiente">
+                                <i class="bi bi-clock"></i>
+                                Pendiente de pago
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- DATOS DEL PEDIDO -->
+
+                    <div class="pedido-historial__datos">
+
+                        <div>
+                            <span>
+                                Fecha
+                            </span>
+
+                            <strong>
+                                {{ pedido.creado|date:"d/m/Y" }}
+                            </strong>
+                        </div>
+
+
+                        <div>
+                            <span>
+                                Productos
+                            </span>
+
+                            <strong>
+                                {{ pedido.items.count }}
+                            </strong>
+                        </div>
+
+
+                        <div>
+                            <span>
+                                Total
+                            </span>
+
+                            <strong>
+                                ${{ pedido.total|floatformat:0|intcomma }}
+                            </strong>
+                        </div>
+
+
+                        <div>
+                            <span>
+                                Pago
+                            </span>
+
+                            <strong
+                                class="
+                                    {% if pedido.pagado %}
+                                        pedido-historial__pago-aprobado
+                                    {% else %}
+                                        pedido-historial__pago-pendiente
+                                    {% endif %}
+                                "
+                            >
+                                {% if pedido.pagado %}
+
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Confirmado
+
+                                {% else %}
+
+                                    <i class="bi bi-clock-fill"></i>
+                                    Pendiente
+
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <!-- PRODUCTOS -->
+
+                    <div class="pedido-historial__productos">
+
+                        {% for item in pedido.items.all|slice:":3" %}
+
+                            <span>
+                                {{ item.nombre_producto }}
+                                × {{ item.cantidad }}
+                            </span>
+
+                        {% endfor %}
+
+
+                        {% if pedido.items.count > 3 %}
+
+                            <span>
+                                +{{ pedido.items.count|add:"-3" }}
+                                producto{{ pedido.items.count|add:"-3"|pluralize }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- ACCIONES -->
+
+                    <div class="pedido-historial__acciones">
+
+                        <a
+                            href="{% url 'core:seguimiento_pedido_numero' pedido.numero %}"
+                            class="
+                                boton
+                                {% if pedido.pagado %}
+                                    boton--primario
+                                {% else %}
+                                    boton--secundario
+                                {% endif %}
+                            "
+                        >
+
+                            {% if pedido.pagado %}
+                                Ver seguimiento
+                            {% else %}
+                                Revisar pedido
+                            {% endif %}
+
+                            <i class="bi bi-arrow-right"></i>
+
+                        </a>
+
+                    </div>
+
+                </article>
+
+
+            {% empty %}
+
+                <div class="pedidos-vacio">
+
+                    {% if tipo_actual == "pendientes" %}
+
+                        <i class="bi bi-check2-circle"></i>
+
+                        <h2>
+                            No tienes pagos pendientes
+                        </h2>
+
+                        <p>
+                            Todos los pedidos asociados a tu
+                            cuenta están pagados o procesados.
+                        </p>
+
+                        <a
+                            href="{% url 'core:mis_compras' %}"
+                            class="boton boton--primario"
+                        >
+                            Ver compras confirmadas
+                        </a>
+
+                    {% else %}
+
+                        <i class="bi bi-bag-x"></i>
+
+                        <h2>
+                            Aún no tienes compras confirmadas
+                        </h2>
+
+                        <p>
+                            Cuando se confirme el pago de una compra,
+                            aparecerá automáticamente en esta sección.
+                        </p>
+
+                        <a
+                            href="{% url 'core:productos' %}"
+                            class="boton boton--primario"
+                        >
+                            Ver productos
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =====================================================
+             PAGINACIÓN
+        ====================================================== -->
+
+        {% if page_obj.paginator.num_pages > 1 %}
+
+            <nav
+                class="paginacion"
+                aria-label="Paginación de compras"
+            >
+
+                {% if page_obj.has_previous %}
+
+                    <a
+                        href="
+                            ?tipo={{ tipo_actual }}
+                            {% if estado_actual %}
+                                &estado={{ estado_actual }}
+                            {% endif %}
+                            &page={{ page_obj.previous_page_number }}
+                        "
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Anterior
+                    </a>
+
+                {% endif %}
+
+
+                <span>
+                    Página {{ page_obj.number }}
+                    de {{ page_obj.paginator.num_pages }}
+                </span>
+
+
+                {% if page_obj.has_next %}
+
+                    <a
+                        href="
+                            ?tipo={{ tipo_actual }}
+                            {% if estado_actual %}
+                                &estado={{ estado_actual }}
+                            {% endif %}
+                            &page={{ page_obj.next_page_number }}
+                        "
+                    >
+                        Siguiente
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                {% endif %}
+
+            </nav>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

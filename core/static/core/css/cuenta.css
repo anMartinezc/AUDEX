@@ -1,0 +1,1074 @@
+/* =========================================================
+   AUDEX
+   Archivo: core/static/core/css/cuenta.css
+
+   Estilos para:
+   - Iniciar sesión
+   - Crear cuenta
+   - Recuperar contraseña
+   - Confirmar correo
+   - Cuenta inactiva
+   - Acceso con Google
+========================================================= */
+
+
+/* =========================================================
+   PÁGINA GENERAL
+========================================================= */
+
+.cuenta-pagina {
+    position: relative;
+
+    min-height: calc(100vh - 180px);
+    padding: 92px 0 110px;
+
+    display: flex;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+.cuenta-pagina::before {
+    content: "";
+
+    position: absolute;
+    top: -220px;
+    left: -180px;
+
+    width: 520px;
+    height: 520px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(54, 169, 214, 0.15),
+            transparent 68%
+        );
+
+    pointer-events: none;
+}
+
+.cuenta-pagina::after {
+    content: "";
+
+    position: absolute;
+    right: -200px;
+    bottom: -260px;
+
+    width: 620px;
+    height: 620px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(70, 106, 255, 0.1),
+            transparent 70%
+        );
+
+    pointer-events: none;
+}
+
+.cuenta-pagina > .contenedor {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   CONTENEDOR PRINCIPAL
+========================================================= */
+
+.cuenta-login {
+    width: min(1080px, 100%);
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.05fr)
+        minmax(390px, 0.95fr);
+
+    border: 1px solid var(--borde);
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(255, 255, 255, 0.01)
+        );
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.4),
+        0 18px 50px rgba(54, 169, 214, 0.06);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   PANEL VISUAL
+========================================================= */
+
+.cuenta-login__visual {
+    position: relative;
+
+    min-height: 650px;
+    padding: 68px 64px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(54, 169, 214, 0.12),
+            rgba(11, 18, 25, 0.96)
+        );
+}
+
+.cuenta-login__visual::before {
+    content: "";
+
+    position: absolute;
+    top: 60px;
+    right: 50px;
+
+    width: 190px;
+    height: 190px;
+
+    border: 1px solid rgba(54, 169, 214, 0.14);
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 32px rgba(54, 169, 214, 0.03),
+        0 0 0 64px rgba(54, 169, 214, 0.02);
+}
+
+.cuenta-login__visual::after {
+    content: "";
+
+    position: absolute;
+    left: 58px;
+    bottom: 52px;
+
+    width: 120px;
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--color-azul-claro),
+            transparent
+        );
+}
+
+.cuenta-login__visual .etiqueta-seccion {
+    position: relative;
+    z-index: 1;
+
+    margin-bottom: 26px;
+}
+
+.cuenta-login__visual h1 {
+    position: relative;
+    z-index: 1;
+
+    max-width: 520px;
+    margin: 0;
+
+    color: var(--color-blanco);
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(2.8rem, 5vw, 4.8rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+}
+
+.cuenta-login__visual h1 span {
+    display: block;
+
+    color: var(--color-azul-claro);
+}
+
+.cuenta-login__visual > p {
+    position: relative;
+    z-index: 1;
+
+    max-width: 500px;
+    margin: 28px 0 0;
+
+    color: var(--color-gris-claro);
+    font-size: 0.96rem;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   BENEFICIOS
+========================================================= */
+
+.cuenta-login__beneficios {
+    position: relative;
+    z-index: 1;
+
+    margin-top: 42px;
+
+    display: grid;
+    gap: 16px;
+}
+
+.cuenta-login__beneficios > div {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    color: var(--color-gris-claro);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.cuenta-login__beneficios i {
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+
+    flex: 0 0 38px;
+
+    color: var(--color-azul-claro);
+    font-size: 1rem;
+
+    border: 1px solid rgba(54, 169, 214, 0.22);
+    border-radius: 12px;
+
+    background: rgba(54, 169, 214, 0.08);
+}
+
+
+/* =========================================================
+   PANEL DEL FORMULARIO
+========================================================= */
+
+.cuenta-login__formulario {
+    position: relative;
+
+    padding: 58px 52px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(13, 20, 28, 0.98),
+            rgba(8, 14, 20, 0.98)
+        );
+}
+
+.cuenta-login__icono {
+    width: 62px;
+    height: 62px;
+    margin-bottom: 22px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-azul-claro);
+    font-size: 1.35rem;
+
+    border: 1px solid rgba(54, 169, 214, 0.28);
+    border-radius: 18px;
+
+    background: rgba(54, 169, 214, 0.09);
+
+    box-shadow:
+        0 16px 36px rgba(54, 169, 214, 0.08);
+}
+
+.cuenta-login__eyebrow {
+    color: var(--color-azul-claro);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.cuenta-login__formulario h2 {
+    margin: 9px 0 0;
+
+    color: var(--color-blanco);
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    font-weight: 800;
+    line-height: 1.12;
+}
+
+.cuenta-login__formulario > p {
+    margin: 14px 0 0;
+
+    color: var(--color-gris);
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   FORMULARIO
+========================================================= */
+
+.cuenta-formulario {
+    margin-top: 30px;
+
+    display: grid;
+    gap: 20px;
+}
+
+.cuenta-campo {
+    display: grid;
+    gap: 9px;
+}
+
+.cuenta-campo > label,
+.cuenta-campo__encabezado label {
+    color: var(--color-gris-claro);
+    font-size: 0.73rem;
+    font-weight: 800;
+}
+
+.cuenta-campo__encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cuenta-campo__encabezado a {
+    color: var(--color-azul-claro);
+    font-size: 0.69rem;
+    font-weight: 800;
+
+    transition:
+        color var(--transicion),
+        opacity var(--transicion);
+}
+
+.cuenta-campo__encabezado a:hover {
+    color: var(--color-blanco);
+}
+
+
+/* =========================================================
+   CAMPOS DE ACCESO
+   Un solo borde y un solo estado focus.
+========================================================= */
+
+.cuenta-login__formulario
+.cuenta-campo__control {
+    position: relative;
+
+    width: 100%;
+    min-height: 56px;
+
+    display: flex;
+    align-items: center;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 16px;
+    outline: 0;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    box-shadow: none;
+
+    transition:
+        border-color 0.22s ease,
+        background 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.cuenta-login__formulario
+.cuenta-campo__control:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.cuenta-login__formulario
+.cuenta-campo__control:focus-within {
+    border-color: var(--color-azul-claro);
+
+    background: rgba(54, 169, 214, 0.045);
+
+    box-shadow:
+        0 0 0 3px rgba(54, 169, 214, 0.08),
+        0 12px 28px rgba(54, 169, 214, 0.08);
+}
+
+
+/* Icono izquierdo */
+
+.cuenta-login__formulario
+.cuenta-campo__control > i {
+    position: absolute;
+    z-index: 2;
+    left: 18px;
+
+    width: 20px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-gris);
+    font-size: 1rem;
+    line-height: 1;
+
+    pointer-events: none;
+
+    transition: color 0.22s ease;
+}
+
+.cuenta-login__formulario
+.cuenta-campo__control:focus-within > i {
+    color: var(--color-azul-claro);
+}
+
+
+/* Input sin borde propio */
+
+.cuenta-login__formulario
+.cuenta-campo__control input,
+.cuenta-login__formulario
+.cuenta-campo__control input:hover,
+.cuenta-login__formulario
+.cuenta-campo__control input:focus,
+.cuenta-login__formulario
+.cuenta-campo__control input:focus-visible,
+.cuenta-login__formulario
+.cuenta-campo__control input:active {
+    width: 100%;
+    min-width: 0;
+    min-height: 56px;
+    margin: 0;
+    padding: 0 54px 0 52px;
+
+    color: var(--color-blanco);
+    font-family: inherit;
+    font-size: 0.86rem;
+    line-height: normal;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+
+    background: transparent !important;
+
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.cuenta-login__formulario
+.cuenta-campo__control input::placeholder {
+    color: rgba(169, 182, 194, 0.62);
+
+    opacity: 1;
+}
+
+
+/* Safari y Chrome autocompletado */
+
+.cuenta-login__formulario
+.cuenta-campo__control input:-webkit-autofill,
+.cuenta-login__formulario
+.cuenta-campo__control input:-webkit-autofill:hover,
+.cuenta-login__formulario
+.cuenta-campo__control input:-webkit-autofill:focus {
+    border: 0 !important;
+
+    -webkit-text-fill-color: var(--color-blanco) !important;
+
+    -webkit-box-shadow:
+        0 0 0 1000px #0b141b inset !important;
+
+    box-shadow:
+        0 0 0 1000px #0b141b inset !important;
+
+    caret-color: var(--color-blanco);
+
+    transition:
+        background-color 9999s ease-in-out 0s;
+}
+
+
+/* Evita estilos nativos dobles de validación */
+
+.cuenta-login__formulario
+.cuenta-campo__control input:invalid {
+    outline: 0 !important;
+    box-shadow: none !important;
+}
+
+
+/* =========================================================
+   MOSTRAR CONTRASEÑA
+========================================================= */
+
+.cuenta-login__formulario
+.cuenta-campo__mostrar {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    right: 8px;
+
+    width: 40px;
+    height: 40px;
+    padding: 0;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-gris);
+    font-size: 1rem;
+    line-height: 1;
+
+    border: 0;
+    border-radius: 11px;
+    outline: 0;
+
+    background: transparent;
+
+    box-shadow: none;
+
+    transform: translateY(-50%);
+
+    cursor: pointer;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    transition:
+        color 0.22s ease,
+        background 0.22s ease;
+}
+
+.cuenta-login__formulario
+.cuenta-campo__mostrar:hover {
+    color: var(--color-azul-claro);
+
+    background: rgba(54, 169, 214, 0.09);
+}
+
+.cuenta-login__formulario
+.cuenta-campo__mostrar:focus-visible {
+    color: var(--color-azul-claro);
+
+    outline: 2px solid var(--color-azul-claro);
+    outline-offset: 1px;
+}
+
+
+/* =========================================================
+   RECORDAR SESIÓN
+========================================================= */
+
+.cuenta-formulario__recordar,
+.cuenta-login__recordarme {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--color-gris);
+    font-size: 0.73rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.cuenta-formulario__recordar input,
+.cuenta-login__recordarme input {
+    width: 16px;
+    height: 16px;
+
+    accent-color: var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   ERRORES
+========================================================= */
+
+.cuenta-login__error {
+    margin-top: 22px;
+    padding: 14px 16px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    color: #ffb5bb;
+    font-size: 0.76rem;
+    line-height: 1.55;
+
+    border: 1px solid rgba(255, 91, 101, 0.28);
+    border-radius: 14px;
+
+    background: rgba(255, 91, 101, 0.07);
+}
+
+.cuenta-login__error i {
+    margin-top: 2px;
+
+    color: #ff9ca4;
+}
+
+.cuenta-login__error div {
+    display: grid;
+    gap: 4px;
+}
+
+.cuenta-campo__error {
+    margin-top: 2px;
+
+    color: #ff9ca4;
+    font-size: 0.7rem;
+    line-height: 1.45;
+}
+
+.cuenta-campo__error ul,
+.cuenta-campo__error .errorlist {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.cuenta-formulario__errores {
+    padding: 14px 16px;
+
+    color: #ffb5bb;
+    font-size: 0.74rem;
+    line-height: 1.55;
+
+    border: 1px solid rgba(255, 91, 101, 0.28);
+    border-radius: 14px;
+
+    background: rgba(255, 91, 101, 0.07);
+}
+
+.cuenta-formulario__errores ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+
+/* =========================================================
+   BOTÓN PRINCIPAL
+========================================================= */
+
+.cuenta-formulario .boton--completo,
+.cuenta-login__acciones .boton--completo {
+    min-height: 52px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   SEPARADOR
+========================================================= */
+
+.cuenta-login__separador {
+    position: relative;
+
+    margin: 25px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cuenta-login__separador::before {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    right: 0;
+
+    height: 1px;
+
+    background: var(--borde);
+}
+
+.cuenta-login__separador span {
+    position: relative;
+    z-index: 1;
+
+    padding: 0 14px;
+
+    color: var(--color-gris);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    background: var(--color-fondo-secundario);
+}
+
+
+/* =========================================================
+   GOOGLE
+========================================================= */
+
+.cuenta-login__google-form {
+    width: 100%;
+    margin: 0;
+}
+
+.cuenta-login__google {
+    width: 100%;
+    min-height: 52px;
+    padding: 0 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+
+    color: var(--color-blanco);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.045);
+
+    transition:
+        color var(--transicion),
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion),
+        box-shadow var(--transicion);
+}
+
+.cuenta-login__google:hover {
+    color: var(--color-blanco);
+
+    border-color: rgba(54, 169, 214, 0.42);
+    background: rgba(54, 169, 214, 0.1);
+
+    box-shadow:
+        0 14px 32px rgba(54, 169, 214, 0.1);
+
+    transform: translateY(-2px);
+}
+
+.cuenta-login__google i {
+    color: var(--color-azul-claro);
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+
+/* =========================================================
+   REGISTRO / ENLACES INFERIORES
+========================================================= */
+
+.cuenta-login__registro {
+    margin-top: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    color: var(--color-gris);
+    font-size: 0.74rem;
+    text-align: center;
+
+    flex-wrap: wrap;
+}
+
+.cuenta-login__registro a {
+    color: var(--color-azul-claro);
+    font-weight: 800;
+
+    transition:
+        color var(--transicion),
+        opacity var(--transicion);
+}
+
+.cuenta-login__registro a:hover {
+    color: var(--color-blanco);
+}
+
+
+/* =========================================================
+   MENSAJES INFORMATIVOS
+========================================================= */
+
+.cuenta-login__mensaje {
+    margin: 22px 0 0;
+    padding: 16px 18px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    color: var(--color-gris-claro);
+    font-size: 0.78rem;
+    line-height: 1.6;
+
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.cuenta-login__mensaje i {
+    margin-top: 2px;
+
+    color: var(--color-azul-claro);
+    font-size: 1rem;
+}
+
+.cuenta-login__mensaje--error {
+    border-color: rgba(255, 91, 101, 0.28);
+
+    background: rgba(255, 91, 101, 0.07);
+}
+
+.cuenta-login__mensaje--error i {
+    color: #ff9ca4;
+}
+
+.cuenta-login__correo {
+    color: var(--color-blanco);
+    font-weight: 800;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   ACCIONES SECUNDARIAS
+========================================================= */
+
+.cuenta-login__acciones {
+    margin-top: 24px;
+
+    display: grid;
+    gap: 12px;
+}
+
+.cuenta-login__enlace {
+    min-height: 48px;
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    color: var(--color-azul-claro);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-align: center;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 14px;
+
+    background: rgba(54, 169, 214, 0.07);
+
+    transition:
+        color var(--transicion),
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.cuenta-login__enlace:hover {
+    color: var(--color-blanco);
+
+    border-color: rgba(54, 169, 214, 0.55);
+    background: rgba(54, 169, 214, 0.14);
+
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   LOGOUT DEL HEADER
+========================================================= */
+
+.header__form-logout {
+    display: contents;
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+========================================================= */
+
+.cuenta-login__google:focus-visible,
+.cuenta-login__enlace:focus-visible {
+    outline: 2px solid var(--color-azul-claro);
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1050px) {
+    .cuenta-pagina {
+        padding: 72px 0 90px;
+    }
+
+    .cuenta-login {
+        width: min(720px, 100%);
+
+        grid-template-columns: 1fr;
+    }
+
+    .cuenta-login__visual {
+        min-height: auto;
+        padding: 56px 48px;
+    }
+
+    .cuenta-login__visual::before {
+        top: 35px;
+        right: 35px;
+
+        width: 150px;
+        height: 150px;
+    }
+
+    .cuenta-login__formulario {
+        padding: 52px 48px;
+    }
+}
+
+
+@media (max-width: 700px) {
+    .cuenta-pagina {
+        padding: 48px 0 72px;
+    }
+
+    .cuenta-login {
+        border-radius: 22px;
+    }
+
+    .cuenta-login__visual {
+        padding: 44px 28px;
+    }
+
+    .cuenta-login__visual h1 {
+        font-size: clamp(2.35rem, 11vw, 3.4rem);
+    }
+
+    .cuenta-login__visual > p {
+        font-size: 0.86rem;
+    }
+
+    .cuenta-login__beneficios {
+        margin-top: 32px;
+    }
+
+    .cuenta-login__formulario {
+        padding: 42px 28px;
+    }
+}
+
+
+@media (max-width: 520px) {
+    .cuenta-pagina {
+        padding: 34px 0 58px;
+    }
+
+    .cuenta-login {
+        border-radius: 18px;
+    }
+
+    .cuenta-login__visual {
+        padding: 36px 20px;
+    }
+
+    .cuenta-login__visual::before,
+    .cuenta-login__visual::after {
+        display: none;
+    }
+
+    .cuenta-login__formulario {
+        padding: 36px 20px;
+    }
+
+    .cuenta-login__icono {
+        width: 56px;
+        height: 56px;
+
+        border-radius: 16px;
+    }
+
+    .cuenta-campo__encabezado {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .cuenta-login__formulario
+    .cuenta-campo__control,
+    .cuenta-login__formulario
+    .cuenta-campo__control input {
+        min-height: 52px;
+    }
+
+    .cuenta-login__formulario
+    .cuenta-campo__control input {
+        padding-right: 50px;
+        padding-left: 47px;
+
+        font-size: 0.82rem;
+    }
+
+    .cuenta-login__formulario
+    .cuenta-campo__control > i {
+        left: 16px;
+    }
+
+    .cuenta-login__formulario
+    .cuenta-campo__mostrar {
+        right: 6px;
+
+        width: 38px;
+        height: 38px;
+    }
+
+    .cuenta-login__registro {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .cuenta-login__acciones {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,221 @@
+/* =========================================================
+   AUDEX
+   Archivo: core/static/core/css/logout.css
+
+   Este archivo debe cargarse DESPUÉS de estilos.css,
+   pedidos.css y cualquier bloque extra_css.
+========================================================= */
+
+.logout-dialog {
+    width: min(470px, calc(100% - 32px));
+    max-width: 470px;
+    margin: auto;
+    padding: 0;
+
+    color: var(--color-blanco);
+
+    border: 0;
+    border-radius: var(--radio-grande);
+
+    background: transparent;
+
+    overflow: visible;
+}
+
+.logout-dialog:not([open]) {
+    display: none;
+}
+
+.logout-dialog[open] {
+    display: block;
+}
+
+.logout-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.logout-dialog__tarjeta {
+    position: relative;
+
+    width: 100%;
+    padding: 44px 38px 36px;
+
+    color: var(--color-blanco);
+    text-align: center;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: var(--radio-grande);
+
+    background:
+        radial-gradient(
+            circle at 50% 0,
+            rgba(54, 169, 214, 0.16),
+            transparent 42%
+        ),
+        var(--color-fondo-secundario);
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.62),
+        0 20px 50px rgba(54, 169, 214, 0.14);
+
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease;
+}
+
+.logout-dialog--visible .logout-dialog__tarjeta {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.logout-dialog__cerrar {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--color-gris);
+    font-size: 0.95rem;
+
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.035);
+
+    transition:
+        color var(--transicion),
+        border-color var(--transicion),
+        background var(--transicion);
+}
+
+.logout-dialog__cerrar:hover {
+    color: var(--color-blanco);
+    border-color: var(--borde-azul);
+    background: rgba(54, 169, 214, 0.1);
+}
+
+.logout-dialog__icono {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 22px;
+
+    display: grid;
+    place-items: center;
+
+    color: #ff9ca4;
+    font-size: 1.7rem;
+
+    border: 1px solid rgba(255, 91, 101, 0.32);
+    border-radius: 50%;
+
+    background: rgba(255, 91, 101, 0.1);
+
+    box-shadow:
+        0 14px 35px rgba(255, 91, 101, 0.1);
+}
+
+.logout-dialog__etiqueta {
+    display: block;
+
+    color: var(--color-azul-claro);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.logout-dialog__tarjeta h2 {
+    margin: 9px 0 0;
+
+    color: var(--color-blanco);
+    font-family: "Montserrat", sans-serif;
+    font-size: 2rem;
+    line-height: 1.15;
+}
+
+.logout-dialog__tarjeta p {
+    max-width: 370px;
+    margin: 14px auto 0;
+
+    color: var(--color-gris);
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+.logout-dialog__acciones {
+    margin-top: 28px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.logout-dialog__acciones .boton,
+.logout-dialog__confirmar {
+    width: 100%;
+    min-height: 50px;
+}
+
+.logout-dialog__confirmar {
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    color: var(--color-blanco);
+    font-family: inherit;
+    font-weight: 800;
+
+    border: 1px solid rgba(255, 91, 101, 0.4);
+    border-radius: 14px;
+
+    background: rgba(255, 91, 101, 0.14);
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.logout-dialog__confirmar:hover:not(:disabled) {
+    border-color: rgba(255, 91, 101, 0.72);
+    background: rgba(255, 91, 101, 0.24);
+    transform: translateY(-2px);
+}
+
+.logout-dialog__confirmar:disabled {
+    cursor: wait;
+    opacity: 0.72;
+}
+
+.header__form-logout {
+    display: contents;
+    margin: 0;
+}
+
+@media (max-width: 520px) {
+    .logout-dialog {
+        width: min(100% - 24px, 470px);
+    }
+
+    .logout-dialog__tarjeta {
+        padding: 44px 20px 24px;
+    }
+
+    .logout-dialog__acciones {
+        grid-template-columns: 1fr;
+    }
+}

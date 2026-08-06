@@ -1,0 +1,422 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+Descuentos y fidelidad | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/gestion_descuentos.css' %}?v=2"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="gd">
+    <div class="contenedor gd__contenedor">
+
+        <header class="gd__cabecera">
+            <span>Gestión Audex</span>
+            <h1>Descuentos y fidelidad</h1>
+
+            <p>
+                Crea varios códigos generales, administra premios
+                personales y revisa cada compra realizada con descuento.
+            </p>
+        </header>
+
+        <div class="gd__kpis">
+            <article>
+                <span>Códigos generales</span>
+                <strong>{{ estadisticas.codigos_generales }}</strong>
+            </article>
+
+            <article>
+                <span>Premios personales</span>
+                <strong>{{ estadisticas.codigos_fidelidad }}</strong>
+            </article>
+
+            <article>
+                <span>Códigos activos</span>
+                <strong>{{ estadisticas.codigos_activos }}</strong>
+            </article>
+
+            <article>
+                <span>Compras con código</span>
+                <strong>{{ estadisticas.usos_confirmados }}</strong>
+            </article>
+
+            <article>
+                <span>Descuento entregado</span>
+                <strong>
+                    ${{ estadisticas.descuento_total|floatformat:0|intcomma }}
+                </strong>
+            </article>
+        </div>
+
+        <div class="gd__configuraciones">
+
+            <article class="gd__panel">
+                <header>
+                    <span>Campañas públicas</span>
+                    <h2>Crear código general</h2>
+
+                    <p>
+                        Puedes mantener varios códigos activos.
+                        Cada RUT podrá utilizar cada código una sola vez.
+                    </p>
+                </header>
+
+                <form
+                    method="post"
+                    action="{% url 'core:crear_codigo_general' %}"
+                    class="gd__formulario"
+                >
+                    {% csrf_token %}
+
+                    {% for campo in formulario_codigo %}
+                        <label>
+                            <span>{{ campo.label }}</span>
+                            {{ campo }}
+
+                            {% for error in campo.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </label>
+                    {% endfor %}
+
+                    <button type="submit">
+                        <i class="bi bi-plus-lg"></i>
+                        Crear código
+                    </button>
+                </form>
+            </article>
+
+            <article class="gd__panel">
+                <header>
+                    <span>Clientes frecuentes</span>
+                    <h2>Programa de fidelidad</h2>
+
+                    <p>
+                        El prefijo lo escribes tú. Cada meta genera
+                        un código personal nuevo, único y exclusivo.
+                    </p>
+                </header>
+
+                <form
+                    method="post"
+                    action="{% url 'core:guardar_configuracion_fidelidad' %}"
+                    class="gd__formulario"
+                >
+                    {% csrf_token %}
+
+                    {% for campo in formulario_fidelidad %}
+                        <label>
+                            <span>{{ campo.label }}</span>
+                            {{ campo }}
+
+                            {% if campo.help_text %}
+                                <small>{{ campo.help_text }}</small>
+                            {% endif %}
+
+                            {% for error in campo.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </label>
+                    {% endfor %}
+
+                    <button type="submit">
+                        <i class="bi bi-floppy"></i>
+                        Guardar fidelidad
+                    </button>
+                </form>
+            </article>
+
+        </div>
+
+        <article class="gd__panel">
+            <header class="gd__tabla-cabecera">
+                <div>
+                    <span>Todos los códigos</span>
+                    <h2>Campañas y premios</h2>
+                </div>
+
+                <form method="get" class="gd__filtros">
+                    <input
+                        type="search"
+                        name="q"
+                        value="{{ busqueda }}"
+                        placeholder="Código, nombre o cliente"
+                    >
+
+                    <select name="tipo">
+                        <option value="">Todos los tipos</option>
+                        <option value="general" {% if tipo == "general" %}selected{% endif %}>
+                            Generales
+                        </option>
+                        <option value="fidelidad" {% if tipo == "fidelidad" %}selected{% endif %}>
+                            Fidelidad
+                        </option>
+                    </select>
+
+                    <select name="estado">
+                        <option value="">Todos los estados</option>
+                        <option value="activos" {% if estado == "activos" %}selected{% endif %}>
+                            Activos
+                        </option>
+                        <option value="inactivos" {% if estado == "inactivos" %}selected{% endif %}>
+                            Inactivos
+                        </option>
+                    </select>
+
+                    <button type="submit">
+                        Filtrar
+                    </button>
+                </form>
+            </header>
+
+            <div class="gd__tabla-scroll">
+                <table class="gd__tabla">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Descuento</th>
+                            <th>Mínimo</th>
+                            <th>Cliente exclusivo</th>
+                            <th>Usos</th>
+                            <th>Vigencia</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for codigo in pagina_codigos %}
+                            <tr>
+                                <td>
+                                    <strong>{{ codigo.codigo }}</strong>
+                                    <small>{{ codigo.nombre }}</small>
+                                </td>
+
+                                <td>{{ codigo.get_tipo_display }}</td>
+                                <td>{{ codigo.porcentaje|floatformat:0 }}%</td>
+
+                                <td>
+                                    ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                </td>
+
+                                <td>
+                                    {% if codigo.usuario_exclusivo %}
+                                        {{ codigo.usuario_exclusivo.email|default:codigo.usuario_exclusivo.username }}
+                                    {% else %}
+                                        Cualquier cliente
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ codigo.total_usos }}</td>
+
+                                <td>
+                                    {% if codigo.fecha_fin %}
+                                        {{ codigo.fecha_fin|date:"d/m/Y H:i" }}
+                                    {% else %}
+                                        Sin vencimiento
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if codigo.consumido %}
+                                        <span class="gd__estado gd__estado--usado">
+                                            Consumido
+                                        </span>
+                                    {% elif codigo.activo %}
+                                        <span class="gd__estado gd__estado--activo">
+                                            Activo
+                                        </span>
+                                    {% else %}
+                                        <span class="gd__estado gd__estado--inactivo">
+                                            Desactivado
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <form
+                                        method="post"
+                                        action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
+                                    >
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="gd__accion"
+                                        >
+                                            {% if codigo.activo %}
+                                                Desactivar
+                                            {% else %}
+                                                Activar
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9">
+                                    No existen códigos con estos filtros.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="gd__panel">
+            <header>
+                <span>Progreso</span>
+                <h2>Clientes acumulando metas</h2>
+            </header>
+
+            <div class="gd__tabla-scroll">
+                <table class="gd__tabla">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Saldo</th>
+                            <th>Falta</th>
+                            <th>Metas</th>
+                            <th>Progreso</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for saldo in saldos %}
+                            <tr>
+                                <td>
+                                    {{ saldo.usuario.email|default:saldo.usuario.username }}
+                                </td>
+                                <td>${{ saldo.saldo_actual|floatformat:0|intcomma }}</td>
+                                <td>${{ saldo.faltante|floatformat:0|intcomma }}</td>
+                                <td>{{ saldo.metas_cumplidas }}</td>
+                                <td>
+                                    <div class="gd__progreso">
+                                        <span style="width: {{ saldo.progreso }}%;"></span>
+                                    </div>
+                                    <small>{{ saldo.progreso }}%</small>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    Todavía no existen clientes acumulando.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="gd__panel">
+            <header>
+                <span>Historial detallado</span>
+                <h2>Compras realizadas con código</h2>
+
+                <p>
+                    Incluye cliente, pedido, productos, precios y descuento
+                    asignado a cada línea.
+                </p>
+            </header>
+
+            <div class="gd__usos">
+                {% for uso in pagina_usos %}
+                    <details class="gd__uso">
+                        <summary>
+                            <div>
+                                <strong>{{ uso.codigo.codigo }}</strong>
+                                <span>Pedido {{ uso.pedido.numero }}</span>
+                            </div>
+
+                            <div>
+                                <span>
+                                    {% if uso.usuario %}
+                                        {{ uso.usuario.email|default:uso.usuario.username }}
+                                    {% else %}
+                                        Invitado {{ uso.rut_enmascarado }}
+                                    {% endif %}
+                                </span>
+
+                                <strong>
+                                    -${{ uso.descuento_aplicado|floatformat:0|intcomma }}
+                                </strong>
+                            </div>
+                        </summary>
+
+                        <div class="gd__uso-resumen">
+                            <span>
+                                Subtotal:
+                                ${{ uso.subtotal_original|floatformat:0|intcomma }}
+                            </span>
+                            <span>
+                                Total final:
+                                ${{ uso.total_final|floatformat:0|intcomma }}
+                            </span>
+                            <span>
+                                Fecha:
+                                {{ uso.confirmado_en|date:"d/m/Y H:i" }}
+                            </span>
+                        </div>
+
+                        <div class="gd__tabla-scroll">
+                            <table class="gd__tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio lista</th>
+                                        <th>Precio venta</th>
+                                        <th>Descuento producto</th>
+                                        <th>Descuento código</th>
+                                        <th>Total final</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for item in uso.pedido.items.all %}
+                                        <tr>
+                                            <td>{{ item.nombre_producto }}</td>
+                                            <td>{{ item.cantidad }}</td>
+                                            <td>${{ item.precio_lista_unitario|floatformat:0|intcomma }}</td>
+                                            <td>${{ item.precio_unitario|floatformat:0|intcomma }}</td>
+                                            <td>
+                                                -${{ item.descuento_producto_unitario|floatformat:0|intcomma }}
+                                                por unidad
+                                            </td>
+                                            <td>
+                                                -${{ item.descuento_codigo|floatformat:0|intcomma }}
+                                            </td>
+                                            <td>
+                                                ${{ item.total_final|floatformat:0|intcomma }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                {% empty %}
+                    <p>
+                        Todavía no existen compras confirmadas con código.
+                    </p>
+                {% endfor %}
+            </div>
+        </article>
+
+    </div>
+</section>
+
+{% endblock %}

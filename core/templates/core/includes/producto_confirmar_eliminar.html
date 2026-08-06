@@ -1,0 +1,65 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+Eliminar producto | Audex
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/administracion.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="administracion">
+    <div class="contenedor confirmacion-eliminar">
+
+        <div class="confirmacion-eliminar__icono">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <span class="etiqueta-seccion">
+            Acción irreversible
+        </span>
+
+        <h1>Eliminar producto</h1>
+
+        <p>
+            Estás a punto de eliminar
+            <strong>{{ object.nombre }}</strong>.
+            Esta acción no se puede deshacer.
+        </p>
+
+        {% if object.imagen_mostrable %}
+            <img
+                src="{{ object.imagen_mostrable }}"
+                alt="{{ object.nombre }}"
+            >
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <a
+                href="{% url 'core:productos' %}"
+                class="boton boton--secundario"
+            >
+                Cancelar
+            </a>
+
+            <button
+                type="submit"
+                class="boton boton--eliminar"
+            >
+                <i class="bi bi-trash3"></i>
+                Sí, eliminar
+            </button>
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}
