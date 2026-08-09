@@ -516,11 +516,15 @@ class Pedido(models.Model):
             "Código general",
         )
 
+        ESPECIAL = (
+            "especial",
+            "Oferta especial para usuario",
+        )
+
         FIDELIDAD = (
             "fidelidad",
             "Premio de fidelidad",
         )
-
     # -------------------------------------------------------------------------
     # COMPATIBILIDAD CON CÓDIGO ANTERIOR
     # -------------------------------------------------------------------------
@@ -1306,10 +1310,49 @@ class PedidoItem(models.Model):
         )
 
 
+class ConfiguracionFidelidad:
+    """Compatibilidad simple para el flujo anterior de fidelidad."""
+
+    activa = True
+    porcentaje = Decimal("5")
+    monto_objetivo = Decimal("100000")
+    monto_minimo_compra = Decimal("10000")
+    vigencia_dias = 60
+
+    @classmethod
+    def obtener(cls):
+        return cls()
+
+
+class EventoPago:
+    """Compatibilidad mínima para el webhook de pagos."""
+
+    class _Manager:
+        def __init__(self):
+            self._items = {}
+
+        def get_or_create(self, **kwargs):
+            clave = kwargs.get("clave")
+            defaults = kwargs.get("defaults", {}) or {}
+
+            if clave is None:
+                raise ValueError("Se requiere una clave para EventoPago")
+
+            if clave not in self._items:
+                self._items[clave] = {
+                    "clave": clave,
+                    **defaults,
+                }
+                return self._items[clave], True
+
+            return self._items[clave], False
+
+    objects = _Manager()
+
+
 class CodigoDescuento(models.Model):
-    class Tipo(
-        models.TextChoices
-    ):
+
+    class Tipo(models.TextChoices):
         GENERAL = (
             "general",
             "Código general",
@@ -1320,9 +1363,7 @@ class CodigoDescuento(models.Model):
             "Premio de fidelidad",
         )
 
-    class Modalidad(
-        models.TextChoices
-    ):
+    class Modalidad(models.TextChoices):
         PORCENTAJE = (
             "porcentaje",
             "Porcentaje",
@@ -1351,14 +1392,10 @@ class CodigoDescuento(models.Model):
         default=Modalidad.PORCENTAJE,
         db_index=True,
         verbose_name="Modalidad del descuento",
-        help_text=(
-            "Selecciona si el código descontará "
-            "un porcentaje o un monto fijo en CLP."
-        ),
     )
 
     # ------------------------------------------------------------------
-    # INFORMACIÓN DEL CÓDIGO
+    # INFORMACIÓN
     # ------------------------------------------------------------------
 
     nombre = models.CharField(
@@ -1393,13 +1430,13 @@ class CodigoDescuento(models.Model):
         db_index=True,
         verbose_name="Código consumido",
         help_text=(
-            "Solo se utiliza para premios "
-            "personales de fidelidad."
+            "Se utiliza en premios personales "
+            "de fidelidad de un solo uso."
         ),
     )
 
     # ------------------------------------------------------------------
-    # VALOR DEL DESCUENTO
+    # VALOR
     # ------------------------------------------------------------------
 
     porcentaje = models.DecimalField(
@@ -1415,50 +1452,36 @@ class CodigoDescuento(models.Model):
                 Decimal("100")
             ),
         ],
-        verbose_name="Porcentaje de descuento",
-        help_text=(
-            "Completar solamente cuando la modalidad "
-            "sea porcentaje. Ejemplo: 15 para un 15%."
+        verbose_name=(
+            "Porcentaje de descuento"
         ),
     )
 
-    monto_descuento = (
-        models.DecimalField(
-            max_digits=12,
-            decimal_places=0,
-            null=True,
-            blank=True,
-            validators=[
-                MinValueValidator(
-                    Decimal("1")
-                ),
-            ],
-            verbose_name=(
-                "Monto fijo de descuento"
+    monto_descuento = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(
+                Decimal("1")
             ),
-            help_text=(
-                "Completar solamente cuando la modalidad "
-                "sea monto fijo en CLP. Ejemplo: 38000."
-            ),
-        )
+        ],
+        verbose_name=(
+            "Monto fijo de descuento"
+        ),
     )
 
-    monto_minimo = (
-        models.DecimalField(
-            max_digits=12,
-            decimal_places=0,
-            default=0,
-            validators=[
-                MinValueValidator(
-                    Decimal("0")
-                ),
-            ],
-            verbose_name="Compra mínima",
-            help_text=(
-                "Subtotal mínimo que debe alcanzar el "
-                "cliente para utilizar este código."
+    monto_minimo = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        default=0,
+        validators=[
+            MinValueValidator(
+                Decimal("0")
             ),
-        )
+        ],
+        verbose_name="Compra mínima",
     )
 
     monto_maximo_descuento = (
@@ -1474,11 +1497,6 @@ class CodigoDescuento(models.Model):
             ],
             verbose_name=(
                 "Descuento máximo"
-            ),
-            help_text=(
-                "Opcional. Solo se utiliza en descuentos "
-                "porcentuales para limitar el monto máximo "
-                "que puede descontarse."
             ),
         )
     )
@@ -1502,20 +1520,35 @@ class CodigoDescuento(models.Model):
     )
 
     # ------------------------------------------------------------------
-    # CÓDIGOS PERSONALES
+    # FIDELIDAD
     # ------------------------------------------------------------------
 
-    usuario_exclusivo = (
-        models.ForeignKey(
-            settings.AUTH_USER_MODEL,
-            on_delete=models.CASCADE,
-            null=True,
-            blank=True,
-            related_name=(
-                "codigos_descuento_exclusivos"
-            ),
-            verbose_name="Usuario exclusivo",
-        )
+    usuario_exclusivo = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name=(
+            "codigos_descuento_exclusivos"
+        ),
+        verbose_name=(
+            "Usuario propietario"
+        ),
+        help_text=(
+            "Se completa automáticamente "
+            "para premios de fidelidad."
+        ),
+    )
+
+    meta_fidelidad = models.ForeignKey(
+        "MetaFidelidad",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="codigos_generados",
+        verbose_name=(
+            "Meta de fidelidad"
+        ),
     )
 
     numero_meta = (
@@ -1523,10 +1556,6 @@ class CodigoDescuento(models.Model):
             null=True,
             blank=True,
             verbose_name="Número de meta",
-            help_text=(
-                "Número de meta que originó "
-                "el premio personal."
-            ),
         )
     )
 
@@ -1573,41 +1602,48 @@ class CodigoDescuento(models.Model):
                     "tipo",
                     "activo",
                 ],
-                name=(
-                    "codigo_tipo_activo_idx"
-                ),
+                name="codigo_tipo_activo_idx",
             ),
+
             models.Index(
                 fields=[
                     "modalidad",
                     "activo",
                 ],
-                name=(
-                    "codigo_modal_activo_idx"
-                ),
+                name="codigo_modal_activo_idx",
             ),
+
             models.Index(
                 fields=[
                     "usuario_exclusivo",
                     "consumido",
                 ],
-                name=(
-                    "codigo_usuario_consum_idx"
-                ),
+                name="codigo_usuario_consum_idx",
             ),
+
             models.Index(
                 fields=[
                     "activo",
                     "fecha_inicio",
                     "fecha_fin",
                 ],
-                name=(
-                    "codigo_vigencia_idx"
-                ),
+                name="codigo_vigencia_idx",
+            ),
+
+            models.Index(
+                fields=[
+                    "meta_fidelidad",
+                    "usuario_exclusivo",
+                ],
+                name="codigo_meta_usuario_idx",
             ),
         ]
 
         constraints = [
+            # ----------------------------------------------------------
+            # Modalidad válida
+            # ----------------------------------------------------------
+
             models.CheckConstraint(
                 condition=(
                     Q(
@@ -1626,12 +1662,71 @@ class CodigoDescuento(models.Model):
                     "codigo_modalidad_valida"
                 ),
             ),
+
+            # ----------------------------------------------------------
+            # Monto mínimo >= 0
+            # ----------------------------------------------------------
+
             models.CheckConstraint(
                 condition=Q(
                     monto_minimo__gte=0,
                 ),
+                name="codigo_min_gte_0",
+            ),
+
+            # ----------------------------------------------------------
+            # Monto fijo requiere compra mínima
+            # ----------------------------------------------------------
+
+            models.CheckConstraint(
+                condition=(
+                    ~Q(
+                        modalidad="monto_fijo",
+                    )
+                    |
+                    Q(
+                        monto_minimo__gt=0,
+                    )
+                ),
+                name="codigo_fijo_min_gt_0",
+            ),
+
+            # ----------------------------------------------------------
+            # General no tiene propietario.
+            # Fidelidad sí.
+            # ----------------------------------------------------------
+
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        tipo="general",
+                        usuario_exclusivo__isnull=True,
+                        meta_fidelidad__isnull=True,
+                    )
+                    |
+                    Q(
+                        tipo="fidelidad",
+                        usuario_exclusivo__isnull=False,
+                        meta_fidelidad__isnull=False,
+                    )
+                ),
+                name="codigo_propietario_valido",
+            ),
+
+            # ----------------------------------------------------------
+            # Cada usuario recibe una sola vez cada meta.
+            # ----------------------------------------------------------
+
+            models.UniqueConstraint(
+                fields=[
+                    "usuario_exclusivo",
+                    "meta_fidelidad",
+                ],
+                condition=Q(
+                    tipo="fidelidad",
+                ),
                 name=(
-                    "codigo_min_gte_0"
+                    "fidelidad_una_meta_por_usuario"
                 ),
             ),
         ]
@@ -1653,7 +1748,7 @@ class CodigoDescuento(models.Model):
         errores = {}
 
         # --------------------------------------------------------------
-        # VALIDACIÓN DE FECHAS
+        # FECHAS
         # --------------------------------------------------------------
 
         if (
@@ -1668,12 +1763,16 @@ class CodigoDescuento(models.Model):
             )
 
         # --------------------------------------------------------------
-        # VALIDACIÓN DEL MONTO MÍNIMO
+        # COMPRA MÍNIMA
         # --------------------------------------------------------------
 
+        if self.monto_minimo is None:
+            self.monto_minimo = (
+                Decimal("0")
+            )
+
         if (
-            self.monto_minimo is not None
-            and self.monto_minimo
+            self.monto_minimo
             < Decimal("0")
         ):
             errores["monto_minimo"] = (
@@ -1682,7 +1781,47 @@ class CodigoDescuento(models.Model):
             )
 
         # --------------------------------------------------------------
-        # DESCUENTO PORCENTUAL
+        # TIPO GENERAL
+        # --------------------------------------------------------------
+
+        if self.tipo == self.Tipo.GENERAL:
+            self.usuario_exclusivo = None
+            self.meta_fidelidad = None
+            self.numero_meta = None
+            self.consumido = False
+
+        # --------------------------------------------------------------
+        # TIPO FIDELIDAD
+        # --------------------------------------------------------------
+
+        elif (
+            self.tipo
+            == self.Tipo.FIDELIDAD
+        ):
+            if not self.usuario_exclusivo_id:
+                errores[
+                    "usuario_exclusivo"
+                ] = (
+                    "Un premio de fidelidad "
+                    "debe pertenecer a un usuario."
+                )
+
+            if not self.meta_fidelidad_id:
+                errores[
+                    "meta_fidelidad"
+                ] = (
+                    "El premio debe indicar "
+                    "la meta que lo generó."
+                )
+
+        else:
+            errores["tipo"] = (
+                "Selecciona un tipo "
+                "de código válido."
+            )
+
+        # --------------------------------------------------------------
+        # PORCENTAJE
         # --------------------------------------------------------------
 
         if (
@@ -1710,8 +1849,21 @@ class CodigoDescuento(models.Model):
                     "ser superior a 100."
                 )
 
+            if (
+                self.monto_maximo_descuento
+                is not None
+                and self.monto_maximo_descuento
+                <= Decimal("0")
+            ):
+                errores[
+                    "monto_maximo_descuento"
+                ] = (
+                    "El descuento máximo debe "
+                    "ser mayor que cero."
+                )
+
         # --------------------------------------------------------------
-        # DESCUENTO FIJO EN CLP
+        # MONTO FIJO
         # --------------------------------------------------------------
 
         elif (
@@ -1726,54 +1878,42 @@ class CodigoDescuento(models.Model):
                 or self.monto_descuento
                 <= Decimal("0")
             ):
-                errores["monto_descuento"] = (
-                    "Debes indicar un monto fijo "
+                errores[
+                    "monto_descuento"
+                ] = (
+                    "Debes indicar un monto "
                     "de descuento mayor que cero."
+                )
+
+            if (
+                self.monto_minimo
+                <= Decimal("0")
+            ):
+                errores[
+                    "monto_minimo"
+                ] = (
+                    "Un cupón en CLP debe tener "
+                    "una compra mínima mayor "
+                    "que cero."
+                )
+
+            if (
+                self.monto_descuento is not None
+                and self.monto_descuento
+                > self.monto_minimo
+            ):
+                errores[
+                    "monto_descuento"
+                ] = (
+                    "El descuento no puede ser "
+                    "mayor que la compra mínima."
                 )
 
         else:
             errores["modalidad"] = (
                 "Selecciona una modalidad "
-                "de descuento válida."
+                "válida."
             )
-
-        # --------------------------------------------------------------
-        # CÓDIGOS GENERALES
-        # --------------------------------------------------------------
-
-        if self.tipo == self.Tipo.GENERAL:
-            self.usuario_exclusivo = None
-            self.numero_meta = None
-            self.consumido = False
-
-        # --------------------------------------------------------------
-        # CÓDIGOS DE FIDELIDAD
-        # --------------------------------------------------------------
-
-        if self.tipo == self.Tipo.FIDELIDAD:
-            # La configuración de fidelidad actual
-            # genera premios porcentuales.
-            self.modalidad = (
-                self.Modalidad.PORCENTAJE
-            )
-
-            self.monto_descuento = None
-
-            if not self.usuario_exclusivo_id:
-                errores["usuario_exclusivo"] = (
-                    "Un código de fidelidad debe "
-                    "pertenecer a un usuario."
-                )
-
-            if (
-                self.porcentaje is None
-                or self.porcentaje
-                <= Decimal("0")
-            ):
-                errores["porcentaje"] = (
-                    "Un premio de fidelidad debe "
-                    "tener un porcentaje válido."
-                )
 
         if errores:
             raise ValidationError(
@@ -1826,6 +1966,24 @@ class CodigoDescuento(models.Model):
         return True
 
     @property
+    def es_general(self):
+        return (
+            self.tipo
+            == self.Tipo.GENERAL
+        )
+
+    @property
+    def es_fidelidad(self):
+        return (
+            self.tipo
+            == self.Tipo.FIDELIDAD
+        )
+
+    @property
+    def es_personal(self):
+        return self.es_fidelidad
+
+    @property
     def es_porcentaje(self):
         return (
             self.modalidad
@@ -1854,40 +2012,73 @@ class CodigoDescuento(models.Model):
 
     @property
     def nombre_modalidad(self):
-        return self.get_modalidad_display()
+        return (
+            self.get_modalidad_display()
+        )
 
-class ConfiguracionFidelidad(
-    models.Model
-):
-    SINGLETON_PK = 1
+    @property
+    def nombre_tipo(self):
+        return (
+            self.get_tipo_display()
+        )
+
+
+class MetaFidelidad(models.Model):
+
+    class Modalidad(models.TextChoices):
+        PORCENTAJE = (
+            "porcentaje",
+            "Porcentaje",
+        )
+
+        MONTO_FIJO = (
+            "monto_fijo",
+            "Monto fijo en CLP",
+        )
+
+    nombre = models.CharField(
+        max_length=120,
+        verbose_name="Nombre de la meta",
+    )
 
     activa = models.BooleanField(
-        default=False,
+        default=True,
+        db_index=True,
+        verbose_name="Meta activa",
+    )
+
+    monto_objetivo = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        validators=[
+            MinValueValidator(
+                Decimal("1")
+            ),
+        ],
+        db_index=True,
         verbose_name=(
-            "Activar programa de fidelidad"
+            "Monto acumulado necesario"
+        ),
+        help_text=(
+            "Ejemplo: 100000 significa que "
+            "el cliente debe acumular "
+            "$100.000 en compras aprobadas."
         ),
     )
 
-    monto_objetivo = (
-        models.DecimalField(
-            max_digits=12,
-            decimal_places=0,
-            default=100000,
-            validators=[
-                MinValueValidator(
-                    Decimal("1")
-                ),
-            ],
-            verbose_name=(
-                "Monto para cumplir una meta"
-            ),
-        )
+    modalidad = models.CharField(
+        max_length=20,
+        choices=Modalidad.choices,
+        verbose_name=(
+            "Tipo de premio"
+        ),
     )
 
     porcentaje = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        default=15,
+        null=True,
+        blank=True,
         validators=[
             MinValueValidator(
                 Decimal("0.01")
@@ -1898,6 +2089,21 @@ class ConfiguracionFidelidad(
         ],
         verbose_name=(
             "Porcentaje del premio"
+        ),
+    )
+
+    monto_descuento = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(
+                Decimal("1")
+            ),
+        ],
+        verbose_name=(
+            "Monto del premio en CLP"
         ),
     )
 
@@ -1912,8 +2118,8 @@ class ConfiguracionFidelidad(
                 ),
             ],
             verbose_name=(
-                "Compra mínima para utilizar "
-                "el premio"
+                "Compra mínima para "
+                "utilizar el premio"
             ),
         )
     )
@@ -1930,7 +2136,11 @@ class ConfiguracionFidelidad(
                 ),
             ],
             verbose_name=(
-                "Descuento máximo del premio"
+                "Descuento máximo"
+            ),
+            help_text=(
+                "Solo se utiliza para "
+                "premios porcentuales."
             ),
         )
     )
@@ -1943,7 +2153,8 @@ class ConfiguracionFidelidad(
                 MaxValueValidator(730),
             ],
             verbose_name=(
-                "Vigencia del código en días"
+                "Vigencia del premio "
+                "en días"
             ),
         )
     )
@@ -1955,23 +2166,30 @@ class ConfiguracionFidelidad(
             VALIDADOR_CODIGO_DESCUENTO,
         ],
         verbose_name=(
-            "Prefijo de los códigos de premio"
-        ),
-        help_text=(
-            "Ejemplo: AUDEXFIEL. El sistema "
-            "agregará el usuario, la meta y "
-            "un fragmento aleatorio."
+            "Prefijo del código"
         ),
     )
 
-    actualizado_por = models.ForeignKey(
+    orden = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name=(
+            "Orden de la meta"
+        ),
+    )
+
+    creado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name=(
-            "configuraciones_fidelidad_actualizadas"
+            "metas_fidelidad_creadas"
         ),
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
     )
 
     actualizado = models.DateTimeField(
@@ -1979,53 +2197,162 @@ class ConfiguracionFidelidad(
     )
 
     class Meta:
+        ordering = [
+            "monto_objetivo",
+            "orden",
+        ]
+
         verbose_name = (
-            "Configuración de fidelidad"
+            "Meta de fidelidad"
         )
 
         verbose_name_plural = (
-            "Configuración de fidelidad"
+            "Metas de fidelidad"
         )
+
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        modalidad="porcentaje",
+                        porcentaje__gt=0,
+                        monto_descuento__isnull=True,
+                    )
+                    |
+                    Q(
+                        modalidad="monto_fijo",
+                        monto_descuento__gt=0,
+                        porcentaje__isnull=True,
+                    )
+                ),
+                name=(
+                    "meta_fidelidad_modalidad_valida"
+                ),
+            ),
+
+            models.CheckConstraint(
+                condition=Q(
+                    monto_objetivo__gt=0,
+                ),
+                name=(
+                    "meta_fidelidad_objetivo_gt_0"
+                ),
+            ),
+        ]
 
     def __str__(self):
         return (
-            "Configuración de fidelidad Audex"
+            f"{self.nombre} · "
+            f"${self.monto_objetivo:,.0f}"
         )
 
     def clean(self):
         super().clean()
+
+        errores = {}
 
         self.prefijo_codigo = (
             self.prefijo_codigo
             or ""
         ).strip().upper()
 
-        errores = {}
-
         if (
-            self.activa
-            and self.monto_objetivo
+            self.monto_objetivo is None
+            or self.monto_objetivo
             <= Decimal("0")
         ):
-            errores["monto_objetivo"] = (
-                "El monto objetivo debe ser "
-                "mayor que cero."
+            errores[
+                "monto_objetivo"
+            ] = (
+                "La meta debe ser mayor "
+                "que cero."
             )
 
         if (
-            self.activa
-            and self.porcentaje
-            <= Decimal("0")
+            self.monto_minimo_compra
+            is None
         ):
-            errores["porcentaje"] = (
-                "El porcentaje debe ser "
-                "mayor que cero."
+            self.monto_minimo_compra = (
+                Decimal("0")
+            )
+
+        if (
+            self.modalidad
+            == self.Modalidad.PORCENTAJE
+        ):
+            self.monto_descuento = None
+
+            if (
+                self.porcentaje is None
+                or self.porcentaje
+                <= Decimal("0")
+            ):
+                errores[
+                    "porcentaje"
+                ] = (
+                    "Debes indicar el porcentaje "
+                    "del premio."
+                )
+
+        elif (
+            self.modalidad
+            == self.Modalidad.MONTO_FIJO
+        ):
+            self.porcentaje = None
+
+            self.monto_maximo_descuento = (
+                None
+            )
+
+            if (
+                self.monto_descuento is None
+                or self.monto_descuento
+                <= Decimal("0")
+            ):
+                errores[
+                    "monto_descuento"
+                ] = (
+                    "Debes indicar el monto "
+                    "del premio."
+                )
+
+            if (
+                self.monto_minimo_compra
+                <= Decimal("0")
+            ):
+                errores[
+                    "monto_minimo_compra"
+                ] = (
+                    "Un premio en CLP debe "
+                    "tener una compra mínima."
+                )
+
+            if (
+                self.monto_descuento
+                is not None
+                and self.monto_descuento
+                > self.monto_minimo_compra
+            ):
+                errores[
+                    "monto_descuento"
+                ] = (
+                    "El premio no puede superar "
+                    "la compra mínima requerida."
+                )
+
+        else:
+            errores[
+                "modalidad"
+            ] = (
+                "Selecciona una modalidad "
+                "válida."
             )
 
         if not self.prefijo_codigo:
-            errores["prefijo_codigo"] = (
-                "Debes indicar un prefijo "
-                "para los premios."
+            errores[
+                "prefijo_codigo"
+            ] = (
+                "Debes indicar un prefijo."
             )
 
         if errores:
@@ -2038,8 +2365,6 @@ class ConfiguracionFidelidad(
         *args,
         **kwargs,
     ):
-        self.pk = self.SINGLETON_PK
-
         self.prefijo_codigo = (
             self.prefijo_codigo
             or ""
@@ -2051,28 +2376,6 @@ class ConfiguracionFidelidad(
             *args,
             **kwargs,
         )
-
-    def delete(
-        self,
-        *args,
-        **kwargs,
-    ):
-        raise ValidationError(
-            (
-                "La configuración de fidelidad "
-                "no puede eliminarse."
-            )
-        )
-
-    @classmethod
-    def obtener(cls):
-        configuracion, _ = (
-            cls.objects.get_or_create(
-                pk=cls.SINGLETON_PK,
-            )
-        )
-
-        return configuracion
 
 
 class SaldoFidelidad(models.Model):
@@ -2088,12 +2391,11 @@ class SaldoFidelidad(models.Model):
         default=0,
     )
 
-    total_historico = (
-        models.DecimalField(
-            max_digits=14,
-            decimal_places=0,
-            default=0,
-        )
+    total_historico = models.DecimalField(
+        max_digits=14,
+        decimal_places=0,
+        default=0,
+        db_index=True,
     )
 
     metas_cumplidas = (
@@ -2108,51 +2410,37 @@ class SaldoFidelidad(models.Model):
 
     class Meta:
         ordering = [
-            "-saldo_actual",
+            "-total_historico",
         ]
-
-        verbose_name = (
-            "Saldo de fidelidad"
-        )
-
-        verbose_name_plural = (
-            "Saldos de fidelidad"
-        )
 
         constraints = [
             models.CheckConstraint(
                 condition=Q(
                     saldo_actual__gte=0,
                 ),
-                name=(
-                    "saldo_fid_actual_gte_0"
-                ),
+                name="saldo_fid_actual_gte_0",
             ),
+
             models.CheckConstraint(
                 condition=Q(
                     total_historico__gte=0,
                 ),
-                name=(
-                    "saldo_fid_total_gte_0"
-                ),
+                name="saldo_fid_total_gte_0",
             ),
         ]
 
     def __str__(self):
         return (
             f"{self.usuario} · "
-            f"${self.saldo_actual}"
+            f"${self.total_historico}"
         )
 
     @property
     def premios_generados(self):
-        """
-        Alias de compatibilidad para templates
-        o código anterior.
-        """
-
         return self.metas_cumplidas
 
+
+    
 
 class UsoCodigoDescuento(
     models.Model
@@ -2175,6 +2463,10 @@ class UsoCodigoDescuento(
             "Liberado",
         )
 
+    # ------------------------------------------------------------------
+    # CÓDIGO Y PEDIDO
+    # ------------------------------------------------------------------
+
     codigo = models.ForeignKey(
         CodigoDescuento,
         on_delete=models.PROTECT,
@@ -2188,6 +2480,10 @@ class UsoCodigoDescuento(
             "uso_codigo_descuento"
         ),
     )
+
+    # ------------------------------------------------------------------
+    # CLIENTE
+    # ------------------------------------------------------------------
 
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -2203,8 +2499,10 @@ class UsoCodigoDescuento(
         max_length=80,
         db_index=True,
         help_text=(
-            "Identificador HMAC generado "
-            "a partir del RUT normalizado."
+            "Identificador único del cliente. "
+            "Para usuarios autenticados utiliza "
+            "USER:<id>. Para invitados utiliza "
+            "un HMAC del RUT normalizado."
         ),
     )
 
@@ -2213,12 +2511,20 @@ class UsoCodigoDescuento(
         blank=True,
     )
 
+    # ------------------------------------------------------------------
+    # ESTADO
+    # ------------------------------------------------------------------
+
     estado = models.CharField(
         max_length=20,
         choices=Estado.choices,
         default=Estado.RESERVADO,
         db_index=True,
     )
+
+    # ------------------------------------------------------------------
+    # VALORES DE LA COMPRA
+    # ------------------------------------------------------------------
 
     subtotal_original = (
         models.DecimalField(
@@ -2242,25 +2548,23 @@ class UsoCodigoDescuento(
         default=0,
     )
 
-    reservado_en = (
-        models.DateTimeField(
-            auto_now_add=True,
-        )
+    # ------------------------------------------------------------------
+    # FECHAS
+    # ------------------------------------------------------------------
+
+    reservado_en = models.DateTimeField(
+        auto_now_add=True,
     )
 
-    confirmado_en = (
-        models.DateTimeField(
-            null=True,
-            blank=True,
-            db_index=True,
-        )
+    confirmado_en = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
     )
 
-    liberado_en = (
-        models.DateTimeField(
-            null=True,
-            blank=True,
-        )
+    liberado_en = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -2282,30 +2586,38 @@ class UsoCodigoDescuento(
                     "codigo",
                     "estado",
                 ],
-                name=(
-                    "uso_codigo_estado_idx"
-                ),
+                name="uso_codigo_estado_idx",
             ),
+
             models.Index(
                 fields=[
                     "cliente_clave",
                     "estado",
                 ],
-                name=(
-                    "uso_cliente_estado_idx"
-                ),
+                name="uso_cliente_estado_idx",
             ),
+
             models.Index(
                 fields=[
                     "confirmado_en",
                 ],
-                name=(
-                    "uso_confirmado_fecha_idx"
-                ),
+                name="uso_confirmado_fecha_idx",
+            ),
+
+            models.Index(
+                fields=[
+                    "usuario",
+                    "estado",
+                ],
+                name="uso_usuario_estado_idx",
             ),
         ]
 
         constraints = [
+            # ----------------------------------------------------------
+            # UN USO POR CLIENTE Y POR CÓDIGO
+            # ----------------------------------------------------------
+
             models.UniqueConstraint(
                 fields=[
                     "codigo",
@@ -2321,6 +2633,11 @@ class UsoCodigoDescuento(
                     "codigo_un_uso_por_cliente"
                 ),
             ),
+
+            # ----------------------------------------------------------
+            # VALORES POSITIVOS
+            # ----------------------------------------------------------
+
             models.CheckConstraint(
                 condition=Q(
                     subtotal_original__gte=0,
@@ -2329,6 +2646,7 @@ class UsoCodigoDescuento(
                     "uso_subtotal_gte_0"
                 ),
             ),
+
             models.CheckConstraint(
                 condition=Q(
                     descuento_aplicado__gte=0,
@@ -2337,6 +2655,7 @@ class UsoCodigoDescuento(
                     "uso_descuento_gte_0"
                 ),
             ),
+
             models.CheckConstraint(
                 condition=Q(
                     total_final__gte=0,
@@ -2353,6 +2672,11 @@ class UsoCodigoDescuento(
             f"{self.pedido.numero} · "
             f"{self.get_estado_display()}"
         )
+
+
+
+
+
 
 
 class PedidoHistorialEstado(

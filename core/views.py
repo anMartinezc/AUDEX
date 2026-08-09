@@ -77,17 +77,9 @@ from django.views.decorators.http import (
     require_POST,
 )
 
-from core.forms_descuentos import (
-    CodigoGeneralForm,
-    ConfiguracionFidelidadForm,
-)
-from core.models import (
-    CodigoDescuento,
-    ConfiguracionFidelidad,
-    PedidoItem,
-    SaldoFidelidad,
-    UsoCodigoDescuento,
-)
+from core.forms_descuentos import *
+
+from core.models import *
 
 
 TIPOS_CODIGO_VALIDOS = {
@@ -423,21 +415,27 @@ def ofertas(request):
     Muestra:
 
     - Productos activos con una rebaja superior al 15%.
-    - Cupones generales porcentuales.
-    - Cupones generales de monto fijo en CLP.
-    - El progreso de fidelidad del usuario autenticado.
-    - Los códigos personales disponibles del usuario.
+    - Todos los códigos generales activos y vigentes.
+    - Códigos generales porcentuales.
+    - Códigos generales de monto fijo en CLP.
+    - Todas las metas activas del programa de fidelidad.
+    - Progreso del usuario hacia cada meta.
+    - Próxima recompensa del usuario.
+    - Todos los códigos personales disponibles del usuario,
+      tanto porcentuales como de monto fijo.
 
-    Los valores de los cupones, compras mínimas,
-    porcentajes, vigencias y montos fijos son definidos
-    completamente desde el administrador.
+    El estado "oculto" utilizado en administración es solamente
+    visual para el administrador y no afecta esta página.
+
+    Para el cliente solamente importa que el código/meta esté
+    activo y vigente.
     """
 
     ahora = timezone.now()
 
-    # ------------------------------------------------------------------
+    # ==================================================================
     # PRODUCTOS CON MÁS DE 15% DE DESCUENTO
-    # ------------------------------------------------------------------
+    # ==================================================================
 
     candidatos = list(
         Producto.objects
@@ -455,6 +453,7 @@ def ofertas(request):
     productos_oferta = []
 
     for producto in candidatos:
+
         if not producto.en_oferta:
             continue
 
@@ -472,10 +471,14 @@ def ofertas(request):
 
         producto.ahorro_oferta = max(
             Decimal(
-                str(producto.precio)
+                str(
+                    producto.precio
+                )
             )
             - Decimal(
-                str(producto.precio_oferta)
+                str(
+                    producto.precio_oferta
+                )
             ),
             Decimal("0"),
         )
@@ -493,7 +496,9 @@ def ofertas(request):
             producto.stock_oferta <= 0,
             -producto.porcentaje_oferta,
             Decimal(
-                str(producto.precio_oferta)
+                str(
+                    producto.precio_oferta
+                )
             ),
             producto.nombre.casefold(),
         )
@@ -516,6 +521,7 @@ def ofertas(request):
     )
 
     for producto in productos_oferta:
+
         if producto.stock_oferta <= 0:
             producto.stock_porcentaje = 0
             continue
@@ -538,9 +544,9 @@ def ofertas(request):
         else None
     )
 
-    # ------------------------------------------------------------------
-    # BASE DE CÓDIGOS GENERALES VIGENTES
-    # ------------------------------------------------------------------
+    # ==================================================================
+    # CÓDIGOS GENERALES ACTIVOS Y VIGENTES
+    # ==================================================================
 
     codigos_base = (
         CodigoDescuento.objects
@@ -556,7 +562,8 @@ def ofertas(request):
             Q(
                 fecha_inicio__isnull=True,
             )
-            | Q(
+            |
+            Q(
                 fecha_inicio__lte=ahora,
             )
         )
@@ -564,23 +571,16 @@ def ofertas(request):
             Q(
                 fecha_fin__isnull=True,
             )
-            | Q(
+            |
+            Q(
                 fecha_fin__gt=ahora,
             )
         )
     )
 
-    # ------------------------------------------------------------------
-    # CUPONES DE MONTO FIJO EN CLP
-    # ------------------------------------------------------------------
-    #
-    # Ejemplo definido desde el administrador:
-    #
-    # - Monto de descuento: $38.000
-    # - Compra mínima: $313.000
-    #
-    # La vista no contiene valores comerciales escritos manualmente.
-    # ------------------------------------------------------------------
+    # ==================================================================
+    # CÓDIGOS GENERALES CLP
+    # ==================================================================
 
     cupones_clp = list(
         codigos_base
@@ -601,9 +601,9 @@ def ofertas(request):
         )
     )
 
-    # ------------------------------------------------------------------
-    # CUPONES PORCENTUALES
-    # ------------------------------------------------------------------
+    # ==================================================================
+    # CÓDIGOS GENERALES PORCENTUALES
+    # ==================================================================
 
     codigos_porcentaje = list(
         codigos_base
@@ -624,48 +624,122 @@ def ofertas(request):
         )
     )
 
-    # Los cupones CLP aparecen primero para destacar
-    # el formato "ahorra $X sobre compras de $X".
+    # ==================================================================
+    # MARCAR CÓDIGOS GENERALES YA UTILIZADOS POR EL USUARIO
+    # ==================================================================
+
     codigos_generales = [
         *cupones_clp,
         *codigos_porcentaje,
     ]
 
-    # Se destaca primero un cupón CLP.
-    # Si no existe, se utiliza el primer porcentual.
+    codigos_generales_usados = set()
+
+    if request.user.is_authenticated:
+
+        cliente_clave = (
+            f"USER:{request.user.pk}"
+        )
+
+        codigos_generales_usados = set(
+            UsoCodigoDescuento.objects
+            .filter(
+                cliente_clave=cliente_clave,
+                estado=(
+                    UsoCodigoDescuento
+                    .Estado
+                    .CONFIRMADO
+                ),
+                codigo__tipo=(
+                    CodigoDescuento
+                    .Tipo
+                    .GENERAL
+                ),
+            )
+            .values_list(
+                "codigo_id",
+                flat=True,
+            )
+        )
+
+    for codigo in codigos_generales:
+
+        codigo.usado_por_cliente = (
+            codigo.pk
+            in codigos_generales_usados
+        )
+
+    # ==================================================================
+    # CÓDIGO DESTACADO
+    # ==================================================================
+
+    codigos_disponibles_para_destacar = [
+        codigo
+        for codigo in codigos_generales
+        if not codigo.usado_por_cliente
+    ]
+
     codigo_destacado = (
-        codigos_generales[0]
-        if codigos_generales
-        else None
+        codigos_disponibles_para_destacar[0]
+        if codigos_disponibles_para_destacar
+        else (
+            codigos_generales[0]
+            if codigos_generales
+            else None
+        )
     )
+
+    # ==================================================================
+    # PRÓXIMO VENCIMIENTO
+    # ==================================================================
 
     fechas_fin = [
         codigo.fecha_fin
         for codigo in codigos_generales
-        if codigo.fecha_fin
+        if (
+            codigo.fecha_fin
+            and not codigo.usado_por_cliente
+        )
     ]
 
     campana_vence_en = (
-        min(fechas_fin)
+        min(
+            fechas_fin
+        )
         if fechas_fin
         else None
     )
 
-    # ------------------------------------------------------------------
-    # PROGRAMA DE FIDELIDAD
-    # ------------------------------------------------------------------
+    # ==================================================================
+    # METAS ACTIVAS DE FIDELIDAD
+    # ==================================================================
 
-    configuracion_fidelidad = (
-        ConfiguracionFidelidad.obtener()
+    metas_fidelidad = list(
+        MetaFidelidad.objects
+        .filter(
+            activa=True,
+        )
+        .order_by(
+            "monto_objetivo",
+            "orden",
+            "pk",
+        )
     )
 
+    programa_fidelidad_activo = bool(
+        metas_fidelidad
+    )
+
+    # ==================================================================
+    # FIDELIDAD DEL USUARIO
+    # ==================================================================
+
     fidelidad = None
+
     codigos_personales = []
 
-    if (
-        request.user.is_authenticated
-        and configuracion_fidelidad.activa
-    ):
+    if request.user.is_authenticated:
+
         saldo = (
             SaldoFidelidad.objects
             .filter(
@@ -674,63 +748,27 @@ def ofertas(request):
             .first()
         )
 
-        saldo_actual = Decimal(
+        # --------------------------------------------------------------
+        # ACUMULADO HISTÓRICO
+        #
+        # Las metas dependen de todo lo comprado históricamente,
+        # no de una configuración fija anterior.
+        # --------------------------------------------------------------
+
+        acumulado = Decimal(
             str(
-                saldo.saldo_actual
+                saldo.total_historico
                 if saldo
                 else 0
             )
         )
 
-        monto_objetivo = Decimal(
-            str(
-                configuracion_fidelidad
-                .monto_objetivo
-                or 1
-            )
-        )
-
-        if monto_objetivo <= 0:
-            monto_objetivo = Decimal("1")
-
-        faltante = max(
-            monto_objetivo
-            - saldo_actual,
-            Decimal("0"),
-        )
-
-        progreso = min(
-            int(
-                saldo_actual
-                * Decimal("100")
-                / monto_objetivo
-            ),
-            100,
-        )
-
-        fidelidad = {
-            "saldo_actual": saldo_actual,
-            "monto_objetivo": monto_objetivo,
-            "faltante": faltante,
-            "progreso": progreso,
-            "porcentaje": (
-                configuracion_fidelidad
-                .porcentaje
-            ),
-            "monto_minimo_compra": (
-                configuracion_fidelidad
-                .monto_minimo_compra
-            ),
-            "vigencia_dias": (
-                configuracion_fidelidad
-                .vigencia_dias
-            ),
-            "metas_cumplidas": (
-                saldo.metas_cumplidas
-                if saldo
-                else 0
-            ),
-        }
+        # --------------------------------------------------------------
+        # TODOS LOS CÓDIGOS PERSONALES DEL CLIENTE
+        #
+        # IMPORTANTE:
+        # ahora incluimos porcentaje Y monto fijo.
+        # --------------------------------------------------------------
 
         codigos_personales = list(
             CodigoDescuento.objects
@@ -740,22 +778,39 @@ def ofertas(request):
                     .Tipo
                     .FIDELIDAD
                 ),
-                modalidad=(
-                    CodigoDescuento
-                    .Modalidad
-                    .PORCENTAJE
+                usuario_exclusivo=(
+                    request.user
                 ),
-                usuario_exclusivo=request.user,
                 activo=True,
                 consumido=False,
-                porcentaje__isnull=False,
-                porcentaje__gt=0,
+            )
+            .filter(
+                Q(
+                    modalidad=(
+                        CodigoDescuento
+                        .Modalidad
+                        .PORCENTAJE
+                    ),
+                    porcentaje__isnull=False,
+                    porcentaje__gt=0,
+                )
+                |
+                Q(
+                    modalidad=(
+                        CodigoDescuento
+                        .Modalidad
+                        .MONTO_FIJO
+                    ),
+                    monto_descuento__isnull=False,
+                    monto_descuento__gt=0,
+                )
             )
             .filter(
                 Q(
                     fecha_inicio__isnull=True,
                 )
-                | Q(
+                |
+                Q(
                     fecha_inicio__lte=ahora,
                 )
             )
@@ -763,9 +818,13 @@ def ofertas(request):
                 Q(
                     fecha_fin__isnull=True,
                 )
-                | Q(
+                |
+                Q(
                     fecha_fin__gt=ahora,
                 )
+            )
+            .select_related(
+                "meta_fidelidad",
             )
             .order_by(
                 "fecha_fin",
@@ -773,27 +832,198 @@ def ofertas(request):
             )
         )
 
-    # ------------------------------------------------------------------
+        # --------------------------------------------------------------
+        # CÓDIGOS GENERADOS POR META
+        # --------------------------------------------------------------
+
+        codigos_por_meta = {
+            codigo.meta_fidelidad_id: codigo
+            for codigo in codigos_personales
+            if codigo.meta_fidelidad_id
+        }
+
+        # --------------------------------------------------------------
+        # PROGRESO EN CADA META
+        # --------------------------------------------------------------
+
+        for meta in metas_fidelidad:
+
+            objetivo = Decimal(
+                str(
+                    meta.monto_objetivo
+                    or 0
+                )
+            )
+
+            if objetivo <= 0:
+                objetivo = Decimal("1")
+
+            faltante = max(
+                objetivo - acumulado,
+                Decimal("0"),
+            )
+
+            progreso = min(
+                max(
+                    int(
+                        acumulado
+                        * Decimal("100")
+                        / objetivo
+                    ),
+                    0,
+                ),
+                100,
+            )
+
+            meta.progreso_cliente = (
+                progreso
+            )
+
+            meta.faltante_cliente = (
+                faltante
+            )
+
+            meta.alcanzada_cliente = (
+                acumulado
+                >= objetivo
+            )
+
+            meta.codigo_personal_cliente = (
+                codigos_por_meta.get(
+                    meta.pk
+                )
+            )
+
+        # --------------------------------------------------------------
+        # PRÓXIMA META
+        # --------------------------------------------------------------
+
+        proxima_meta = None
+
+        for meta in metas_fidelidad:
+
+            if (
+                Decimal(
+                    str(
+                        meta.monto_objetivo
+                        or 0
+                    )
+                )
+                > acumulado
+            ):
+                proxima_meta = meta
+                break
+
+        # --------------------------------------------------------------
+        # CONTEXTO RESUMEN DE FIDELIDAD
+        # --------------------------------------------------------------
+
+        if proxima_meta:
+
+            fidelidad = {
+                "saldo_actual": (
+                    acumulado
+                ),
+
+                "meta": (
+                    proxima_meta
+                ),
+
+                "monto_objetivo": (
+                    proxima_meta
+                    .monto_objetivo
+                ),
+
+                "faltante": (
+                    proxima_meta
+                    .faltante_cliente
+                ),
+
+                "progreso": (
+                    proxima_meta
+                    .progreso_cliente
+                ),
+
+                "metas_cumplidas": (
+                    saldo.metas_cumplidas
+                    if saldo
+                    else 0
+                ),
+
+                "todas_alcanzadas": (
+                    False
+                ),
+            }
+
+        else:
+
+            fidelidad = {
+                "saldo_actual": (
+                    acumulado
+                ),
+
+                "meta": (
+                    None
+                ),
+
+                "monto_objetivo": (
+                    None
+                ),
+
+                "faltante": (
+                    Decimal("0")
+                ),
+
+                "progreso": (
+                    100
+                ),
+
+                "metas_cumplidas": (
+                    saldo.metas_cumplidas
+                    if saldo
+                    else 0
+                ),
+
+                "todas_alcanzadas": (
+                    bool(
+                        metas_fidelidad
+                    )
+                ),
+            }
+
+    # ==================================================================
     # CONTEXTO
-    # ------------------------------------------------------------------
+    # ==================================================================
 
     contexto = {
+        # --------------------------------------------------------------
+        # PRODUCTOS
+        # --------------------------------------------------------------
+
         "productos_oferta": (
             productos_oferta
         ),
+
         "cantidad_ofertas": len(
             productos_oferta
         ),
+
         "mayor_descuento": (
             mayor_descuento
         ),
+
         "hero_producto": (
             hero_producto
         ),
 
+        # --------------------------------------------------------------
+        # CÓDIGOS GENERALES
+        # --------------------------------------------------------------
+
         "codigos_generales": (
             codigos_generales
         ),
+
         "cantidad_codigos_generales": len(
             codigos_generales
         ),
@@ -801,6 +1031,7 @@ def ofertas(request):
         "codigos_porcentaje": (
             codigos_porcentaje
         ),
+
         "cantidad_codigos_porcentaje": len(
             codigos_porcentaje
         ),
@@ -808,6 +1039,7 @@ def ofertas(request):
         "cupones_clp": (
             cupones_clp
         ),
+
         "cantidad_cupones_clp": len(
             cupones_clp
         ),
@@ -815,17 +1047,36 @@ def ofertas(request):
         "codigo_destacado": (
             codigo_destacado
         ),
+
         "campana_vence_en": (
             campana_vence_en
         ),
 
-        "configuracion_fidelidad": (
-            configuracion_fidelidad
+        # --------------------------------------------------------------
+        # FIDELIDAD
+        # --------------------------------------------------------------
+
+        "programa_fidelidad_activo": (
+            programa_fidelidad_activo
         ),
+
+        "metas_fidelidad": (
+            metas_fidelidad
+        ),
+
+        "cantidad_metas_fidelidad": len(
+            metas_fidelidad
+        ),
+
         "fidelidad": (
             fidelidad
         ),
+
         "codigos_personales": (
+            codigos_personales
+        ),
+
+        "cantidad_codigos_personales": len(
             codigos_personales
         ),
     }
@@ -835,6 +1086,14 @@ def ofertas(request):
         "core/ofertas.html",
         contexto,
     )
+
+
+
+
+
+
+
+
 
 
 def nosotros(request):
@@ -1172,27 +1431,41 @@ def carrito_completo(request):
 
 
 
-
+# ============================================================================
+# GESTIÓN DE DESCUENTOS Y FIDELIDAD
+# ============================================================================
 
 
 def _errores_formulario(
     formulario,
 ):
     """
-    Convierte los errores del formulario en un texto legible
-    para mostrarlo mediante django.contrib.messages.
+    Convierte los errores de un formulario
+    en un mensaje legible.
     """
 
     errores = []
 
+    for error in formulario.non_field_errors():
+        errores.append(
+            str(error)
+        )
+
     for campo, lista_errores in (
         formulario.errors.items()
     ):
-        nombre_campo = (
-            formulario.fields[campo].label
-            if campo in formulario.fields
-            else "Formulario"
-        )
+        if campo == "__all__":
+            continue
+
+        if campo in formulario.fields:
+            nombre_campo = (
+                formulario.fields[
+                    campo
+                ].label
+                or campo
+            )
+        else:
+            nombre_campo = campo
 
         for error in lista_errores:
             errores.append(
@@ -1204,35 +1477,150 @@ def _errores_formulario(
     )
 
 
-@staff_member_required(
-    login_url="core:login",
-)
-def gestion_descuentos(
-    request,
-):
+# ============================================================================
+# SALDOS / PROGRESO DE FIDELIDAD
+# ============================================================================
+
+
+def _preparar_saldos_fidelidad():
     """
-    Panel principal para:
+    Calcula para cada cliente:
 
-    - crear varios códigos generales;
-    - configurar el programa de fidelidad;
-    - listar todos los códigos;
-    - revisar los usos confirmados;
-    - revisar el progreso de los clientes.
+    - gasto acumulado;
+    - próxima meta activa;
+    - cuánto falta;
+    - porcentaje de avance.
     """
 
-    configuracion = (
-        ConfiguracionFidelidad.obtener()
-    )
-
-    formulario_codigo = (
-        CodigoGeneralForm()
-    )
-
-    formulario_fidelidad = (
-        ConfiguracionFidelidadForm(
-            instance=configuracion,
+    metas_activas = list(
+        MetaFidelidad.objects
+        .filter(
+            activa=True,
+        )
+        .order_by(
+            "monto_objetivo",
+            "orden",
+            "pk",
         )
     )
+
+    saldos = list(
+        SaldoFidelidad.objects
+        .select_related(
+            "usuario"
+        )
+        .order_by(
+            "-total_historico"
+        )[:50]
+    )
+
+    for saldo in saldos:
+        acumulado = (
+            saldo.total_historico
+            or Decimal("0")
+        )
+
+        proxima_meta = None
+
+        for meta in metas_activas:
+            if (
+                meta.monto_objetivo
+                > acumulado
+            ):
+                proxima_meta = meta
+                break
+
+        saldo.proxima_meta = (
+            proxima_meta
+        )
+
+        if proxima_meta is None:
+            saldo.objetivo_actual = None
+            saldo.faltante = Decimal("0")
+            saldo.progreso = 100
+
+            continue
+
+        objetivo = (
+            proxima_meta.monto_objetivo
+            or Decimal("1")
+        )
+
+        if objetivo <= Decimal("0"):
+            objetivo = Decimal("1")
+
+        saldo.objetivo_actual = (
+            objetivo
+        )
+
+        saldo.faltante = max(
+            objetivo - acumulado,
+            Decimal("0"),
+        )
+
+        saldo.progreso = min(
+            max(
+                int(
+                    acumulado
+                    * Decimal("100")
+                    / objetivo
+                ),
+                0,
+            ),
+            100,
+        )
+
+    return saldos
+
+
+# ============================================================================
+# CONTEXTO DEL PANEL
+# ============================================================================
+
+def construir_contexto_descuentos(
+    request,
+    formularios_con_error=None,
+):
+    formularios_con_error = (
+        formularios_con_error
+        or {}
+    )
+
+    # ==================================================================
+    # FORMULARIOS
+    # ==================================================================
+
+    form_general_porcentaje = (
+        formularios_con_error.get(
+            "form_general_porcentaje"
+        )
+        or CodigoGeneralPorcentajeForm()
+    )
+
+    form_general_clp = (
+        formularios_con_error.get(
+            "form_general_clp"
+        )
+        or CodigoGeneralMontoFijoForm()
+    )
+
+    form_fidelidad_porcentaje = (
+        formularios_con_error.get(
+            "form_fidelidad_porcentaje"
+        )
+        or MetaFidelidadPorcentajeForm()
+    )
+
+    form_fidelidad_clp = (
+        formularios_con_error.get(
+            "form_fidelidad_clp"
+        )
+        or MetaFidelidadMontoFijoForm()
+    )
+
+    # ==================================================================
+    # FILTROS
+    # ==================================================================
 
     busqueda = (
         request.GET.get(
@@ -1242,9 +1630,9 @@ def gestion_descuentos(
         or ""
     ).strip()
 
-    tipo = (
+    modalidad = (
         request.GET.get(
-            "tipo",
+            "modalidad",
             "",
         )
         or ""
@@ -1253,16 +1641,21 @@ def gestion_descuentos(
     estado = (
         request.GET.get(
             "estado",
-            "",
+            "todos",
         )
-        or ""
+        or "todos"
     ).strip()
+
+    # ==================================================================
+    # TODOS LOS CÓDIGOS
+    # ==================================================================
 
     codigos = (
         CodigoDescuento.objects
         .select_related(
             "usuario_exclusivo",
             "creado_por",
+            "meta_fidelidad",
         )
         .annotate(
             total_usos=Count(
@@ -1275,69 +1668,184 @@ def gestion_descuentos(
                     )
                 ),
                 distinct=True,
-            )
+            ),
+
+            clientes_usaron=Count(
+                "usos__cliente_clave",
+                filter=Q(
+                    usos__estado=(
+                        UsoCodigoDescuento
+                        .Estado
+                        .CONFIRMADO
+                    )
+                ),
+                distinct=True,
+            ),
+
+            total_registros_uso=Count(
+                "usos",
+                distinct=True,
+            ),
         )
     )
+
+    # ==================================================================
+    # BÚSQUEDA
+    # ==================================================================
 
     if busqueda:
         codigos = codigos.filter(
             Q(
-                codigo__icontains=busqueda,
+                codigo__icontains=busqueda
             )
-            | Q(
-                nombre__icontains=busqueda,
+            |
+            Q(
+                nombre__icontains=busqueda
             )
-            | Q(
-                descripcion__icontains=busqueda,
+            |
+            Q(
+                descripcion__icontains=busqueda
             )
-            | Q(
-                usuario_exclusivo__email__icontains=busqueda,
+            |
+            Q(
+                usuario_exclusivo__email__icontains=(
+                    busqueda
+                )
             )
-            | Q(
-                pedidos__numero__icontains=busqueda,
+            |
+            Q(
+                usuario_exclusivo__username__icontains=(
+                    busqueda
+                )
             )
-        ).distinct()
+            |
+            Q(
+                meta_fidelidad__nombre__icontains=(
+                    busqueda
+                )
+            )
+        )
 
-    if tipo in TIPOS_CODIGO_VALIDOS:
+    # ==================================================================
+    # MODALIDAD
+    # ==================================================================
+
+    if (
+        modalidad
+        in CodigoDescuento.Modalidad.values
+    ):
         codigos = codigos.filter(
-            tipo=tipo,
+            modalidad=modalidad
         )
 
-    if estado in ESTADOS_FILTRO_VALIDOS:
-        if estado == "activos":
-            codigos = codigos.filter(
-                activo=True,
-                consumido=False,
+    # ==================================================================
+    # ESTADO
+    # ==================================================================
+
+    if estado == "activos":
+        codigos = codigos.filter(
+            activo=True,
+        )
+
+    elif estado == "ocultos":
+        codigos = codigos.filter(
+            activo=False,
+        )
+
+    elif estado == "consumidos":
+        codigos = codigos.filter(
+            tipo=(
+                CodigoDescuento
+                .Tipo
+                .FIDELIDAD
+            ),
+            consumido=True,
+        )
+
+    elif estado == "todos":
+        pass
+
+    else:
+        estado = "todos"
+
+    # ==================================================================
+    # CÓDIGOS GENERALES
+    # ==================================================================
+
+    codigos_generales = (
+        codigos
+        .filter(
+            tipo=(
+                CodigoDescuento
+                .Tipo
+                .GENERAL
             )
-
-        elif estado == "inactivos":
-            codigos = codigos.filter(
-                activo=False,
-            )
-
-        elif estado == "consumidos":
-            codigos = codigos.filter(
-                consumido=True,
-            )
-
-    codigos = codigos.order_by(
-        "-creado",
-        "-pk",
-    )
-
-    pagina_codigos = Paginator(
-        codigos,
-        30,
-    ).get_page(
-        request.GET.get(
-            "pagina"
+        )
+        .order_by(
+            "-creado"
         )
     )
+
+    pagina_codigos_generales = (
+        Paginator(
+            codigos_generales,
+            20,
+        )
+        .get_page(
+            request.GET.get(
+                "pagina_generales"
+            )
+        )
+    )
+
+    # ==================================================================
+    # CÓDIGOS DE FIDELIDAD
+    # ==================================================================
+
+    codigos_fidelidad = (
+        codigos
+        .filter(
+            tipo=(
+                CodigoDescuento
+                .Tipo
+                .FIDELIDAD
+            )
+        )
+        .order_by(
+            "-creado"
+        )
+    )
+
+    pagina_codigos_fidelidad = (
+        Paginator(
+            codigos_fidelidad,
+            20,
+        )
+        .get_page(
+            request.GET.get(
+                "pagina_fidelidad"
+            )
+        )
+    )
+
+    # ==================================================================
+    # SALDOS / PROGRESO DE CLIENTES
+    # ==================================================================
+
+    saldos = (
+        _preparar_saldos_fidelidad()
+    )
+
+    # ==================================================================
+    # HISTORIAL DE CÓDIGOS USADOS
+    # ==================================================================
 
     usos = (
         UsoCodigoDescuento.objects
         .select_related(
             "codigo",
+            "codigo__usuario_exclusivo",
+            "codigo__meta_fidelidad",
             "pedido",
             "usuario",
         )
@@ -1347,10 +1855,10 @@ def gestion_descuentos(
                 queryset=(
                     PedidoItem.objects
                     .select_related(
-                        "producto",
+                        "producto"
                     )
                     .order_by(
-                        "pk",
+                        "pk"
                     )
                 ),
             )
@@ -1364,150 +1872,145 @@ def gestion_descuentos(
         )
         .order_by(
             "-confirmado_en",
-            "-pk",
+            "-reservado_en",
         )
     )
 
-    pagina_usos = Paginator(
-        usos,
-        20,
-    ).get_page(
-        request.GET.get(
-            "pagina_usos"
+    pagina_usos = (
+        Paginator(
+            usos,
+            20,
         )
-    )
-
-    saldos = list(
-        SaldoFidelidad.objects
-        .select_related(
-            "usuario",
-        )
-        .order_by(
-            "-saldo_actual",
-            "-actualizado",
-        )[:20]
-    )
-
-    objetivo = Decimal(
-        str(
-            configuracion.monto_objetivo
-            or 1
-        )
-    )
-
-    if objetivo <= Decimal("0"):
-        objetivo = Decimal("1")
-
-    for saldo in saldos:
-        saldo_actual = Decimal(
-            str(
-                saldo.saldo_actual
-                or 0
-            )
-        )
-
-        saldo.progreso = min(
-            int(
-                (
-                    saldo_actual
-                    * Decimal("100")
-                )
-                / objetivo
-            ),
-            100,
-        )
-
-        saldo.faltante = max(
-            objetivo
-            - saldo_actual,
-            Decimal("0"),
-        )
-
-    usos_confirmados = (
-        UsoCodigoDescuento.objects
-        .filter(
-            estado=(
-                UsoCodigoDescuento
-                .Estado
-                .CONFIRMADO
+        .get_page(
+            request.GET.get(
+                "pagina_usos"
             )
         )
     )
 
-    descuento_total = (
-        usos_confirmados
-        .aggregate(
-            total=Sum(
-                "descuento_aplicado"
-            )
-        )
-        .get(
-            "total"
-        )
-        or Decimal("0")
-    )
+    # ==================================================================
+    # CONTEXTO
+    # ==================================================================
 
-    estadisticas = {
-        "codigos_generales": (
-            CodigoDescuento.objects
-            .filter(
-                tipo=(
-                    CodigoDescuento
-                    .Tipo
-                    .GENERAL
-                )
-            )
-            .count()
+    return {
+        # Formularios
+        "form_general_porcentaje": (
+            form_general_porcentaje
         ),
-        "codigos_fidelidad": (
-            CodigoDescuento.objects
-            .filter(
-                tipo=(
-                    CodigoDescuento
-                    .Tipo
-                    .FIDELIDAD
-                )
-            )
-            .count()
-        ),
-        "codigos_activos": (
-            CodigoDescuento.objects
-            .filter(
-                activo=True,
-                consumido=False,
-            )
-            .count()
-        ),
-        "usos_confirmados": (
-            usos_confirmados.count()
-        ),
-        "descuento_total": (
-            descuento_total
-        ),
-    }
 
-    contexto = {
-        "configuracion": configuracion,
-        "formulario_codigo": (
-            formulario_codigo
+        "form_general_clp": (
+            form_general_clp
         ),
-        "formulario_fidelidad": (
-            formulario_fidelidad
+
+        "form_fidelidad_porcentaje": (
+            form_fidelidad_porcentaje
         ),
-        "pagina_codigos": (
-            pagina_codigos
+
+        "form_fidelidad_clp": (
+            form_fidelidad_clp
         ),
+
+        # Códigos separados
+        "pagina_codigos_generales": (
+            pagina_codigos_generales
+        ),
+
+        "pagina_codigos_fidelidad": (
+            pagina_codigos_fidelidad
+        ),
+
+        # Fidelidad
+        "saldos": (
+            saldos
+        ),
+
+        # Historial
         "pagina_usos": (
             pagina_usos
         ),
-        "saldos": saldos,
-        "estadisticas": (
-            estadisticas
+
+        # Filtros
+        "busqueda": (
+            busqueda
         ),
-        "busqueda": busqueda,
-        "tipo": tipo,
-        "estado": estado,
+
+        "modalidad": (
+            modalidad
+        ),
+
+        "estado": (
+            estado
+        ),
     }
+
+
+# ============================================================================
+# Eliminar código de descuento (solo si no tiene registros de uso confirmados)
+# ============================================================================
+
+@staff_member_required(
+    login_url="core:login",
+)
+@require_POST
+def eliminar_codigo_descuento(
+    request,
+    codigo_id,
+):
+    codigo = get_object_or_404(
+        CodigoDescuento,
+        pk=codigo_id,
+    )
+
+    codigo_texto = (
+        codigo.codigo
+    )
+
+    if codigo.usos.exists():
+        messages.error(
+            request,
+            (
+                f"El código {codigo_texto} tiene historial "
+                "de uso y no puede eliminarse. "
+                "Puedes ocultarlo."
+            ),
+        )
+
+        return redirect(
+            "core:gestion_descuentos"
+        )
+
+    codigo.delete()
+
+    messages.success(
+        request,
+        (
+            f"El código {codigo_texto} "
+            "fue eliminado correctamente."
+        ),
+    )
+
+    return redirect(
+        "core:gestion_descuentos"
+    )
+
+
+# ============================================================================
+# PANEL PRINCIPAL
+# ============================================================================
+
+
+@staff_member_required(
+    login_url="core:login",
+)
+@require_GET
+def gestion_descuentos(
+    request,
+):
+    contexto = (
+        construir_contexto_descuentos(
+            request=request,
+        )
+    )
 
     return render(
         request,
@@ -1519,34 +2022,37 @@ def gestion_descuentos(
     )
 
 
-@staff_member_required(
-    login_url="core:login",
-)
-@require_POST
-def crear_codigo_general(
+# ============================================================================
+# CREACIÓN DE CÓDIGOS GENERALES
+# ============================================================================
+
+
+def _crear_codigo_descuento(
+    *,
     request,
+    formulario_clase,
+    formulario_contexto,
 ):
-    """
-    Crea un código general independiente.
-
-    Pueden existir varios códigos generales activos al mismo tiempo.
-    """
-
-    formulario = CodigoGeneralForm(
+    formulario = formulario_clase(
         request.POST
     )
 
-    if not formulario.is_valid():
-        messages.error(
+    if formulario.is_valid():
+        codigo = formulario.save(
+            commit=False
+        )
+
+        codigo.creado_por = (
+            request.user
+        )
+
+        codigo.save()
+
+        messages.success(
             request,
             (
-                _errores_formulario(
-                    formulario
-                )
-                or (
-                    "No fue posible crear "
-                    "el código."
-                )
+                f"El código {codigo.codigo} "
+                "fue creado correctamente."
             ),
         )
 
@@ -1554,139 +2060,213 @@ def crear_codigo_general(
             "core:gestion_descuentos"
         )
 
-    try:
-        with transaction.atomic():
-            codigo = formulario.save(
-                commit=False
-            )
-
-            codigo.tipo = (
-                CodigoDescuento
-                .Tipo
-                .GENERAL
-            )
-
-            codigo.usuario_exclusivo = None
-            codigo.numero_meta = None
-            codigo.consumido = False
-            codigo.creado_por = request.user
-
-            codigo.save()
-
-    except IntegrityError:
-        messages.error(
-            request,
-            (
-                "Ya existe un código con "
-                "ese identificador."
-            ),
+    mensaje = (
+        _errores_formulario(
+            formulario
         )
+    )
 
-        return redirect(
-            "core:gestion_descuentos"
-        )
-
-    except Exception as error:
-        messages.error(
-            request,
-            (
-                "No fue posible crear el código. "
-                f"Detalle: {error}"
-            ),
-        )
-
-        return redirect(
-            "core:gestion_descuentos"
-        )
-
-    messages.success(
+    messages.error(
         request,
-        (
-            f"El código {codigo.codigo} "
-            "fue creado correctamente."
+        mensaje
+        or (
+            "No fue posible crear el código. "
+            "Revisa los campos indicados."
         ),
     )
 
-    return redirect(
-        "core:gestion_descuentos"
+    contexto = (
+        construir_contexto_descuentos(
+            request=request,
+            formularios_con_error={
+                formulario_contexto: (
+                    formulario
+                ),
+            },
+        )
     )
+
+    return render(
+        request,
+        (
+            "core/gestion/"
+            "gestion_descuentos.html"
+        ),
+        contexto,
+        status=400,
+    )
+
+
+# ============================================================================
+# 1. CREAR GENERAL PORCENTUAL
+# ============================================================================
 
 
 @staff_member_required(
     login_url="core:login",
 )
 @require_POST
-def guardar_configuracion_fidelidad(
+def crear_codigo_general_porcentaje(
     request,
 ):
-    configuracion = (
-        ConfiguracionFidelidad.obtener()
-    )
-
-    formulario = (
-        ConfiguracionFidelidadForm(
-            request.POST,
-            instance=configuracion,
-        )
-    )
-
-    if not formulario.is_valid():
-        messages.error(
-            request,
-            (
-                _errores_formulario(
-                    formulario
-                )
-                or (
-                    "No fue posible guardar "
-                    "la configuración."
-                )
-            ),
-        )
-
-        return redirect(
-            "core:gestion_descuentos"
-        )
-
-    try:
-        with transaction.atomic():
-            configuracion = (
-                formulario.save(
-                    commit=False
-                )
-            )
-
-            configuracion.actualizado_por = (
-                request.user
-            )
-
-            configuracion.save()
-
-    except Exception as error:
-        messages.error(
-            request,
-            (
-                "No fue posible guardar la "
-                "configuración de fidelidad. "
-                f"Detalle: {error}"
-            ),
-        )
-
-        return redirect(
-            "core:gestion_descuentos"
-        )
-
-    messages.success(
-        request,
-        (
-            "La configuración de fidelidad "
-            "fue actualizada."
+    return _crear_codigo_descuento(
+        request=request,
+        formulario_clase=(
+            CodigoGeneralPorcentajeForm
+        ),
+        formulario_contexto=(
+            "form_general_porcentaje"
         ),
     )
 
-    return redirect(
-        "core:gestion_descuentos"
+
+# ============================================================================
+# 2. CREAR GENERAL CLP
+# ============================================================================
+
+
+@staff_member_required(
+    login_url="core:login",
+)
+@require_POST
+def crear_codigo_general_clp(
+    request,
+):
+    return _crear_codigo_descuento(
+        request=request,
+        formulario_clase=(
+            CodigoGeneralMontoFijoForm
+        ),
+        formulario_contexto=(
+            "form_general_clp"
+        ),
     )
+
+
+# ============================================================================
+# CREACIÓN DE METAS
+# ============================================================================
+
+
+def _crear_meta_fidelidad(
+    *,
+    request,
+    formulario_clase,
+    formulario_contexto,
+):
+    formulario = formulario_clase(
+        request.POST
+    )
+
+    if formulario.is_valid():
+        meta = formulario.save(
+            commit=False
+        )
+
+        meta.creado_por = (
+            request.user
+        )
+
+        meta.save()
+
+        messages.success(
+            request,
+            (
+                f"La meta «{meta.nombre}» "
+                "fue creada correctamente."
+            ),
+        )
+
+        return redirect(
+            "core:gestion_descuentos"
+        )
+
+    mensaje = (
+        _errores_formulario(
+            formulario
+        )
+    )
+
+    messages.error(
+        request,
+        mensaje
+        or (
+            "No fue posible crear la meta. "
+            "Revisa los campos indicados."
+        ),
+    )
+
+    contexto = (
+        construir_contexto_descuentos(
+            request=request,
+            formularios_con_error={
+                formulario_contexto: (
+                    formulario
+                ),
+            },
+        )
+    )
+
+    return render(
+        request,
+        (
+            "core/gestion/"
+            "gestion_descuentos.html"
+        ),
+        contexto,
+        status=400,
+    )
+
+
+# ============================================================================
+# 3. CREAR META FIDELIDAD PORCENTUAL
+# ============================================================================
+
+
+@staff_member_required(
+    login_url="core:login",
+)
+@require_POST
+def crear_meta_fidelidad_porcentaje(
+    request,
+):
+    return _crear_meta_fidelidad(
+        request=request,
+        formulario_clase=(
+            MetaFidelidadPorcentajeForm
+        ),
+        formulario_contexto=(
+            "form_fidelidad_porcentaje"
+        ),
+    )
+
+
+# ============================================================================
+# 4. CREAR META FIDELIDAD CLP
+# ============================================================================
+
+
+@staff_member_required(
+    login_url="core:login",
+)
+@require_POST
+def crear_meta_fidelidad_clp(
+    request,
+):
+    return _crear_meta_fidelidad(
+        request=request,
+        formulario_clase=(
+            MetaFidelidadMontoFijoForm
+        ),
+        formulario_contexto=(
+            "form_fidelidad_clp"
+        ),
+    )
+
+
+# ============================================================================
+# ACTIVAR / DESACTIVAR CÓDIGO
+# ============================================================================
 
 
 @staff_member_required(
@@ -1697,13 +2277,6 @@ def alternar_codigo_descuento(
     request,
     codigo_id,
 ):
-    """
-    Activa o desactiva códigos generales y premios personales.
-
-    Se actualiza directamente el campo para no volver a ejecutar
-    full_clean() sobre códigos históricos creados antes de esta versión.
-    """
-
     codigo = get_object_or_404(
         CodigoDescuento,
         pk=codigo_id,
@@ -1713,13 +2286,77 @@ def alternar_codigo_descuento(
         not codigo.activo
     )
 
+    CodigoDescuento.objects.filter(
+        pk=codigo.pk,
+    ).update(
+        activo=nuevo_estado,
+        actualizado=timezone.now(),
+    )
+
+    if nuevo_estado:
+        messages.success(
+            request,
+            (
+                f"El código {codigo.codigo} "
+                "fue activado nuevamente."
+            ),
+        )
+
+    else:
+        messages.success(
+            request,
+            (
+                f"El código {codigo.codigo} fue ocultado "
+                "y quedó desactivado para nuevas compras."
+            ),
+        )
+
+    return redirect(
+        "core:gestion_descuentos"
+    )
+
+
+
+
+# ============================================================================
+# ACTIVAR / DESACTIVAR META
+# ============================================================================
+
+
+@staff_member_required(
+    login_url="core:login",
+)
+@require_POST
+def alternar_meta_fidelidad(
+    request,
+    meta_id,
+):
+    """
+    Activa o desactiva una meta.
+
+    Desactivar una meta impide que genere
+    nuevos premios.
+
+    Los códigos que ya hayan sido generados
+    conservan su propio estado.
+    """
+
+    meta = get_object_or_404(
+        MetaFidelidad,
+        pk=meta_id,
+    )
+
+    nuevo_estado = (
+        not meta.activa
+    )
+
     actualizado = (
-        CodigoDescuento.objects
+        MetaFidelidad.objects
         .filter(
-            pk=codigo.pk,
+            pk=meta.pk,
         )
         .update(
-            activo=nuevo_estado,
+            activa=nuevo_estado,
             actualizado=timezone.now(),
         )
     )
@@ -1729,7 +2366,7 @@ def alternar_codigo_descuento(
             request,
             (
                 "No fue posible actualizar "
-                "el estado del código."
+                "la meta."
             ),
         )
 
@@ -1738,15 +2375,15 @@ def alternar_codigo_descuento(
         )
 
     estado_texto = (
-        "activado"
+        "activada"
         if nuevo_estado
-        else "desactivado"
+        else "desactivada"
     )
 
     messages.success(
         request,
         (
-            f"El código {codigo.codigo} "
+            f"La meta «{meta.nombre}» "
             f"fue {estado_texto}."
         ),
     )
@@ -1754,11 +2391,6 @@ def alternar_codigo_descuento(
     return redirect(
         "core:gestion_descuentos"
     )
-
-
-
-
-
 
 
 

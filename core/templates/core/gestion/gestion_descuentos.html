@@ -9,414 +9,3630 @@ Descuentos y fidelidad | Audex
 {% block extra_css %}
 <link
     rel="stylesheet"
-    href="{% static 'core/css/gestion_descuentos.css' %}?v=2"
+    href="{% static 'core/css/gestion_descuentos.css' %}?v=9"
 >
 {% endblock %}
+
 
 {% block content %}
 
 <section class="gd">
+
     <div class="contenedor gd__contenedor">
 
+        <!-- ==========================================================
+             CABECERA
+        =========================================================== -->
+
         <header class="gd__cabecera">
-            <span>Gestión Audex</span>
-            <h1>Descuentos y fidelidad</h1>
+
+            <span>
+                Gestión Audex
+            </span>
+
+            <h1>
+                Descuentos y fidelidad
+            </h1>
 
             <p>
-                Crea varios códigos generales, administra premios
-                personales y revisa cada compra realizada con descuento.
+                Crea campañas generales y beneficios automáticos
+                para clientes frecuentes.
             </p>
+
         </header>
 
-        <div class="gd__kpis">
-            <article>
-                <span>Códigos generales</span>
-                <strong>{{ estadisticas.codigos_generales }}</strong>
-            </article>
 
-            <article>
-                <span>Premios personales</span>
-                <strong>{{ estadisticas.codigos_fidelidad }}</strong>
-            </article>
+        <!-- ==========================================================
+             MENSAJES
+        =========================================================== -->
 
-            <article>
-                <span>Códigos activos</span>
-                <strong>{{ estadisticas.codigos_activos }}</strong>
-            </article>
+        {% if messages %}
 
-            <article>
-                <span>Compras con código</span>
-                <strong>{{ estadisticas.usos_confirmados }}</strong>
-            </article>
+            <div class="gd__mensajes">
 
-            <article>
-                <span>Descuento entregado</span>
-                <strong>
-                    ${{ estadisticas.descuento_total|floatformat:0|intcomma }}
-                </strong>
-            </article>
-        </div>
+                {% for message in messages %}
 
-        <div class="gd__configuraciones">
+                    <div
+                        class="
+                            gd__mensaje
+                            gd__mensaje--{{ message.tags|default:'info' }}
+                        "
+                        role="alert"
+                    >
+                        {{ message }}
+                    </div>
 
-            <article class="gd__panel">
-                <header>
-                    <span>Campañas públicas</span>
-                    <h2>Crear código general</h2>
+                {% endfor %}
 
-                    <p>
-                        Puedes mantener varios códigos activos.
-                        Cada RUT podrá utilizar cada código una sola vez.
-                    </p>
-                </header>
+            </div>
 
-                <form
-                    method="post"
-                    action="{% url 'core:crear_codigo_general' %}"
-                    class="gd__formulario"
-                >
-                    {% csrf_token %}
+        {% endif %}
 
-                    {% for campo in formulario_codigo %}
-                        <label>
-                            <span>{{ campo.label }}</span>
-                            {{ campo }}
 
-                            {% for error in campo.errors %}
-                                <small>{{ error }}</small>
-                            {% endfor %}
-                        </label>
-                    {% endfor %}
+        <!-- ==========================================================
+             CREAR CÓDIGOS GENERALES
+        =========================================================== -->
 
-                    <button type="submit">
-                        <i class="bi bi-plus-lg"></i>
-                        Crear código
-                    </button>
-                </form>
-            </article>
+        <section class="gd__grupo">
 
-            <article class="gd__panel">
-                <header>
-                    <span>Clientes frecuentes</span>
-                    <h2>Programa de fidelidad</h2>
+            <header class="gd__grupo-cabecera">
 
-                    <p>
-                        El prefijo lo escribes tú. Cada meta genera
-                        un código personal nuevo, único y exclusivo.
-                    </p>
-                </header>
+                <span>
+                    Campañas públicas
+                </span>
 
-                <form
-                    method="post"
-                    action="{% url 'core:guardar_configuracion_fidelidad' %}"
-                    class="gd__formulario"
-                >
-                    {% csrf_token %}
+                <h2>
+                    Crear códigos generales
+                </h2>
 
-                    {% for campo in formulario_fidelidad %}
-                        <label>
-                            <span>{{ campo.label }}</span>
-                            {{ campo }}
+                <p>
+                    Estos códigos pueden ser utilizados por cualquier
+                    cliente que cumpla las condiciones configuradas.
+                    Cada cliente puede utilizar un mismo código una vez.
+                </p>
 
-                            {% if campo.help_text %}
-                                <small>{{ campo.help_text }}</small>
-                            {% endif %}
+            </header>
 
-                            {% for error in campo.errors %}
-                                <small>{{ error }}</small>
-                            {% endfor %}
-                        </label>
-                    {% endfor %}
 
-                    <button type="submit">
-                        <i class="bi bi-floppy"></i>
-                        Guardar fidelidad
-                    </button>
-                </form>
-            </article>
+            <div class="gd__configuraciones">
 
-        </div>
+                <!-- ==================================================
+                     GENERAL PORCENTUAL
+                =================================================== -->
+
+                <article class="gd__panel">
+
+                    <header>
+
+                        <span>
+                            Descuento porcentual
+                        </span>
+
+                        <h2>
+                            Oferta general porcentual
+                        </h2>
+
+                        <p>
+                            Define el porcentaje, compra mínima,
+                            descuento máximo y vigencia.
+                        </p>
+
+                    </header>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'core:crear_codigo_general_porcentaje' %}"
+                        class="gd__formulario"
+                        id="formGeneralPorcentaje"
+                        data-tipo-formulario="general"
+                    >
+
+                        {% csrf_token %}
+
+
+                        {% for error in form_general_porcentaje.non_field_errors %}
+
+                            <div class="gd__formulario-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+
+                        {% for campo in form_general_porcentaje %}
+
+                            <label
+                                {% if campo.name == "activo" %}
+                                    class="gd__checkbox"
+                                {% endif %}
+                            >
+
+                                <span>
+                                    {{ campo.label }}
+                                </span>
+
+                                {{ campo }}
+
+
+                                {% if campo.help_text %}
+
+                                    <small>
+                                        {{ campo.help_text }}
+                                    </small>
+
+                                {% endif %}
+
+
+                                {% for error in campo.errors %}
+
+                                    <small class="gd__campo-error">
+                                        {{ error }}
+                                    </small>
+
+                                {% endfor %}
+
+                            </label>
+
+                        {% endfor %}
+
+
+                        <button type="submit">
+
+                            <i class="bi bi-percent"></i>
+
+                            <span>
+                                Crear código porcentual
+                            </span>
+
+                        </button>
+
+                    </form>
+
+                </article>
+
+
+                <!-- ==================================================
+                     GENERAL CLP
+                =================================================== -->
+
+                <article class="gd__panel">
+
+                    <header>
+
+                        <span>
+                            Descuento fijo
+                        </span>
+
+                        <h2>
+                            Oferta general en CLP
+                        </h2>
+
+                        <p>
+                            Descuenta un monto fijo en pesos cuando
+                            el cliente alcanza la compra mínima.
+                        </p>
+
+                    </header>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'core:crear_codigo_general_clp' %}"
+                        class="gd__formulario"
+                        id="formGeneralClp"
+                        data-tipo-formulario="general"
+                    >
+
+                        {% csrf_token %}
+
+
+                        {% for error in form_general_clp.non_field_errors %}
+
+                            <div class="gd__formulario-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+
+                        {% for campo in form_general_clp %}
+
+                            <label
+                                {% if campo.name == "activo" %}
+                                    class="gd__checkbox"
+                                {% endif %}
+                            >
+
+                                <span>
+                                    {{ campo.label }}
+                                </span>
+
+                                {{ campo }}
+
+
+                                {% if campo.help_text %}
+
+                                    <small>
+                                        {{ campo.help_text }}
+                                    </small>
+
+                                {% endif %}
+
+
+                                {% for error in campo.errors %}
+
+                                    <small class="gd__campo-error">
+                                        {{ error }}
+                                    </small>
+
+                                {% endfor %}
+
+                            </label>
+
+                        {% endfor %}
+
+
+                        <button type="submit">
+
+                            <i class="bi bi-currency-dollar"></i>
+
+                            <span>
+                                Crear código en CLP
+                            </span>
+
+                        </button>
+
+                    </form>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================================
+             CREAR BENEFICIOS DE FIDELIDAD
+        =========================================================== -->
+
+        <section class="gd__grupo">
+
+            <header class="gd__grupo-cabecera">
+
+                <span>
+                    Clientes frecuentes
+                </span>
+
+                <h2>
+                    Premios automáticos por compras
+                </h2>
+
+                <p>
+                    Cuando un cliente con sesión iniciada alcanza
+                    el monto acumulado configurado, el sistema genera
+                    automáticamente un código personal y de un solo uso.
+                </p>
+
+            </header>
+
+
+            <div class="gd__configuraciones">
+
+                <!-- ==================================================
+                     FIDELIDAD PORCENTUAL
+                =================================================== -->
+
+                <article class="gd__panel">
+
+                    <header>
+
+                        <span>
+                            Premio porcentual
+                        </span>
+
+                        <h2>
+                            Meta con descuento porcentual
+                        </h2>
+
+                        <p>
+                            Define cuánto debe acumular el cliente
+                            y qué porcentaje recibirá como premio.
+                        </p>
+
+                    </header>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'core:crear_meta_fidelidad_porcentaje' %}"
+                        class="gd__formulario"
+                        id="formFidelidadPorcentaje"
+                        data-tipo-formulario="meta"
+                    >
+
+                        {% csrf_token %}
+
+
+                        {% for error in form_fidelidad_porcentaje.non_field_errors %}
+
+                            <div class="gd__formulario-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+
+                        {% for campo in form_fidelidad_porcentaje %}
+
+                            <label
+                                {% if campo.name == "activa" %}
+                                    class="gd__checkbox"
+                                {% endif %}
+                            >
+
+                                <span>
+                                    {{ campo.label }}
+                                </span>
+
+                                {{ campo }}
+
+
+                                {% if campo.help_text %}
+
+                                    <small>
+                                        {{ campo.help_text }}
+                                    </small>
+
+                                {% endif %}
+
+
+                                {% for error in campo.errors %}
+
+                                    <small class="gd__campo-error">
+                                        {{ error }}
+                                    </small>
+
+                                {% endfor %}
+
+                            </label>
+
+                        {% endfor %}
+
+
+                        <button type="submit">
+
+                            <i class="bi bi-gift"></i>
+
+                            <span>
+                                Crear meta porcentual
+                            </span>
+
+                        </button>
+
+                    </form>
+
+                </article>
+
+
+                <!-- ==================================================
+                     FIDELIDAD CLP
+                =================================================== -->
+
+                <article class="gd__panel">
+
+                    <header>
+
+                        <span>
+                            Premio fijo
+                        </span>
+
+                        <h2>
+                            Meta con descuento en CLP
+                        </h2>
+
+                        <p>
+                            Define cuánto debe acumular el cliente
+                            y qué monto en pesos recibirá como premio.
+                        </p>
+
+                    </header>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'core:crear_meta_fidelidad_clp' %}"
+                        class="gd__formulario"
+                        id="formFidelidadClp"
+                        data-tipo-formulario="meta"
+                    >
+
+                        {% csrf_token %}
+
+
+                        {% for error in form_fidelidad_clp.non_field_errors %}
+
+                            <div class="gd__formulario-error">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+
+                        {% for campo in form_fidelidad_clp %}
+
+                            <label
+                                {% if campo.name == "activa" %}
+                                    class="gd__checkbox"
+                                {% endif %}
+                            >
+
+                                <span>
+                                    {{ campo.label }}
+                                </span>
+
+                                {{ campo }}
+
+
+                                {% if campo.help_text %}
+
+                                    <small>
+                                        {{ campo.help_text }}
+                                    </small>
+
+                                {% endif %}
+
+
+                                {% for error in campo.errors %}
+
+                                    <small class="gd__campo-error">
+                                        {{ error }}
+                                    </small>
+
+                                {% endfor %}
+
+                            </label>
+
+                        {% endfor %}
+
+
+                        <button type="submit">
+
+                            <i class="bi bi-cash-coin"></i>
+
+                            <span>
+                                Crear meta en CLP
+                            </span>
+
+                        </button>
+
+                    </form>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================================
+             CÓDIGOS GENERALES VISIBLES
+        =========================================================== -->
 
         <article class="gd__panel">
+
             <header class="gd__tabla-cabecera">
+
                 <div>
-                    <span>Todos los códigos</span>
-                    <h2>Campañas y premios</h2>
+
+                    <span>
+                        Campañas públicas
+                    </span>
+
+                    <h2>
+                        Códigos generales
+                    </h2>
+
+                    <p>
+                        Administra códigos activos y desactivados.
+                        Los códigos ocultos se mantienen en una lista
+                        independiente.
+                    </p>
+
                 </div>
 
-                <form method="get" class="gd__filtros">
+
+                <!-- ==================================================
+                     FILTROS
+                =================================================== -->
+
+                <form
+                    method="get"
+                    class="gd__filtros gd__filtros--compactos"
+                >
+
                     <input
                         type="search"
                         name="q"
                         value="{{ busqueda }}"
-                        placeholder="Código, nombre o cliente"
+                        placeholder="Buscar código"
                     >
 
-                    <select name="tipo">
-                        <option value="">Todos los tipos</option>
-                        <option value="general" {% if tipo == "general" %}selected{% endif %}>
-                            Generales
+
+                    <select name="modalidad">
+
+                        <option value="">
+                            Todas las modalidades
                         </option>
-                        <option value="fidelidad" {% if tipo == "fidelidad" %}selected{% endif %}>
-                            Fidelidad
+
+                        <option
+                            value="porcentaje"
+                            {% if modalidad == "porcentaje" %}
+                                selected
+                            {% endif %}
+                        >
+                            Porcentaje
                         </option>
+
+                        <option
+                            value="monto_fijo"
+                            {% if modalidad == "monto_fijo" %}
+                                selected
+                            {% endif %}
+                        >
+                            Monto fijo
+                        </option>
+
                     </select>
+
 
                     <select name="estado">
-                        <option value="">Todos los estados</option>
-                        <option value="activos" {% if estado == "activos" %}selected{% endif %}>
-                            Activos
+
+                        <option
+                            value="todos"
+                            {% if estado == "todos" %}
+                                selected
+                            {% endif %}
+                        >
+                            Activos y desactivados
                         </option>
-                        <option value="inactivos" {% if estado == "inactivos" %}selected{% endif %}>
-                            Inactivos
+
+                        <option
+                            value="activos"
+                            {% if estado == "activos" %}
+                                selected
+                            {% endif %}
+                        >
+                            Solo activos
                         </option>
+
+                        <option
+                            value="desactivados"
+                            {% if estado == "desactivados" %}
+                                selected
+                            {% endif %}
+                        >
+                            Solo desactivados
+                        </option>
+
                     </select>
 
+
                     <button type="submit">
-                        Filtrar
+
+                        <i class="bi bi-search"></i>
+
+                        <span>
+                            Filtrar
+                        </span>
+
                     </button>
+
+
+                    {% if busqueda or modalidad or estado != "todos" %}
+
+                        <a
+                            href="{% url 'core:gestion_descuentos' %}"
+                            class="gd__limpiar-filtros"
+                        >
+                            Limpiar
+                        </a>
+
+                    {% endif %}
+
                 </form>
+
             </header>
 
+
             <div class="gd__tabla-scroll">
+
                 <table class="gd__tabla">
+
                     <thead>
+
                         <tr>
-                            <th>Código</th>
-                            <th>Tipo</th>
-                            <th>Descuento</th>
-                            <th>Mínimo</th>
-                            <th>Cliente exclusivo</th>
-                            <th>Usos</th>
-                            <th>Vigencia</th>
-                            <th>Estado</th>
-                            <th>Acción</th>
+                            <th>
+                                Código
+                            </th>
+
+                            <th>
+                                Modalidad
+                            </th>
+
+                            <th>
+                                Descuento
+                            </th>
+
+                            <th>
+                                Compra mínima
+                            </th>
+
+                            <th>
+                                Usos
+                            </th>
+
+                            <th>
+                                Vigencia
+                            </th>
+
+                            <th>
+                                Estado
+                            </th>
+
+                            <th>
+                                Acciones
+                            </th>
                         </tr>
+
                     </thead>
 
+
                     <tbody>
-                        {% for codigo in pagina_codigos %}
+
+                        {% for codigo in pagina_codigos_generales %}
+
                             <tr>
-                                <td>
-                                    <strong>{{ codigo.codigo }}</strong>
-                                    <small>{{ codigo.nombre }}</small>
-                                </td>
 
-                                <td>{{ codigo.get_tipo_display }}</td>
-                                <td>{{ codigo.porcentaje|floatformat:0 }}%</td>
+                                <!-- ==================================
+                                     CÓDIGO
+                                =================================== -->
 
                                 <td>
-                                    ${{ codigo.monto_minimo|floatformat:0|intcomma }}
-                                </td>
 
-                                <td>
-                                    {% if codigo.usuario_exclusivo %}
-                                        {{ codigo.usuario_exclusivo.email|default:codigo.usuario_exclusivo.username }}
-                                    {% else %}
-                                        Cualquier cliente
+                                    <strong>
+                                        {{ codigo.codigo }}
+                                    </strong>
+
+                                    <small>
+                                        {{ codigo.nombre }}
+                                    </small>
+
+
+                                    {% if codigo.descripcion %}
+
+                                        <small>
+                                            {{ codigo.descripcion }}
+                                        </small>
+
                                     {% endif %}
+
                                 </td>
 
-                                <td>{{ codigo.total_usos }}</td>
+
+                                <!-- ==================================
+                                     MODALIDAD
+                                =================================== -->
 
                                 <td>
+
+                                    {% if codigo.modalidad == "monto_fijo" %}
+
+                                        <span
+                                            class="
+                                                gd__modalidad
+                                                gd__modalidad--fijo
+                                            "
+                                        >
+                                            Monto fijo
+                                        </span>
+
+                                    {% else %}
+
+                                        <span
+                                            class="
+                                                gd__modalidad
+                                                gd__modalidad--porcentaje
+                                            "
+                                        >
+                                            Porcentaje
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     DESCUENTO
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.modalidad == "monto_fijo" %}
+
+                                        <strong>
+                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        <strong>
+                                            {{ codigo.porcentaje|default:0|floatformat:2 }}%
+                                        </strong>
+
+
+                                        {% if codigo.monto_maximo_descuento %}
+
+                                            <small>
+                                                Máximo:
+                                                ${{ codigo.monto_maximo_descuento|floatformat:0|intcomma }}
+                                            </small>
+
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     COMPRA MÍNIMA
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.monto_minimo > 0 %}
+
+                                        <strong>
+                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        <span>
+                                            Sin mínimo
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     USOS
+                                =================================== -->
+
+                                <td>
+
+                                    <strong>
+                                        {{ codigo.total_usos|default:0 }}
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     VIGENCIA
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.fecha_inicio %}
+
+                                        <small>
+                                            Desde:
+                                            {{ codigo.fecha_inicio|date:"d/m/Y" }}
+                                        </small>
+
+                                    {% else %}
+
+                                        <small>
+                                            Inicio inmediato
+                                        </small>
+
+                                    {% endif %}
+
+
                                     {% if codigo.fecha_fin %}
-                                        {{ codigo.fecha_fin|date:"d/m/Y H:i" }}
+
+                                        <small>
+                                            Hasta:
+                                            {{ codigo.fecha_fin|date:"d/m/Y" }}
+                                        </small>
+
                                     {% else %}
-                                        Sin vencimiento
+
+                                        <small>
+                                            Sin vencimiento
+                                        </small>
+
                                     {% endif %}
+
                                 </td>
 
+
+                                <!-- ==================================
+                                     ESTADO
+                                =================================== -->
+
                                 <td>
-                                    {% if codigo.consumido %}
-                                        <span class="gd__estado gd__estado--usado">
-                                            Consumido
-                                        </span>
-                                    {% elif codigo.activo %}
-                                        <span class="gd__estado gd__estado--activo">
-                                            Activo
-                                        </span>
+
+                                    {% if codigo.activo %}
+
+                                        {% if codigo.vigente %}
+
+                                            <span
+                                                class="
+                                                    gd__estado
+                                                    gd__estado--activo
+                                                "
+                                            >
+                                                Activo
+                                            </span>
+
+                                        {% else %}
+
+                                            <span
+                                                class="
+                                                    gd__estado
+                                                    gd__estado--inactivo
+                                                "
+                                            >
+                                                Fuera de vigencia
+                                            </span>
+
+                                        {% endif %}
+
                                     {% else %}
-                                        <span class="gd__estado gd__estado--inactivo">
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--inactivo
+                                            "
+                                        >
                                             Desactivado
                                         </span>
+
                                     {% endif %}
+
                                 </td>
+
+
+                                <!-- ==================================
+                                     ACCIONES
+                                =================================== -->
 
                                 <td>
-                                    <form
-                                        method="post"
-                                        action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
-                                    >
-                                        {% csrf_token %}
 
-                                        <button
-                                            type="submit"
-                                            class="gd__accion"
-                                        >
-                                            {% if codigo.activo %}
-                                                Desactivar
-                                            {% else %}
-                                                Activar
-                                            {% endif %}
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="9">
-                                    No existen códigos con estos filtros.
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </article>
+                                    <div class="gd__acciones">
 
-        <article class="gd__panel">
-            <header>
-                <span>Progreso</span>
-                <h2>Clientes acumulando metas</h2>
-            </header>
+                                        {% if codigo.activo %}
 
-            <div class="gd__tabla-scroll">
-                <table class="gd__tabla">
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Saldo</th>
-                            <th>Falta</th>
-                            <th>Metas</th>
-                            <th>Progreso</th>
-                        </tr>
-                    </thead>
+                                            <!-- ======================
+                                                 ACTIVO:
+                                                 DESACTIVAR + ELIMINAR
+                                            ======================= -->
 
-                    <tbody>
-                        {% for saldo in saldos %}
-                            <tr>
-                                <td>
-                                    {{ saldo.usuario.email|default:saldo.usuario.username }}
-                                </td>
-                                <td>${{ saldo.saldo_actual|floatformat:0|intcomma }}</td>
-                                <td>${{ saldo.faltante|floatformat:0|intcomma }}</td>
-                                <td>{{ saldo.metas_cumplidas }}</td>
-                                <td>
-                                    <div class="gd__progreso">
-                                        <span style="width: {{ saldo.progreso }}%;"></span>
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-pause-circle"></i>
+
+                                                    <span>
+                                                        Desactivar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+                                        {% else %}
+
+                                            <!-- ======================
+                                                 DESACTIVADO:
+                                                 ACTIVAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-play-circle"></i>
+
+                                                    <span>
+                                                        Activar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ======================
+                                                 DESACTIVADO:
+                                                 OCULTAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:ocultar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="
+                                                        gd__accion
+                                                        gd__accion--ocultar
+                                                    "
+                                                    data-accion="ocultar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-eye-slash"></i>
+
+                                                    <span>
+                                                        Ocultar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+                                        {% endif %}
+
+
+                                        <!-- ==========================
+                                             ELIMINAR
+                                        =========================== -->
+
+                                        {% if codigo.total_registros_uso == 0 %}
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:eliminar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="
+                                                        gd__accion
+                                                        gd__accion--eliminar
+                                                    "
+                                                    data-accion="eliminar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-trash3"></i>
+
+                                                    <span>
+                                                        Eliminar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+                                        {% else %}
+
+                                            <span
+                                                class="gd__no-eliminable"
+                                                title="Este código posee historial y no puede eliminarse."
+                                            >
+
+                                                <i class="bi bi-shield-lock"></i>
+
+                                                <span>
+                                                    Protegido
+                                                </span>
+
+                                            </span>
+
+                                        {% endif %}
+
                                     </div>
-                                    <small>{{ saldo.progreso }}%</small>
+
                                 </td>
+
                             </tr>
+
                         {% empty %}
+
                             <tr>
-                                <td colspan="5">
-                                    Todavía no existen clientes acumulando.
+
+                                <td colspan="8">
+
+                                    <div class="gd__vacio">
+
+                                        <i class="bi bi-ticket-perforated"></i>
+
+                                        <strong>
+                                            No hay códigos visibles
+                                        </strong>
+
+                                        <small>
+
+                                            {% if estado == "activos" %}
+
+                                                No existen códigos activos
+                                                con estos filtros.
+
+                                            {% elif estado == "desactivados" %}
+
+                                                No existen códigos desactivados
+                                                visibles con estos filtros.
+
+                                            {% elif busqueda or modalidad %}
+
+                                                No encontramos resultados
+                                                con los filtros seleccionados.
+
+                                            {% else %}
+
+                                                Crea un código utilizando
+                                                los formularios superiores.
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    </div>
+
                                 </td>
+
                             </tr>
+
                         {% endfor %}
+
                     </tbody>
+
                 </table>
+
             </div>
+
+
+            <!-- ======================================================
+                 PAGINACIÓN GENERALES
+            ======================================================= -->
+
+            {% if pagina_codigos_generales.has_other_pages %}
+
+                <nav class="gd__paginacion">
+
+                    {% if pagina_codigos_generales.has_previous %}
+
+                        <a
+                            href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_generales={{ pagina_codigos_generales.previous_page_number }}"
+                        >
+
+                            <i class="bi bi-chevron-left"></i>
+
+                            Anterior
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <span>
+                        Página
+                        {{ pagina_codigos_generales.number }}
+                        de
+                        {{ pagina_codigos_generales.paginator.num_pages }}
+                    </span>
+
+
+                    {% if pagina_codigos_generales.has_next %}
+
+                        <a
+                            href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_generales={{ pagina_codigos_generales.next_page_number }}"
+                        >
+
+                            Siguiente
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+                    {% endif %}
+
+                </nav>
+
+            {% endif %}
+
         </article>
 
+
+        <!-- ==========================================================
+             CÓDIGOS GENERALES OCULTOS
+        =========================================================== -->
+
+        <details class="gd__archivo">
+
+            <summary class="gd__archivo-resumen">
+
+                <div>
+
+                    <span>
+                        Organización administrativa
+                    </span>
+
+                    <strong>
+                        Códigos generales ocultos
+                    </strong>
+
+                    <small>
+                        Los códigos ocultos permanecen desactivados
+                        y separados del listado principal.
+                    </small>
+
+                </div>
+
+
+                <i class="bi bi-chevron-down"></i>
+
+            </summary>
+
+
+            <div class="gd__archivo-contenido">
+
+                <div class="gd__tabla-scroll">
+
+                    <table class="gd__tabla">
+
+                        <thead>
+
+                            <tr>
+                                <th>
+                                    Código
+                                </th>
+
+                                <th>
+                                    Modalidad
+                                </th>
+
+                                <th>
+                                    Descuento
+                                </th>
+
+                                <th>
+                                    Compra mínima
+                                </th>
+
+                                <th>
+                                    Usos
+                                </th>
+
+                                <th>
+                                    Estado
+                                </th>
+
+                                <th>
+                                    Acciones
+                                </th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for codigo in pagina_codigos_generales_ocultos %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <strong>
+                                            {{ codigo.codigo }}
+                                        </strong>
+
+                                        <small>
+                                            {{ codigo.nombre }}
+                                        </small>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if codigo.modalidad == "monto_fijo" %}
+
+                                            <span
+                                                class="
+                                                    gd__modalidad
+                                                    gd__modalidad--fijo
+                                                "
+                                            >
+                                                Monto fijo
+                                            </span>
+
+                                        {% else %}
+
+                                            <span
+                                                class="
+                                                    gd__modalidad
+                                                    gd__modalidad--porcentaje
+                                                "
+                                            >
+                                                Porcentaje
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if codigo.modalidad == "monto_fijo" %}
+
+                                            <strong>
+                                                -${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+                                            </strong>
+
+                                        {% else %}
+
+                                            <strong>
+                                                {{ codigo.porcentaje|default:0|floatformat:2 }}%
+                                            </strong>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if codigo.monto_minimo > 0 %}
+
+                                            <strong>
+                                                ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                            </strong>
+
+                                        {% else %}
+
+                                            Sin mínimo
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <strong>
+                                            {{ codigo.total_usos|default:0 }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--inactivo
+                                            "
+                                        >
+                                            Desactivado
+                                        </span>
+
+                                        <small>
+                                            Oculto del listado principal
+                                        </small>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="gd__acciones">
+
+                                            <!-- ======================
+                                                 MOSTRAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:mostrar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="mostrar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-eye"></i>
+
+                                                    <span>
+                                                        Mostrar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ======================
+                                                 ACTIVAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-play-circle"></i>
+
+                                                    <span>
+                                                        Activar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ======================
+                                                 ELIMINAR
+                                            ======================= -->
+
+                                            {% if codigo.total_registros_uso == 0 %}
+
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'core:eliminar_codigo_descuento' codigo.pk %}"
+                                                >
+
+                                                    {% csrf_token %}
+
+                                                    <button
+                                                        type="submit"
+                                                        class="
+                                                            gd__accion
+                                                            gd__accion--eliminar
+                                                        "
+                                                        data-accion="eliminar"
+                                                        data-codigo="{{ codigo.codigo }}"
+                                                    >
+
+                                                        <i class="bi bi-trash3"></i>
+
+                                                        <span>
+                                                            Eliminar
+                                                        </span>
+
+                                                    </button>
+
+                                                </form>
+
+                                            {% else %}
+
+                                                <span class="gd__no-eliminable">
+
+                                                    <i class="bi bi-shield-lock"></i>
+
+                                                    Protegido
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+
+                                    <td colspan="7">
+
+                                        <div class="gd__vacio">
+
+                                            <i class="bi bi-eye-slash"></i>
+
+                                            <strong>
+                                                No hay códigos ocultos
+                                            </strong>
+
+                                            <small>
+                                                Cuando ocultes un código
+                                                desactivado aparecerá aquí.
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                {% if pagina_codigos_generales_ocultos.has_other_pages %}
+
+                    <nav class="gd__paginacion">
+
+                        {% if pagina_codigos_generales_ocultos.has_previous %}
+
+                            <a
+                                href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_generales_ocultos={{ pagina_codigos_generales_ocultos.previous_page_number }}"
+                            >
+                                <i class="bi bi-chevron-left"></i>
+
+                                Anterior
+                            </a>
+
+                        {% endif %}
+
+
+                        <span>
+                            Página
+                            {{ pagina_codigos_generales_ocultos.number }}
+                            de
+                            {{ pagina_codigos_generales_ocultos.paginator.num_pages }}
+                        </span>
+
+
+                        {% if pagina_codigos_generales_ocultos.has_next %}
+
+                            <a
+                                href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_generales_ocultos={{ pagina_codigos_generales_ocultos.next_page_number }}"
+                            >
+                                Siguiente
+
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+
+                        {% endif %}
+
+                    </nav>
+
+                {% endif %}
+
+            </div>
+
+        </details>
+
+
+        <!-- ==========================================================
+             BENEFICIOS DE FIDELIDAD VISIBLES
+        =========================================================== -->
+
         <article class="gd__panel">
+
             <header>
-                <span>Historial detallado</span>
-                <h2>Compras realizadas con código</h2>
+
+                <span>
+                    Clientes frecuentes
+                </span>
+
+                <h2>
+                    Descuentos para clientes frecuentes
+                </h2>
 
                 <p>
-                    Incluye cliente, pedido, productos, precios y descuento
-                    asignado a cada línea.
+                    Estas son las metas configuradas.
+                    Los beneficios activos generan premios cuando
+                    los clientes alcanzan el monto requerido.
                 </p>
+
             </header>
 
+
+            <div class="gd__tabla-scroll">
+
+                <table class="gd__tabla">
+
+                    <thead>
+
+                        <tr>
+                            <th>
+                                Beneficio
+                            </th>
+
+                            <th>
+                                Meta acumulada
+                            </th>
+
+                            <th>
+                                Premio
+                            </th>
+
+                            <th>
+                                Compra mínima
+                            </th>
+
+                            <th>
+                                Vigencia
+                            </th>
+
+                            <th>
+                                Generados
+                            </th>
+
+                            <th>
+                                Estado
+                            </th>
+
+                            <th>
+                                Acciones
+                            </th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for meta in metas_fidelidad_visibles %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ meta.nombre }}
+                                    </strong>
+
+                                    <small>
+                                        Prefijo:
+                                        {{ meta.prefijo_codigo }}
+                                    </small>
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        ${{ meta.monto_objetivo|floatformat:0|intcomma }}
+                                    </strong>
+
+                                    <small>
+                                        Acumulado requerido
+                                    </small>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if meta.modalidad == "monto_fijo" %}
+
+                                        <span
+                                            class="
+                                                gd__modalidad
+                                                gd__modalidad--fijo
+                                            "
+                                        >
+                                            Monto fijo
+                                        </span>
+
+                                        <strong>
+                                            ${{ meta.monto_descuento|default:0|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        <span
+                                            class="
+                                                gd__modalidad
+                                                gd__modalidad--porcentaje
+                                            "
+                                        >
+                                            Porcentaje
+                                        </span>
+
+                                        <strong>
+                                            {{ meta.porcentaje|default:0|floatformat:2 }}%
+                                        </strong>
+
+
+                                        {% if meta.monto_maximo_descuento %}
+
+                                            <small>
+                                                Máximo:
+                                                ${{ meta.monto_maximo_descuento|floatformat:0|intcomma }}
+                                            </small>
+
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if meta.monto_minimo_compra > 0 %}
+
+                                        <strong>
+                                            ${{ meta.monto_minimo_compra|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        Sin mínimo
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        {{ meta.vigencia_dias }}
+                                    </strong>
+
+                                    <small>
+                                        días
+                                    </small>
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        {{ meta.total_generados|default:0 }}
+                                    </strong>
+
+                                    <small>
+                                        {{ meta.total_usados|default:0 }}
+                                        utilizados
+                                    </small>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if meta.activa %}
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--activo
+                                            "
+                                        >
+                                            Activo
+                                        </span>
+
+                                    {% else %}
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--inactivo
+                                            "
+                                        >
+                                            Desactivado
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="gd__acciones">
+
+                                        {% if meta.activa %}
+
+                                            <!-- ======================
+                                                 ACTIVA:
+                                                 DESACTIVAR + ELIMINAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_meta_fidelidad' meta.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ meta.nombre }}"
+                                                >
+
+                                                    <i class="bi bi-pause-circle"></i>
+
+                                                    <span>
+                                                        Desactivar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+                                        {% else %}
+
+                                            <!-- ======================
+                                                 DESACTIVADA:
+                                                 ACTIVAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_meta_fidelidad' meta.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ meta.nombre }}"
+                                                >
+
+                                                    <i class="bi bi-play-circle"></i>
+
+                                                    <span>
+                                                        Activar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ======================
+                                                 DESACTIVADA:
+                                                 OCULTAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:ocultar_meta_fidelidad' meta.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="
+                                                        gd__accion
+                                                        gd__accion--ocultar
+                                                    "
+                                                    data-accion="ocultar"
+                                                    data-codigo="{{ meta.nombre }}"
+                                                >
+
+                                                    <i class="bi bi-eye-slash"></i>
+
+                                                    <span>
+                                                        Ocultar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+                                        {% endif %}
+
+
+                                        <!-- ==========================
+                                             ELIMINAR
+                                        =========================== -->
+
+                                        {% if meta.puede_eliminar %}
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:eliminar_meta_fidelidad' meta.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="
+                                                        gd__accion
+                                                        gd__accion--eliminar
+                                                    "
+                                                    data-accion="eliminar"
+                                                    data-codigo="{{ meta.nombre }}"
+                                                >
+
+                                                    <i class="bi bi-trash3"></i>
+
+                                                    <span>
+                                                        Eliminar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+                                        {% else %}
+
+                                            <span
+                                                class="gd__no-eliminable"
+                                                title="Este beneficio ya generó códigos personales."
+                                            >
+
+                                                <i class="bi bi-shield-lock"></i>
+
+                                                <span>
+                                                    Protegido
+                                                </span>
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="8">
+
+                                    <div class="gd__vacio">
+
+                                        <i class="bi bi-gift"></i>
+
+                                        <strong>
+                                            No hay beneficios visibles
+                                        </strong>
+
+                                        <small>
+                                            Crea una meta de fidelidad
+                                            usando los formularios superiores.
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </article>
+
+
+        <!-- ==========================================================
+             BENEFICIOS DE FIDELIDAD OCULTOS
+        =========================================================== -->
+
+        <details class="gd__archivo">
+
+            <summary class="gd__archivo-resumen">
+
+                <div>
+
+                    <span>
+                        Organización administrativa
+                    </span>
+
+                    <strong>
+                        Beneficios de fidelidad ocultos
+                    </strong>
+
+                    <small>
+                        Beneficios desactivados que fueron apartados
+                        manualmente del listado principal.
+                    </small>
+
+                </div>
+
+
+                <i class="bi bi-chevron-down"></i>
+
+            </summary>
+
+
+            <div class="gd__archivo-contenido">
+
+                <div class="gd__tabla-scroll">
+
+                    <table class="gd__tabla">
+
+                        <thead>
+
+                            <tr>
+                                <th>
+                                    Beneficio
+                                </th>
+
+                                <th>
+                                    Meta
+                                </th>
+
+                                <th>
+                                    Premio
+                                </th>
+
+                                <th>
+                                    Compra mínima
+                                </th>
+
+                                <th>
+                                    Generados
+                                </th>
+
+                                <th>
+                                    Estado
+                                </th>
+
+                                <th>
+                                    Acciones
+                                </th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for meta in metas_fidelidad_ocultas %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <strong>
+                                            {{ meta.nombre }}
+                                        </strong>
+
+                                        <small>
+                                            {{ meta.prefijo_codigo }}
+                                        </small>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <strong>
+                                            ${{ meta.monto_objetivo|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if meta.modalidad == "monto_fijo" %}
+
+                                            <strong>
+                                                ${{ meta.monto_descuento|default:0|floatformat:0|intcomma }}
+                                            </strong>
+
+                                        {% else %}
+
+                                            <strong>
+                                                {{ meta.porcentaje|default:0|floatformat:2 }}%
+                                            </strong>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if meta.monto_minimo_compra > 0 %}
+
+                                            ${{ meta.monto_minimo_compra|floatformat:0|intcomma }}
+
+                                        {% else %}
+
+                                            Sin mínimo
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <strong>
+                                            {{ meta.total_generados|default:0 }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--inactivo
+                                            "
+                                        >
+                                            Desactivado
+                                        </span>
+
+                                        <small>
+                                            Oculto
+                                        </small>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="gd__acciones">
+
+                                            <!-- ======================
+                                                 MOSTRAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:mostrar_meta_fidelidad' meta.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="mostrar"
+                                                    data-codigo="{{ meta.nombre }}"
+                                                >
+
+                                                    <i class="bi bi-eye"></i>
+
+                                                    <span>
+                                                        Mostrar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ======================
+                                                 ACTIVAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_meta_fidelidad' meta.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ meta.nombre }}"
+                                                >
+
+                                                    <i class="bi bi-play-circle"></i>
+
+                                                    <span>
+                                                        Activar
+                                                    </span>
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ======================
+                                                 ELIMINAR
+                                            ======================= -->
+
+                                            {% if meta.puede_eliminar %}
+
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'core:eliminar_meta_fidelidad' meta.pk %}"
+                                                >
+
+                                                    {% csrf_token %}
+
+                                                    <button
+                                                        type="submit"
+                                                        class="
+                                                            gd__accion
+                                                            gd__accion--eliminar
+                                                        "
+                                                        data-accion="eliminar"
+                                                        data-codigo="{{ meta.nombre }}"
+                                                    >
+
+                                                        <i class="bi bi-trash3"></i>
+
+                                                        <span>
+                                                            Eliminar
+                                                        </span>
+
+                                                    </button>
+
+                                                </form>
+
+                                            {% else %}
+
+                                                <span class="gd__no-eliminable">
+
+                                                    <i class="bi bi-shield-lock"></i>
+
+                                                    Protegido
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+
+                                    <td colspan="7">
+
+                                        <div class="gd__vacio">
+
+                                            <i class="bi bi-eye-slash"></i>
+
+                                            <strong>
+                                                No hay beneficios ocultos
+                                            </strong>
+
+                                            <small>
+                                                Cuando ocultes un beneficio
+                                                desactivado aparecerá aquí.
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </details>
+
+
+        <!-- ==========================================================
+             CÓDIGOS PERSONALES DE FIDELIDAD VISIBLES
+        =========================================================== -->
+
+        <article class="gd__panel">
+
+            <header>
+
+                <span>
+                    Premios entregados
+                </span>
+
+                <h2>
+                    Códigos personales generados
+                </h2>
+
+                <p>
+                    Estos códigos son generados automáticamente
+                    cuando un cliente alcanza una meta de fidelidad.
+                </p>
+
+            </header>
+
+
+            <div class="gd__tabla-scroll">
+
+                <table class="gd__tabla">
+
+                    <thead>
+
+                        <tr>
+                            <th>
+                                Código
+                            </th>
+
+                            <th>
+                                Cliente
+                            </th>
+
+                            <th>
+                                Meta
+                            </th>
+
+                            <th>
+                                Premio
+                            </th>
+
+                            <th>
+                                Compra mínima
+                            </th>
+
+                            <th>
+                                Vigencia
+                            </th>
+
+                            <th>
+                                Estado
+                            </th>
+
+                            <th>
+                                Acciones
+                            </th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for codigo in pagina_codigos_fidelidad %}
+
+                            <tr>
+
+                                <!-- ==================================
+                                     CÓDIGO
+                                =================================== -->
+
+                                <td>
+
+                                    <strong>
+                                        {{ codigo.codigo }}
+                                    </strong>
+
+                                    <small>
+                                        Código personal
+                                    </small>
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     CLIENTE
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.usuario_exclusivo %}
+
+                                        <strong>
+
+                                            {% if codigo.usuario_exclusivo.email %}
+
+                                                {{ codigo.usuario_exclusivo.email }}
+
+                                            {% else %}
+
+                                                {{ codigo.usuario_exclusivo.username }}
+
+                                            {% endif %}
+
+                                        </strong>
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     META
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.meta_fidelidad %}
+
+                                        <strong>
+                                            {{ codigo.meta_fidelidad.nombre }}
+                                        </strong>
+
+                                        <small>
+                                            ${{ codigo.meta_fidelidad.monto_objetivo|floatformat:0|intcomma }}
+                                        </small>
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     PREMIO
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.modalidad == "monto_fijo" %}
+
+                                        <span
+                                            class="
+                                                gd__modalidad
+                                                gd__modalidad--fijo
+                                            "
+                                        >
+                                            Monto fijo
+                                        </span>
+
+                                        <strong>
+                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        <span
+                                            class="
+                                                gd__modalidad
+                                                gd__modalidad--porcentaje
+                                            "
+                                        >
+                                            Porcentaje
+                                        </span>
+
+                                        <strong>
+                                            {{ codigo.porcentaje|default:0|floatformat:2 }}%
+                                        </strong>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     COMPRA MÍNIMA
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.monto_minimo > 0 %}
+
+                                        <strong>
+                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        Sin mínimo
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     VIGENCIA
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.fecha_fin %}
+
+                                        <small>
+                                            Hasta:
+                                            {{ codigo.fecha_fin|date:"d/m/Y H:i" }}
+                                        </small>
+
+                                    {% else %}
+
+                                        <small>
+                                            Sin vencimiento
+                                        </small>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     ESTADO
+                                =================================== -->
+
+                                <td>
+
+                                    {% if codigo.consumido %}
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--usado
+                                            "
+                                        >
+                                            Utilizado
+                                        </span>
+
+                                    {% elif codigo.activo %}
+
+                                        {% if codigo.vigente %}
+
+                                            <span
+                                                class="
+                                                    gd__estado
+                                                    gd__estado--activo
+                                                "
+                                            >
+                                                Disponible
+                                            </span>
+
+                                        {% else %}
+
+                                            <span
+                                                class="
+                                                    gd__estado
+                                                    gd__estado--inactivo
+                                                "
+                                            >
+                                                Vencido
+                                            </span>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--inactivo
+                                            "
+                                        >
+                                            Desactivado
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ==================================
+                                     ACCIONES
+                                =================================== -->
+
+                                <td>
+
+                                    <div class="gd__acciones">
+
+                                        {% if codigo.consumido %}
+
+                                            <!-- ======================
+                                                 CONSUMIDO
+                                            ======================= -->
+
+                                            <span
+                                                class="gd__no-eliminable"
+                                                title="El código ya fue utilizado."
+                                            >
+
+                                                <i class="bi bi-check2-circle"></i>
+
+                                                Consumido
+
+                                            </span>
+
+                                        {% elif codigo.activo %}
+
+                                            <!-- ======================
+                                                 ACTIVO
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-pause-circle"></i>
+
+                                                    Desactivar
+
+                                                </button>
+
+                                            </form>
+
+                                        {% else %}
+
+                                            <!-- ======================
+                                                 DESACTIVADO:
+                                                 ACTIVAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-play-circle"></i>
+
+                                                    Activar
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ======================
+                                                 DESACTIVADO:
+                                                 OCULTAR
+                                            ======================= -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:ocultar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="
+                                                        gd__accion
+                                                        gd__accion--ocultar
+                                                    "
+                                                    data-accion="ocultar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-eye-slash"></i>
+
+                                                    Ocultar
+
+                                                </button>
+
+                                            </form>
+
+                                        {% endif %}
+
+
+                                        <!-- ==========================
+                                             ELIMINAR / PROTEGIDO
+                                        =========================== -->
+
+                                        {% if codigo.total_registros_uso == 0 %}
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:eliminar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="
+                                                        gd__accion
+                                                        gd__accion--eliminar
+                                                    "
+                                                    data-accion="eliminar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-trash3"></i>
+
+                                                    Eliminar
+
+                                                </button>
+
+                                            </form>
+
+                                        {% elif not codigo.consumido %}
+
+                                            <span class="gd__no-eliminable">
+
+                                                <i class="bi bi-shield-lock"></i>
+
+                                                Protegido
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="8">
+
+                                    <div class="gd__vacio">
+
+                                        <i class="bi bi-ticket-perforated"></i>
+
+                                        <strong>
+                                            Aún no hay códigos personales
+                                        </strong>
+
+                                        <small>
+                                            Los códigos aparecerán aquí
+                                            cuando un cliente alcance una
+                                            meta de fidelidad.
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            {% if pagina_codigos_fidelidad.has_other_pages %}
+
+                <nav class="gd__paginacion">
+
+                    {% if pagina_codigos_fidelidad.has_previous %}
+
+                        <a
+                            href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_fidelidad={{ pagina_codigos_fidelidad.previous_page_number }}"
+                        >
+                            <i class="bi bi-chevron-left"></i>
+
+                            Anterior
+                        </a>
+
+                    {% endif %}
+
+
+                    <span>
+                        Página
+                        {{ pagina_codigos_fidelidad.number }}
+                        de
+                        {{ pagina_codigos_fidelidad.paginator.num_pages }}
+                    </span>
+
+
+                    {% if pagina_codigos_fidelidad.has_next %}
+
+                        <a
+                            href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_fidelidad={{ pagina_codigos_fidelidad.next_page_number }}"
+                        >
+                            Siguiente
+
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+
+                    {% endif %}
+
+                </nav>
+
+            {% endif %}
+
+        </article>
+
+
+        <!-- ==========================================================
+             CÓDIGOS PERSONALES OCULTOS
+        =========================================================== -->
+
+        <details class="gd__archivo">
+
+            <summary class="gd__archivo-resumen">
+
+                <div>
+
+                    <span>
+                        Premios archivados
+                    </span>
+
+                    <strong>
+                        Códigos personales ocultos
+                    </strong>
+
+                    <small>
+                        Códigos personales desactivados que fueron
+                        apartados del listado principal.
+                    </small>
+
+                </div>
+
+
+                <i class="bi bi-chevron-down"></i>
+
+            </summary>
+
+
+            <div class="gd__archivo-contenido">
+
+                <div class="gd__tabla-scroll">
+
+                    <table class="gd__tabla">
+
+                        <thead>
+
+                            <tr>
+                                <th>
+                                    Código
+                                </th>
+
+                                <th>
+                                    Cliente
+                                </th>
+
+                                <th>
+                                    Meta
+                                </th>
+
+                                <th>
+                                    Premio
+                                </th>
+
+                                <th>
+                                    Estado
+                                </th>
+
+                                <th>
+                                    Acciones
+                                </th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for codigo in pagina_codigos_fidelidad_ocultos %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <strong>
+                                            {{ codigo.codigo }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if codigo.usuario_exclusivo %}
+
+                                            {% if codigo.usuario_exclusivo.email %}
+
+                                                {{ codigo.usuario_exclusivo.email }}
+
+                                            {% else %}
+
+                                                {{ codigo.usuario_exclusivo.username }}
+
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            —
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if codigo.meta_fidelidad %}
+
+                                            {{ codigo.meta_fidelidad.nombre }}
+
+                                        {% else %}
+
+                                            —
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if codigo.modalidad == "monto_fijo" %}
+
+                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+
+                                        {% else %}
+
+                                            {{ codigo.porcentaje|default:0|floatformat:2 }}%
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span
+                                            class="
+                                                gd__estado
+                                                gd__estado--inactivo
+                                            "
+                                        >
+                                            Desactivado
+                                        </span>
+
+                                        <small>
+                                            Oculto
+                                        </small>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="gd__acciones">
+
+                                            <!-- MOSTRAR -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:mostrar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="mostrar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-eye"></i>
+
+                                                    Mostrar
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ACTIVAR -->
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:alternar_codigo_descuento' codigo.pk %}"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="gd__accion"
+                                                    data-accion="alternar"
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+
+                                                    <i class="bi bi-play-circle"></i>
+
+                                                    Activar
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- ELIMINAR -->
+
+                                            {% if codigo.total_registros_uso == 0 %}
+
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'core:eliminar_codigo_descuento' codigo.pk %}"
+                                                >
+
+                                                    {% csrf_token %}
+
+                                                    <button
+                                                        type="submit"
+                                                        class="
+                                                            gd__accion
+                                                            gd__accion--eliminar
+                                                        "
+                                                        data-accion="eliminar"
+                                                        data-codigo="{{ codigo.codigo }}"
+                                                    >
+
+                                                        <i class="bi bi-trash3"></i>
+
+                                                        Eliminar
+
+                                                    </button>
+
+                                                </form>
+
+                                            {% else %}
+
+                                                <span class="gd__no-eliminable">
+
+                                                    <i class="bi bi-shield-lock"></i>
+
+                                                    Protegido
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+
+                                    <td colspan="6">
+
+                                        <div class="gd__vacio">
+
+                                            <i class="bi bi-eye-slash"></i>
+
+                                            <strong>
+                                                No hay códigos personales ocultos
+                                            </strong>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </details>
+
+
+        <!-- ==========================================================
+             PROGRESO DE CLIENTES
+        =========================================================== -->
+
+        <article class="gd__panel">
+
+            <header>
+
+                <span>
+                    Fidelidad
+                </span>
+
+                <h2>
+                    Clientes acumulando metas
+                </h2>
+
+                <p>
+                    Revisa cuánto ha acumulado cada cliente
+                    y cuánto le falta para alcanzar su próxima recompensa.
+                </p>
+
+            </header>
+
+
+            <div class="gd__tabla-scroll">
+
+                <table class="gd__tabla">
+
+                    <thead>
+
+                        <tr>
+                            <th>
+                                Cliente
+                            </th>
+
+                            <th>
+                                Acumulado
+                            </th>
+
+                            <th>
+                                Próxima meta
+                            </th>
+
+                            <th>
+                                Falta
+                            </th>
+
+                            <th>
+                                Metas alcanzadas
+                            </th>
+
+                            <th>
+                                Progreso
+                            </th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for saldo in saldos %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+
+                                        {% if saldo.usuario.email %}
+
+                                            {{ saldo.usuario.email }}
+
+                                        {% else %}
+
+                                            {{ saldo.usuario.username }}
+
+                                        {% endif %}
+
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        ${{ saldo.total_historico|default:0|floatformat:0|intcomma }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if saldo.proxima_meta %}
+
+                                        <strong>
+                                            {{ saldo.proxima_meta.nombre }}
+                                        </strong>
+
+                                        <small>
+                                            Objetivo:
+                                            ${{ saldo.proxima_meta.monto_objetivo|floatformat:0|intcomma }}
+                                        </small>
+
+                                    {% else %}
+
+                                        <span>
+                                            Todas alcanzadas
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if saldo.proxima_meta %}
+
+                                        <strong>
+                                            ${{ saldo.faltante|default:0|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        <strong>
+                                            $0
+                                        </strong>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        {{ saldo.metas_cumplidas|default:0 }}
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div
+                                        class="gd__progreso"
+                                        role="progressbar"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"
+                                        aria-valuenow="{{ saldo.progreso|default:0 }}"
+                                    >
+
+                                        <span
+                                            style="width: {{ saldo.progreso|default:0 }}%;"
+                                        ></span>
+
+                                    </div>
+
+                                    <small>
+                                        {{ saldo.progreso|default:0 }}%
+                                    </small>
+
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="6">
+
+                                    <div class="gd__vacio">
+
+                                        <i class="bi bi-people"></i>
+
+                                        <strong>
+                                            Sin progreso registrado
+                                        </strong>
+
+                                        <small>
+                                            Todavía no existen clientes
+                                            acumulando compras para fidelidad.
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </article>
+
+
+        <!-- ==========================================================
+             HISTORIAL
+        =========================================================== -->
+
+        <article class="gd__panel">
+
+            <header>
+
+                <span>
+                    Historial
+                </span>
+
+                <h2>
+                    Compras realizadas con código
+                </h2>
+
+                <p>
+                    Revisa las compras donde se aplicó
+                    un código de descuento.
+                </p>
+
+            </header>
+
+
             <div class="gd__usos">
+
                 {% for uso in pagina_usos %}
+
                     <details class="gd__uso">
+
                         <summary>
-                            <div>
-                                <strong>{{ uso.codigo.codigo }}</strong>
-                                <span>Pedido {{ uso.pedido.numero }}</span>
-                            </div>
 
                             <div>
-                                <span>
-                                    {% if uso.usuario %}
-                                        {{ uso.usuario.email|default:uso.usuario.username }}
-                                    {% else %}
-                                        Invitado {{ uso.rut_enmascarado }}
-                                    {% endif %}
-                                </span>
 
                                 <strong>
-                                    -${{ uso.descuento_aplicado|floatformat:0|intcomma }}
+                                    {{ uso.codigo.codigo }}
                                 </strong>
+
+                                <span>
+                                    Pedido
+                                    {{ uso.pedido.numero }}
+                                </span>
+
+                                <small>
+                                    {{ uso.codigo.get_tipo_display }}
+                                    ·
+                                    {{ uso.codigo.get_modalidad_display }}
+                                </small>
+
+
+                                {% if uso.codigo.meta_fidelidad %}
+
+                                    <small>
+                                        Meta:
+                                        {{ uso.codigo.meta_fidelidad.nombre }}
+                                    </small>
+
+                                {% endif %}
+
                             </div>
+
+
+                            <div>
+
+                                <span>
+
+                                    {% if uso.usuario %}
+
+                                        {% if uso.usuario.email %}
+
+                                            {{ uso.usuario.email }}
+
+                                        {% else %}
+
+                                            {{ uso.usuario.username }}
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        Invitado
+                                        {{ uso.rut_enmascarado }}
+
+                                    {% endif %}
+
+                                </span>
+
+
+                                <strong>
+                                    -${{ uso.descuento_aplicado|default:0|floatformat:0|intcomma }}
+                                </strong>
+
+                            </div>
+
                         </summary>
 
+
                         <div class="gd__uso-resumen">
+
                             <span>
-                                Subtotal:
-                                ${{ uso.subtotal_original|floatformat:0|intcomma }}
+
+                                Subtotal
+
+                                <strong>
+                                    ${{ uso.subtotal_original|default:0|floatformat:0|intcomma }}
+                                </strong>
+
                             </span>
+
+
                             <span>
-                                Total final:
-                                ${{ uso.total_final|floatformat:0|intcomma }}
+
+                                Descuento
+
+                                <strong>
+                                    -${{ uso.descuento_aplicado|default:0|floatformat:0|intcomma }}
+                                </strong>
+
                             </span>
+
+
                             <span>
-                                Fecha:
-                                {{ uso.confirmado_en|date:"d/m/Y H:i" }}
+
+                                Total final
+
+                                <strong>
+                                    ${{ uso.total_final|default:0|floatformat:0|intcomma }}
+                                </strong>
+
                             </span>
+
+
+                            <span>
+
+                                Fecha
+
+                                <strong>
+                                    {{ uso.confirmado_en|date:"d/m/Y H:i" }}
+                                </strong>
+
+                            </span>
+
                         </div>
+
 
                         <div class="gd__tabla-scroll">
+
                             <table class="gd__tabla">
+
                                 <thead>
+
                                     <tr>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio lista</th>
-                                        <th>Precio venta</th>
-                                        <th>Descuento producto</th>
-                                        <th>Descuento código</th>
-                                        <th>Total final</th>
+                                        <th>
+                                            Producto
+                                        </th>
+
+                                        <th>
+                                            Cantidad
+                                        </th>
+
+                                        <th>
+                                            Precio lista
+                                        </th>
+
+                                        <th>
+                                            Precio venta
+                                        </th>
+
+                                        <th>
+                                            Desc. producto
+                                        </th>
+
+                                        <th>
+                                            Desc. código
+                                        </th>
+
+                                        <th>
+                                            Total final
+                                        </th>
                                     </tr>
+
                                 </thead>
 
+
                                 <tbody>
+
                                     {% for item in uso.pedido.items.all %}
+
                                         <tr>
-                                            <td>{{ item.nombre_producto }}</td>
-                                            <td>{{ item.cantidad }}</td>
-                                            <td>${{ item.precio_lista_unitario|floatformat:0|intcomma }}</td>
-                                            <td>${{ item.precio_unitario|floatformat:0|intcomma }}</td>
+
                                             <td>
-                                                -${{ item.descuento_producto_unitario|floatformat:0|intcomma }}
-                                                por unidad
+                                                {{ item.nombre_producto }}
                                             </td>
+
                                             <td>
-                                                -${{ item.descuento_codigo|floatformat:0|intcomma }}
+                                                {{ item.cantidad }}
                                             </td>
+
                                             <td>
-                                                ${{ item.total_final|floatformat:0|intcomma }}
+                                                ${{ item.precio_lista_unitario|default:0|floatformat:0|intcomma }}
                                             </td>
+
+                                            <td>
+                                                ${{ item.precio_unitario|default:0|floatformat:0|intcomma }}
+                                            </td>
+
+                                            <td>
+                                                -${{ item.descuento_producto_unitario|default:0|floatformat:0|intcomma }}
+                                            </td>
+
+                                            <td>
+                                                -${{ item.descuento_codigo|default:0|floatformat:0|intcomma }}
+                                            </td>
+
+                                            <td>
+                                                ${{ item.total_final|default:0|floatformat:0|intcomma }}
+                                            </td>
+
                                         </tr>
+
+                                    {% empty %}
+
+                                        <tr>
+
+                                            <td colspan="7">
+                                                No existen productos disponibles.
+                                            </td>
+
+                                        </tr>
+
                                     {% endfor %}
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
                     </details>
+
                 {% empty %}
-                    <p>
-                        Todavía no existen compras confirmadas con código.
-                    </p>
+
+                    <div class="gd__vacio">
+
+                        <i class="bi bi-receipt"></i>
+
+                        <strong>
+                            Sin usos confirmados
+                        </strong>
+
+                        <small>
+                            Todavía no existen compras confirmadas
+                            utilizando códigos de descuento.
+                        </small>
+
+                    </div>
+
                 {% endfor %}
+
             </div>
+
+
+            {% if pagina_usos.has_other_pages %}
+
+                <nav
+                    class="gd__paginacion"
+                    aria-label="Historial"
+                >
+
+                    {% if pagina_usos.has_previous %}
+
+                        <a
+                            href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_usos={{ pagina_usos.previous_page_number }}"
+                        >
+
+                            <i class="bi bi-chevron-left"></i>
+
+                            Anterior
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <span>
+                        Página
+                        {{ pagina_usos.number }}
+                        de
+                        {{ pagina_usos.paginator.num_pages }}
+                    </span>
+
+
+                    {% if pagina_usos.has_next %}
+
+                        <a
+                            href="?q={{ busqueda|urlencode }}&modalidad={{ modalidad|urlencode }}&estado={{ estado|urlencode }}&pagina_usos={{ pagina_usos.next_page_number }}"
+                        >
+
+                            Siguiente
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+                    {% endif %}
+
+                </nav>
+
+            {% endif %}
+
         </article>
 
     </div>
+
 </section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script
+    src="{% static 'core/js/gestion_descuentos.js' %}?v=8"
+></script>
 
 {% endblock %}

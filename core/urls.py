@@ -1,16 +1,14 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from . import views
-from django.contrib.auth import views as auth_views
-from . import views_pedidos
-from core.views_analitica import *
-from core.views_descuentos import (
-    alternar_codigo_descuento,
-    crear_codigo_general,
-    gestion_descuentos,
-    guardar_configuracion_fidelidad,
-)
+from . import views, views_descuentos, views_pedidos
+from .views_analitica import analisis_stock, analisis_ventas
 
+
+gestion_descuentos = views.gestion_descuentos
+crear_codigo_general_porcentaje = views.crear_codigo_general_porcentaje
+crear_codigo_general_clp = views.crear_codigo_general_clp
+alternar_codigo_descuento = views_descuentos.alternar_codigo_descuento
 
 app_name = "core"
 
@@ -260,11 +258,7 @@ urlpatterns = [
         name="analisis_stock",
     ),
 
-    path(
-        "gestion/descuentos/",
-        gestion_descuentos,
-        name="gestion_descuentos",
-    ),
+
 
 
 
@@ -287,28 +281,114 @@ urlpatterns = [
 
 
 
+   
     path(
-        "gestion/descuentos/",
-        gestion_descuentos,
-        name="gestion_descuentos",
+        (
+            "gestion/descuentos/"
+            "general/porcentaje/crear/"
+        ),
+        views_descuentos.crear_codigo_general_porcentaje,
+        name="crear_codigo_general_porcentaje",
     ),
 
     path(
-        "gestion/descuentos/general/crear/",
-        crear_codigo_general,
-        name="crear_codigo_general",
+        (
+            "gestion/descuentos/"
+            "general/clp/crear/"
+        ),
+        views_descuentos.crear_codigo_general_clp,
+        name="crear_codigo_general_clp",
     ),
 
-    path(
-        "gestion/descuentos/fidelidad/guardar/",
-        guardar_configuracion_fidelidad,
-        name="guardar_configuracion_fidelidad",
-    ),
+  
 
-    path(
-        "gestion/descuentos/codigo/<int:codigo_id>/alternar/",
-        alternar_codigo_descuento,
-        name="alternar_codigo_descuento",
-    ),
+  
+
+
+
+  
+
+
+
+
+path(
+    "gestion/descuentos/",
+    views_descuentos.gestion_descuentos,
+    name="gestion_descuentos",
+),
+
+path(
+    "gestion/descuentos/general/porcentaje/crear/",
+    views_descuentos.crear_codigo_general_porcentaje,
+    name="crear_codigo_general_porcentaje",
+),
+
+path(
+    "gestion/descuentos/general/clp/crear/",
+    views_descuentos.crear_codigo_general_clp,
+    name="crear_codigo_general_clp",
+),
+
+path(
+    "gestion/descuentos/fidelidad/porcentaje/crear/",
+    views_descuentos.crear_meta_fidelidad_porcentaje,
+    name="crear_meta_fidelidad_porcentaje",
+),
+
+path(
+    "gestion/descuentos/fidelidad/clp/crear/",
+    views_descuentos.crear_meta_fidelidad_clp,
+    name="crear_meta_fidelidad_clp",
+),
+path(
+    "gestion/descuentos/meta/<int:meta_id>/eliminar/",
+    views_descuentos.eliminar_meta_fidelidad,
+    name="eliminar_meta_fidelidad",
+),
+
+path(
+    "gestion/descuentos/codigo/<int:codigo_id>/alternar/",
+    views_descuentos.alternar_codigo_descuento,
+    name="alternar_codigo_descuento",
+),
+
+
+path(
+    "gestion/descuentos/codigo/<int:codigo_id>/eliminar/",
+    views_descuentos.eliminar_codigo_descuento,
+    name="eliminar_codigo_descuento",
+),
+
+path(
+    "gestion/descuentos/meta/<int:meta_id>/alternar/",
+    views_descuentos.alternar_meta_fidelidad,
+    name="alternar_meta_fidelidad",
+),
+
+
+
+path(
+    "gestion/descuentos/codigo/<int:codigo_id>/ocultar/",
+    views_descuentos.ocultar_codigo_descuento,
+    name="ocultar_codigo_descuento",
+),
+
+path(
+    "gestion/descuentos/codigo/<int:codigo_id>/mostrar/",
+    views_descuentos.mostrar_codigo_descuento,
+    name="mostrar_codigo_descuento",
+),
+
+path(
+    "gestion/descuentos/meta/<int:meta_id>/ocultar/",
+    views_descuentos.ocultar_meta_fidelidad,
+    name="ocultar_meta_fidelidad",
+),
+
+path(
+    "gestion/descuentos/meta/<int:meta_id>/mostrar/",
+    views_descuentos.mostrar_meta_fidelidad,
+    name="mostrar_meta_fidelidad",
+),
 
 ]

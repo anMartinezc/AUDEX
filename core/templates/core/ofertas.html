@@ -6,16 +6,21 @@
 Ofertas | Audex
 {% endblock %}
 
+
 {% block extra_css %}
+
 <link
     rel="stylesheet"
-    href="{% static 'core/css/ofertas.css' %}?v=11"
+    href="{% static 'core/css/ofertas.css' %}?v=15"
 >
+
 <link
     rel="stylesheet"
-    href="{% static 'core/css/ofertas_cupones_clp.css' %}?v=1"
+    href="{% static 'core/css/ofertas_cupones_clp.css' %}?v=5"
 >
+
 {% endblock %}
+
 
 {% block content %}
 
@@ -25,796 +30,2032 @@ Ofertas | Audex
     data-url-agregar="{% url 'core:carrito_agregar' %}"
     data-vence-en="{% if campana_vence_en %}{{ campana_vence_en|date:'c' }}{% endif %}"
 >
-    <section class="ofertas-hero">
-        <div class="contenedor ofertas-hero__contenido">
 
-            <div class="ofertas-hero__texto">
-                <span class="ofertas-hero__etiqueta">
-                    <i class="bi bi-lightning-charge-fill"></i>
-                    Ofertas reales del catálogo
-                </span>
+    <!-- ==============================================================
+         SIN PROMOCIONES ACTIVAS
+    ============================================================== -->
 
-                <h1>
-                    Más sonido.
-                    <span>Menos precio.</span>
-                </h1>
+    {% if not productos_oferta and not codigos_generales and not metas_fidelidad and not codigos_personales %}
 
-                <p>
-                    Encontramos
-                    <strong>{{ cantidad_ofertas }}</strong>
+        <section class="ofertas-sin-promociones">
 
-                    {% if cantidad_ofertas == 1 %}
-                        dispositivo
-                    {% else %}
-                        dispositivos
-                    {% endif %}
-
-                    con descuentos superiores al 15%.
-                    Compra al precio de oferta y aprovecha
-                    los códigos vigentes.
-                </p>
-
-                <div class="ofertas-hero__metricas">
-                    <article>
-                        <span>Mayor rebaja</span>
-                        <strong>
-                            {% if mayor_descuento %}
-                                {{ mayor_descuento }}%
-                            {% else %}
-                                0%
-                            {% endif %}
-                        </strong>
-                    </article>
-
-                    <article>
-                        <span>Códigos vigentes</span>
-                        <strong>
-                            {{ codigos_generales|length }}
-                        </strong>
-                    </article>
-
-                    <article>
-                        <span>Ofertas disponibles</span>
-                        <strong>
-                            {{ cantidad_ofertas }}
-                        </strong>
-                    </article>
-                </div>
-
-                {% if campana_vence_en %}
-                    <div class="ofertas-cuenta-regresiva">
-                        <div class="ofertas-cuenta-regresiva__titulo">
-                            <i class="bi bi-clock-history"></i>
-
-                            <span>
-                                El código con vencimiento más próximo
-                                termina en:
-                            </span>
-                        </div>
-
-                        <div
-                            class="contador-oferta"
-                            id="contadorOferta"
-                        >
-                            <div>
-                                <strong id="diasOferta">00</strong>
-                                <span>Días</span>
-                            </div>
-
-                            <div>
-                                <strong id="horasOferta">00</strong>
-                                <span>Horas</span>
-                            </div>
-
-                            <div>
-                                <strong id="minutosOferta">00</strong>
-                                <span>Minutos</span>
-                            </div>
-
-                            <div>
-                                <strong id="segundosOferta">00</strong>
-                                <span>Segundos</span>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-
-                <div class="ofertas-hero__acciones">
-                    <a
-                        href="#ofertasProductos"
-                        class="boton boton--primario"
-                    >
-                        Ver ofertas
-                        <i class="bi bi-arrow-down"></i>
-                    </a>
-
-                    {% if codigo_destacado %}
-                        <button
-                            type="button"
-                            class="ofertas-copiar ofertas-copiar--hero js-copiar-codigo"
-                            data-codigo="{{ codigo_destacado.codigo }}"
-                        >
-                            <span>
-                                Copiar {{ codigo_destacado.codigo }}
-                            </span>
-
-                            <i class="bi bi-copy"></i>
-                        </button>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="ofertas-hero__visual">
-                <div class="ofertas-hero__halo"></div>
-
-                {% if hero_producto %}
-                    <a
-                        href="{{ hero_producto.get_absolute_url }}"
-                        class="ofertas-hero__producto"
-                    >
-                        <span class="ofertas-hero__descuento">
-                            <small>Ahorras</small>
-                            <strong>
-                                {{ hero_producto.porcentaje_oferta }}%
-                            </strong>
-                            <span>
-                                en {{ hero_producto.nombre }}
-                            </span>
-                        </span>
-
-                        {% if hero_producto.imagen_mostrable %}
-                            <img
-                                src="{{ hero_producto.imagen_mostrable }}"
-                                alt="{{ hero_producto.nombre }}"
-                            >
-                        {% else %}
-                            <div class="ofertas-hero__sin-imagen">
-                                <i class="bi bi-earbuds"></i>
-                            </div>
-                        {% endif %}
-                    </a>
-                {% else %}
-                    <div class="ofertas-hero__vacio">
-                        <i class="bi bi-percent"></i>
-
-                        <strong>
-                            Estamos preparando nuevas ofertas
-                        </strong>
-
-                        <span>
-                            Vuelve pronto para descubrirlas.
-                        </span>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </section>
-
-    {% if cupones_clp %}
-        <section
-            class="superofertas-clp"
-            aria-labelledby="superOfertasClpTitulo"
-        >
-            <div class="contenedor superofertas-clp__contenedor">
-                <header class="superofertas-clp__cabecera">
-                    <div class="superofertas-clp__marca">
-                        <strong id="superOfertasClpTitulo">
-                            SuperOfertas
-                        </strong>
-
-                        <span>
-                            <i class="bi bi-stars"></i>
-                            Descuentos directos en pesos chilenos
-                        </span>
-                    </div>
-
-                    <div class="superofertas-clp__controles">
-                        <span>
-                            {{ cantidad_cupones_clp }}
-                            {% if cantidad_cupones_clp == 1 %}
-                                cupón
-                            {% else %}
-                                cupones
-                            {% endif %}
-                        </span>
-
-                        <button
-                            type="button"
-                            class="superofertas-clp__flecha js-cupones-anterior"
-                            aria-label="Ver cupones anteriores"
-                        >
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="superofertas-clp__flecha js-cupones-siguiente"
-                            aria-label="Ver más cupones"
-                        >
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
-                </header>
-
-                <div
-                    class="superofertas-clp__riel js-cupones-clp-riel"
-                    tabindex="0"
-                    aria-label="Cupones de descuento en pesos chilenos"
-                >
-                    {% for codigo in cupones_clp %}
-                        <article class="cupon-clp">
-                            <div class="cupon-clp__beneficio">
-                                <strong>
-                                    -${{ codigo.monto_descuento|floatformat:0|intcomma }}
-                                </strong>
-
-                                <span>
-                                    {% if codigo.monto_minimo > 0 %}
-                                        sobre compras de
-                                        <b>
-                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }}
-                                        </b>
-                                    {% else %}
-                                        sin compra mínima
-                                    {% endif %}
-                                </span>
-                            </div>
-
-                            <div class="cupon-clp__codigo">
-                                <span>Cupón</span>
-                                <strong>{{ codigo.codigo }}</strong>
-
-                                {% if codigo.fecha_fin %}
-                                    <small>
-                                        Hasta {{ codigo.fecha_fin|date:"d/m/Y" }}
-                                    </small>
-                                {% else %}
-                                    <small>Sin fecha de término</small>
-                                {% endif %}
-                            </div>
-
-                            <button
-                                type="button"
-                                class="cupon-clp__copiar js-copiar-codigo"
-                                data-codigo="{{ codigo.codigo }}"
-                                aria-label="Copiar cupón {{ codigo.codigo }}"
-                            >
-                                <span>Copiar</span>
-                                <i class="bi bi-copy"></i>
-                            </button>
-                        </article>
-                    {% endfor %}
-                </div>
-
-                <p class="superofertas-clp__nota">
-                    Se aplica un código por pedido y cada cupón puede
-                    utilizarse una sola vez por cliente.
-                </p>
-            </div>
-        </section>
-    {% endif %}
-
-
-    {% if codigos_generales %}
-        <section class="ofertas-codigos">
             <div class="contenedor">
-                <header class="ofertas-seccion__cabecera">
-                    <div>
-                        <span class="etiqueta-seccion">
-                            Descuento adicional
-                        </span>
 
-                        <h2>Códigos generales vigentes</h2>
+                <article class="ofertas-vacias ofertas-vacias--principal">
 
-                        <p>
-                            Cada código puede utilizarse una sola vez
-                            por cliente. En el checkout se permite
-                            aplicar un código por pedido.
-                        </p>
-                    </div>
-
-                    <i class="bi bi-ticket-perforated"></i>
-                </header>
-
-                <div class="ofertas-codigos__grid">
-                    {% for codigo in codigos_generales %}
-                        <article class="ofertas-codigo">
-                            <div class="ofertas-codigo__porcentaje">
-                                {% if codigo.modalidad == "MONTO_FIJO" %}
-                                    <strong>
-                                        -${{ codigo.monto_descuento|floatformat:0|intcomma }}
-                                    </strong>
-
-                                    <span>de descuento</span>
-                                {% else %}
-                                    <strong>
-                                        {{ codigo.porcentaje|floatformat:0 }}%
-                                    </strong>
-
-                                    <span>de descuento</span>
-                                {% endif %}
-                            </div>
-
-                            <div class="ofertas-codigo__contenido">
-                                <span>
-                                    {{ codigo.nombre }}
-                                </span>
-
-                                <h3>{{ codigo.codigo }}</h3>
-
-                                {% if codigo.descripcion %}
-                                    <p>
-                                        {{ codigo.descripcion }}
-                                    </p>
-                                {% endif %}
-
-                                <ul>
-                                    <li>
-                                        <i class="bi bi-cart-check"></i>
-
-                                        {% if codigo.monto_minimo > 0 %}
-                                            Compra mínima:
-                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }}
-                                        {% else %}
-                                            Sin compra mínima
-                                        {% endif %}
-                                    </li>
-
-                                    {% if codigo.modalidad == "PORCENTAJE" and codigo.monto_maximo_descuento %}
-                                        <li>
-                                            <i class="bi bi-shield-check"></i>
-                                            Descuento máximo:
-                                            ${{ codigo.monto_maximo_descuento|floatformat:0|intcomma }}
-                                        </li>
-                                    {% endif %}
-
-                                    <li>
-                                        <i class="bi bi-calendar-event"></i>
-
-                                        {% if codigo.fecha_fin %}
-                                            Vigente hasta
-                                            {{ codigo.fecha_fin|date:"d/m/Y H:i" }}
-                                        {% else %}
-                                            Sin fecha de término
-                                        {% endif %}
-                                    </li>
-                                </ul>
-
-                                <button
-                                    type="button"
-                                    class="ofertas-copiar js-copiar-codigo"
-                                    data-codigo="{{ codigo.codigo }}"
-                                >
-                                    <span>
-                                        Copiar {{ codigo.codigo }}
-                                    </span>
-
-                                    <i class="bi bi-copy"></i>
-                                </button>
-                            </div>
-                        </article>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-    {% endif %}
-
-    <section class="ofertas-fidelidad">
-        <div class="contenedor">
-
-            {% if request.user.is_authenticated %}
-
-                {% if configuracion_fidelidad.activa and fidelidad %}
-                    <article class="fidelidad-panel">
-                        <div class="fidelidad-panel__contenido">
-                            <span class="etiqueta-seccion">
-                                Tu próxima recompensa
-                            </span>
-
-                            <h2>
-                                Desbloquea un código de
-                                {{ fidelidad.porcentaje|floatformat:0 }}%
-                            </h2>
-
-                            {% if fidelidad.faltante > 0 %}
-                                <p>
-                                    Te faltan
-                                    <strong>
-                                        ${{ fidelidad.faltante|floatformat:0|intcomma }}
-                                    </strong>
-                                    en compras aprobadas para obtener
-                                    un nuevo código personal de un solo uso.
-                                </p>
-                            {% else %}
-                                <p>
-                                    Alcanzaste la meta. El código se generará
-                                    cuando se contabilice tu compra aprobada.
-                                </p>
-                            {% endif %}
-
-                            <div
-                                class="fidelidad-progreso"
-                                role="progressbar"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                aria-valuenow="{{ fidelidad.progreso }}"
-                            >
-                                <span
-                                    style="width: {{ fidelidad.progreso }}%;"
-                                ></span>
-                            </div>
-
-                            <div class="fidelidad-panel__valores">
-                                <div>
-                                    <span>Acumulado</span>
-
-                                    <strong>
-                                        ${{ fidelidad.saldo_actual|floatformat:0|intcomma }}
-                                    </strong>
-                                </div>
-
-                                <div>
-                                    <span>Meta</span>
-
-                                    <strong>
-                                        ${{ fidelidad.monto_objetivo|floatformat:0|intcomma }}
-                                    </strong>
-                                </div>
-
-                                <div>
-                                    <span>Avance</span>
-
-                                    <strong>
-                                        {{ fidelidad.progreso }}%
-                                    </strong>
-                                </div>
-
-                                <div>
-                                    <span>Metas logradas</span>
-
-                                    <strong>
-                                        {{ fidelidad.metas_cumplidas }}
-                                    </strong>
-                                </div>
-                            </div>
-
-                            <small class="fidelidad-panel__nota">
-                                El premio pertenece únicamente a tu cuenta,
-                                tiene una vigencia de
-                                {{ fidelidad.vigencia_dias }} días y solo
-                                puede utilizarse una vez.
-                            </small>
-                        </div>
-
-                        <div class="fidelidad-panel__premio">
-                            <i class="bi bi-gift"></i>
-
-                            <span>Próximo premio</span>
-
-                            <strong>
-                                {{ fidelidad.porcentaje|floatformat:0 }}%
-                            </strong>
-
-                            <small>
-                                {% if fidelidad.monto_minimo_compra > 0 %}
-                                    Compra mínima:
-                                    ${{ fidelidad.monto_minimo_compra|floatformat:0|intcomma }}
-                                {% else %}
-                                    Sin compra mínima
-                                {% endif %}
-                            </small>
-                        </div>
-                    </article>
-
-                    {% if codigos_personales %}
-                        <div class="ofertas-premios-personales">
-                            <header>
-                                <span class="etiqueta-seccion">
-                                    Listos para usar
-                                </span>
-
-                                <h2>Tus códigos personales</h2>
-                            </header>
-
-                            <div class="ofertas-premios-personales__grid">
-                                {% for codigo in codigos_personales %}
-                                    <article>
-                                        <i class="bi bi-award"></i>
-
-                                        <span>
-                                            Meta {{ codigo.numero_meta|default:"alcanzada" }}
-                                        </span>
-
-                                        <strong>
-                                            {{ codigo.codigo }}
-                                        </strong>
-
-                                        <small>
-                                            {{ codigo.porcentaje|floatformat:0 }}%
-                                            de descuento · uso único
-                                        </small>
-
-                                        <button
-                                            type="button"
-                                            class="ofertas-copiar js-copiar-codigo"
-                                            data-codigo="{{ codigo.codigo }}"
-                                        >
-                                            Copiar código
-                                            <i class="bi bi-copy"></i>
-                                        </button>
-                                    </article>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-
-                {% else %}
-                    <article class="fidelidad-panel fidelidad-panel--inactivo">
-                        <div>
-                            <span class="etiqueta-seccion">
-                                Programa de fidelidad
-                            </span>
-
-                            <h2>
-                                Próximamente habrá nuevas recompensas
-                            </h2>
-
-                            <p>
-                                Tu cuenta seguirá guardando el historial
-                                de compras mientras el programa se configura.
-                            </p>
-                        </div>
-
+                    <div class="ofertas-vacias__icono">
                         <i class="bi bi-stars"></i>
-                    </article>
-                {% endif %}
-
-            {% else %}
-                <article class="fidelidad-panel fidelidad-panel--invitado">
-                    <div>
-                        <span class="etiqueta-seccion">
-                            Beneficio para clientes frecuentes
-                        </span>
-
-                        <h2>
-                            Inicia sesión y convierte tus compras
-                            en códigos personales
-                        </h2>
-
-                        {% if configuracion_fidelidad.activa %}
-                            <p>
-                                Acumula
-                                ${{ configuracion_fidelidad.monto_objetivo|floatformat:0|intcomma }}
-                                en compras aprobadas y desbloquea un código
-                                de {{ configuracion_fidelidad.porcentaje|floatformat:0 }}%
-                                para tu próxima compra.
-                            </p>
-                        {% else %}
-                            <p>
-                                Crea tu cuenta para acceder a futuras
-                                recompensas y consultar tus compras.
-                            </p>
-                        {% endif %}
-
-                        <a
-                            href="{% url 'core:login' %}?next={% url 'core:ofertas' %}"
-                            class="boton boton--primario"
-                        >
-                            Iniciar sesión
-                            <i class="bi bi-person-check"></i>
-                        </a>
                     </div>
 
-                    <div class="fidelidad-panel__premio">
-                        <i class="bi bi-gift"></i>
-
-                        <strong>
-                            Recompensas personales
-                        </strong>
-
-                        <span>
-                            Un código nuevo por cada meta cumplida.
-                        </span>
-                    </div>
-                </article>
-            {% endif %}
-
-        </div>
-    </section>
-
-    <section
-        class="ofertas-productos"
-        id="ofertasProductos"
-    >
-        <div class="contenedor">
-            <header class="ofertas-seccion__cabecera">
-                <div>
                     <span class="etiqueta-seccion">
-                        Más de 15% de descuento
+                        Vuelve pronto
                     </span>
 
-                    <h2>Ofertas destacadas</h2>
+                    <h1>
+                        Nuevas oportunidades pueden aparecer
+                        en cualquier momento.
+                    </h1>
 
                     <p>
-                        Los precios y el stock se obtienen directamente
-                        desde el catálogo administrable.
-                    </p>
-                </div>
-
-                <span class="ofertas-productos__cantidad">
-                    {{ cantidad_ofertas }}
-                    {% if cantidad_ofertas == 1 %}
-                        oferta
-                    {% else %}
-                        ofertas
-                    {% endif %}
-                </span>
-            </header>
-
-            {% if productos_oferta %}
-                <div class="ofertas-grid">
-                    {% for producto in productos_oferta %}
-                        <article
-                            class="
-                                oferta-card
-                                {% if not producto.disponible %}
-                                    oferta-card--agotada
-                                {% endif %}
-                            "
-                        >
-                            <span class="oferta-card__descuento">
-                                -{{ producto.porcentaje_oferta }}%
-                            </span>
-
-                            <a
-                                href="{{ producto.get_absolute_url }}"
-                                class="oferta-card__imagen"
-                            >
-                                {% if producto.imagen_mostrable %}
-                                    <img
-                                        src="{{ producto.imagen_mostrable }}"
-                                        alt="{{ producto.nombre }}"
-                                        loading="lazy"
-                                    >
-                                {% else %}
-                                    <div class="oferta-card__sin-imagen">
-                                        <i class="bi bi-earbuds"></i>
-                                    </div>
-                                {% endif %}
-                            </a>
-
-                            <div class="oferta-card__contenido">
-                                <span>
-                                    {{ producto.categoria.nombre }}
-                                </span>
-
-                                <h3>
-                                    <a href="{{ producto.get_absolute_url }}">
-                                        {{ producto.nombre }}
-                                    </a>
-                                </h3>
-
-                                <p>
-                                    {{ producto.descripcion_corta }}
-                                </p>
-
-                                <div class="oferta-card__precios">
-                                    <del>
-                                        ${{ producto.precio|floatformat:0|intcomma }}
-                                    </del>
-
-                                    <strong>
-                                        ${{ producto.precio_oferta|floatformat:0|intcomma }}
-                                    </strong>
-
-                                    <small>
-                                        Ahorras
-                                        ${{ producto.ahorro_oferta|floatformat:0|intcomma }}
-                                    </small>
-                                </div>
-
-                                <div class="oferta-card__stock">
-                                    <div>
-                                        <span>Stock disponible</span>
-
-                                        <strong>
-                                            {{ producto.stock_oferta }}
-
-                                            {% if producto.stock_oferta == 1 %}
-                                                unidad
-                                            {% else %}
-                                                unidades
-                                            {% endif %}
-                                        </strong>
-                                    </div>
-
-                                    <div class="barra-stock">
-                                        <span
-                                            style="width: {{ producto.stock_porcentaje }}%;"
-                                        ></span>
-                                    </div>
-                                </div>
-
-                                <div class="oferta-card__acciones">
-                                    <a
-                                        href="{{ producto.get_absolute_url }}"
-                                        class="oferta-card__detalle"
-                                    >
-                                        Ver detalles
-                                        <i class="bi bi-arrow-right"></i>
-                                    </a>
-
-                                    <button
-                                        type="button"
-                                        class="comprar-oferta js-agregar-oferta"
-                                        data-producto-id="{{ producto.id }}"
-                                        data-producto="{{ producto.nombre|escape }}"
-                                        data-stock="{{ producto.stock_oferta }}"
-                                        {% if not producto.disponible %}
-                                            disabled
-                                            aria-disabled="true"
-                                        {% else %}
-                                            aria-disabled="false"
-                                        {% endif %}
-                                    >
-                                        <span>
-                                            {% if producto.disponible %}
-                                                Agregar al carrito
-                                            {% else %}
-                                                Producto agotado
-                                            {% endif %}
-                                        </span>
-
-                                        <i class="bi bi-bag-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="ofertas-vacias">
-                    <i class="bi bi-percent"></i>
-
-                    <h3>
-                        No hay productos con más de 15% de descuento
-                    </h3>
-
-                    <p>
-                        Desde el administrador puedes asignar un
-                        precio de oferta inferior al 85% del precio normal.
+                        En este momento no tenemos descuentos activos,
+                        pero constantemente incorporamos precios especiales,
+                        códigos promocionales y beneficios exclusivos.
                     </p>
 
                     <a
                         href="{% url 'core:productos' %}"
                         class="boton boton--primario"
                     >
-                        Ver catálogo completo
+                        Explorar catálogo
+
                         <i class="bi bi-arrow-right"></i>
                     </a>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+    {% else %}
+
+        <!-- ==========================================================
+             HERO
+        =========================================================== -->
+
+        <section class="ofertas-hero">
+
+            <div class="contenedor ofertas-hero__contenido">
+
+                <div class="ofertas-hero__texto">
+
+                    <span class="ofertas-hero__etiqueta">
+
+                        <i class="bi bi-lightning-charge-fill"></i>
+
+                        Oportunidades Audex
+
+                    </span>
+
+
+                    {% if productos_oferta %}
+
+                        <h1>
+                            Más sonido.
+                            <span>Menos precio.</span>
+                        </h1>
+
+                        <p>
+                            Descubre productos seleccionados con precios
+                            especiales y aprovecha los beneficios disponibles.
+                        </p>
+
+
+                    {% elif codigos_generales %}
+
+                        <h1>
+                            Tu próxima compra
+                            <span>puede costar menos.</span>
+                        </h1>
+
+                        <p>
+                            Tenemos códigos activos listos para aplicar
+                            en tu próxima compra.
+                        </p>
+
+
+                    {% elif codigos_personales %}
+
+                        <h1>
+                            Tienes descuentos
+                            <span>esperándote.</span>
+                        </h1>
+
+                        <p>
+                            Desbloqueaste beneficios exclusivos por
+                            comprar con tu cuenta.
+                        </p>
+
+
+                    {% else %}
+
+                        <h1>
+                            Compra, acumula
+                            <span>y desbloquea premios.</span>
+                        </h1>
+
+                        <p>
+                            Tus compras con sesión iniciada pueden
+                            convertirse en descuentos exclusivos.
+                        </p>
+
+                    {% endif %}
+
+
+                    <!-- ==================================================
+                         MÉTRICAS
+                    =================================================== -->
+
+                    <div class="ofertas-hero__metricas">
+
+                        {% if productos_oferta %}
+
+                            <article>
+
+                                <span>
+                                    Mayor rebaja
+                                </span>
+
+                                <strong>
+                                    {{ mayor_descuento }}%
+                                </strong>
+
+                            </article>
+
+                            <article>
+
+                                <span>
+                                    Productos en oferta
+                                </span>
+
+                                <strong>
+                                    {{ cantidad_ofertas }}
+                                </strong>
+
+                            </article>
+
+                        {% endif %}
+
+
+                        {% if codigos_generales %}
+
+                            <article>
+
+                                <span>
+                                    Códigos disponibles
+                                </span>
+
+                                <strong>
+                                    {{ cantidad_codigos_generales }}
+                                </strong>
+
+                            </article>
+
+                        {% endif %}
+
+
+                        {% if metas_fidelidad %}
+
+                            <article>
+
+                                <span>
+                                    Recompensas activas
+                                </span>
+
+                                <strong>
+                                    {{ cantidad_metas_fidelidad }}
+                                </strong>
+
+                            </article>
+
+                        {% endif %}
+
+
+                        {% if codigos_personales %}
+
+                            <article>
+
+                                <span>
+                                    Premios desbloqueados
+                                </span>
+
+                                <strong>
+                                    {{ cantidad_codigos_personales }}
+                                </strong>
+
+                            </article>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         CUENTA REGRESIVA
+                    =================================================== -->
+
+                    {% if campana_vence_en %}
+
+                        <div class="ofertas-cuenta-regresiva">
+
+                            <div class="ofertas-cuenta-regresiva__titulo">
+
+                                <i class="bi bi-clock-history"></i>
+
+                                <span>
+                                    Una promoción termina en:
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                class="contador-oferta"
+                                id="contadorOferta"
+                            >
+
+                                <div>
+                                    <strong id="diasOferta">00</strong>
+                                    <span>Días</span>
+                                </div>
+
+                                <div>
+                                    <strong id="horasOferta">00</strong>
+                                    <span>Horas</span>
+                                </div>
+
+                                <div>
+                                    <strong id="minutosOferta">00</strong>
+                                    <span>Minutos</span>
+                                </div>
+
+                                <div>
+                                    <strong id="segundosOferta">00</strong>
+                                    <span>Segundos</span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- ==================================================
+                         ACCIONES
+                    =================================================== -->
+
+                    <div class="ofertas-hero__acciones">
+
+                        {% if productos_oferta %}
+
+                            <a
+                                href="#ofertasProductos"
+                                class="boton boton--primario"
+                            >
+                                Ver ofertas
+
+                                <i class="bi bi-arrow-down"></i>
+                            </a>
+
+
+                        {% elif codigos_generales %}
+
+                            <a
+                                href="#codigosGenerales"
+                                class="boton boton--primario"
+                            >
+                                Ver códigos
+
+                                <i class="bi bi-ticket-perforated"></i>
+                            </a>
+
+
+                        {% elif metas_fidelidad or codigos_personales %}
+
+                            <a
+                                href="#fidelidadClientes"
+                                class="boton boton--primario"
+                            >
+                                Ver recompensas
+
+                                <i class="bi bi-gift"></i>
+                            </a>
+
+                        {% endif %}
+
+
+                        {% if codigo_destacado and not codigo_destacado.usado_por_cliente %}
+
+                            <button
+                                type="button"
+                                class="
+                                    ofertas-copiar
+                                    ofertas-copiar--hero
+                                    js-copiar-codigo
+                                "
+                                data-codigo="{{ codigo_destacado.codigo }}"
+                            >
+                                <span>
+                                    Copiar {{ codigo_destacado.codigo }}
+                                </span>
+
+                                <i class="bi bi-copy"></i>
+                            </button>
+
+                        {% endif %}
+
+                    </div>
+
                 </div>
+
+
+                <!-- ==================================================
+                     HERO VISUAL
+                =================================================== -->
+
+                <div class="ofertas-hero__visual">
+
+                    <div class="ofertas-hero__halo"></div>
+
+
+                    {% if hero_producto %}
+
+                        <a
+                            href="{{ hero_producto.get_absolute_url }}"
+                            class="ofertas-hero__producto"
+                        >
+
+                            <span class="ofertas-hero__descuento">
+
+                                <small>
+                                    Ahorras
+                                </small>
+
+                                <strong>
+                                    {{ hero_producto.porcentaje_oferta }}%
+                                </strong>
+
+                                <span>
+                                    en {{ hero_producto.nombre }}
+                                </span>
+
+                            </span>
+
+
+                            {% if hero_producto.imagen_mostrable %}
+
+                                <img
+                                    src="{{ hero_producto.imagen_mostrable }}"
+                                    alt="{{ hero_producto.nombre }}"
+                                >
+
+                            {% else %}
+
+                                <div class="ofertas-hero__sin-imagen">
+                                    <i class="bi bi-earbuds"></i>
+                                </div>
+
+                            {% endif %}
+
+                        </a>
+
+
+                    {% elif codigos_generales %}
+
+                        <div class="ofertas-hero__vacio">
+
+                            <i class="bi bi-ticket-perforated"></i>
+
+                            <strong>
+                                {{ cantidad_codigos_generales }}
+
+                                {% if cantidad_codigos_generales == 1 %}
+                                    código disponible
+                                {% else %}
+                                    códigos disponibles
+                                {% endif %}
+                            </strong>
+
+                            <span>
+                                Ahorra directamente en tu próxima compra.
+                            </span>
+
+                        </div>
+
+
+                    {% elif request.user.is_authenticated and codigos_personales %}
+
+                        <div class="ofertas-hero__vacio">
+
+                            <i class="bi bi-award"></i>
+
+                            <strong>
+                                Tienes recompensas listas
+                            </strong>
+
+                            <span>
+                                Son exclusivas para tu cuenta.
+                            </span>
+
+                        </div>
+
+
+                    {% else %}
+
+                        <div class="ofertas-hero__vacio">
+
+                            <i class="bi bi-gift"></i>
+
+                            <strong>
+                                Comprar con tu cuenta tiene beneficios
+                            </strong>
+
+                            <span>
+                                Acumula compras y desbloquea descuentos.
+                            </span>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================================
+             CÓDIGOS GENERALES
+        =========================================================== -->
+
+        {% if codigos_generales %}
+
+            <section
+                class="ofertas-codigos-generales"
+                id="codigosGenerales"
+            >
+
+                <!-- ==================================================
+                     CÓDIGOS CLP
+                =================================================== -->
+
+                {% if cupones_clp %}
+
+                    <div class="superofertas-clp">
+
+                        <div class="contenedor superofertas-clp__contenedor">
+
+                            <header class="superofertas-clp__cabecera">
+
+                                <div class="superofertas-clp__marca">
+
+                                    <strong>
+                                        Ahorra directo en tu compra
+                                    </strong>
+
+                                    <span>
+                                        <i class="bi bi-stars"></i>
+                                        Descuentos directos en pesos
+                                    </span>
+
+                                </div>
+
+
+                                <div class="superofertas-clp__controles">
+
+                                    <span>
+
+                                        {{ cantidad_cupones_clp }}
+
+                                        {% if cantidad_cupones_clp == 1 %}
+                                            cupón
+                                        {% else %}
+                                            cupones
+                                        {% endif %}
+
+                                    </span>
+
+
+                                    {% if cantidad_cupones_clp > 1 %}
+
+                                        <button
+                                            type="button"
+                                            class="
+                                                superofertas-clp__flecha
+                                                js-cupones-anterior
+                                            "
+                                            aria-label="Cupón anterior"
+                                        >
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="
+                                                superofertas-clp__flecha
+                                                js-cupones-siguiente
+                                            "
+                                            aria-label="Cupón siguiente"
+                                        >
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </header>
+
+
+                            <div
+                                class="
+                                    superofertas-clp__riel
+                                    js-cupones-clp-riel
+                                "
+                                tabindex="0"
+                            >
+
+                                {% for codigo in cupones_clp %}
+
+                                    <article
+                                        class="
+                                            cupon-clp
+
+                                            {% if codigo.usado_por_cliente %}
+                                                cupon-clp--usado
+                                            {% endif %}
+                                        "
+                                    >
+
+                                        <div class="cupon-clp__beneficio">
+
+                                            <strong>
+                                                -${{ codigo.monto_descuento|floatformat:0|intcomma }}
+                                            </strong>
+
+                                            <span>
+
+                                                {% if codigo.monto_minimo > 0 %}
+
+                                                    en compras desde
+
+                                                    <b>
+                                                        ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                                    </b>
+
+                                                {% else %}
+
+                                                    sin compra mínima
+
+                                                {% endif %}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="cupon-clp__codigo">
+
+                                            <span>
+                                                Código
+                                            </span>
+
+                                            <strong>
+                                                {{ codigo.codigo }}
+                                            </strong>
+
+
+                                            {% if codigo.fecha_fin %}
+
+                                                <small>
+                                                    Hasta
+                                                    {{ codigo.fecha_fin|date:"d/m/Y" }}
+                                                </small>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        {% if codigo.usado_por_cliente %}
+
+                                            <button
+                                                type="button"
+                                                class="cupon-clp__copiar"
+                                                disabled
+                                            >
+                                                <span>
+                                                    Ya utilizado
+                                                </span>
+
+                                                <i class="bi bi-check2-circle"></i>
+                                            </button>
+
+
+                                        {% else %}
+
+                                            <button
+                                                type="button"
+                                                class="
+                                                    cupon-clp__copiar
+                                                    js-copiar-codigo
+                                                "
+                                                data-codigo="{{ codigo.codigo }}"
+                                            >
+                                                <span>
+                                                    Copiar
+                                                </span>
+
+                                                <i class="bi bi-copy"></i>
+                                            </button>
+
+                                        {% endif %}
+
+                                    </article>
+
+                                {% endfor %}
+
+                            </div>
+
+
+                            <p class="superofertas-clp__nota">
+                                Cada código general puede utilizarse una vez
+                                por cliente.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- ==================================================
+                     CÓDIGOS PORCENTUALES
+                =================================================== -->
+
+                {% if codigos_porcentaje %}
+
+                    <div class="ofertas-codigos">
+
+                        <div class="contenedor">
+
+                            <header class="ofertas-seccion__cabecera">
+
+                                <div>
+
+                                    <span class="etiqueta-seccion">
+                                        Ahorra un poco más
+                                    </span>
+
+                                    <h2>
+                                        Códigos porcentuales
+                                    </h2>
+
+                                    <p>
+                                        Copia un código y aplícalo
+                                        al finalizar tu compra.
+                                    </p>
+
+                                </div>
+
+                                <i class="bi bi-ticket-perforated"></i>
+
+                            </header>
+
+
+                            <div class="ofertas-codigos__grid">
+
+                                {% for codigo in codigos_porcentaje %}
+
+                                    <article
+                                        class="
+                                            ofertas-codigo
+
+                                            {% if codigo.usado_por_cliente %}
+                                                ofertas-codigo--usado
+                                            {% endif %}
+                                        "
+                                    >
+
+                                        <div class="ofertas-codigo__porcentaje">
+
+                                            <strong>
+                                                {{ codigo.porcentaje|floatformat:0 }}%
+                                            </strong>
+
+                                            <span>
+                                                de descuento
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="ofertas-codigo__contenido">
+
+                                            <span>
+                                                {{ codigo.nombre }}
+                                            </span>
+
+                                            <h3>
+                                                {{ codigo.codigo }}
+                                            </h3>
+
+
+                                            {% if codigo.descripcion %}
+
+                                                <p>
+                                                    {{ codigo.descripcion }}
+                                                </p>
+
+                                            {% endif %}
+
+
+                                            <ul>
+
+                                                <li>
+
+                                                    <i class="bi bi-cart-check"></i>
+
+                                                    {% if codigo.monto_minimo > 0 %}
+
+                                                        Compra mínima:
+                                                        ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+
+                                                    {% else %}
+
+                                                        Sin compra mínima
+
+                                                    {% endif %}
+
+                                                </li>
+
+
+                                                {% if codigo.monto_maximo_descuento %}
+
+                                                    <li>
+
+                                                        <i class="bi bi-shield-check"></i>
+
+                                                        Máximo:
+                                                        ${{ codigo.monto_maximo_descuento|floatformat:0|intcomma }}
+
+                                                    </li>
+
+                                                {% endif %}
+
+
+                                                {% if codigo.fecha_fin %}
+
+                                                    <li>
+
+                                                        <i class="bi bi-clock-history"></i>
+
+                                                        Hasta
+                                                        {{ codigo.fecha_fin|date:"d/m/Y" }}
+
+                                                    </li>
+
+                                                {% endif %}
+
+                                            </ul>
+
+
+                                            {% if codigo.usado_por_cliente %}
+
+                                                <button
+                                                    type="button"
+                                                    class="ofertas-copiar"
+                                                    disabled
+                                                >
+                                                    <span>
+                                                        Ya utilizado
+                                                    </span>
+
+                                                    <i class="bi bi-check2-circle"></i>
+                                                </button>
+
+
+                                            {% else %}
+
+                                                <button
+                                                    type="button"
+                                                    class="
+                                                        ofertas-copiar
+                                                        js-copiar-codigo
+                                                    "
+                                                    data-codigo="{{ codigo.codigo }}"
+                                                >
+                                                    <span>
+                                                        Copiar {{ codigo.codigo }}
+                                                    </span>
+
+                                                    <i class="bi bi-copy"></i>
+                                                </button>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </article>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- ==========================================================
+             FIDELIDAD - USUARIO AUTENTICADO
+        =========================================================== -->
+
+        {% if request.user.is_authenticated %}
+
+            {% if metas_fidelidad or codigos_personales %}
+
+                <section
+                    class="ofertas-fidelidad"
+                    id="fidelidadClientes"
+                >
+
+                    <div class="contenedor">
+
+                        <!-- ==============================================
+                             CÓDIGOS YA DESBLOQUEADOS
+                        =============================================== -->
+
+                        {% if codigos_personales %}
+
+                            <section class="ofertas-premios-personales">
+
+                                <header class="ofertas-bloque-cabecera">
+
+                                    <span class="etiqueta-seccion">
+                                        Disponibles ahora
+                                    </span>
+
+                                    <h2>
+                                        Tus descuentos exclusivos
+                                    </h2>
+
+                                    <p>
+                                        Ya los ganaste.
+                                        Úsalos antes de que terminen.
+                                    </p>
+
+                                </header>
+
+
+                                <div class="ofertas-premios-personales__grid">
+
+                                    {% for codigo in codigos_personales %}
+
+                                        <article>
+
+                                            <i class="bi bi-award"></i>
+
+
+                                            {% if codigo.meta_fidelidad %}
+
+                                                <span>
+                                                    {{ codigo.meta_fidelidad.nombre }}
+                                                </span>
+
+                                            {% else %}
+
+                                                <span>
+                                                    Premio exclusivo
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            <strong>
+                                                {{ codigo.codigo }}
+                                            </strong>
+
+
+                                            {% if codigo.modalidad == "monto_fijo" %}
+
+                                                <small>
+
+                                                    <strong>
+                                                        ${{ codigo.monto_descuento|floatformat:0|intcomma }}
+                                                    </strong>
+
+                                                    de descuento
+
+                                                </small>
+
+                                            {% else %}
+
+                                                <small>
+
+                                                    <strong>
+                                                        {{ codigo.porcentaje|floatformat:0 }}%
+                                                    </strong>
+
+                                                    de descuento
+
+                                                </small>
+
+                                            {% endif %}
+
+
+                                            {% if codigo.monto_minimo > 0 %}
+
+                                                <small>
+                                                    Compra mínima:
+                                                    ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                                </small>
+
+                                            {% endif %}
+
+
+                                            {% if codigo.fecha_fin %}
+
+                                                <small>
+
+                                                    <i class="bi bi-clock-history"></i>
+
+                                                    Hasta
+                                                    {{ codigo.fecha_fin|date:"d/m/Y" }}
+
+                                                </small>
+
+                                            {% endif %}
+
+
+                                            <button
+                                                type="button"
+                                                class="
+                                                    ofertas-copiar
+                                                    js-copiar-codigo
+                                                "
+                                                data-codigo="{{ codigo.codigo }}"
+                                            >
+                                                <span>
+                                                    Copiar código
+                                                </span>
+
+                                                <i class="bi bi-copy"></i>
+                                            </button>
+
+                                        </article>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </section>
+
+                        {% endif %}
+
+
+                        <!-- ==============================================
+                             PRÓXIMA RECOMPENSA
+                        =============================================== -->
+
+                        {% if metas_fidelidad and fidelidad %}
+
+                            <article class="fidelidad-panel">
+
+                                <div class="fidelidad-panel__contenido">
+
+                                    <span class="etiqueta-seccion">
+                                        Tus compras tienen recompensa
+                                    </span>
+
+
+                                    {% if fidelidad.meta %}
+
+                                        <h2>
+
+                                            Estás a
+
+                                            <strong>
+                                                ${{ fidelidad.faltante|floatformat:0|intcomma }}
+                                            </strong>
+
+                                            de tu próxima recompensa
+
+                                        </h2>
+
+
+                                        <p>
+
+                                            Sigue comprando con tu cuenta y
+                                            desbloquea
+
+                                            {% if fidelidad.meta.modalidad == "monto_fijo" %}
+
+                                                <strong>
+                                                    ${{ fidelidad.meta.monto_descuento|floatformat:0|intcomma }}
+                                                    de descuento
+                                                </strong>
+
+                                            {% else %}
+
+                                                <strong>
+                                                    {{ fidelidad.meta.porcentaje|floatformat:0 }}%
+                                                    de descuento
+                                                </strong>
+
+                                            {% endif %}.
+
+                                        </p>
+
+
+                                        <div
+                                            class="fidelidad-progreso"
+                                            role="progressbar"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100"
+                                            aria-valuenow="{{ fidelidad.progreso }}"
+                                        >
+                                            <span
+                                                style="width: {{ fidelidad.progreso }}%;"
+                                            ></span>
+                                        </div>
+
+
+                                        <div class="fidelidad-panel__valores">
+
+                                            <div>
+
+                                                <span>
+                                                    Acumulado
+                                                </span>
+
+                                                <strong>
+                                                    ${{ fidelidad.saldo_actual|floatformat:0|intcomma }}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <span>
+                                                    Próxima meta
+                                                </span>
+
+                                                <strong>
+                                                    ${{ fidelidad.monto_objetivo|floatformat:0|intcomma }}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <span>
+                                                    Progreso
+                                                </span>
+
+                                                <strong>
+                                                    {{ fidelidad.progreso }}%
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <span>
+                                                    Premios logrados
+                                                </span>
+
+                                                <strong>
+                                                    {{ fidelidad.metas_cumplidas }}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <small class="fidelidad-panel__nota">
+                                            Solo cuentan compras aprobadas
+                                            realizadas con tu sesión iniciada.
+                                        </small>
+
+
+                                    {% else %}
+
+                                        <h2>
+                                            Alcanzaste todas las recompensas actuales
+                                        </h2>
+
+                                        <p>
+                                            Tu acumulado continuará guardado
+                                            para futuras metas.
+                                        </p>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="fidelidad-panel__premio">
+
+                                    <i class="bi bi-gift"></i>
+
+
+                                    {% if fidelidad.meta %}
+
+                                        <span>
+                                            Próximo premio
+                                        </span>
+
+
+                                        {% if fidelidad.meta.modalidad == "monto_fijo" %}
+
+                                            <strong>
+                                                ${{ fidelidad.meta.monto_descuento|floatformat:0|intcomma }}
+                                            </strong>
+
+                                            <small>
+                                                de descuento
+                                            </small>
+
+                                        {% else %}
+
+                                            <strong>
+                                                {{ fidelidad.meta.porcentaje|floatformat:0 }}%
+                                            </strong>
+
+                                            <small>
+                                                de descuento
+                                            </small>
+
+                                        {% endif %}
+
+
+                                        {% if fidelidad.meta.monto_minimo_compra > 0 %}
+
+                                            <small>
+                                                Compra mínima:
+                                                ${{ fidelidad.meta.monto_minimo_compra|floatformat:0|intcomma }}
+                                            </small>
+
+                                        {% endif %}
+
+
+                                        <small>
+                                            Vigencia:
+                                            {{ fidelidad.meta.vigencia_dias }}
+                                            días
+                                        </small>
+
+                                    {% else %}
+
+                                        <span>
+                                            Fidelidad Audex
+                                        </span>
+
+                                        <strong>
+                                            <i class="bi bi-check2-circle"></i>
+                                        </strong>
+
+                                        <small>
+                                            Todo desbloqueado
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </article>
+
+                        {% endif %}
+
+
+                        <!-- ==============================================
+                             TODAS LAS METAS
+                        =============================================== -->
+
+                        {% if metas_fidelidad %}
+
+                            <section class="ofertas-metas">
+
+                                <header class="ofertas-bloque-cabecera">
+
+                                    <span class="etiqueta-seccion">
+                                        Más recompensas
+                                    </span>
+
+                                    <h2>
+                                        Tus metas activas
+                                    </h2>
+
+                                    <p>
+                                        Mira cuánto te falta para desbloquear
+                                        cada beneficio.
+                                    </p>
+
+                                </header>
+
+
+                                <div class="ofertas-metas__grid">
+
+                                    {% for meta in metas_fidelidad %}
+
+                                        <article
+                                            class="
+                                                ofertas-meta-card
+
+                                                {% if meta.alcanzada_cliente %}
+                                                    ofertas-meta-card--alcanzada
+                                                {% endif %}
+                                            "
+                                        >
+
+                                            <!-- ==========================
+                                                 BENEFICIO
+                                            =========================== -->
+
+                                            <div
+                                                class="
+                                                    ofertas-meta-card__beneficio
+
+                                                    {% if meta.modalidad == 'monto_fijo' %}
+                                                        ofertas-meta-card__beneficio--clp
+                                                    {% else %}
+                                                        ofertas-meta-card__beneficio--porcentaje
+                                                    {% endif %}
+                                                "
+                                            >
+
+                                                {% if meta.modalidad == "monto_fijo" %}
+
+                                                    <strong
+                                                        class="
+                                                            ofertas-meta-card__valor
+                                                            ofertas-meta-card__valor--clp
+                                                        "
+                                                    >
+                                                        ${{ meta.monto_descuento|floatformat:0|intcomma }}
+                                                    </strong>
+
+                                                {% else %}
+
+                                                    <strong
+                                                        class="
+                                                            ofertas-meta-card__valor
+                                                            ofertas-meta-card__valor--porcentaje
+                                                        "
+                                                    >
+                                                        {{ meta.porcentaje|floatformat:0 }}%
+                                                    </strong>
+
+                                                {% endif %}
+
+                                                <span>
+                                                    de descuento
+                                                </span>
+
+                                            </div>
+
+
+                                            <!-- ==========================
+                                                 INFORMACIÓN
+                                            =========================== -->
+
+                                            <div class="ofertas-meta-card__contenido">
+
+                                                <span class="ofertas-meta-card__nombre">
+                                                    {{ meta.nombre }}
+                                                </span>
+
+
+                                                <h3>
+
+                                                    Meta:
+
+                                                    <strong>
+                                                        ${{ meta.monto_objetivo|floatformat:0|intcomma }}
+                                                    </strong>
+
+                                                </h3>
+
+
+                                                {% if meta.codigo_personal_cliente %}
+
+                                                    <div class="ofertas-meta-card__estado ofertas-meta-card__estado--listo">
+
+                                                        <i class="bi bi-check-circle-fill"></i>
+
+                                                        Premio desbloqueado
+
+                                                    </div>
+
+
+                                                    <button
+                                                        type="button"
+                                                        class="
+                                                            ofertas-copiar
+                                                            js-copiar-codigo
+                                                        "
+                                                        data-codigo="{{ meta.codigo_personal_cliente.codigo }}"
+                                                    >
+                                                        <span>
+                                                            Copiar código
+                                                        </span>
+
+                                                        <i class="bi bi-copy"></i>
+                                                    </button>
+
+
+                                                {% elif meta.alcanzada_cliente %}
+
+                                                    <div class="ofertas-meta-card__estado">
+
+                                                        <i class="bi bi-hourglass-split"></i>
+
+                                                        Meta alcanzada
+
+                                                    </div>
+
+
+                                                {% else %}
+
+                                                    <div
+                                                        class="fidelidad-progreso"
+                                                        role="progressbar"
+                                                        aria-valuemin="0"
+                                                        aria-valuemax="100"
+                                                        aria-valuenow="{{ meta.progreso_cliente }}"
+                                                    >
+                                                        <span
+                                                            style="width: {{ meta.progreso_cliente }}%;"
+                                                        ></span>
+                                                    </div>
+
+
+                                                    <p class="ofertas-meta-card__faltante">
+
+                                                        Te faltan
+
+                                                        <strong>
+                                                            ${{ meta.faltante_cliente|floatformat:0|intcomma }}
+                                                        </strong>
+
+                                                        para desbloquearla.
+
+                                                    </p>
+
+
+                                                    <small class="ofertas-meta-card__avance">
+                                                        {{ meta.progreso_cliente }}% completado
+                                                    </small>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        </article>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </section>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
             {% endif %}
-        </div>
-    </section>
+
+
+        {% else %}
+
+            <!-- ======================================================
+                 FIDELIDAD PARA INVITADOS
+            ======================================================= -->
+
+            {% if metas_fidelidad %}
+
+                <section
+                    class="ofertas-fidelidad"
+                    id="fidelidadClientes"
+                >
+
+                    <div class="contenedor">
+
+                        <article
+                            class="
+                                fidelidad-panel
+                                fidelidad-panel--invitado
+                            "
+                        >
+
+                            <div>
+
+                                <span class="etiqueta-seccion">
+                                    Clientes frecuentes
+                                </span>
+
+                                <h2>
+                                    Inicia sesión antes de comprar
+                                    y convierte tus compras en descuentos.
+                                </h2>
+
+                                <p>
+                                    Cuando compras utilizando tu cuenta,
+                                    tus compras aprobadas se acumulan
+                                    automáticamente.
+                                </p>
+
+                                <p>
+                                    Al alcanzar una meta puedes recibir
+                                    descuentos personales y exclusivos
+                                    para tu próxima compra.
+                                </p>
+
+
+                                {% with primera_meta=metas_fidelidad.0 %}
+
+                                    {% if primera_meta %}
+
+                                        <p class="fidelidad-invitado__destacado">
+
+                                            Tu primera recompensa comienza
+                                            al acumular
+
+                                            <strong>
+                                                ${{ primera_meta.monto_objetivo|floatformat:0|intcomma }}
+                                            </strong>.
+
+                                        </p>
+
+                                    {% endif %}
+
+                                {% endwith %}
+
+
+                                <a
+                                    href="{% url 'core:login' %}?next={% url 'core:ofertas' %}"
+                                    class="boton boton--primario"
+                                >
+                                    Iniciar sesión y comenzar
+
+                                    <i class="bi bi-person-check"></i>
+                                </a>
+
+                            </div>
+
+
+                            <div class="fidelidad-panel__premio">
+
+                                <i class="bi bi-gift"></i>
+
+                                <span>
+                                    Recompensas disponibles
+                                </span>
+
+                                <strong>
+                                    {{ cantidad_metas_fidelidad }}
+                                </strong>
+
+                                <small>
+                                    Exclusivas para clientes frecuentes
+                                </small>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+        {% endif %}
+
+
+        <!-- ==========================================================
+             PRODUCTOS EN OFERTA
+        =========================================================== -->
+
+
+        {% if productos_oferta %}
+
+            <section
+                class="ofertas-productos"
+                id="ofertasProductos"
+            >
+
+                <div class="contenedor">
+
+                    <!-- ==================================================
+                        CABECERA
+                    =================================================== -->
+
+                    <header class="ofertas-seccion__cabecera">
+
+                        <div>
+
+                            <span class="etiqueta-seccion">
+                                Precios especiales
+                            </span>
+
+                            <h2>
+                                Productos en oferta
+                            </h2>
+
+                            <p>
+                                Seleccionamos productos con descuentos
+                                superiores al 15% para que aproveches
+                                mejores precios antes de que terminen.
+                            </p>
+
+                        </div>
+
+
+                        <span class="ofertas-productos__cantidad">
+
+                            {{ cantidad_ofertas }}
+
+                            {% if cantidad_ofertas == 1 %}
+                                producto
+                            {% else %}
+                                productos
+                            {% endif %}
+
+                        </span>
+
+                    </header>
+
+
+                    <!-- ==================================================
+                        GRID
+                    =================================================== -->
+
+                    <div class="ofertas-productos-grid">
+
+                        {% for producto in productos_oferta %}
+
+                            <article
+                                class="
+                                    oferta-producto-card
+
+                                    {% if not producto.disponible %}
+                                        oferta-producto-card--agotado
+                                    {% endif %}
+                                "
+                            >
+
+                                <!-- ==========================================
+                                    IMAGEN
+                                =========================================== -->
+
+                                <div class="oferta-producto-card__media">
+
+                                    <!-- DESCUENTO -->
+
+                                    <span class="oferta-producto-card__descuento">
+
+                                        <strong>
+                                            -{{ producto.porcentaje_oferta }}%
+                                        </strong>
+
+                                        <small>
+                                            Oferta
+                                        </small>
+
+                                    </span>
+
+
+                                    <!-- IMAGEN -->
+
+                                    <a
+                                        href="{{ producto.get_absolute_url }}"
+                                        class="oferta-producto-card__imagen"
+                                        aria-label="Ver {{ producto.nombre }}"
+                                    >
+
+                                        {% if producto.imagen_mostrable %}
+
+                                            <img
+                                                src="{{ producto.imagen_mostrable }}"
+                                                alt="{{ producto.nombre }}"
+                                                loading="lazy"
+                                            >
+
+                                        {% else %}
+
+                                            <span class="oferta-producto-card__sin-imagen">
+
+                                                <i class="bi bi-earbuds"></i>
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </a>
+
+                                </div>
+
+
+                                <!-- ==========================================
+                                    CUERPO
+                                =========================================== -->
+
+                                <div class="oferta-producto-card__cuerpo">
+
+                                    <!-- ======================================
+                                        CABECERA PRODUCTO
+                                    ======================================= -->
+
+                                    <div class="oferta-producto-card__encabezado">
+
+                                        <span class="oferta-producto-card__categoria">
+                                            {{ producto.categoria.nombre }}
+                                        </span>
+
+
+                                        {% if producto.disponible %}
+
+                                            <span
+                                                class="
+                                                    oferta-producto-card__estado
+                                                    oferta-producto-card__estado--disponible
+                                                "
+                                            >
+
+                                                <i class="bi bi-check-circle-fill"></i>
+
+                                                Disponible
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span
+                                                class="
+                                                    oferta-producto-card__estado
+                                                    oferta-producto-card__estado--agotado
+                                                "
+                                            >
+
+                                                <i class="bi bi-x-circle-fill"></i>
+
+                                                Agotado
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- ======================================
+                                        NOMBRE
+                                    ======================================= -->
+
+                                    <h3 class="oferta-producto-card__titulo">
+
+                                        <a href="{{ producto.get_absolute_url }}">
+                                            {{ producto.nombre }}
+                                        </a>
+
+                                    </h3>
+
+
+                                    <!-- ======================================
+                                        DESCRIPCIÓN CORTA
+                                    ======================================= -->
+
+                                    {% if producto.descripcion_corta %}
+
+                                        <p class="oferta-producto-card__descripcion">
+                                            {{ producto.descripcion_corta }}
+                                        </p>
+
+                                    {% endif %}
+
+
+                                    <!-- ======================================
+                                        INFORMACIÓN DEL PRODUCTO
+                                    ======================================= -->
+
+                                    <div class="oferta-producto-card__informacion">
+
+                                        <span class="oferta-producto-card__info-titulo">
+
+                                            <i class="bi bi-stars"></i>
+
+                                            Lo más destacado
+
+                                        </span>
+
+
+                                        <!-- ==================================
+                                            CARACTERÍSTICAS PRINCIPALES
+                                        =================================== -->
+
+                                        <ul class="oferta-producto-card__caracteristicas">
+
+                                            {% if producto.caracteristica_1 %}
+
+                                                <li>
+
+                                                    <i class="bi bi-check-circle"></i>
+
+                                                    <span>
+                                                        {{ producto.caracteristica_1 }}
+                                                    </span>
+
+                                                </li>
+
+                                            {% endif %}
+
+
+                                            {% if producto.caracteristica_2 %}
+
+                                                <li>
+
+                                                    <i class="bi bi-check-circle"></i>
+
+                                                    <span>
+                                                        {{ producto.caracteristica_2 }}
+                                                    </span>
+
+                                                </li>
+
+                                            {% endif %}
+
+
+                                            {% if producto.caracteristica_3 %}
+
+                                                <li>
+
+                                                    <i class="bi bi-check-circle"></i>
+
+                                                    <span>
+                                                        {{ producto.caracteristica_3 }}
+                                                    </span>
+
+                                                </li>
+
+                                            {% endif %}
+
+                                        </ul>
+
+
+                                        <!-- ==================================
+                                            DATOS TÉCNICOS
+                                        =================================== -->
+
+                                        {% if producto.autonomia_horas or producto.bluetooth or producto.resistencia_agua or producto.cancelacion_ruido %}
+
+                                            <div class="oferta-producto-card__tecnicos">
+
+                                                {% if producto.autonomia_horas %}
+
+                                                    <span>
+
+                                                        <i class="bi bi-battery-charging"></i>
+
+                                                        {{ producto.autonomia_horas }} h
+
+                                                    </span>
+
+                                                {% endif %}
+
+
+                                                {% if producto.bluetooth %}
+
+                                                    <span>
+
+                                                        <i class="bi bi-bluetooth"></i>
+
+                                                        Bluetooth
+                                                        {{ producto.bluetooth }}
+
+                                                    </span>
+
+                                                {% endif %}
+
+
+                                                {% if producto.resistencia_agua %}
+
+                                                    <span>
+
+                                                        <i class="bi bi-droplet"></i>
+
+                                                        {{ producto.resistencia_agua }}
+
+                                                    </span>
+
+                                                {% endif %}
+
+
+                                                {% if producto.cancelacion_ruido %}
+
+                                                    <span>
+
+                                                        <i class="bi bi-volume-mute"></i>
+
+                                                        Cancelación de ruido
+
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- ======================================
+                                        PRECIO
+                                    ======================================= -->
+
+                                    <div class="oferta-producto-card__precio">
+
+                                        <div class="oferta-producto-card__precio-principal">
+
+                                            <del>
+                                                ${{ producto.precio|floatformat:0|intcomma }}
+                                            </del>
+
+                                            <strong>
+                                                ${{ producto.precio_oferta|floatformat:0|intcomma }}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="oferta-producto-card__ahorro">
+
+                                            <span>
+                                                Ahorras
+                                                {{ producto.porcentaje_oferta }}%
+                                            </span>
+
+                                            <small>
+                                                Son
+                                                ${{ producto.ahorro_oferta|floatformat:0|intcomma }}
+                                                menos
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- ======================================
+                                        BENEFICIOS DE COMPRA
+                                    ======================================= -->
+
+                                    <div class="oferta-producto-card__beneficios">
+
+                                        <span>
+
+                                            <i class="bi bi-shield-check"></i>
+
+                                            Compra protegida
+
+                                        </span>
+
+
+                                        <span>
+
+                                            <i class="bi bi-credit-card"></i>
+
+                                            Pago seguro
+
+                                        </span>
+
+
+                                        <span>
+
+                                            <i class="bi bi-box-seam"></i>
+
+                                            Despacho disponible
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <!-- ======================================
+                                        ACCIONES
+                                    ======================================= -->
+
+                                    <div class="oferta-producto-card__acciones">
+
+                                        <a
+                                            href="{{ producto.get_absolute_url }}"
+                                            class="oferta-producto-card__detalle"
+                                        >
+
+                                            <span>
+                                                Ver detalles
+                                            </span>
+
+                                            <i class="bi bi-arrow-right"></i>
+
+                                        </a>
+
+
+                                        <button
+                                            type="button"
+                                            class="
+                                                oferta-producto-card__comprar
+                                                comprar-oferta
+                                                js-agregar-oferta
+                                            "
+                                            data-producto-id="{{ producto.id }}"
+                                            data-producto="{{ producto.nombre|escape }}"
+                                            data-stock="{{ producto.stock_oferta }}"
+
+                                            {% if not producto.disponible %}
+
+                                                disabled
+                                                aria-disabled="true"
+
+                                            {% else %}
+
+                                                aria-disabled="false"
+
+                                            {% endif %}
+                                        >
+
+                                            <i class="bi bi-bag-plus"></i>
+
+                                            <span>
+
+                                                {% if producto.disponible %}
+
+                                                    Agregar al carrito
+
+                                                {% else %}
+
+                                                    Producto agotado
+
+                                                {% endif %}
+
+                                            </span>
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </article>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <!-- ==============================================================
+         TOAST
+    ============================================================== -->
 
     <div
         class="ofertas-toast"
         id="ofertasToast"
+        role="status"
         aria-live="polite"
+        aria-atomic="true"
         aria-hidden="true"
     >
         <i class="bi bi-check-circle-fill"></i>
+
         <span id="ofertasToastTexto"></span>
     </div>
+
 </section>
 
 {% endblock %}
 
+
 {% block extra_js %}
+
 <script
-    src="{% static 'core/js/ofertas.js' %}?v=11"
+    src="{% static 'core/js/ofertas.js' %}?v=15"
 ></script>
-<script
-    src="{% static 'core/js/ofertas_cupones_clp.js' %}?v=1"
-></script>
+
 {% endblock %}

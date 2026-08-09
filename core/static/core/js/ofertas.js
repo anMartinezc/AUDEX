@@ -25,11 +25,18 @@ document.addEventListener("DOMContentLoaded", () => {
         "abrirCarrito"
     );
 
-    let temporizadorToast = null;
+    const movimientoReducido = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
 
-    function obtenerCookie(
-        nombre
-    ) {
+    let temporizadorToast = null;
+    let intervaloContador = null;
+
+    // =================================================================
+    // UTILIDADES
+    // =================================================================
+
+    function obtenerCookie(nombre) {
         const cookies = document.cookie
             ? document.cookie.split(";")
             : [];
@@ -61,7 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        toastTexto.textContent = mensaje;
+        toastTexto.textContent = String(
+            mensaje || ""
+        );
 
         toast.classList.toggle(
             "ofertas-toast--error",
@@ -96,9 +105,88 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    // =========================================================================
+    async function copiarTexto(texto) {
+        const valor = String(
+            texto || ""
+        ).trim();
+
+        if (!valor) {
+            return false;
+        }
+
+        if (
+            navigator.clipboard
+            && window.isSecureContext
+        ) {
+            await navigator.clipboard.writeText(
+                valor
+            );
+
+            return true;
+        }
+
+        const auxiliar = document.createElement(
+            "textarea"
+        );
+
+        auxiliar.value = valor;
+        auxiliar.setAttribute(
+            "readonly",
+            ""
+        );
+
+        auxiliar.style.position = "fixed";
+        auxiliar.style.top = "-9999px";
+        auxiliar.style.left = "-9999px";
+        auxiliar.style.opacity = "0";
+
+        document.body.appendChild(
+            auxiliar
+        );
+
+        auxiliar.focus();
+        auxiliar.select();
+        auxiliar.setSelectionRange(
+            0,
+            auxiliar.value.length
+        );
+
+        const copiado = document.execCommand(
+            "copy"
+        );
+
+        auxiliar.remove();
+
+        return copiado;
+    }
+
+    async function leerRespuestaJson(
+        respuesta
+    ) {
+        const texto = await respuesta.text();
+
+        if (!texto) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(
+                texto
+            );
+        } catch (error) {
+            return {
+                ok: false,
+                mensaje: (
+                    "El servidor entregó una "
+                    + "respuesta no válida."
+                ),
+            };
+        }
+    }
+
+    // =================================================================
     // COPIAR CÓDIGOS
-    // =========================================================================
+    // =================================================================
 
     document.querySelectorAll(
         ".js-copiar-codigo"
@@ -113,57 +201,68 @@ document.addEventListener("DOMContentLoaded", () => {
                     ).trim();
 
                     if (!codigo) {
+                        mostrarToast(
+                            "El código no está disponible.",
+                            true
+                        );
+
                         return;
                     }
 
+                    const textoElemento = boton.querySelector(
+                        "span"
+                    );
+
+                    const textoOriginal = (
+                        textoElemento?.textContent
+                        || ""
+                    ).trim();
+
+                    boton.disabled = true;
+
                     try {
-                        await navigator.clipboard.writeText(
+                        const copiado = await copiarTexto(
                             codigo
                         );
 
+                        if (!copiado) {
+                            throw new Error(
+                                "No fue posible copiar el código."
+                            );
+                        }
+
+                        if (textoElemento) {
+                            textoElemento.textContent = (
+                                "Copiado"
+                            );
+                        }
+
                         mostrarToast(
-                            (
-                                `Código ${codigo} `
-                                + "copiado."
-                            )
+                            `Código ${codigo} copiado.`
                         );
                     } catch (error) {
-                        const auxiliar = (
-                            document.createElement(
-                                "textarea"
-                            )
-                        );
-
-                        auxiliar.value = codigo;
-
-                        auxiliar.setAttribute(
-                            "readonly",
-                            ""
-                        );
-
-                        auxiliar.style.position = (
-                            "fixed"
-                        );
-
-                        auxiliar.style.opacity = "0";
-
-                        document.body.appendChild(
-                            auxiliar
-                        );
-
-                        auxiliar.select();
-
-                        document.execCommand(
-                            "copy"
-                        );
-
-                        auxiliar.remove();
-
                         mostrarToast(
                             (
-                                `Código ${codigo} `
-                                + "copiado."
-                            )
+                                error.message
+                                || "No fue posible copiar el código."
+                            ),
+                            true
+                        );
+                    } finally {
+                        window.setTimeout(
+                            () => {
+                                boton.disabled = false;
+
+                                if (
+                                    textoElemento
+                                    && textoOriginal
+                                ) {
+                                    textoElemento.textContent = (
+                                        textoOriginal
+                                    );
+                                }
+                            },
+                            900
                         );
                     }
                 }
@@ -171,9 +270,212 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     );
 
-    // =========================================================================
+    // =================================================================
+    // CARRUSEL DE CUPONES CLP
+    // =================================================================
+
+    const rielCupones = document.querySelector(
+        ".js-cupones-clp-riel"
+    );
+
+    const botonCuponAnterior = document.querySelector(
+        ".js-cupones-anterior"
+    );
+
+    const botonCuponSiguiente = document.querySelector(
+        ".js-cupones-siguiente"
+    );
+
+    function obtenerPasoCupones() {
+        if (!rielCupones) {
+            return 0;
+        }
+
+        const primerCupon = rielCupones.querySelector(
+            ".cupon-clp"
+        );
+
+        if (!primerCupon) {
+            return Math.max(
+                rielCupones.clientWidth * 0.85,
+                260
+            );
+        }
+
+        const estilosRiel = window.getComputedStyle(
+            rielCupones
+        );
+
+        const espacio = parseFloat(
+            estilosRiel.columnGap
+            || estilosRiel.gap
+            || "0"
+        );
+
+        return (
+            primerCupon.getBoundingClientRect().width
+            + (
+                Number.isFinite(espacio)
+                    ? espacio
+                    : 0
+            )
+        );
+    }
+
+    function actualizarControlesCupones() {
+        if (
+            !rielCupones
+            || !botonCuponAnterior
+            || !botonCuponSiguiente
+        ) {
+            return;
+        }
+
+        const tolerancia = 3;
+
+        const puedeRetroceder = (
+            rielCupones.scrollLeft
+            > tolerancia
+        );
+
+        const puedeAvanzar = (
+            rielCupones.scrollLeft
+            + rielCupones.clientWidth
+            < rielCupones.scrollWidth
+            - tolerancia
+        );
+
+        botonCuponAnterior.disabled = (
+            !puedeRetroceder
+        );
+
+        botonCuponSiguiente.disabled = (
+            !puedeAvanzar
+        );
+
+        botonCuponAnterior.setAttribute(
+            "aria-disabled",
+            String(
+                !puedeRetroceder
+            )
+        );
+
+        botonCuponSiguiente.setAttribute(
+            "aria-disabled",
+            String(
+                !puedeAvanzar
+            )
+        );
+    }
+
+    function desplazarCupones(
+        direccion
+    ) {
+        if (!rielCupones) {
+            return;
+        }
+
+        const paso = obtenerPasoCupones();
+
+        rielCupones.scrollBy({
+            left: paso * direccion,
+            behavior: (
+                movimientoReducido
+                    ? "auto"
+                    : "smooth"
+            ),
+        });
+    }
+
+    if (rielCupones) {
+        botonCuponAnterior?.addEventListener(
+            "click",
+            () => {
+                desplazarCupones(
+                    -1
+                );
+            }
+        );
+
+        botonCuponSiguiente?.addEventListener(
+            "click",
+            () => {
+                desplazarCupones(
+                    1
+                );
+            }
+        );
+
+        rielCupones.addEventListener(
+            "scroll",
+            () => {
+                window.requestAnimationFrame(
+                    actualizarControlesCupones
+                );
+            },
+            {
+                passive: true,
+            }
+        );
+
+        rielCupones.addEventListener(
+            "keydown",
+            (evento) => {
+                if (evento.key === "ArrowLeft") {
+                    evento.preventDefault();
+
+                    desplazarCupones(
+                        -1
+                    );
+                }
+
+                if (evento.key === "ArrowRight") {
+                    evento.preventDefault();
+
+                    desplazarCupones(
+                        1
+                    );
+                }
+
+                if (evento.key === "Home") {
+                    evento.preventDefault();
+
+                    rielCupones.scrollTo({
+                        left: 0,
+                        behavior: (
+                            movimientoReducido
+                                ? "auto"
+                                : "smooth"
+                        ),
+                    });
+                }
+
+                if (evento.key === "End") {
+                    evento.preventDefault();
+
+                    rielCupones.scrollTo({
+                        left: rielCupones.scrollWidth,
+                        behavior: (
+                            movimientoReducido
+                                ? "auto"
+                                : "smooth"
+                        ),
+                    });
+                }
+            }
+        );
+
+        window.addEventListener(
+            "resize",
+            actualizarControlesCupones
+        );
+
+        actualizarControlesCupones();
+    }
+
+    // =================================================================
     // CUENTA REGRESIVA
-    // =========================================================================
+    // =================================================================
 
     const fechaVencimientoTexto = String(
         pagina.dataset.venceEn
@@ -200,9 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "segundosOferta"
     );
 
-    function dosDigitos(
-        numero
-    ) {
+    function dosDigitos(numero) {
         return String(
             Math.max(
                 0,
@@ -212,6 +512,26 @@ document.addEventListener("DOMContentLoaded", () => {
             2,
             "0"
         );
+    }
+
+    function finalizarContador() {
+        if (!contador) {
+            return;
+        }
+
+        if (intervaloContador) {
+            window.clearInterval(
+                intervaloContador
+            );
+
+            intervaloContador = null;
+        }
+
+        contador.innerHTML = `
+            <div class="contador-oferta__finalizado">
+                Esta campaña finalizó
+            </div>
+        `;
     }
 
     function actualizarContador() {
@@ -226,23 +546,22 @@ document.addEventListener("DOMContentLoaded", () => {
             fechaVencimientoTexto
         );
 
+        if (
+            Number.isNaN(
+                fechaVencimiento.getTime()
+            )
+        ) {
+            finalizarContador();
+            return;
+        }
+
         const diferencia = (
             fechaVencimiento.getTime()
             - Date.now()
         );
 
-        if (
-            Number.isNaN(
-                fechaVencimiento.getTime()
-            )
-            || diferencia <= 0
-        ) {
-            contador.innerHTML = `
-                <div class="contador-oferta__finalizado">
-                    Esta campaña finalizó
-                </div>
-            `;
-
+        if (diferencia <= 0) {
+            finalizarContador();
             return;
         }
 
@@ -311,15 +630,15 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
         actualizarContador();
 
-        window.setInterval(
+        intervaloContador = window.setInterval(
             actualizarContador,
             1000
         );
     }
 
-    // =========================================================================
+    // =================================================================
     // AGREGAR PRODUCTOS AL CARRITO
-    // =========================================================================
+    // =================================================================
 
     const urlAgregar = String(
         pagina.dataset.urlAgregar
@@ -336,13 +655,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const nombreProducto = String(
             boton.dataset.producto
             || "El producto"
+        ).trim();
+
+        const stock = Number(
+            boton.dataset.stock
+            || 0
         );
+
+        if (stock <= 0) {
+            mostrarToast(
+                "Este producto está agotado.",
+                true
+            );
+
+            return;
+        }
 
         if (
             !urlAgregar
             || !Number.isInteger(
                 productoId
             )
+            || productoId <= 0
         ) {
             mostrarToast(
                 (
@@ -355,11 +689,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        boton.disabled = true;
-        boton.classList.add(
-            "comprar-oferta--cargando"
-        );
-
         const texto = boton.querySelector(
             "span"
         );
@@ -367,6 +696,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const textoOriginal = (
             texto?.textContent
             || "Agregar al carrito"
+        ).trim();
+
+        boton.disabled = true;
+        boton.setAttribute(
+            "aria-disabled",
+            "true"
+        );
+
+        boton.classList.add(
+            "comprar-oferta--cargando"
         );
 
         if (texto) {
@@ -396,16 +735,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     body: JSON.stringify(
                         {
-                            producto_id: (
-                                productoId
-                            ),
+                            producto_id: productoId,
                             cantidad: 1,
                         }
                     ),
                 }
             );
 
-            const datos = await respuesta.json();
+            const datos = await leerRespuestaJson(
+                respuesta
+            );
 
             if (
                 !respuesta.ok
@@ -442,7 +781,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 new CustomEvent(
                     "audex:carrito-actualizado",
                     {
-                        detail: datos.carrito,
+                        detail: (
+                            datos.carrito
+                            || {}
+                        ),
                     }
                 )
             );
@@ -455,7 +797,13 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         } catch (error) {
             mostrarToast(
-                error.message,
+                (
+                    error.message
+                    || (
+                        "No fue posible agregar "
+                        + "el producto."
+                    )
+                ),
                 true
             );
         } finally {
@@ -465,9 +813,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             boton.disabled = false;
 
+            boton.setAttribute(
+                "aria-disabled",
+                "false"
+            );
+
             if (texto) {
                 texto.textContent = (
-                    textoOriginal.trim()
+                    textoOriginal
                 );
             }
         }
