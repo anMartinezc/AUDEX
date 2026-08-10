@@ -26,7 +26,10 @@ Tu carrito | Audex
 
     <div class="contenedor">
 
-        <!-- Breadcrumb -->
+        <!-- ============================================================= -->
+        <!-- BREADCRUMB -->
+        <!-- ============================================================= -->
+
         <nav
             class="carrito-pagina__breadcrumb"
             aria-label="Migas de navegación"
@@ -35,18 +38,30 @@ Tu carrito | Audex
                 Inicio
             </a>
 
-            <i class="bi bi-chevron-right"></i>
+            <i
+                class="bi bi-chevron-right"
+                aria-hidden="true"
+            ></i>
 
             <a href="{% url 'core:productos' %}">
                 Productos
             </a>
 
-            <i class="bi bi-chevron-right"></i>
+            <i
+                class="bi bi-chevron-right"
+                aria-hidden="true"
+            ></i>
 
-            <span>Carrito</span>
+            <span>
+                Carrito
+            </span>
         </nav>
 
-        <!-- Cabecera -->
+
+        <!-- ============================================================= -->
+        <!-- CABECERA -->
+        <!-- ============================================================= -->
+
         <header class="carrito-pagina__cabecera">
 
             <div>
@@ -54,7 +69,9 @@ Tu carrito | Audex
                     Tu selección
                 </span>
 
-                <h1>Carrito de compras</h1>
+                <h1>
+                    Carrito de compras
+                </h1>
 
                 <p>
                     Revisa tus productos, ajusta las cantidades
@@ -66,57 +83,102 @@ Tu carrito | Audex
                 href="{% url 'core:productos' %}"
                 class="carrito-seguir-comprando"
             >
-                <i class="bi bi-arrow-left"></i>
+                <i
+                    class="bi bi-arrow-left"
+                    aria-hidden="true"
+                ></i>
+
                 Seguir comprando
             </a>
 
         </header>
 
-        <!-- Pasos -->
+
+        <!-- ============================================================= -->
+        <!-- PASOS -->
+        <!-- ============================================================= -->
+
         <div class="carrito-pasos">
 
-            <article class="carrito-paso carrito-paso--activo">
-                <span>1</span>
+            <article
+                class="
+                    carrito-paso
+                    carrito-paso--activo
+                "
+            >
+                <span>
+                    1
+                </span>
 
                 <div>
-                    <strong>Carrito</strong>
-                    <small>Revisa tu compra</small>
+                    <strong>
+                        Carrito
+                    </strong>
+
+                    <small>
+                        Revisa tu compra
+                    </small>
                 </div>
             </article>
 
             <span class="carrito-pasos__linea"></span>
 
             <article class="carrito-paso">
-                <span>2</span>
+                <span>
+                    2
+                </span>
 
                 <div>
-                    <strong>Datos</strong>
-                    <small>Información de entrega</small>
+                    <strong>
+                        Datos
+                    </strong>
+
+                    <small>
+                        Información de entrega
+                    </small>
                 </div>
             </article>
 
             <span class="carrito-pasos__linea"></span>
 
             <article class="carrito-paso">
-                <span>3</span>
+                <span>
+                    3
+                </span>
 
                 <div>
-                    <strong>Pago</strong>
-                    <small>Finalizar pedido</small>
+                    <strong>
+                        Pago
+                    </strong>
+
+                    <small>
+                        Finalizar pedido
+                    </small>
                 </div>
             </article>
 
         </div>
 
-        <!-- Contenido -->
+
+        <!-- ============================================================= -->
+        <!-- CONTENIDO -->
+        <!-- ============================================================= -->
+
         <div class="carrito-pagina__grid">
 
-            <!-- Productos -->
+
+            <!-- ========================================================= -->
+            <!-- LISTADO PRINCIPAL DE PRODUCTOS -->
+            <!-- ========================================================= -->
+
             <section class="carrito-listado">
 
                 <div class="carrito-listado__encabezado">
+
                     <div>
-                        <h2>Productos</h2>
+                        <h2>
+                            Productos
+                        </h2>
 
                         <span id="carritoPaginaCantidad">
                             {{ carrito.cantidad_total }}
@@ -132,24 +194,41 @@ Tu carrito | Audex
                             hidden
                         {% endif %}
                     >
-                        <i class="bi bi-trash3"></i>
+                        <i
+                            class="bi bi-trash3"
+                            aria-hidden="true"
+                        ></i>
+
                         Vaciar carrito
                     </button>
+
                 </div>
+
 
                 <div
                     class="carrito-listado__productos"
                     id="carritoPaginaProductos"
                     aria-live="polite"
                 >
+
                     {% if carrito.vacio %}
 
+                        <!-- ================================================= -->
+                        <!-- CARRITO VACÍO -->
+                        <!-- ================================================= -->
+
                         <div class="carrito-pagina-vacio">
+
                             <div class="carrito-pagina-vacio__icono">
-                                <i class="bi bi-bag"></i>
+                                <i
+                                    class="bi bi-bag"
+                                    aria-hidden="true"
+                                ></i>
                             </div>
 
-                            <h2>Tu carrito está vacío</h2>
+                            <h2>
+                                Tu carrito está vacío
+                            </h2>
 
                             <p>
                                 Explora nuestro catálogo y agrega los
@@ -161,11 +240,20 @@ Tu carrito | Audex
                                 class="boton boton--primario"
                             >
                                 Explorar productos
-                                <i class="bi bi-arrow-right"></i>
+
+                                <i
+                                    class="bi bi-arrow-right"
+                                    aria-hidden="true"
+                                ></i>
                             </a>
+
                         </div>
 
                     {% else %}
+
+                        <!-- ================================================= -->
+                        <!-- PRODUCTOS -->
+                        <!-- ================================================= -->
 
                         {% for item in carrito.items %}
 
@@ -174,75 +262,152 @@ Tu carrito | Audex
                                 data-producto-id="{{ item.id }}"
                             >
 
+                                <!-- ========================================= -->
+                                <!-- IMAGEN -->
+                                <!-- ========================================= -->
+
                                 <a
                                     href="{{ item.url_detalle }}"
                                     class="carrito-producto__imagen"
+                                    aria-label="Ver {{ item.nombre }}"
                                 >
+
                                     {% if item.imagen %}
+
                                         <img
                                             src="{{ item.imagen }}"
                                             alt="{{ item.nombre }}"
+                                            loading="lazy"
                                         >
+
                                     {% else %}
-                                        <i class="bi bi-earbuds"></i>
+
+                                        <i
+                                            class="bi bi-earbuds"
+                                            aria-hidden="true"
+                                        ></i>
+
                                     {% endif %}
+
                                 </a>
+
+
+                                <!-- ========================================= -->
+                                <!-- INFORMACIÓN -->
+                                <!-- ========================================= -->
 
                                 <div class="carrito-producto__informacion">
 
                                     <div class="carrito-producto__superior">
 
                                         <div>
+
+                                            <!-- Etiquetas -->
                                             <div class="carrito-producto__etiquetas">
 
-                                                <span class="carrito-producto__categoria">
-                                                    {{ item.categoria }}
-                                                </span>
+                                                {% if item.categoria %}
+                                                    <span class="carrito-producto__categoria">
+                                                        {{ item.categoria }}
+                                                    </span>
+                                                {% endif %}
 
                                                 {% if item.en_oferta %}
+
                                                     <span class="carrito-producto__oferta">
                                                         Oferta
                                                     </span>
+
+                                                    {% if item.porcentaje_descuento %}
+
+                                                        <span class="carrito-producto__porcentaje">
+                                                            -{{ item.porcentaje_descuento }}%
+                                                        </span>
+
+                                                    {% endif %}
+
                                                 {% endif %}
 
                                             </div>
 
+
+                                            <!-- Nombre -->
                                             <h3>
                                                 <a href="{{ item.url_detalle }}">
                                                     {{ item.nombre }}
                                                 </a>
                                             </h3>
 
-                                            <span class="carrito-producto__unitario">
-                                                Precio unitario:
-                                                {{ item.precio_formateado }}
-                                            </span>
+
+                                            <!-- Precios -->
+                                            <div class="carrito-producto__precio-unitario">
+
+                                                {% if item.en_oferta %}
+
+                                                    <span class="carrito-producto__precio-original">
+                                                        {{ item.precio_original_formateado }}
+                                                    </span>
+
+                                                    <strong class="carrito-producto__precio-oferta">
+                                                        {{ item.precio_formateado }}
+                                                    </strong>
+
+                                                {% else %}
+
+                                                    <span class="carrito-producto__unitario">
+                                                        Precio unitario:
+
+                                                        <strong>
+                                                            {{ item.precio_formateado }}
+                                                        </strong>
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
                                         </div>
 
+
+                                        <!-- Eliminar -->
                                         <button
                                             type="button"
                                             class="carrito-producto__eliminar"
                                             data-carrito-pagina-accion="eliminar"
                                             aria-label="Eliminar {{ item.nombre }}"
                                         >
-                                            <i class="bi bi-trash3"></i>
+                                            <i
+                                                class="bi bi-trash3"
+                                                aria-hidden="true"
+                                            ></i>
                                         </button>
 
                                     </div>
 
+
+                                    <!-- ===================================== -->
+                                    <!-- PARTE INFERIOR -->
+                                    <!-- ===================================== -->
+
                                     <div class="carrito-producto__inferior">
 
+                                        <!-- Cantidad -->
                                         <div class="carrito-producto__cantidad">
 
-                                            <span>Cantidad</span>
+                                            <span>
+                                                Cantidad
+                                            </span>
 
                                             <div>
+
                                                 <button
                                                     type="button"
                                                     data-carrito-pagina-accion="restar"
-                                                    aria-label="Disminuir cantidad"
+                                                    aria-label="Disminuir cantidad de {{ item.nombre }}"
                                                 >
-                                                    <i class="bi bi-dash-lg"></i>
+                                                    <i
+                                                        class="bi bi-dash-lg"
+                                                        aria-hidden="true"
+                                                    ></i>
                                                 </button>
 
                                                 <strong>
@@ -252,13 +417,17 @@ Tu carrito | Audex
                                                 <button
                                                     type="button"
                                                     data-carrito-pagina-accion="sumar"
-                                                    aria-label="Aumentar cantidad"
+                                                    aria-label="Aumentar cantidad de {{ item.nombre }}"
                                                     {% if item.cantidad >= item.stock %}
                                                         disabled
                                                     {% endif %}
                                                 >
-                                                    <i class="bi bi-plus-lg"></i>
+                                                    <i
+                                                        class="bi bi-plus-lg"
+                                                        aria-hidden="true"
+                                                    ></i>
                                                 </button>
+
                                             </div>
 
                                             <small>
@@ -268,12 +437,35 @@ Tu carrito | Audex
 
                                         </div>
 
+
+                                        <!-- Total -->
                                         <div class="carrito-producto__total">
-                                            <span>Total</span>
+
+                                            <span>
+                                                Total
+                                            </span>
+
+                                            {% if item.en_oferta %}
+
+                                                <small class="carrito-producto__total-original">
+                                                    {{ item.total_original_formateado }}
+                                                </small>
+
+                                            {% endif %}
 
                                             <strong>
                                                 {{ item.total_formateado }}
                                             </strong>
+
+                                            {% if item.en_oferta and item.ahorro_linea %}
+
+                                                <small class="carrito-producto__ahorro">
+                                                    Ahorras
+                                                    {{ item.ahorro_linea_formateado }}
+                                                </small>
+
+                                            {% endif %}
+
                                         </div>
 
                                     </div>
@@ -285,66 +477,310 @@ Tu carrito | Audex
                         {% endfor %}
 
                     {% endif %}
-                </div>
-
-                <!-- Beneficios -->
-                <div class="carrito-listado__beneficios">
-
-                    <article>
-                        <i class="bi bi-shield-check"></i>
-
-                        <div>
-                            <strong>Compra protegida</strong>
-                            <span>Transacción segura</span>
-                        </div>
-                    </article>
-
-                    <article>
-                        <i class="bi bi-arrow-repeat"></i>
-
-                        <div>
-                            <strong>Cambios simples</strong>
-                            <span>Consulta las condiciones</span>
-                        </div>
-                    </article>
-
-                    <article>
-                        <i class="bi bi-headset"></i>
-
-                        <div>
-                            <strong>Atención Audex</strong>
-                            <span>Asesoría durante tu compra</span>
-                        </div>
-                    </article>
 
                 </div>
+
+
+                <!-- ========================================================= -->
+                <!-- BENEFICIOS -->
+                <!-- ========================================================= -->
+
+                {% if not carrito.vacio %}
+
+                    <div class="carrito-listado__beneficios">
+
+                        <article>
+
+                            <i
+                                class="bi bi-shield-check"
+                                aria-hidden="true"
+                            ></i>
+
+                            <div>
+                                <strong>
+                                    Compra protegida
+                                </strong>
+
+                                <span>
+                                    Transacción segura
+                                </span>
+                            </div>
+
+                        </article>
+
+
+                        <article>
+
+                            <i
+                                class="bi bi-arrow-repeat"
+                                aria-hidden="true"
+                            ></i>
+
+                            <div>
+                                <strong>
+                                    Cambios simples
+                                </strong>
+
+                                <span>
+                                    Consulta las condiciones
+                                </span>
+                            </div>
+
+                        </article>
+
+
+                        <article>
+
+                            <i
+                                class="bi bi-headset"
+                                aria-hidden="true"
+                            ></i>
+
+                            <div>
+                                <strong>
+                                    Atención Audex
+                                </strong>
+
+                                <span>
+                                    Asesoría durante tu compra
+                                </span>
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                {% endif %}
 
             </section>
 
-            <!-- Resumen -->
+
+            <!-- ========================================================= -->
+            <!-- RESUMEN -->
+            <!-- ========================================================= -->
+
             <aside class="carrito-resumen">
 
+                <!-- ===================================================== -->
+                <!-- CABECERA -->
+                <!-- ===================================================== -->
+
                 <div class="carrito-resumen__titulo">
+
                     <div>
-                        <span>Resumen</span>
-                        <h2>Tu pedido</h2>
+                        <span>
+                            Resumen
+                        </span>
+
+                        <h2>
+                            Tu compra
+                        </h2>
                     </div>
 
-                    <i class="bi bi-receipt"></i>
+                    <i
+                        class="bi bi-receipt"
+                        aria-hidden="true"
+                    ></i>
+
                 </div>
 
-                <!-- Despacho gratis -->
+
+                <!-- ===================================================== -->
+                <!-- PRODUCTOS RESUMIDOS -->
+                <!-- ===================================================== -->
+
+                {% if not carrito.vacio %}
+
+                    <div class="carrito-resumen__productos">
+
+                        <div class="carrito-resumen__productos-cabecera">
+
+                            <strong>
+                                Productos
+                            </strong>
+
+                            <span id="carritoResumenCantidad">
+                                {{ carrito.cantidad_total }}
+                                unidad{{ carrito.cantidad_total|pluralize:"es" }}
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="carrito-resumen__productos-lista"
+                            id="carritoResumenProductos"
+                        >
+
+                            {% for item in carrito.items %}
+
+                                <article
+                                    class="carrito-resumen-producto"
+                                    data-resumen-producto-id="{{ item.id }}"
+                                >
+
+                                    <!-- ================================= -->
+                                    <!-- NOMBRE + CANTIDAD -->
+                                    <!-- ================================= -->
+
+                                    <div class="carrito-resumen-producto__principal">
+
+                                        <a
+                                            href="{{ item.url_detalle }}"
+                                            class="carrito-resumen-producto__nombre"
+                                        >
+                                            {{ item.nombre }}
+                                        </a>
+
+
+                                        {% if item.cantidad > 1 %}
+
+                                            <span
+                                                class="carrito-resumen-producto__cantidad"
+                                                aria-label="{{ item.cantidad }} unidades"
+                                            >
+                                                x{{ item.cantidad }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- ================================= -->
+                                    <!-- PRECIOS -->
+                                    <!-- ================================= -->
+
+                                    <div class="carrito-resumen-producto__detalle">
+
+                                        <div class="carrito-resumen-producto__precios">
+
+                                            {% if item.en_oferta %}
+
+                                                <span class="carrito-resumen-producto__precio-original">
+                                                    {{ item.precio_original_formateado }}
+                                                </span>
+
+                                                <strong class="carrito-resumen-producto__precio-oferta">
+                                                    {{ item.precio_formateado }}
+                                                </strong>
+
+                                                {% if item.porcentaje_descuento %}
+
+                                                    <span class="carrito-resumen-producto__descuento-badge">
+                                                        -{{ item.porcentaje_descuento }}%
+                                                    </span>
+
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                <strong class="carrito-resumen-producto__precio">
+                                                    {{ item.precio_formateado }}
+                                                </strong>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        {% if item.cantidad > 1 %}
+
+                                            <small class="carrito-resumen-producto__unitario">
+                                                {{ item.precio_formateado }}
+                                                c/u
+                                            </small>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- ================================= -->
+                                    <!-- TOTAL DE LA LÍNEA -->
+                                    <!-- ================================= -->
+
+                                    <div class="carrito-resumen-producto__total">
+
+                                        {% if item.en_oferta %}
+
+                                            <span class="carrito-resumen-producto__total-original">
+                                                {{ item.total_original_formateado }}
+                                            </span>
+
+                                        {% endif %}
+
+                                        <strong>
+                                            {{ item.total_formateado }}
+                                        </strong>
+
+                                    </div>
+
+                                </article>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- ===================================================== -->
+                <!-- COMPATIBILIDAD CON JS DE DESPACHO GRATIS -->
+                <!-- ===================================================== -->
+                <!--
+                La promoción está desactivada visualmente.
+
+                Estos elementos permanecen en el DOM porque el JS actual
+                todavía los consulta. Al mantenerlos ocultos evitamos el
+                error:
+
+                progresoEnvio.style -> null
+                -->
+
+                <div
+                    class="carrito-resumen__envio"
+                    aria-hidden="true"
+                    hidden
+                >
+
+                    <p id="carritoPaginaMensajeEnvio"></p>
+
+                    <div class="carrito-resumen__progreso">
+                        <span
+                            id="carritoPaginaProgreso"
+                            style="width: 0%;"
+                        ></span>
+                    </div>
+
+                </div>
+
+
+                <!-- ===================================================== -->
+                <!-- DESPACHO GRATIS FUTURO -->
+                <!-- ===================================================== -->
+
+                <!--
+                FUTURA IMPLEMENTACIÓN:
+
                 <div class="carrito-resumen__envio">
 
                     <p id="carritoPaginaMensajeEnvio">
+
                         {% if carrito.subtotal >= 50000 %}
+
                             <i class="bi bi-check-circle-fill"></i>
                             ¡Tienes despacho gratis!
+
                         {% else %}
-                            Te faltan
-                            ${{ 50000|add:carrito.subtotal|stringformat:"d" }}
-                            para despacho gratis.
+
+                            Agrega más productos para acceder
+                            a despacho gratis.
+
                         {% endif %}
+
                     </p>
 
                     <div class="carrito-resumen__progreso">
@@ -352,74 +788,192 @@ Tu carrito | Audex
                     </div>
 
                 </div>
+                -->
 
-                <!-- Cupón 
-                <div class="carrito-cupon">
-                    <label for="codigoDescuento">
-                        ¿Tienes un código de descuento?
-                    </label>
 
-                    <div>
-                        <input
-                            type="text"
-                            id="codigoDescuento"
-                            placeholder="Ejemplo: AUDEX10"
-                            autocomplete="off"
+                <!-- ===================================================== -->
+                <!-- RESUMEN ECONÓMICO -->
+                <!-- ===================================================== -->
+
+                {% if not carrito.vacio %}
+
+                    <div class="carrito-resumen__valores">
+
+
+                        <!-- ============================================= -->
+                        <!-- VALOR ORIGINAL DE PRODUCTOS -->
+                        <!-- ============================================= -->
+
+                        <div class="carrito-resumen__fila">
+
+                            <span>
+                                Productos
+                            </span>
+
+                            <strong id="carritoPaginaPrecioLista">
+
+                                {% if carrito.tiene_ofertas %}
+                                    {{ carrito.subtotal_precio_lista_formateado }}
+                                {% else %}
+                                    {{ carrito.subtotal_formateado }}
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- ============================================= -->
+                        <!-- DESCUENTOS -->
+                        <!-- ============================================= -->
+
+                        <div
+                            class="
+                                carrito-resumen__fila
+                                carrito-resumen__descuento
+                            "
+                            id="filaDescuento"
+
+                            {% if not carrito.tiene_ofertas %}
+                                hidden
+                            {% endif %}
                         >
 
-                        <button
-                            type="button"
-                            id="aplicarCodigoDescuento"
+                            <div class="carrito-resumen__descuento-info">
+
+                                <span>
+                                    Descuentos
+                                </span>
+
+                                <small>
+                                    Ahorro en productos con oferta
+                                </small>
+
+                            </div>
+
+                            <strong id="carritoPaginaDescuento">
+
+                                {% if carrito.tiene_ofertas %}
+                                    -{{ carrito.ahorro_ofertas_formateado }}
+                                {% else %}
+                                    -$0
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- ============================================= -->
+                        <!-- SUBTOTAL -->
+                        <!-- ============================================= -->
+
+                        <div class="carrito-resumen__fila">
+
+                            <span>
+                                Subtotal
+                            </span>
+
+                            <strong id="carritoPaginaSubtotal">
+                                {{ carrito.subtotal_formateado }}
+                            </strong>
+
+                        </div>
+
+
+                        <!-- ============================================= -->
+                        <!-- DESPACHO -->
+                        <!-- ============================================= -->
+
+                        <div
+                            class="
+                                carrito-resumen__fila
+                                carrito-resumen__fila--despacho
+                            "
                         >
-                            Aplicar
-                        </button>
+
+                            <div class="carrito-resumen__despacho-info">
+
+                                <span>
+                                    Despacho
+                                </span>
+
+                                <small>
+                                    Se calculará según tu dirección
+                                </small>
+
+                            </div>
+
+                            <strong
+                                id="carritoPaginaDespacho"
+                                class="carrito-resumen__despacho-pendiente"
+                            >
+                                Por calcular
+                            </strong>
+
+                        </div>
+
                     </div>
 
-                    <small id="mensajeCodigoDescuento"></small>
-                </div>   -->
 
-                <!-- Valores -->
-                <div class="carrito-resumen__valores">
+                    <!-- ================================================= -->
+                    <!-- TOTAL -->
+                    <!-- ================================================= -->
 
-                    <div>
-                        <span>Subtotal</span>
+                    <div class="carrito-resumen__total">
 
-                        <strong id="carritoPaginaSubtotal">
+                        <div>
+
+                            <span>
+                                Total estimado
+                            </span>
+
+                            <small>
+                                IVA incluido
+                            </small>
+
+                        </div>
+
+                        <strong id="carritoPaginaTotal">
                             {{ carrito.subtotal_formateado }}
                         </strong>
+
                     </div>
 
-                    <div
-                        class="carrito-resumen__descuento"
-                        id="filaDescuento"
-                        hidden
-                    >
-                        <span>Descuento</span>
-                        <strong id="carritoPaginaDescuento">-$0</strong>
+
+                    <!-- ================================================= -->
+                    <!-- AVISO DE DESPACHO -->
+                    <!-- ================================================= -->
+
+                    <div class="carrito-resumen__aviso-despacho">
+
+                        <i
+                            class="bi bi-truck"
+                            aria-hidden="true"
+                        ></i>
+
+                        <div>
+
+                            <strong>
+                                Despacho aún no incluido
+                            </strong>
+
+                            <span>
+                                En el siguiente paso calcularemos
+                                el valor según tu región, comuna
+                                y dirección de entrega.
+                            </span>
+
+                        </div>
+
                     </div>
 
-                    <div>
-                        <span>Despacho</span>
-                        <strong id="carritoPaginaDespacho">
-                            Por calcular
-                        </strong>
-                    </div>
+                {% endif %}
 
-                </div>
 
-                <div class="carrito-resumen__total">
-                    <div>
-                        <span>Total estimado</span>
-
-                        <small>
-                            Impuestos incluidos
-                        </small>
-                    </div>
-
-                    <strong id="carritoPaginaTotal">
-                        {{ carrito.subtotal_formateado }}
-                    </strong>
-                </div>
+                <!-- ===================================================== -->
+                <!-- CONTINUAR -->
+                <!-- ===================================================== -->
 
                 <a
                     href="{% url 'core:checkout' %}"
@@ -430,31 +984,91 @@ Tu carrito | Audex
                         {% endif %}
                     "
                     id="continuarCompra"
+
                     {% if carrito.vacio %}
                         aria-disabled="true"
                         tabindex="-1"
                     {% endif %}
                 >
+
                     <span>
-                        Continuar con la compra
+                        Continuar compra
                     </span>
 
-                    <i class="bi bi-arrow-right"></i>
+                    <i
+                        class="bi bi-arrow-right"
+                        aria-hidden="true"
+                    ></i>
+
                 </a>
 
+
+                <!-- ===================================================== -->
+                <!-- IVA -->
+                <!-- ===================================================== -->
+
+                {% if not carrito.vacio %}
+
+                    <p class="carrito-resumen__iva">
+
+                        <i
+                            class="bi bi-receipt-cutoff"
+                            aria-hidden="true"
+                        ></i>
+
+                        Todos los precios publicados incluyen IVA.
+
+                    </p>
+
+                {% endif %}
+
+
+                <!-- ===================================================== -->
+                <!-- SEGURIDAD -->
+                <!-- ===================================================== -->
+
                 <p class="carrito-resumen__seguridad">
-                    <i class="bi bi-lock"></i>
-                    Tus datos estarán protegidos durante el proceso.
+
+                    <i
+                        class="bi bi-lock"
+                        aria-hidden="true"
+                    ></i>
+
+                    Tus datos estarán protegidos durante
+                    todo el proceso de compra.
+
                 </p>
 
+
+                <!-- ===================================================== -->
+                <!-- MEDIOS DE PAGO -->
+                <!-- ===================================================== -->
+
                 <div class="carrito-resumen__pagos">
-                    <span>Medios de pago</span>
+
+                    <span>
+                        Medios de pago
+                    </span>
 
                     <div>
-                        <i class="bi bi-credit-card"></i>
-                        <i class="bi bi-bank"></i>
-                        <i class="bi bi-wallet2"></i>
+
+                        <i
+                            class="bi bi-credit-card"
+                            title="Tarjetas"
+                        ></i>
+
+                        <i
+                            class="bi bi-bank"
+                            title="Transferencia bancaria"
+                        ></i>
+
+                        <i
+                            class="bi bi-wallet2"
+                            title="Billetera digital"
+                        ></i>
+
                     </div>
+
                 </div>
 
             </aside>
@@ -465,22 +1079,41 @@ Tu carrito | Audex
 
 </section>
 
-<!-- Confirmación -->
+
+<!-- ===================================================================== -->
+<!-- TOAST -->
+<!-- ===================================================================== -->
+
 <div
     class="carrito-pagina-toast"
     id="carritoPaginaToast"
     aria-hidden="true"
 >
-    <i class="bi bi-check-circle-fill"></i>
+
+    <i
+        class="bi bi-check-circle-fill"
+        aria-hidden="true"
+    ></i>
 
     <div>
-        <strong>Carrito actualizado</strong>
+
+        <strong>
+            Carrito actualizado
+        </strong>
+
         <span id="carritoPaginaToastTexto"></span>
+
     </div>
+
 </div>
 
 {% endblock %}
 
+
 {% block extra_js %}
-<script src="{% static 'core/js/carrito_completo.js' %}"></script>
+
+<script
+    src="{% static 'core/js/carrito_completo.js' %}"
+></script>
+
 {% endblock %}

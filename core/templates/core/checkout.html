@@ -252,53 +252,201 @@ Finalizar compra | Audex
 
             </div>
 
+
             <aside class="checkout-resumen">
+
+                <!-- ============================================================= -->
+                <!-- CABECERA -->
+                <!-- ============================================================= -->
+
                 <div class="checkout-resumen__titulo">
+
                     <div>
-                        <span>Resumen</span>
-                        <h2>Tu compra</h2>
+                        <span>
+                            Resumen
+                        </span>
+
+                        <h2>
+                            Tu compra
+                        </h2>
                     </div>
 
-                    <i class="bi bi-receipt"></i>
+                    <i
+                        class="bi bi-receipt"
+                        aria-hidden="true"
+                    ></i>
+
                 </div>
 
+
+                <!-- ============================================================= -->
+                <!-- PRODUCTOS -->
+                <!-- ============================================================= -->
+
                 <div class="checkout-productos">
+
                     {% for item in carrito.items %}
+
                         <article class="checkout-producto">
+
+                            <!-- ================================================= -->
+                            <!-- IMAGEN -->
+                            <!-- ================================================= -->
+
                             <div class="checkout-producto__imagen">
+
                                 {% if item.imagen %}
+
                                     <img
                                         src="{{ item.imagen }}"
                                         alt="{{ item.nombre }}"
                                     >
+
                                 {% else %}
-                                    <i class="bi bi-earbuds"></i>
+
+                                    <i
+                                        class="bi bi-earbuds"
+                                        aria-hidden="true"
+                                    ></i>
+
                                 {% endif %}
 
-                                <span>{{ item.cantidad }}</span>
+
+                                {% if item.cantidad > 1 %}
+
+                                    <span
+                                        class="checkout-producto__cantidad"
+                                        aria-label="{{ item.cantidad }} unidades"
+                                    >
+                                        {{ item.cantidad }}
+                                    </span>
+
+                                {% endif %}
+
                             </div>
 
-                            <div>
-                                <strong>{{ item.nombre }}</strong>
 
-                                <small>
-                                    {{ item.categoria }}
-                                </small>
+                            <!-- ================================================= -->
+                            <!-- INFORMACIÓN -->
+                            <!-- ================================================= -->
+
+                            <div class="checkout-producto__informacion">
+
+                                <strong class="checkout-producto__nombre">
+                                    {{ item.nombre }}
+                                </strong>
+
+
+                                {% if item.categoria %}
+
+                                    <small class="checkout-producto__categoria">
+                                        {{ item.categoria }}
+                                    </small>
+
+                                {% endif %}
+
+
+                                <!-- ============================================= -->
+                                <!-- PRECIOS DEL PRODUCTO -->
+                                <!-- ============================================= -->
+
+                                <div class="checkout-producto__precios">
+
+                                    {% if item.en_oferta %}
+
+                                        <span class="checkout-producto__precio-original">
+                                            {{ item.precio_original_formateado }}
+                                        </span>
+
+                                        <strong class="checkout-producto__precio-oferta">
+                                            {{ item.precio_formateado }}
+                                        </strong>
+
+
+                                        {% if item.porcentaje_descuento %}
+
+                                            <span class="checkout-producto__badge-descuento">
+                                                -{{ item.porcentaje_descuento }}%
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        {% if item.ahorro_unitario %}
+
+                                            <small class="checkout-producto__ahorro-unitario">
+
+                                                Ahorras
+                                                {{ item.ahorro_unitario_formateado }}
+                                                por unidad
+
+                                            </small>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        <strong class="checkout-producto__precio-normal">
+                                            {{ item.precio_formateado }}
+                                        </strong>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if item.cantidad > 1 %}
+
+                                    <small class="checkout-producto__precio-cada-uno">
+                                        {{ item.precio_formateado }}
+                                        c/u
+                                    </small>
+
+                                {% endif %}
+
                             </div>
 
-                            <strong>
-                                {{ item.total_formateado }}
-                            </strong>
+
+                            <!-- ================================================= -->
+                            <!-- TOTAL PRODUCTO -->
+                            <!-- ================================================= -->
+
+                            <div class="checkout-producto__total">
+
+                                {% if item.en_oferta %}
+
+                                    <span class="checkout-producto__total-original">
+                                        {{ item.total_original_formateado }}
+                                    </span>
+
+                                {% endif %}
+
+                                <strong>
+                                    {{ item.total_formateado }}
+                                </strong>
+
+                            </div>
+
                         </article>
+
                     {% endfor %}
+
                 </div>
 
+
+                <!-- ============================================================= -->
+                <!-- CUPÓN -->
+                <!-- ============================================================= -->
+
                 <div class="checkout-cupon">
+
                     <label for="id_codigo_descuento">
                         Código de descuento
                     </label>
 
+
                     <div class="checkout-cupon__control">
+
                         <input
                             type="text"
                             name="codigo_descuento"
@@ -318,14 +466,29 @@ Finalizar compra | Audex
                             "
                         >
 
+
                         <button
                             type="button"
                             id="checkoutAplicarCupon"
                         >
-                            <span>Aplicar</span>
-                            <i class="bi bi-arrow-right"></i>
+
+                            <span>
+                                Aplicar
+                            </span>
+
+                            <i
+                                class="bi bi-arrow-right"
+                                aria-hidden="true"
+                            ></i>
+
                         </button>
+
                     </div>
+
+
+                    <!-- ========================================================= -->
+                    <!-- MENSAJE CUPÓN -->
+                    <!-- ========================================================= -->
 
                     <small
                         id="checkoutMensajeCupon"
@@ -333,35 +496,77 @@ Finalizar compra | Audex
                             checkout-cupon__mensaje
                             {% if resumen.error_descuento %}
                                 checkout-cupon__mensaje--error
-                            {% elif resumen.codigo_aplicado %}
+                            {% elif resumen.tiene_descuento_aplicado %}
                                 checkout-cupon__mensaje--exito
                             {% endif %}
                         "
                         aria-live="polite"
                     >
+
                         {% if resumen.error_descuento %}
+
                             {{ resumen.error_descuento }}
-                        {% elif resumen.codigo_aplicado %}
-                            Código {{ resumen.codigo_aplicado }} aplicado:
-                            {{ resumen.porcentaje_descuento|floatformat:0 }}%.
+
+                        {% elif resumen.tiene_descuento_aplicado %}
+
+                            Código
+
+                            <strong>
+                                {{ resumen.codigo_aplicado }}
+                            </strong>
+
+                            aplicado:
+
+                            {% if resumen.porcentaje_descuento > 0 %}
+
+                                {{ resumen.porcentaje_descuento|floatformat:0 }}%
+                                de descuento.
+
+                            {% else %}
+
+                                ${{ resumen.descuento|floatformat:0|intcomma }}
+                                de descuento.
+
+                            {% endif %}
+
                         {% else %}
-                            Puedes usar un código general o un premio personal.
+
+                            Puedes usar un código general
+                            o un premio personal.
+
                         {% endif %}
+
                     </small>
 
+
                     {% for error in form.codigo_descuento.errors %}
+
                         <span class="checkout-error-campo">
                             {{ error }}
                         </span>
+
                     {% endfor %}
+
                 </div>
 
+
+                <!-- ============================================================= -->
+                <!-- PREMIOS -->
+                <!-- ============================================================= -->
+
                 {% if codigos_fidelidad %}
+
                     <div class="checkout-premios">
+
                         <div class="checkout-premios__titulo">
-                            <i class="bi bi-award"></i>
+
+                            <i
+                                class="bi bi-award"
+                                aria-hidden="true"
+                            ></i>
 
                             <div>
+
                                 <strong>
                                     Tus premios disponibles
                                 </strong>
@@ -369,126 +574,464 @@ Finalizar compra | Audex
                                 <small>
                                     Selecciona uno para aplicarlo.
                                 </small>
+
                             </div>
+
                         </div>
 
+
                         <div class="checkout-premios__lista">
+
                             {% for codigo in codigos_fidelidad %}
+
                                 <button
                                     type="button"
                                     class="checkout-premio"
                                     data-codigo="{{ codigo.codigo }}"
                                 >
+
                                     <span>
+
                                         <strong>
                                             {{ codigo.codigo }}
                                         </strong>
 
                                         <small>
+
                                             {{ codigo.porcentaje|floatformat:0 }}%
                                             de descuento
 
                                             {% if codigo.monto_minimo > 0 %}
+
                                                 · compra mínima
                                                 ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+
                                             {% endif %}
+
                                         </small>
+
                                     </span>
 
-                                    <i class="bi bi-plus-circle"></i>
+                                    <i
+                                        class="bi bi-plus-circle"
+                                        aria-hidden="true"
+                                    ></i>
+
                                 </button>
+
                             {% endfor %}
+
                         </div>
+
                     </div>
+
                 {% endif %}
 
-                <div class="checkout-valores">
-                    <div>
-                        <span>Subtotal</span>
 
-                        <strong id="checkoutSubtotal">
-                            ${{ resumen.subtotal|floatformat:0|intcomma }}
+                <!-- ============================================================= -->
+                <!-- DESGLOSE DE VALORES -->
+                <!-- ============================================================= -->
+
+                <div class="checkout-valores">
+
+
+                    <!-- ========================================================= -->
+                    <!-- TOTAL PRODUCTOS SIN DESCUENTOS -->
+                    <!-- ========================================================= -->
+
+                    <div class="checkout-valores__fila">
+
+                        <div>
+
+                            <span>
+                                Total productos
+                            </span>
+
+                            <small>
+                                Precio normal sin descuentos
+                            </small>
+
+                        </div>
+
+
+                        <strong id="checkoutTotalProductosOriginal">
+
+                            {% if carrito.tiene_ofertas %}
+
+                                {{ carrito.subtotal_precio_lista_formateado }}
+
+                            {% else %}
+
+                                {{ carrito.subtotal_formateado }}
+
+                            {% endif %}
+
                         </strong>
+
                     </div>
 
+
+                    <!-- ========================================================= -->
+                    <!-- AHORRO POR OFERTAS -->
+                    <!-- ========================================================= -->
+
                     <div
-                        id="checkoutFilaDescuento"
-                        {% if not resumen.descuento %}
+                        class="
+                            checkout-valores__fila
+                            checkout-valores__fila--descuento
+                        "
+                        id="checkoutFilaAhorroOfertas"
+
+                        {% if not carrito.tiene_ofertas %}
                             hidden
                         {% endif %}
                     >
-                        <span>
-                            Descuento
 
-                            <small id="checkoutCodigoAplicado">
-                                {% if resumen.codigo_aplicado %}
-                                    {{ resumen.codigo_aplicado }}
-                                {% endif %}
+                        <div>
+
+                            <span>
+                                Ahorro en productos
+                            </span>
+
+                            <small>
+                                Descuentos incluidos en las ofertas
                             </small>
-                        </span>
+
+                        </div>
+
+
+                        <strong
+                            class="checkout-valor-descuento"
+                            id="checkoutAhorroOfertas"
+                        >
+
+                            {% if carrito.tiene_ofertas %}
+
+                                -{{ carrito.ahorro_ofertas_formateado }}
+
+                            {% else %}
+
+                                -$0
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- ========================================================= -->
+                    <!-- SUBTOTAL DESPUÉS DE OFERTAS -->
+                    <!-- ========================================================= -->
+
+                    <div
+                        class="
+                            checkout-valores__fila
+                            checkout-valores__fila--subtotal
+                        "
+                    >
+
+                        <div>
+
+                            <span>
+                                Subtotal
+                            </span>
+
+                            {% if carrito.tiene_ofertas %}
+
+                                <small>
+                                    Después de descuentos en productos
+                                </small>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <strong id="checkoutSubtotal">
+                            {{ carrito.subtotal_formateado }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- ========================================================= -->
+                    <!-- DESCUENTO ADICIONAL POR CÓDIGO -->
+                    <!-- ========================================================= -->
+                    <!--
+                    Permanece en el DOM para que checkout.js
+                    pueda mostrarlo dinámicamente.
+
+                    Mientras no exista descuento efectivo,
+                    queda oculto.
+                    -->
+
+                    <div
+                        class="
+                            checkout-valores__fila
+                            checkout-valores__fila--cupon
+                        "
+                        id="checkoutFilaDescuento"
+
+                        {% if not resumen.tiene_descuento_aplicado %}
+                            hidden
+                        {% endif %}
+                    >
+
+                        <div>
+
+                            <span>
+                                Descuento adicional
+
+                                <small
+                                    class="checkout-codigo-aplicado"
+                                    id="checkoutCodigoAplicado"
+                                >
+
+                                    {% if resumen.tiene_descuento_aplicado %}
+                                        {{ resumen.codigo_aplicado }}
+                                    {% endif %}
+
+                                </small>
+
+                            </span>
+
+
+                            <small id="checkoutTipoDescuentoAplicado">
+
+                                {% if resumen.tiene_descuento_aplicado %}
+
+                                    {% if resumen.porcentaje_descuento > 0 %}
+
+                                        {{ resumen.porcentaje_descuento|floatformat:0 }}%
+                                        aplicado al subtotal
+
+                                    {% else %}
+
+                                        Descuento de monto fijo
+
+                                    {% endif %}
+
+                                {% endif %}
+
+                            </small>
+
+                        </div>
+
 
                         <strong
                             class="checkout-valor-descuento"
                             id="checkoutDescuento"
                         >
-                            -${{ resumen.descuento|floatformat:0|intcomma }}
+
+                            {% if resumen.tiene_descuento_aplicado %}
+
+                                -${{ resumen.descuento|floatformat:0|intcomma }}
+
+                            {% else %}
+
+                                -$0
+
+                            {% endif %}
+
                         </strong>
+
                     </div>
 
-                    <div>
-                        <span>Despacho</span>
+
+                    <!-- ========================================================= -->
+                    <!-- SUBTOTAL CON DESCUENTO ADICIONAL -->
+                    <!-- ========================================================= -->
+
+                    <div
+                        class="
+                            checkout-valores__fila
+                            checkout-valores__fila--despues-descuento
+                        "
+                        id="checkoutFilaSubtotalConDescuento"
+
+                        {% if not resumen.tiene_descuento_aplicado %}
+                            hidden
+                        {% endif %}
+                    >
+
+                        <div>
+
+                            <span>
+                                Subtotal con descuento
+                            </span>
+
+                            <small>
+                                Antes del despacho
+                            </small>
+
+                        </div>
+
+
+                        <strong id="checkoutSubtotalConDescuento">
+
+                            {% if resumen.tiene_descuento_aplicado %}
+
+                                ${{ resumen.subtotal_con_descuento|floatformat:0|intcomma }}
+
+                            {% else %}
+
+                                {{ carrito.subtotal_formateado }}
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- ========================================================= -->
+                    <!-- DESPACHO -->
+                    <!-- ========================================================= -->
+
+                    <div
+                        class="
+                            checkout-valores__fila
+                            checkout-valores__fila--despacho
+                        "
+                    >
+
+                        <div>
+
+                            <span>
+                                Despacho
+                            </span>
+
+                            <small>
+                                Blue Express
+                            </small>
+
+                        </div>
+
 
                         <strong id="checkoutDespacho">
-                            {% if resumen.despacho == 0 %}
-                                Gratis
-                            {% else %}
+
+                            {% if resumen.despacho > 0 %}
+
                                 ${{ resumen.despacho|floatformat:0|intcomma }}
+
+                            {% else %}
+
+                                Completa los datos de envío
+
                             {% endif %}
+
                         </strong>
+
                     </div>
+
                 </div>
 
+
+                <!-- ============================================================= -->
+                <!-- TOTAL FINAL -->
+                <!-- ============================================================= -->
+
                 <div class="checkout-total">
+
                     <div>
-                        <span>Total</span>
-                        <small>Impuestos incluidos</small>
+
+                        <span>
+                            Total a pagar
+                        </span>
+
+                        <small>
+                            IVA incluido
+                        </small>
+
                     </div>
+
 
                     <strong id="checkoutTotal">
                         ${{ resumen.total|floatformat:0|intcomma }}
                     </strong>
+
                 </div>
 
+
+                <!-- ============================================================= -->
+                <!-- ACLARACIÓN -->
+                <!-- ============================================================= -->
+
+                <p class="checkout-total__aclaracion">
+
+                    <i
+                        class="bi bi-info-circle"
+                        aria-hidden="true"
+                    ></i>
+
+                    Este es el monto final que será enviado
+                    al método de pago seleccionado.
+
+                </p>
+
+
+                <!-- ============================================================= -->
+                <!-- TÉRMINOS -->
+                <!-- ============================================================= -->
+
                 <label class="checkout-terminos">
+
                     {{ form.aceptar_terminos }}
 
                     <span>
                         {{ form.aceptar_terminos.label }}
                     </span>
+
                 </label>
 
+
                 {% for error in form.aceptar_terminos.errors %}
+
                     <span class="checkout-error-campo">
                         {{ error }}
                     </span>
+
                 {% endfor %}
+
+
+                <!-- ============================================================= -->
+                <!-- CONFIRMAR -->
+                <!-- ============================================================= -->
 
                 <button
                     type="submit"
                     class="checkout-confirmar"
                     id="checkoutConfirmar"
                 >
+
                     <span>
                         Confirmar pedido
                     </span>
 
-                    <i class="bi bi-arrow-right"></i>
+                    <i
+                        class="bi bi-arrow-right"
+                        aria-hidden="true"
+                    ></i>
+
                 </button>
 
+
+                <!-- ============================================================= -->
+                <!-- SEGURIDAD -->
+                <!-- ============================================================= -->
+
                 <p class="checkout-seguridad">
-                    <i class="bi bi-lock"></i>
+
+                    <i
+                        class="bi bi-lock"
+                        aria-hidden="true"
+                    ></i>
+
                     Tu información está protegida.
+
                 </p>
+
             </aside>
         </form>
 

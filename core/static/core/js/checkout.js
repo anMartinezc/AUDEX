@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // REGIONES Y COMUNAS
+    // REGIONES, COMUNAS Y DIRECCIÓN
     // =========================================================================
 
     const regionSelect = document.getElementById(
@@ -121,6 +121,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const comunaSelect = document.getElementById(
         "id_comuna"
+    );
+
+    const direccionInput = document.getElementById(
+        "id_direccion"
+    );
+
+    const numeroDireccionInput = document.getElementById(
+        "id_numero_direccion"
     );
 
     const comunasScript = document.getElementById(
@@ -245,38 +253,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    if (
-        regionSelect
-        && comunaSelect
-        && comunasScript
-    ) {
-        const comunaInicial = (
-            comunaSelect.value
-            || ""
-        ).trim();
-
-        cargarComunas(
-            regionSelect.value,
-            comunaInicial
-        );
-
-        regionSelect.addEventListener(
-            "change",
-            () => {
-                cargarComunas(
-                    regionSelect.value,
-                    ""
-                );
-
-                if (!comunaSelect.disabled) {
-                    comunaSelect.focus();
-                }
-            }
-        );
-    }
-
     // =========================================================================
-    // CÓDIGO DE DESCUENTO
+    // CÓDIGO DE DESCUENTO Y RESUMEN
     // =========================================================================
 
     const inputCupon = document.getElementById(
@@ -430,6 +408,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 datos.despacho_formateado
                 || "$0"
             );
+
+            despachoElemento.removeAttribute(
+                "aria-busy"
+            );
         }
 
         if (totalElemento) {
@@ -439,6 +421,440 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
     }
+
+    // =========================================================================
+    // COTIZACIÓN BLUE EXPRESS
+    // =========================================================================
+
+    let temporizadorCotizacionEnvio = null;
+    let solicitudEnvioActual = null;
+
+    const RETARDO_COTIZACION_ENVIO = 900;
+
+    function obtenerRegionActual() {
+        return String(
+            regionSelect?.value
+            || ""
+        ).trim();
+    }
+
+    function obtenerComunaActual() {
+        return String(
+            comunaSelect?.value
+            || ""
+        ).trim();
+    }
+
+    function obtenerDireccionActual() {
+        return String(
+            direccionInput?.value
+            || ""
+        ).trim();
+    }
+
+    function obtenerNumeroDireccionActual() {
+        return String(
+            numeroDireccionInput?.value
+            || ""
+        ).trim();
+    }
+
+    function despachoListoParaCotizar() {
+        const region = obtenerRegionActual();
+        const comuna = obtenerComunaActual();
+        const direccion = obtenerDireccionActual();
+        const numero = obtenerNumeroDireccionActual();
+
+        return (
+            Boolean(region)
+            && Boolean(comuna)
+            && direccion.length >= 5
+            && numero.length >= 1
+        );
+    }
+
+    function cancelarCotizacionPendiente() {
+        if (temporizadorCotizacionEnvio) {
+            clearTimeout(
+                temporizadorCotizacionEnvio
+            );
+
+            temporizadorCotizacionEnvio = null;
+        }
+
+        if (solicitudEnvioActual) {
+            solicitudEnvioActual.abort();
+            solicitudEnvioActual = null;
+        }
+    }
+
+    function mostrarEnvioPendiente() {
+        if (!despachoElemento) {
+            return;
+        }
+
+        despachoElemento.textContent = (
+            "Completa los datos de envío"
+        );
+
+        despachoElemento.removeAttribute(
+            "aria-busy"
+        );
+    }
+
+    function mostrarEnvioCalculando() {
+        if (!despachoElemento) {
+            return;
+        }
+
+        despachoElemento.textContent = (
+            "Cotizando..."
+        );
+
+        despachoElemento.setAttribute(
+            "aria-busy",
+            "true"
+        );
+    }
+
+    function mostrarEnvioError() {
+        if (!despachoElemento) {
+            return;
+        }
+
+        despachoElemento.textContent = (
+            "No disponible"
+        );
+
+        despachoElemento.removeAttribute(
+            "aria-busy"
+        );
+    }
+
+    function crearCuerpoResumen() {
+        const cuerpo = new URLSearchParams();
+
+        cuerpo.set(
+            "codigo_descuento",
+            normalizarCodigo(
+                inputCupon?.value
+                || ""
+            )
+        );
+
+        cuerpo.set(
+            "rut",
+            limpiarRut(
+                campoRut?.value
+                || ""
+            )
+        );
+
+        cuerpo.set(
+            "region",
+            obtenerRegionActual()
+        );
+
+        cuerpo.set(
+            "comuna",
+            obtenerComunaActual()
+        );
+
+        cuerpo.set(
+            "direccion",
+            obtenerDireccionActual()
+        );
+
+        cuerpo.set(
+            "numero_direccion",
+            obtenerNumeroDireccionActual()
+        );
+
+        return cuerpo;
+    }
+
+    async function solicitarResumenCheckout(
+        {
+            signal = undefined,
+        } = {}
+    ) {
+        if (!resumenUrl) {
+            throw new Error(
+                (
+                    "No se configuró la URL "
+                    + "del resumen del checkout."
+                )
+            );
+        }
+
+        if (!csrfInput) {
+            throw new Error(
+                (
+                    "No se encontró el token "
+                    + "CSRF del formulario."
+                )
+            );
+        }
+
+        const cuerpo = crearCuerpoResumen();
+
+        const respuesta = await fetch(
+            resumenUrl,
+            {
+                method: "POST",
+
+                credentials: "same-origin",
+
+                signal,
+
+                headers: {
+                    "Accept": (
+                        "application/json"
+                    ),
+
+                    "Content-Type": (
+                        "application/"
+                        + "x-www-form-urlencoded; "
+                        + "charset=UTF-8"
+                    ),
+
+                    "X-CSRFToken": (
+                        csrfInput.value
+                    ),
+
+                    "X-Requested-With": (
+                        "XMLHttpRequest"
+                    ),
+                },
+
+                body: cuerpo.toString(),
+            }
+        );
+
+        let datos = {};
+
+        try {
+            datos = await respuesta.json();
+        } catch (error) {
+            throw new Error(
+                (
+                    "El servidor no devolvió "
+                    + "una respuesta JSON válida."
+                )
+            );
+        }
+
+        return {
+            respuesta,
+            datos,
+        };
+    }
+
+    async function cotizarEnvioBlueExpress() {
+        if (!despachoListoParaCotizar()) {
+            mostrarEnvioPendiente();
+            return;
+        }
+
+        if (!resumenUrl || !csrfInput) {
+            console.error(
+                (
+                    "No existe configuración "
+                    + "para cotizar el despacho."
+                )
+            );
+
+            mostrarEnvioError();
+
+            return;
+        }
+
+        if (solicitudEnvioActual) {
+            solicitudEnvioActual.abort();
+        }
+
+        const controlador = (
+            new AbortController()
+        );
+
+        solicitudEnvioActual = controlador;
+
+        mostrarEnvioCalculando();
+
+        try {
+            const {
+                respuesta,
+                datos,
+            } = await solicitarResumenCheckout(
+                {
+                    signal: controlador.signal,
+                }
+            );
+
+            if (
+                !respuesta.ok
+                || datos.ok === false
+            ) {
+                throw new Error(
+                    datos.mensaje
+                    || (
+                        "No fue posible calcular "
+                        + "el despacho."
+                    )
+                );
+            }
+
+            actualizarResumen(
+                datos
+            );
+
+        } catch (error) {
+            if (
+                error.name
+                === "AbortError"
+            ) {
+                return;
+            }
+
+            console.error(
+                (
+                    "Error calculando "
+                    + "Blue Express:"
+                ),
+                error
+            );
+
+            mostrarEnvioError();
+
+        } finally {
+            if (
+                solicitudEnvioActual
+                === controlador
+            ) {
+                solicitudEnvioActual = null;
+            }
+        }
+    }
+
+    function programarCotizacionEnvio() {
+        if (temporizadorCotizacionEnvio) {
+            clearTimeout(
+                temporizadorCotizacionEnvio
+            );
+
+            temporizadorCotizacionEnvio = null;
+        }
+
+        if (!despachoListoParaCotizar()) {
+            mostrarEnvioPendiente();
+            return;
+        }
+
+        mostrarEnvioCalculando();
+
+        temporizadorCotizacionEnvio = (
+            setTimeout(
+                () => {
+                    temporizadorCotizacionEnvio = null;
+
+                    cotizarEnvioBlueExpress();
+                },
+                RETARDO_COTIZACION_ENVIO
+            )
+        );
+    }
+
+    // =========================================================================
+    // EVENTOS REGIÓN / COMUNA / DIRECCIÓN
+    // =========================================================================
+
+    if (
+        regionSelect
+        && comunaSelect
+        && comunasScript
+    ) {
+        const comunaInicial = (
+            comunaSelect.value
+            || ""
+        ).trim();
+
+        cargarComunas(
+            regionSelect.value,
+            comunaInicial
+        );
+
+        regionSelect.addEventListener(
+            "change",
+            () => {
+                cancelarCotizacionPendiente();
+
+                cargarComunas(
+                    regionSelect.value,
+                    ""
+                );
+
+                mostrarEnvioPendiente();
+
+                if (!comunaSelect.disabled) {
+                    comunaSelect.focus();
+                }
+            }
+        );
+    }
+
+    if (comunaSelect) {
+        comunaSelect.addEventListener(
+            "change",
+            () => {
+                cancelarCotizacionPendiente();
+
+                mostrarEnvioPendiente();
+
+                if (
+                    comunaSelect.value
+                    && direccionInput
+                ) {
+                    direccionInput.focus();
+                }
+            }
+        );
+    }
+
+    if (direccionInput) {
+        direccionInput.addEventListener(
+            "input",
+            () => {
+                programarCotizacionEnvio();
+            }
+        );
+
+        direccionInput.addEventListener(
+            "blur",
+            () => {
+                programarCotizacionEnvio();
+            }
+        );
+    }
+
+    if (numeroDireccionInput) {
+        numeroDireccionInput.addEventListener(
+            "input",
+            () => {
+                programarCotizacionEnvio();
+            }
+        );
+
+        numeroDireccionInput.addEventListener(
+            "blur",
+            () => {
+                programarCotizacionEnvio();
+            }
+        );
+    }
+
+    // =========================================================================
+    // CÓDIGO DE DESCUENTO
+    // =========================================================================
 
     async function aplicarCupon(
         codigoForzado = null
@@ -502,59 +918,11 @@ document.addEventListener("DOMContentLoaded", () => {
             "Validando código..."
         );
 
-        const cuerpo = new URLSearchParams();
-
-        cuerpo.set(
-            "codigo_descuento",
-            codigo
-        );
-
-        cuerpo.set(
-            "rut",
-            limpiarRut(
-                campoRut?.value
-                || ""
-            )
-        );
-
         try {
-            const respuesta = await fetch(
-                resumenUrl,
-                {
-                    method: "POST",
-                    credentials: "same-origin",
-                    headers: {
-                        "Accept": (
-                            "application/json"
-                        ),
-                        "Content-Type": (
-                            "application/"
-                            + "x-www-form-urlencoded; "
-                            + "charset=UTF-8"
-                        ),
-                        "X-CSRFToken": (
-                            csrfInput.value
-                        ),
-                        "X-Requested-With": (
-                            "XMLHttpRequest"
-                        ),
-                    },
-                    body: cuerpo.toString(),
-                }
-            );
-
-            let datos = {};
-
-            try {
-                datos = await respuesta.json();
-            } catch (error) {
-                throw new Error(
-                    (
-                        "El servidor no devolvió "
-                        + "una respuesta JSON válida."
-                    )
-                );
-            }
+            const {
+                respuesta,
+                datos,
+            } = await solicitarResumenCheckout();
 
             actualizarResumen(
                 datos
@@ -597,6 +965,7 @@ document.addEventListener("DOMContentLoaded", () => {
             mostrarMensajeCupon(
                 "No hay un código aplicado."
             );
+
         } catch (error) {
             console.error(
                 (
@@ -614,6 +983,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ),
                 "error"
             );
+
         } finally {
             establecerEstadoBotonCupon(
                 false
@@ -701,6 +1071,16 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // =========================================================================
+    // ESTADO INICIAL DEL DESPACHO
+    // =========================================================================
+
+    if (despachoListoParaCotizar()) {
+        programarCotizacionEnvio();
+    } else {
+        mostrarEnvioPendiente();
+    }
+
+    // =========================================================================
     // MÉTODOS DE PAGO
     // =========================================================================
 
@@ -775,6 +1155,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 evento.preventDefault();
 
                 comunaSelect.focus();
+
+                return;
+            }
+
+            if (
+                direccionInput
+                && !String(
+                    direccionInput.value
+                    || ""
+                ).trim()
+            ) {
+                evento.preventDefault();
+
+                direccionInput.focus();
+
+                return;
+            }
+
+            if (
+                numeroDireccionInput
+                && !String(
+                    numeroDireccionInput.value
+                    || ""
+                ).trim()
+            ) {
+                evento.preventDefault();
+
+                numeroDireccionInput.focus();
 
                 return;
             }

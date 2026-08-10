@@ -9,6 +9,7 @@ from .forms import *
 from .models import *
 from django.db import OperationalError
 from .permisos import es_administrador_productos
+from core.services.blue_express import *
 import json
 from django.contrib.auth.decorators import login_required
 from django.db.models import Case, IntegerField, When
@@ -1109,98 +1110,477 @@ def nosotros(request):
 
 
 
-
-
 def _serializar_carrito(request):
-    carrito = _obtener_carrito(request)
+    carrito = _obtener_carrito(
+        request
+    )
+
+    # =========================================================================
+    # IDS DE PRODUCTOS
+    # =========================================================================
 
     ids_productos = []
 
     for producto_id in carrito.keys():
         try:
-            ids_productos.append(int(producto_id))
-        except (TypeError, ValueError):
+            ids_productos.append(
+                int(producto_id)
+            )
+        except (
+            TypeError,
+            ValueError,
+        ):
             continue
+
+    # =========================================================================
+    # PRODUCTOS
+    # =========================================================================
 
     productos = {
         producto.id: producto
         for producto in Producto.objects.filter(
             id__in=ids_productos,
             activo=True,
-        ).select_related("categoria")
+        ).select_related(
+            "categoria"
+        )
     }
 
+    # =========================================================================
+    # ACUMULADORES
+    # =========================================================================
+
     items = []
-    subtotal = Decimal("0")
+
+    subtotal = Decimal(
+        "0"
+    )
+
+    subtotal_precio_lista = Decimal(
+        "0"
+    )
+
+    ahorro_ofertas = Decimal(
+        "0"
+    )
+
     cantidad_total = 0
+
+    cantidad_productos_con_oferta = 0
+
     carrito_limpio = {}
 
-    for producto_id_texto, datos in carrito.items():
+    # =========================================================================
+    # RECORRER CARRITO
+    # =========================================================================
+
+    for (
+        producto_id_texto,
+        datos,
+    ) in carrito.items():
+
         try:
-            producto_id = int(producto_id_texto)
-            cantidad = int(datos.get("cantidad", 1))
-        except (TypeError, ValueError, AttributeError):
+            producto_id = int(
+                producto_id_texto
+            )
+
+            cantidad = int(
+                datos.get(
+                    "cantidad",
+                    1,
+                )
+            )
+
+        except (
+            TypeError,
+            ValueError,
+            AttributeError,
+        ):
             continue
 
-        producto = productos.get(producto_id)
+        producto = productos.get(
+            producto_id
+        )
 
         if producto is None:
             continue
 
-        cantidad = max(1, cantidad)
+        # ---------------------------------------------------------------------
+        # CANTIDAD
+        # ---------------------------------------------------------------------
+
+        cantidad = max(
+            1,
+            cantidad,
+        )
 
         if producto.stock <= 0:
             continue
 
-        cantidad = min(cantidad, producto.stock)
+        cantidad = min(
+            cantidad,
+            producto.stock,
+        )
 
-        precio_unitario = producto.precio_actual
-        total_linea = precio_unitario * cantidad
+        # ---------------------------------------------------------------------
+        # PRECIOS
+        # ---------------------------------------------------------------------
+
+        precio_original = Decimal(
+            str(
+                producto.precio
+                or 0
+            )
+        )
+
+        precio_unitario = Decimal(
+            str(
+                producto.precio_actual
+                or 0
+            )
+        )
+
+        # ---------------------------------------------------------------------
+        # TOTAL DE LA LÍNEA
+        # ---------------------------------------------------------------------
+
+        total_original_linea = (
+            precio_original
+            * cantidad
+        )
+
+        total_linea = (
+            precio_unitario
+            * cantidad
+        )
+
+        # ---------------------------------------------------------------------
+        # AHORRO DEL PRODUCTO
+        # ---------------------------------------------------------------------
+
+        ahorro_unitario = max(
+            precio_original
+            - precio_unitario,
+            Decimal(
+                "0"
+            ),
+        )
+
+        ahorro_linea = (
+            ahorro_unitario
+            * cantidad
+        )
+
+        # ---------------------------------------------------------------------
+        # PORCENTAJE DE DESCUENTO
+        # ---------------------------------------------------------------------
+
+        porcentaje_descuento = 0
+
+        if (
+            producto.en_oferta
+            and precio_original > 0
+        ):
+            porcentaje_descuento = int(
+                round(
+                    (
+                        ahorro_unitario
+                        / precio_original
+                    )
+                    * Decimal(
+                        "100"
+                    )
+                )
+            )
+
+        # ---------------------------------------------------------------------
+        # ACUMULADORES
+        # ---------------------------------------------------------------------
 
         subtotal += total_linea
-        cantidad_total += cantidad
 
-        carrito_limpio[str(producto.id)] = {
+        subtotal_precio_lista += (
+            total_original_linea
+        )
+
+        ahorro_ofertas += (
+            ahorro_linea
+        )
+
+        cantidad_total += (
+            cantidad
+        )
+
+        if producto.en_oferta:
+            cantidad_productos_con_oferta += (
+                cantidad
+            )
+
+        # ---------------------------------------------------------------------
+        # CARRITO LIMPIO
+        # ---------------------------------------------------------------------
+
+        carrito_limpio[
+            str(
+                producto.id
+            )
+        ] = {
             "cantidad": cantidad,
         }
 
+        # ---------------------------------------------------------------------
+        # ITEM SERIALIZADO
+        # ---------------------------------------------------------------------
+
         items.append(
             {
+                # =============================================================
+                # IDENTIFICACIÓN
+                # =============================================================
+
                 "id": producto.id,
-                "nombre": producto.nombre,
-                "slug": producto.slug,
-                "categoria": producto.categoria.nombre,
+
+                "nombre": (
+                    producto.nombre
+                ),
+
+                "slug": (
+                    producto.slug
+                ),
+
+                "categoria": (
+                    producto.categoria.nombre
+                ),
+
+                # =============================================================
+                # CANTIDAD / STOCK
+                # =============================================================
+
                 "cantidad": cantidad,
-                "stock": producto.stock,
-                "precio": int(precio_unitario),
-                "precio_formateado": f"${int(precio_unitario):,}".replace(
-                    ",",
-                    ".",
+
+                "stock": (
+                    producto.stock
                 ),
-                "total": int(total_linea),
-                "total_formateado": f"${int(total_linea):,}".replace(
-                    ",",
-                    ".",
+
+                # =============================================================
+                # PRECIO ORIGINAL
+                # =============================================================
+
+                "precio_original": int(
+                    precio_original
                 ),
-                "imagen": producto.imagen_mostrable or "",
-                "url_detalle": producto.get_absolute_url(),
-                "en_oferta": producto.en_oferta,
+
+                "precio_original_formateado": (
+                    f"${int(precio_original):,}"
+                    .replace(
+                        ",",
+                        ".",
+                    )
+                ),
+
+                # =============================================================
+                # PRECIO ACTUAL
+                # =============================================================
+
+                "precio": int(
+                    precio_unitario
+                ),
+
+                "precio_formateado": (
+                    f"${int(precio_unitario):,}"
+                    .replace(
+                        ",",
+                        ".",
+                    )
+                ),
+
+                # =============================================================
+                # TOTAL ORIGINAL DE LA LÍNEA
+                # =============================================================
+
+                "total_original": int(
+                    total_original_linea
+                ),
+
+                "total_original_formateado": (
+                    f"${int(total_original_linea):,}"
+                    .replace(
+                        ",",
+                        ".",
+                    )
+                ),
+
+                # =============================================================
+                # TOTAL ACTUAL DE LA LÍNEA
+                # =============================================================
+
+                "total": int(
+                    total_linea
+                ),
+
+                "total_formateado": (
+                    f"${int(total_linea):,}"
+                    .replace(
+                        ",",
+                        ".",
+                    )
+                ),
+
+                # =============================================================
+                # OFERTA / AHORRO
+                # =============================================================
+
+                "en_oferta": (
+                    producto.en_oferta
+                ),
+
+                "porcentaje_descuento": (
+                    porcentaje_descuento
+                ),
+
+                "ahorro_unitario": int(
+                    ahorro_unitario
+                ),
+
+                "ahorro_unitario_formateado": (
+                    f"${int(ahorro_unitario):,}"
+                    .replace(
+                        ",",
+                        ".",
+                    )
+                ),
+
+                "ahorro_linea": int(
+                    ahorro_linea
+                ),
+
+                "ahorro_linea_formateado": (
+                    f"${int(ahorro_linea):,}"
+                    .replace(
+                        ",",
+                        ".",
+                    )
+                ),
+
+                # =============================================================
+                # IMAGEN / URL
+                # =============================================================
+
+                "imagen": (
+                    producto.imagen_mostrable
+                    or ""
+                ),
+
+                "url_detalle": (
+                    producto.get_absolute_url()
+                ),
             }
         )
 
+    # =========================================================================
+    # SINCRONIZAR CARRITO
+    # =========================================================================
+
     if carrito_limpio != carrito:
-        _guardar_carrito(request, carrito_limpio)
+        _guardar_carrito(
+            request,
+            carrito_limpio,
+        )
+
+    # =========================================================================
+    # FORMATEADOR LOCAL
+    # =========================================================================
+
+    def formatear_pesos(
+        valor,
+    ):
+        return (
+            f"${int(valor):,}"
+            .replace(
+                ",",
+                ".",
+            )
+        )
+
+    # =========================================================================
+    # RESPUESTA
+    # =========================================================================
 
     return {
+        # ---------------------------------------------------------------------
+        # ITEMS
+        # ---------------------------------------------------------------------
+
         "items": items,
-        "cantidad_total": cantidad_total,
-        "subtotal": int(subtotal),
-        "subtotal_formateado": f"${int(subtotal):,}".replace(
-            ",",
-            ".",
+
+        # ---------------------------------------------------------------------
+        # CANTIDADES
+        # ---------------------------------------------------------------------
+
+        "cantidad_total": (
+            cantidad_total
         ),
-        "vacio": len(items) == 0,
+
+        "cantidad_productos_con_oferta": (
+            cantidad_productos_con_oferta
+        ),
+
+        # ---------------------------------------------------------------------
+        # SUBTOTAL PRECIO LISTA
+        # ---------------------------------------------------------------------
+
+        "subtotal_precio_lista": int(
+            subtotal_precio_lista
+        ),
+
+        "subtotal_precio_lista_formateado": (
+            formatear_pesos(
+                subtotal_precio_lista
+            )
+        ),
+
+        # ---------------------------------------------------------------------
+        # AHORRO POR OFERTAS
+        # ---------------------------------------------------------------------
+
+        "ahorro_ofertas": int(
+            ahorro_ofertas
+        ),
+
+        "ahorro_ofertas_formateado": (
+            formatear_pesos(
+                ahorro_ofertas
+            )
+        ),
+
+        "tiene_ofertas": (
+            ahorro_ofertas > 0
+        ),
+
+        # ---------------------------------------------------------------------
+        # SUBTOTAL REAL
+        # ---------------------------------------------------------------------
+
+        "subtotal": int(
+            subtotal
+        ),
+
+        "subtotal_formateado": (
+            formatear_pesos(
+                subtotal
+            )
+        ),
+
+        # ---------------------------------------------------------------------
+        # ESTADO
+        # ---------------------------------------------------------------------
+
+        "vacio": (
+            len(items) == 0
+        ),
     }
+
+
 
 
 @require_GET
@@ -2444,7 +2824,209 @@ def _liberar_descuento_si_corresponde(
 # CHECKOUT COMPLETO ACTUALIZADO
 # ============================================================================
 
+
+
+
+def _sincronizar_totales_pedido_antes_pago(
+    *,
+    pedido,
+    carrito_serializado,
+):
+    """
+    Recalcula los montos definitivos del Pedido inmediatamente
+    antes de enviarlo al proveedor de pago.
+
+    Fuente de verdad:
+
+        subtotal actual de productos
+        - descuento ya reservado/guardado en Pedido
+        + tarifa Blue Express actual
+        = total definitivo
+
+    Esto evita que Mercado Pago o Webpay reciban un total antiguo.
+    """
+
+    # =========================================================================
+    # SUBTOTAL ACTUAL DEL CARRITO
+    # =========================================================================
+
+    subtotal = Decimal(
+        str(
+            carrito_serializado.get(
+                "subtotal",
+                0,
+            )
+            or 0
+        )
+    )
+
+    if subtotal <= 0:
+        raise ValueError(
+            "El subtotal del pedido debe ser mayor que $0."
+        )
+
+    # =========================================================================
+    # DESCUENTO YA VALIDADO EN EL PEDIDO
+    # =========================================================================
+    #
+    # No volvemos a resolver el código aquí.
+    #
+    # procesar_pedido_checkout() ya debe haber validado y reservado
+    # el código. Solamente utilizamos el monto que quedó guardado
+    # históricamente en Pedido.
+    # =========================================================================
+
+    descuento = Decimal(
+        str(
+            getattr(
+                pedido,
+                "descuento",
+                0,
+            )
+            or 0
+        )
+    )
+
+    descuento = max(
+        min(
+            descuento,
+            subtotal,
+        ),
+        Decimal("0"),
+    )
+
+    # =========================================================================
+    # REGIÓN DEFINITIVA DEL PEDIDO
+    # =========================================================================
+
+    region = (
+        str(
+            getattr(
+                pedido,
+                "region",
+                "",
+            )
+            or ""
+        )
+        .strip()
+    )
+
+    if not region:
+        raise ValueError(
+            "El pedido no tiene una región de despacho."
+        )
+
+    # =========================================================================
+    # RECALCULAR BLUE EXPRESS
+    # =========================================================================
+
+    cotizacion = cotizar_blue_express(
+        carrito_serializado=(
+            carrito_serializado
+        ),
+        region=region,
+    )
+
+    despacho = Decimal(
+        str(
+            cotizacion.costo
+            or 0
+        )
+    )
+
+    if despacho <= 0:
+        raise ValueError(
+            "El valor de despacho debe ser mayor que $0."
+        )
+
+    # =========================================================================
+    # SUBTOTAL DESPUÉS DEL CÓDIGO
+    # =========================================================================
+
+    subtotal_con_descuento = max(
+        subtotal - descuento,
+        Decimal("0"),
+    )
+
+    # =========================================================================
+    # TOTAL DEFINITIVO
+    # =========================================================================
+
+    total = (
+        subtotal_con_descuento
+        + despacho
+    )
+
+    if total <= 0:
+        raise ValueError(
+            "El total definitivo del pedido no es válido."
+        )
+
+    # =========================================================================
+    # GUARDAR
+    # =========================================================================
+
+    pedido.subtotal = subtotal
+    pedido.descuento = descuento
+    pedido.despacho = despacho
+    pedido.total = total
+
+    pedido.save(
+        update_fields=[
+            "subtotal",
+            "descuento",
+            "despacho",
+            "total",
+            "actualizado",
+        ]
+    )
+
+    # =========================================================================
+    # LOG DE DIAGNÓSTICO
+    # =========================================================================
+
+    logger.info(
+        (
+            "Totales definitivos pedido %s: "
+            "subtotal=%s descuento=%s "
+            "despacho=%s total=%s "
+            "BlueExpress=%s/%s cantidad=%s"
+        ),
+        pedido.numero,
+        subtotal,
+        descuento,
+        despacho,
+        total,
+        getattr(
+            cotizacion,
+            "zona",
+            "",
+        ),
+        getattr(
+            cotizacion,
+            "talla",
+            "",
+        ),
+        getattr(
+            cotizacion,
+            "cantidad_productos",
+            0,
+        ),
+    )
+
+    return pedido
+
+
+
+
+
+
+
 def checkout(request):
+    # =========================================================================
+    # OBTENER CARRITO
+    # =========================================================================
+
     carrito = _obtener_carrito(
         request
     )
@@ -2458,6 +3040,10 @@ def checkout(request):
         return redirect(
             "core:productos"
         )
+
+    # =========================================================================
+    # SERIALIZAR CARRITO
+    # =========================================================================
 
     carrito_serializado = (
         _serializar_carrito(
@@ -2478,40 +3064,56 @@ def checkout(request):
             "core:productos"
         )
 
+    # =========================================================================
+    # DATOS INICIALES
+    # =========================================================================
+
     datos_iniciales = (
         obtener_datos_iniciales_checkout(
             request
         )
     )
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # FORMULARIO
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     if request.method == "POST":
+
         form = CheckoutForm(
             request.POST,
             initial=datos_iniciales,
         )
 
+        # =====================================================================
+        # FORMULARIO VÁLIDO
+        # =====================================================================
+
         if form.is_valid():
+
             pedido = None
 
             try:
-                # -------------------------------------------------------------
+                # =============================================================
                 # CREAR PEDIDO
-                # -------------------------------------------------------------
+                # =============================================================
                 #
                 # procesar_pedido_checkout() debe:
                 #
-                # - volver a validar productos y stock;
-                # - resolver el código usando el RUT;
-                # - crear Pedido y PedidoItem;
-                # - reservar UsoCodigoDescuento;
-                # - guardar el detalle histórico del descuento.
-                # -------------------------------------------------------------
+                # - volver a validar productos;
+                # - validar stock;
+                # - validar el código de descuento;
+                # - reservar el código si corresponde;
+                # - crear Pedido;
+                # - crear PedidoItem;
+                # - guardar el descuento histórico.
+                #
+                # Luego sincronizamos nuevamente los importes definitivos
+                # antes de entregarlos al proveedor de pago.
+                # =============================================================
 
                 with transaction.atomic():
+
                     pedido = (
                         procesar_pedido_checkout(
                             request=request,
@@ -2520,9 +3122,129 @@ def checkout(request):
                         )
                     )
 
-                # -------------------------------------------------------------
+                    # =========================================================
+                    # SINCRONIZAR TOTAL DEFINITIVO
+                    # =========================================================
+                    #
+                    # Esto garantiza:
+                    #
+                    # subtotal productos
+                    # - descuento adicional
+                    # + Blue Express
+                    # = pedido.total
+                    #
+                    # pedido.total será el valor que Mercado Pago / Webpay
+                    # deberá cobrar.
+                    # =========================================================
+
+                    pedido = (
+                        _sincronizar_totales_pedido_antes_pago(
+                            pedido=pedido,
+                            carrito_serializado=(
+                                carrito_serializado
+                            ),
+                        )
+                    )
+
+                # =============================================================
+                # REFRESCAR PEDIDO DESDE BASE DE DATOS
+                # =============================================================
+                #
+                # Así nos aseguramos de que iniciar_pago_pedido() reciba
+                # exactamente los valores persistidos.
+                # =============================================================
+
+                pedido.refresh_from_db(
+                    fields=[
+                        "subtotal",
+                        "descuento",
+                        "despacho",
+                        "total",
+                    ]
+                )
+
+                # =============================================================
+                # VALIDACIÓN FINAL DE SEGURIDAD
+                # =============================================================
+
+                subtotal_pedido = Decimal(
+                    str(
+                        pedido.subtotal
+                        or 0
+                    )
+                )
+
+                descuento_pedido = Decimal(
+                    str(
+                        pedido.descuento
+                        or 0
+                    )
+                )
+
+                despacho_pedido = Decimal(
+                    str(
+                        pedido.despacho
+                        or 0
+                    )
+                )
+
+                total_pedido = Decimal(
+                    str(
+                        pedido.total
+                        or 0
+                    )
+                )
+
+                total_esperado = max(
+                    (
+                        subtotal_pedido
+                        - descuento_pedido
+                        + despacho_pedido
+                    ),
+                    Decimal("0"),
+                )
+
+                if total_pedido != total_esperado:
+                    raise ValueError(
+                        (
+                            "El total definitivo del pedido "
+                            "no coincide con su desglose. "
+                            f"Subtotal: {subtotal_pedido}, "
+                            f"descuento: {descuento_pedido}, "
+                            f"despacho: {despacho_pedido}, "
+                            f"total guardado: {total_pedido}, "
+                            f"total esperado: {total_esperado}."
+                        )
+                    )
+
+                if total_pedido <= 0:
+                    raise ValueError(
+                        (
+                            "El total definitivo del pedido "
+                            "debe ser mayor que $0."
+                        )
+                    )
+
+                # =============================================================
+                # LOG DE DIAGNÓSTICO
+                # =============================================================
+
+                logger.info(
+                    (
+                        "Pedido %s antes de iniciar pago: "
+                        "subtotal=%s descuento=%s "
+                        "despacho=%s total=%s"
+                    ),
+                    pedido.numero,
+                    pedido.subtotal,
+                    pedido.descuento,
+                    pedido.despacho,
+                    pedido.total,
+                )
+
+                # =============================================================
                 # INICIAR PAGO
-                # -------------------------------------------------------------
+                # =============================================================
 
                 resultado_pago = (
                     iniciar_pago_pedido(
@@ -2531,9 +3253,9 @@ def checkout(request):
                     )
                 )
 
-                # -------------------------------------------------------------
-                # REGISTRAR PEDIDO EN LA SESIÓN
-                # -------------------------------------------------------------
+                # =============================================================
+                # REGISTRAR PEDIDO EN SESIÓN
+                # =============================================================
 
                 _registrar_pedido_pago_en_curso(
                     request,
@@ -2549,9 +3271,9 @@ def checkout(request):
                     request.session.session_key,
                 )
 
-                # -------------------------------------------------------------
+                # =============================================================
                 # REDIRECCIONAR AL PROVEEDOR
-                # -------------------------------------------------------------
+                # =============================================================
 
                 if resultado_pago.url_redireccion:
                     return redirect(
@@ -2563,9 +3285,11 @@ def checkout(request):
                     **resultado_pago.parametros_url,
                 )
 
+            # =================================================================
+            # ERROR AL INICIAR EL PROVEEDOR
+            # =================================================================
+
             except ErrorInicioPago as error:
-                # El proveedor no pudo iniciar el pago.
-                # El código reservado debe quedar nuevamente disponible.
 
                 request.session.pop(
                     "pedido_pago_en_curso",
@@ -2584,14 +3308,29 @@ def checkout(request):
                         mensaje=str(error),
                     )
 
+                logger.warning(
+                    (
+                        "No fue posible iniciar el pago "
+                        "del pedido %s: %s"
+                    ),
+                    (
+                        pedido.numero
+                        if pedido is not None
+                        else "sin pedido"
+                    ),
+                    error,
+                )
+
                 form.add_error(
                     None,
                     str(error),
                 )
 
+            # =================================================================
+            # ERROR CONTROLADO
+            # =================================================================
+
             except ValueError as error:
-                # Incluye errores de stock, carrito, código inválido,
-                # código ya utilizado, compra mínima o RUT faltante.
 
                 request.session.pop(
                     "pedido_pago_en_curso",
@@ -2604,12 +3343,30 @@ def checkout(request):
                     pedido
                 )
 
+                logger.warning(
+                    (
+                        "Error validando checkout. "
+                        "Pedido=%s. Error=%s"
+                    ),
+                    (
+                        pedido.numero
+                        if pedido is not None
+                        else "sin pedido"
+                    ),
+                    error,
+                )
+
                 form.add_error(
                     None,
                     str(error),
                 )
 
+            # =================================================================
+            # ERROR INESPERADO
+            # =================================================================
+
             except Exception as error:
+
                 request.session.pop(
                     "pedido_pago_en_curso",
                     None,
@@ -2638,19 +3395,23 @@ def checkout(request):
                 )
 
     else:
+
         form = CheckoutForm(
             initial=datos_iniciales,
         )
 
-    # -------------------------------------------------------------------------
-    # CÓDIGO Y RUT PARA EL RESUMEN
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # CÓDIGO, RUT Y REGIÓN PARA EL RESUMEN
+    # =========================================================================
     #
-    # La validación del código necesita el RUT porque cada cliente
-    # solamente puede utilizar cada código una vez.
-    # -------------------------------------------------------------------------
+    # El RUT se utiliza para validar que el cliente no haya utilizado
+    # anteriormente el mismo código.
+    #
+    # La región se utiliza para calcular Blue Express.
+    # =========================================================================
 
     if request.method == "POST":
+
         codigo_descuento = (
             request.POST.get(
                 "codigo_descuento",
@@ -2667,7 +3428,16 @@ def checkout(request):
             or ""
         ).strip()
 
+        region_envio = (
+            request.POST.get(
+                "region",
+                "",
+            )
+            or ""
+        ).strip()
+
     else:
+
         codigo_descuento = ""
 
         rut_descuento = (
@@ -2678,22 +3448,41 @@ def checkout(request):
             or ""
         ).strip()
 
-    # -------------------------------------------------------------------------
+        region_envio = (
+            datos_iniciales.get(
+                "region",
+                "",
+            )
+            or ""
+        ).strip()
+
+    # =========================================================================
     # RESUMEN
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     resumen = calcular_resumen_checkout(
         request=request,
+
         carrito_serializado=(
             carrito_serializado
         ),
-        codigo=codigo_descuento,
-        rut=rut_descuento,
+
+        codigo=(
+            codigo_descuento
+        ),
+
+        rut=(
+            rut_descuento
+        ),
+
+        region=(
+            region_envio
+        ),
     )
 
-    # -------------------------------------------------------------------------
-    # PREMIOS PERSONALES DISPONIBLES
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # PREMIOS PERSONALES
+    # =========================================================================
 
     codigos_fidelidad = (
         obtener_codigos_disponibles(
@@ -2701,19 +3490,35 @@ def checkout(request):
         )
     )
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # CONTEXTO
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     contexto = {
-        "form": form,
-        "carrito": carrito_serializado,
-        "resumen": resumen,
-        "codigos_fidelidad": codigos_fidelidad,
+        "form": (
+            form
+        ),
+
+        "carrito": (
+            carrito_serializado
+        ),
+
+        "resumen": (
+            resumen
+        ),
+
+        "codigos_fidelidad": (
+            codigos_fidelidad
+        ),
+
         "comunas_por_region": (
             COMUNAS_POR_REGION
         ),
     }
+
+    # =========================================================================
+    # RENDER
+    # =========================================================================
 
     return render(
         request,
@@ -2722,89 +3527,31 @@ def checkout(request):
     )
 
 
-# ============================================================================
-# CAMBIO OBLIGATORIO EN calcular_resumen_checkout()
-# ============================================================================
-#
-# Su firma debe aceptar rut:
-#
-# def calcular_resumen_checkout(
-#     *,
-#     request,
-#     carrito_serializado,
-#     codigo="",
-#     rut="",
-# ):
-#
-# Y debe llamar:
-#
-# resultado = resolver_descuento(
-#     usuario=request.user,
-#     rut=rut,
-#     subtotal=subtotal,
-#     codigo=codigo,
-#     bloquear=False,
-# )
-#
-#
-# El error actual:
-#
-# NameError: name 'resolver_descuento' is not defined
-# NameError: name 'DescuentoError' is not defined
-#
-# se corrige con estos imports:
-#
-# from core.services.descuentos import (
-#     DescuentoError,
-#     resolver_descuento,
-# )
-# ============================================================================
-
-
-# ============================================================================
-# CAMBIO OBLIGATORIO EN EL ENDPOINT AJAX DEL CUPÓN
-# ============================================================================
-#
-# El endpoint debe leer el RUT:
-#
-# rut = (
-#     request.POST.get(
-#         "rut",
-#         "",
-#     )
-#     or ""
-# ).strip()
-#
-# Y pasarlo al resumen:
-#
-# resumen = calcular_resumen_checkout(
-#     request=request,
-#     carrito_serializado=carrito_serializado,
-#     codigo=codigo,
-#     rut=rut,
-# )
-#
-#
-# En checkout.js agrega al URLSearchParams:
-#
-# const campoRut = document.getElementById("id_rut");
-#
-# cuerpo.set(
-#     "rut",
-#     campoRut?.value || ""
-# );
-# ============================================================================
 @require_POST
 def checkout_resumen_descuento(
     request,
 ):
     """
-    Valida un código de descuento desde el checkout sin
-    crear todavía el pedido.
+    Recalcula dinámicamente el resumen del checkout.
 
-    El RUT permite comprobar que el cliente no haya usado
-    anteriormente el mismo código.
+    Incluye:
+
+    - código de descuento;
+    - subtotal;
+    - descuento adicional;
+    - subtotal con descuento;
+    - despacho Blue Express;
+    - total final.
+
+    IMPORTANTE:
+
+    Un código solamente se considera visualmente aplicado
+    cuando genera un descuento REAL mayor que $0.
     """
+
+    # =========================================================================
+    # CARRITO
+    # =========================================================================
 
     carrito = _obtener_carrito(
         request
@@ -2814,16 +3561,37 @@ def checkout_resumen_descuento(
         return JsonResponse(
             {
                 "ok": False,
+
                 "mensaje": (
                     "Tu carrito está vacío."
                 ),
+
                 "codigo_aplicado": "",
+
+                "tiene_descuento_aplicado": False,
+
                 "porcentaje_descuento": 0,
+
                 "descuento": 0,
+
                 "descuento_formateado": "$0",
+
+                "subtotal": 0,
+
+                "subtotal_formateado": "$0",
+
+                "subtotal_con_descuento": 0,
+
+                "subtotal_con_descuento_formateado": "$0",
+
                 "despacho": 0,
-                "despacho_formateado": "$0",
+
+                "despacho_formateado": (
+                    "Completa los datos de envío"
+                ),
+
                 "total": 0,
+
                 "total_formateado": "$0",
             },
             status=400,
@@ -2842,20 +3610,45 @@ def checkout_resumen_descuento(
         return JsonResponse(
             {
                 "ok": False,
+
                 "mensaje": (
                     "Tu carrito está vacío."
                 ),
+
                 "codigo_aplicado": "",
+
+                "tiene_descuento_aplicado": False,
+
                 "porcentaje_descuento": 0,
+
                 "descuento": 0,
+
                 "descuento_formateado": "$0",
+
+                "subtotal": 0,
+
+                "subtotal_formateado": "$0",
+
+                "subtotal_con_descuento": 0,
+
+                "subtotal_con_descuento_formateado": "$0",
+
                 "despacho": 0,
-                "despacho_formateado": "$0",
+
+                "despacho_formateado": (
+                    "Completa los datos de envío"
+                ),
+
                 "total": 0,
+
                 "total_formateado": "$0",
             },
             status=400,
         )
+
+    # =========================================================================
+    # DATOS RECIBIDOS
+    # =========================================================================
 
     codigo = (
         request.POST.get(
@@ -2873,13 +3666,85 @@ def checkout_resumen_descuento(
         or ""
     ).strip().upper()
 
+    region = (
+        request.POST.get(
+            "region",
+            "",
+        )
+        or ""
+    ).strip()
+
+    comuna = (
+        request.POST.get(
+            "comuna",
+            "",
+        )
+        or ""
+    ).strip()
+
+    direccion = (
+        request.POST.get(
+            "direccion",
+            "",
+        )
+        or ""
+    ).strip()
+
+    numero_direccion = (
+        request.POST.get(
+            "numero_direccion",
+            "",
+        )
+        or ""
+    ).strip()
+
+    # =========================================================================
+    # DIRECCIÓN COMPLETA
+    # =========================================================================
+
+    datos_envio_completos = all(
+        [
+            region,
+            comuna,
+            direccion,
+            numero_direccion,
+        ]
+    )
+
+    # =========================================================================
+    # CALCULAR RESUMEN
+    # =========================================================================
+
     resumen = calcular_resumen_checkout(
         request=request,
+
         carrito_serializado=(
             carrito_serializado
         ),
+
         codigo=codigo,
+
         rut=rut,
+
+        region=(
+            region
+            if datos_envio_completos
+            else ""
+        ),
+    )
+
+    # =========================================================================
+    # MONTOS
+    # =========================================================================
+
+    subtotal = Decimal(
+        str(
+            resumen.get(
+                "subtotal",
+                0,
+            )
+            or 0
+        )
     )
 
     descuento = Decimal(
@@ -2887,6 +3752,16 @@ def checkout_resumen_descuento(
             resumen.get(
                 "descuento",
                 0,
+            )
+            or 0
+        )
+    )
+
+    subtotal_con_descuento = Decimal(
+        str(
+            resumen.get(
+                "subtotal_con_descuento",
+                subtotal,
             )
             or 0
         )
@@ -2922,13 +3797,17 @@ def checkout_resumen_descuento(
         )
     )
 
+    # =========================================================================
+    # RESULTADO DEL CÓDIGO
+    # =========================================================================
+
     codigo_aplicado = (
         resumen.get(
             "codigo_aplicado",
             "",
         )
         or ""
-    )
+    ).strip().upper()
 
     error_descuento = (
         resumen.get(
@@ -2938,12 +3817,84 @@ def checkout_resumen_descuento(
         or ""
     )
 
+    # -------------------------------------------------------------------------
+    # ESTA ES LA REGLA IMPORTANTE
+    # -------------------------------------------------------------------------
+
+    tiene_descuento_aplicado = bool(
+        codigo_aplicado
+        and descuento > 0
+        and not error_descuento
+    )
+
+    # -------------------------------------------------------------------------
+    # Si no existe descuento real, limpiamos el código del resultado visual.
+    # -------------------------------------------------------------------------
+
+    if not tiene_descuento_aplicado:
+        codigo_aplicado = ""
+
+        descuento = Decimal(
+            "0"
+        )
+
+        porcentaje = Decimal(
+            "0"
+        )
+
+        subtotal_con_descuento = (
+            subtotal
+        )
+
+    # =========================================================================
+    # BLUE EXPRESS
+    # =========================================================================
+
+    error_despacho = (
+        resumen.get(
+            "error_despacho",
+            "",
+        )
+        or ""
+    )
+
+    talla_envio = (
+        resumen.get(
+            "talla_envio",
+            "",
+        )
+        or ""
+    )
+
+    zona_envio = (
+        resumen.get(
+            "zona_envio",
+            "",
+        )
+        or ""
+    )
+
+    cantidad_envio = int(
+        resumen.get(
+            "cantidad_envio",
+            0,
+        )
+        or 0
+    )
+
+    # =========================================================================
+    # FORMATEADOR CLP
+    # =========================================================================
+
     def formatear_pesos(
         valor,
     ):
         valor_entero = int(
             Decimal(
-                str(valor or 0)
+                str(
+                    valor
+                    or 0
+                )
             )
         )
 
@@ -2955,62 +3906,170 @@ def checkout_resumen_descuento(
             )
         )
 
-    if error_descuento:
-        mensaje = error_descuento
-        codigo_aplicado = ""
-        porcentaje = Decimal("0")
+    # =========================================================================
+    # MENSAJE DEL CÓDIGO
+    # =========================================================================
 
-    elif codigo_aplicado:
+    if error_descuento:
         mensaje = (
-            f"Código {codigo_aplicado} aplicado: "
-            f"{porcentaje:g}% de descuento."
+            error_descuento
         )
+
+    elif tiene_descuento_aplicado:
+
+        if porcentaje > 0:
+            mensaje = (
+                f"Código {codigo_aplicado} aplicado: "
+                f"{porcentaje:g}% de descuento."
+            )
+
+        else:
+            mensaje = (
+                f"Código {codigo_aplicado} aplicado: "
+                f"{formatear_pesos(descuento)} "
+                "de descuento."
+            )
 
     elif codigo:
         mensaje = (
-            "El código no pudo aplicarse."
+            "El código no generó un descuento aplicable."
         )
 
     else:
         mensaje = (
-            "No hay un código aplicado."
+            "Puedes usar un código general "
+            "o un premio personal."
         )
+
+    # =========================================================================
+    # DESPACHO
+    # =========================================================================
+
+    if not datos_envio_completos:
+        despacho_formateado = (
+            "Completa los datos de envío"
+        )
+
+    elif error_despacho:
+        despacho_formateado = (
+            "No disponible"
+        )
+
+    elif despacho > 0:
+        despacho_formateado = (
+            formatear_pesos(
+                despacho
+            )
+        )
+
+    else:
+        despacho_formateado = (
+            "No disponible"
+        )
+
+    # =========================================================================
+    # RESPUESTA JSON
+    # =========================================================================
 
     return JsonResponse(
         {
             "ok": not bool(
                 error_descuento
+                or error_despacho
             ),
+
             "mensaje": mensaje,
+
+            # -----------------------------------------------------------------
+            # SUBTOTAL
+            # -----------------------------------------------------------------
+
+            "subtotal": int(
+                subtotal
+            ),
+
+            "subtotal_formateado": (
+                formatear_pesos(
+                    subtotal
+                )
+            ),
+
+            # -----------------------------------------------------------------
+            # DESCUENTO ADICIONAL
+            # -----------------------------------------------------------------
+
+            "tiene_descuento_aplicado": (
+                tiene_descuento_aplicado
+            ),
+
             "codigo_aplicado": (
                 codigo_aplicado
             ),
-            "porcentaje_descuento": (
-                float(
-                    porcentaje
-                )
+
+            "porcentaje_descuento": float(
+                porcentaje
             ),
+
             "descuento": int(
                 descuento
             ),
+
             "descuento_formateado": (
                 formatear_pesos(
                     descuento
                 )
             ),
+
+            # -----------------------------------------------------------------
+            # SUBTOTAL CON DESCUENTO
+            # -----------------------------------------------------------------
+
+            "subtotal_con_descuento": int(
+                subtotal_con_descuento
+            ),
+
+            "subtotal_con_descuento_formateado": (
+                formatear_pesos(
+                    subtotal_con_descuento
+                )
+            ),
+
+            # -----------------------------------------------------------------
+            # DESPACHO
+            # -----------------------------------------------------------------
+
             "despacho": int(
                 despacho
             ),
+
             "despacho_formateado": (
-                "Gratis"
-                if despacho == 0
-                else formatear_pesos(
-                    despacho
-                )
+                despacho_formateado
             ),
+
+            "talla_envio": (
+                talla_envio
+            ),
+
+            "zona_envio": (
+                zona_envio
+            ),
+
+            "cantidad_envio": (
+                cantidad_envio
+            ),
+
+            "error_despacho": (
+                error_despacho
+            ),
+
+            # -----------------------------------------------------------------
+            # TOTAL FINAL
+            # -----------------------------------------------------------------
+
             "total": int(
                 total
             ),
+
             "total_formateado": (
                 formatear_pesos(
                     total
@@ -3028,13 +4087,26 @@ def calcular_resumen_checkout(
     carrito_serializado,
     codigo="",
     rut="",
+    region="",
 ):
     """
-    Calcula el resumen del checkout y valida el código de descuento.
+    Calcula el resumen económico completo del checkout.
 
-    El RUT se utiliza para impedir que un mismo cliente utilice
-    el mismo código más de una vez, incluso cuando compra como invitado.
+    Orden de cálculo:
+
+    1. subtotal de productos, ya considerando ofertas;
+    2. descuento adicional por código;
+    3. subtotal después del código;
+    4. despacho Blue Express;
+    5. total final.
+
+    Un código solamente se considera aplicado cuando
+    genera un descuento efectivo mayor que $0.
     """
+
+    # =========================================================================
+    # SUBTOTAL
+    # =========================================================================
 
     subtotal = Decimal(
         str(
@@ -3046,6 +4118,10 @@ def calcular_resumen_checkout(
         )
     )
 
+    # =========================================================================
+    # NORMALIZAR
+    # =========================================================================
+
     codigo = (
         codigo
         or ""
@@ -3056,31 +4132,59 @@ def calcular_resumen_checkout(
         or ""
     ).strip().upper()
 
+    region = (
+        region
+        or ""
+    ).strip()
+
+    # =========================================================================
+    # VALORES INICIALES DEL DESCUENTO
+    # =========================================================================
+
+    descuento = Decimal(
+        "0"
+    )
+
+    porcentaje = Decimal(
+        "0"
+    )
+
+    codigo_aplicado = ""
+
+    tipo_descuento = (
+        Pedido.TipoDescuento.NINGUNO
+    )
+
     error_descuento = ""
 
+    # =========================================================================
+    # RESOLVER DESCUENTO
+    # =========================================================================
+
     try:
-        resultado_descuento = resolver_descuento(
-            usuario=request.user,
-            rut=rut,
-            subtotal=subtotal,
-            codigo=codigo,
-            bloquear=False,
+        resultado_descuento = (
+            resolver_descuento(
+                usuario=request.user,
+                rut=rut,
+                subtotal=subtotal,
+                codigo=codigo,
+                bloquear=False,
+            )
         )
 
     except DescuentoError as error:
         resultado_descuento = None
-        error_descuento = str(error)
 
-    if resultado_descuento is None:
-        descuento = Decimal("0")
-        porcentaje = Decimal("0")
-        codigo_aplicado = ""
-
-        tipo_descuento = (
-            Pedido.TipoDescuento.NINGUNO
+        error_descuento = str(
+            error
         )
 
-    else:
+    # =========================================================================
+    # RESULTADO
+    # =========================================================================
+
+    if resultado_descuento is not None:
+
         descuento = Decimal(
             str(
                 resultado_descuento.descuento
@@ -3095,54 +4199,270 @@ def calcular_resumen_checkout(
             )
         )
 
-        codigo_aplicado = (
+        codigo_resultado = (
             resultado_descuento.codigo
             or ""
-        )
+        ).strip().upper()
 
-        tipo_descuento = (
+        tipo_resultado = (
             resultado_descuento.tipo
             or Pedido.TipoDescuento.NINGUNO
         )
 
-    descuento = max(
-        min(
-            descuento,
-            subtotal,
-        ),
-        Decimal("0"),
-    )
+        # ---------------------------------------------------------------------
+        # PROTEGER EL DESCUENTO
+        # ---------------------------------------------------------------------
+
+        descuento = max(
+            min(
+                descuento,
+                subtotal,
+            ),
+            Decimal(
+                "0"
+            ),
+        )
+
+        # ---------------------------------------------------------------------
+        # IMPORTANTE:
+        # solamente aceptamos el código como aplicado si produce ahorro real.
+        # ---------------------------------------------------------------------
+
+        if (
+            codigo_resultado
+            and descuento > 0
+        ):
+            codigo_aplicado = (
+                codigo_resultado
+            )
+
+            tipo_descuento = (
+                tipo_resultado
+            )
+
+        else:
+            descuento = Decimal(
+                "0"
+            )
+
+            porcentaje = Decimal(
+                "0"
+            )
+
+            codigo_aplicado = ""
+
+            tipo_descuento = (
+                Pedido.TipoDescuento.NINGUNO
+            )
+
+    # =========================================================================
+    # SUBTOTAL CON DESCUENTO ADICIONAL
+    # =========================================================================
 
     subtotal_con_descuento = max(
         subtotal - descuento,
-        Decimal("0"),
+        Decimal(
+            "0"
+        ),
     )
 
-    despacho = (
-        Decimal("0")
-        if subtotal_con_descuento
-        >= META_DESPACHO_GRATIS
-        else COSTO_DESPACHO
+    # =========================================================================
+    # DESPACHO BLUE EXPRESS
+    # =========================================================================
+
+    despacho = Decimal(
+        "0"
     )
+
+    talla_envio = ""
+    zona_envio = ""
+    cantidad_envio = 0
+
+    error_despacho = ""
+
+    if region:
+
+        try:
+            cotizacion = (
+                cotizar_blue_express(
+                    carrito_serializado=(
+                        carrito_serializado
+                    ),
+                    region=region,
+                )
+            )
+
+            despacho = Decimal(
+                str(
+                    cotizacion.costo
+                    or 0
+                )
+            )
+
+            talla_envio = str(
+                cotizacion.talla
+                or ""
+            )
+
+            zona_envio = str(
+                cotizacion.zona
+                or ""
+            )
+
+            cantidad_envio = int(
+                cotizacion.cantidad_productos
+                or 0
+            )
+
+            if despacho <= 0:
+                raise ValueError(
+                    (
+                        "Blue Express devolvió "
+                        "una tarifa de despacho "
+                        "igual o inferior a $0."
+                    )
+                )
+
+            if cantidad_envio <= 0:
+                raise ValueError(
+                    (
+                        "No fue posible determinar "
+                        "la cantidad de productos "
+                        "para calcular el despacho."
+                    )
+                )
+
+            if not talla_envio:
+                raise ValueError(
+                    (
+                        "No fue posible determinar "
+                        "la talla del despacho."
+                    )
+                )
+
+            if not zona_envio:
+                raise ValueError(
+                    (
+                        "No fue posible determinar "
+                        "la zona del despacho."
+                    )
+                )
+
+        except ValueError as error:
+            despacho = Decimal(
+                "0"
+            )
+
+            talla_envio = ""
+            zona_envio = ""
+            cantidad_envio = 0
+
+            error_despacho = str(
+                error
+            )
+
+    # =========================================================================
+    # TOTAL FINAL
+    # =========================================================================
 
     total = max(
         subtotal_con_descuento
         + despacho,
-        Decimal("0"),
+        Decimal(
+            "0"
+        ),
     )
 
+    # =========================================================================
+    # INDICADOR DE DESCUENTO REAL
+    # =========================================================================
+
+    tiene_descuento_aplicado = bool(
+        codigo_aplicado
+        and descuento > 0
+    )
+
+    # =========================================================================
+    # RESPUESTA
+    # =========================================================================
+
     return {
-        "subtotal": subtotal,
-        "descuento": descuento,
-        "porcentaje_descuento": porcentaje,
-        "codigo_aplicado": codigo_aplicado,
-        "tipo_descuento": tipo_descuento,
-        "error_descuento": error_descuento,
-        "despacho": despacho,
-        "total": total,
+        # ---------------------------------------------------------------------
+        # PRODUCTOS
+        # ---------------------------------------------------------------------
+
+        "subtotal": (
+            subtotal
+        ),
+
+        # ---------------------------------------------------------------------
+        # DESCUENTO ADICIONAL
+        # ---------------------------------------------------------------------
+
+        "tiene_descuento_aplicado": (
+            tiene_descuento_aplicado
+        ),
+
+        "descuento": (
+            descuento
+        ),
+
+        "porcentaje_descuento": (
+            porcentaje
+        ),
+
+        "codigo_aplicado": (
+            codigo_aplicado
+        ),
+
+        "tipo_descuento": (
+            tipo_descuento
+        ),
+
+        "error_descuento": (
+            error_descuento
+        ),
+
+        # ---------------------------------------------------------------------
+        # SUBTOTAL DESPUÉS DEL DESCUENTO
+        # ---------------------------------------------------------------------
+
+        "subtotal_con_descuento": (
+            subtotal_con_descuento
+        ),
+
+        # ---------------------------------------------------------------------
+        # BLUE EXPRESS
+        # ---------------------------------------------------------------------
+
+        "despacho": (
+            despacho
+        ),
+
+        "talla_envio": (
+            talla_envio
+        ),
+
+        "zona_envio": (
+            zona_envio
+        ),
+
+        "cantidad_envio": (
+            cantidad_envio
+        ),
+
+        "error_despacho": (
+            error_despacho
+        ),
+
+        # ---------------------------------------------------------------------
+        # TOTAL FINAL
+        # ---------------------------------------------------------------------
+
+        "total": (
+            total
+        ),
     }
-
-
 
 
 def valor_mercadopago_valido(valor):
