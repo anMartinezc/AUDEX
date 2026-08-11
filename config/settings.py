@@ -82,6 +82,23 @@ CSRF_TRUSTED_ORIGINS = env_list(
 )
 
 
+
+TRANSBANK_ENVIRONMENT = os.getenv(
+    "TRANSBANK_ENVIRONMENT",
+    "integration",
+)
+
+TRANSBANK_COMMERCE_CODE = os.getenv(
+    "TRANSBANK_COMMERCE_CODE",
+    "",
+)
+
+TRANSBANK_API_KEY = os.getenv(
+    "TRANSBANK_API_KEY",
+    "",
+)
+
+
 # =============================================================================
 # APLICACIONES
 # =============================================================================

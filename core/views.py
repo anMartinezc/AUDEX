@@ -11,6 +11,7 @@ from django.db import OperationalError
 from .permisos import es_administrador_productos
 from core.services.blue_express import *
 import json
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Case, IntegerField, When
 from core.services.favoritos import obtener_ids_favoritos
@@ -50,6 +51,9 @@ from core.services.descuentos import (
 )
 from core.services.checkout import *
 
+
+
+from core.services.pagos import *
 from core.services.favoritos import *
 from decimal import Decimal
 
@@ -81,6 +85,10 @@ from django.views.decorators.http import (
 from core.forms_descuentos import *
 
 from core.models import *
+
+from core.services.webpay import (
+    obtener_transaccion_webpay,
+)
 
 
 TIPOS_CODIGO_VALIDOS = {
@@ -3201,7 +3209,9 @@ def checkout(request):
                         - descuento_pedido
                         + despacho_pedido
                     ),
-                    Decimal("0"),
+                    Decimal(
+                        "0"
+                    ),
                 )
 
                 if total_pedido != total_esperado:
@@ -3254,6 +3264,18 @@ def checkout(request):
                 )
 
                 # =============================================================
+                # VALIDAR RESULTADO DEL PROVEEDOR
+                # =============================================================
+
+                if resultado_pago is None:
+                    raise ErrorInicioPago(
+                        (
+                            "El proveedor de pago "
+                            "no entregó una respuesta válida."
+                        )
+                    )
+
+                # =============================================================
                 # REGISTRAR PEDIDO EN SESIÓN
                 # =============================================================
 
@@ -3272,17 +3294,155 @@ def checkout(request):
                 )
 
                 # =============================================================
-                # REDIRECCIONAR AL PROVEEDOR
+                # WEBPAY / PROVEEDORES QUE REQUIEREN POST
+                # =============================================================
+                #
+                # Webpay entrega:
+                #
+                # - una URL de Transbank;
+                # - un token_ws.
+                #
+                # No debemos hacer redirect(url), ya que token_ws
+                # debe enviarse mediante POST.
+                #
+                # Para ello renderizamos una página intermedia que
+                # contiene un formulario oculto y se autoenvía.
                 # =============================================================
 
-                if resultado_pago.url_redireccion:
-                    return redirect(
-                        resultado_pago.url_redireccion
+                url_post = getattr(
+                    resultado_pago,
+                    "url_post",
+                    None,
+                )
+
+                datos_post = getattr(
+                    resultado_pago,
+                    "datos_post",
+                    None,
+                )
+
+                if url_post:
+
+                    if not isinstance(
+                        datos_post,
+                        dict,
+                    ):
+                        raise ErrorInicioPago(
+                            (
+                                "El proveedor de pago requiere "
+                                "una redirección POST, pero no "
+                                "entregó los datos necesarios."
+                            )
+                        )
+
+                    if not datos_post:
+                        raise ErrorInicioPago(
+                            (
+                                "El proveedor de pago requiere "
+                                "una redirección POST, pero los "
+                                "datos recibidos están vacíos."
+                            )
+                        )
+
+                    logger.info(
+                        (
+                            "Pedido %s será enviado al "
+                            "proveedor mediante POST."
+                        ),
+                        pedido.numero,
                     )
 
-                return redirect(
-                    resultado_pago.nombre_url,
-                    **resultado_pago.parametros_url,
+                    return render(
+                        request,
+                        "core/redireccion_pago.html",
+                        {
+                            "url": (
+                                url_post
+                            ),
+                            "datos": (
+                                datos_post
+                            ),
+                        },
+                    )
+
+                # =============================================================
+                # MERCADO PAGO / REDIRECCIÓN EXTERNA NORMAL
+                # =============================================================
+
+                url_redireccion = getattr(
+                    resultado_pago,
+                    "url_redireccion",
+                    None,
+                )
+
+                if url_redireccion:
+
+                    logger.info(
+                        (
+                            "Pedido %s será redirigido "
+                            "al proveedor mediante URL."
+                        ),
+                        pedido.numero,
+                    )
+
+                    return redirect(
+                        url_redireccion
+                    )
+
+                # =============================================================
+                # REDIRECCIÓN INTERNA
+                # =============================================================
+                #
+                # Ejemplo:
+                #
+                # transferencia bancaria
+                #
+                # nombre_url = core:pedido_confirmacion
+                # parametros_url = {"numero": pedido.numero}
+                # =============================================================
+
+                nombre_url = getattr(
+                    resultado_pago,
+                    "nombre_url",
+                    None,
+                )
+
+                parametros_url = getattr(
+                    resultado_pago,
+                    "parametros_url",
+                    None,
+                )
+
+                if nombre_url:
+
+                    if parametros_url is None:
+                        parametros_url = {}
+
+                    if not isinstance(
+                        parametros_url,
+                        dict,
+                    ):
+                        raise ErrorInicioPago(
+                            (
+                                "Los parámetros de redirección "
+                                "del proveedor no son válidos."
+                            )
+                        )
+
+                    return redirect(
+                        nombre_url,
+                        **parametros_url,
+                    )
+
+                # =============================================================
+                # RESULTADO SIN DESTINO
+                # =============================================================
+
+                raise ErrorInicioPago(
+                    (
+                        "El método de pago no entregó "
+                        "un destino válido para continuar."
+                    )
                 )
 
             # =================================================================
@@ -3525,6 +3685,14 @@ def checkout(request):
         "core/checkout.html",
         contexto,
     )
+
+
+
+
+
+
+
+
 
 
 @require_POST
@@ -4563,6 +4731,29 @@ def mercadopago_retorno_exitoso(
     request,
     numero,
 ):
+    """
+    Procesa el retorno SUCCESS de Mercado Pago.
+
+    No dependemos exclusivamente del webhook porque
+    Mercado Pago puede redirigir al navegador antes de
+    que la notificación webhook termine de procesarse.
+
+    Flujo:
+
+    1. Obtener Pedido.
+    2. Revisar si ya está aprobado.
+    3. Leer payment_id enviado por Mercado Pago.
+    4. Consultar el pago directamente en Mercado Pago.
+    5. Validar que corresponda al pedido.
+    6. Confirmar el pago de forma idempotente.
+    7. Refrescar pedido.
+    8. Mostrar éxito solamente si quedó aprobado.
+    """
+
+    # =========================================================================
+    # PEDIDO
+    # =========================================================================
+
     pedido = get_object_or_404(
         Pedido.objects
         .select_related(
@@ -4574,11 +4765,12 @@ def mercadopago_retorno_exitoso(
         numero=numero,
     )
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # CONTROL DE ACCESO
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     if pedido.usuario_id:
+
         if not request.user.is_authenticated:
             return redirect(
                 "core:inicio"
@@ -4593,11 +4785,12 @@ def mercadopago_retorno_exitoso(
                 "core:inicio"
             )
 
-    # -------------------------------------------------------------------------
-    # PAGO APROBADO
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # SI EL WEBHOOK YA LO CONFIRMÓ
+    # =========================================================================
 
     if pedido.pago_aprobado:
+
         carrito_vaciado = (
             _vaciar_carrito_pago_confirmado(
                 request,
@@ -4607,7 +4800,8 @@ def mercadopago_retorno_exitoso(
 
         logger.info(
             (
-                "Retorno exitoso del pedido %s. "
+                "Retorno Mercado Pago del pedido %s: "
+                "el pago ya estaba aprobado. "
                 "Carrito vaciado=%s."
             ),
             pedido.numero,
@@ -4619,20 +4813,440 @@ def mercadopago_retorno_exitoso(
             "core/pago_exitoso.html",
             {
                 "pedido": pedido,
-                "carrito_vaciado": carrito_vaciado,
+                "carrito_vaciado": (
+                    carrito_vaciado
+                ),
             },
         )
 
-    # -------------------------------------------------------------------------
-    # EL WEBHOOK TODAVÍA NO TERMINA
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # DATOS DEVUELTOS POR MERCADO PAGO
+    # =========================================================================
+    #
+    # Dependiendo del flujo pueden recibirse:
+    #
+    # payment_id
+    # collection_id
+    #
+    # status
+    # collection_status
+    #
+    # external_reference
+    #
+    # preference_id
+    #
+    # =========================================================================
+
+    payment_id = (
+        request.GET.get(
+            "payment_id"
+        )
+        or request.GET.get(
+            "collection_id"
+        )
+        or ""
+    ).strip()
+
+    status_retorno = (
+        request.GET.get(
+            "status"
+        )
+        or request.GET.get(
+            "collection_status"
+        )
+        or ""
+    ).strip().lower()
+
+    referencia_retorno = (
+        request.GET.get(
+            "external_reference"
+        )
+        or ""
+    ).strip()
+
+    preference_id = (
+        request.GET.get(
+            "preference_id"
+        )
+        or ""
+    ).strip()
 
     logger.info(
         (
-            "El navegador regresó para el pedido %s, "
-            "pero el webhook todavía no lo marca aprobado."
+            "Retorno SUCCESS Mercado Pago. "
+            "Pedido=%s, payment_id=%s, "
+            "status=%s, external_reference=%s, "
+            "preference_id=%s."
         ),
         pedido.numero,
+        payment_id or "vacío",
+        status_retorno or "vacío",
+        referencia_retorno or "vacía",
+        preference_id or "vacía",
+    )
+
+    # =========================================================================
+    # VALIDAR REFERENCIA EXTERNA DEL RETORNO
+    # =========================================================================
+
+    if (
+        referencia_retorno
+        and referencia_retorno
+        != pedido.numero
+    ):
+        logger.error(
+            (
+                "Retorno Mercado Pago inválido. "
+                "Pedido esperado=%s, "
+                "external_reference recibida=%s."
+            ),
+            pedido.numero,
+            referencia_retorno,
+        )
+
+        return render(
+            request,
+            "core/pago_resultado.html",
+            {
+                "pedido": pedido,
+                "resultado": "fallido",
+            },
+            status=400,
+        )
+
+    # =========================================================================
+    # SI TENEMOS PAYMENT ID, CONSULTAR MERCADO PAGO
+    # =========================================================================
+
+    if payment_id:
+
+        try:
+            # -----------------------------------------------------------------
+            # CONSULTAR PAGO REAL
+            # -----------------------------------------------------------------
+
+            pago = obtener_pago(
+                payment_id
+            )
+
+            if not isinstance(
+                pago,
+                dict,
+            ):
+                raise MercadoPagoError(
+                    (
+                        "Mercado Pago devolvió "
+                        "un pago inválido."
+                    )
+                )
+
+            # -----------------------------------------------------------------
+            # DATOS REALES
+            # -----------------------------------------------------------------
+
+            estado_pago = (
+                str(
+                    pago.get(
+                        "status"
+                    )
+                    or ""
+                )
+                .strip()
+                .lower()
+            )
+
+            referencia_pago = (
+                str(
+                    pago.get(
+                        "external_reference"
+                    )
+                    or ""
+                )
+                .strip()
+            )
+
+            monto_pago = Decimal(
+                str(
+                    pago.get(
+                        "transaction_amount"
+                    )
+                    or "0"
+                )
+            )
+
+            logger.info(
+                (
+                    "Pago Mercado Pago consultado desde retorno. "
+                    "Pedido=%s, payment_id=%s, "
+                    "status=%s, referencia=%s, monto=%s."
+                ),
+                pedido.numero,
+                payment_id,
+                estado_pago,
+                referencia_pago,
+                monto_pago,
+            )
+
+            # -----------------------------------------------------------------
+            # VALIDAR REFERENCIA
+            # -----------------------------------------------------------------
+
+            if (
+                referencia_pago
+                != pedido.numero
+            ):
+                raise MercadoPagoError(
+                    (
+                        "El pago consultado no pertenece "
+                        "al pedido actual. "
+                        f"Pedido={pedido.numero}, "
+                        f"referencia={referencia_pago}."
+                    )
+                )
+
+            # -----------------------------------------------------------------
+            # VALIDAR MONTO
+            # -----------------------------------------------------------------
+
+            total_pedido = Decimal(
+                str(
+                    pedido.total
+                    or 0
+                )
+            )
+
+            if (
+                monto_pago
+                != total_pedido
+            ):
+                raise MercadoPagoError(
+                    (
+                        "El monto pagado no coincide "
+                        "con el pedido. "
+                        f"Pedido={total_pedido}, "
+                        f"MercadoPago={monto_pago}."
+                    )
+                )
+
+            # -----------------------------------------------------------------
+            # APROBADO
+            # -----------------------------------------------------------------
+
+            if estado_pago == "approved":
+
+                # -------------------------------------------------------------
+                # Esta función ya debe ser idempotente:
+                #
+                # - valida external_reference;
+                # - valida monto;
+                # - marca pedido pagado;
+                # - descuenta stock una sola vez;
+                # - reserva/confirma descuento;
+                # - dispara correo una sola vez.
+                # -------------------------------------------------------------
+
+                confirmar_pago_mercadopago(
+                    pago
+                )
+
+                # -------------------------------------------------------------
+                # REFRESCAR
+                # -------------------------------------------------------------
+
+                pedido.refresh_from_db()
+
+                # -------------------------------------------------------------
+                # CONFIRMAR RESULTADO
+                # -------------------------------------------------------------
+
+                if pedido.pago_aprobado:
+
+                    carrito_vaciado = (
+                        _vaciar_carrito_pago_confirmado(
+                            request,
+                            pedido,
+                        )
+                    )
+
+                    logger.info(
+                        (
+                            "Pago Mercado Pago confirmado "
+                            "desde retorno SUCCESS. "
+                            "Pedido=%s, payment_id=%s, "
+                            "carrito_vaciado=%s."
+                        ),
+                        pedido.numero,
+                        payment_id,
+                        carrito_vaciado,
+                    )
+
+                    return render(
+                        request,
+                        "core/pago_exitoso.html",
+                        {
+                            "pedido": pedido,
+                            "carrito_vaciado": (
+                                carrito_vaciado
+                            ),
+                        },
+                    )
+
+            # -----------------------------------------------------------------
+            # PENDIENTE
+            # -----------------------------------------------------------------
+
+            if estado_pago in {
+                "pending",
+                "in_process",
+                "in_mediation",
+                "authorized",
+            }:
+
+                logger.info(
+                    (
+                        "Pago Mercado Pago aún pendiente. "
+                        "Pedido=%s, payment_id=%s, status=%s."
+                    ),
+                    pedido.numero,
+                    payment_id,
+                    estado_pago,
+                )
+
+                return render(
+                    request,
+                    "core/pago_resultado.html",
+                    {
+                        "pedido": pedido,
+                        "resultado": "pendiente",
+                    },
+                    status=202,
+                )
+
+            # -----------------------------------------------------------------
+            # RECHAZADO / CANCELADO
+            # -----------------------------------------------------------------
+
+            if estado_pago in {
+                "rejected",
+                "cancelled",
+            }:
+
+                logger.warning(
+                    (
+                        "Pago Mercado Pago no aprobado. "
+                        "Pedido=%s, payment_id=%s, status=%s."
+                    ),
+                    pedido.numero,
+                    payment_id,
+                    estado_pago,
+                )
+
+                return render(
+                    request,
+                    "core/pago_resultado.html",
+                    {
+                        "pedido": pedido,
+                        "resultado": "fallido",
+                    },
+                )
+
+            # -----------------------------------------------------------------
+            # OTRO ESTADO
+            # -----------------------------------------------------------------
+
+            logger.warning(
+                (
+                    "Mercado Pago devolvió un estado "
+                    "no contemplado en retorno. "
+                    "Pedido=%s, payment_id=%s, status=%s."
+                ),
+                pedido.numero,
+                payment_id,
+                estado_pago,
+            )
+
+        except MercadoPagoError as error:
+
+            logger.exception(
+                (
+                    "Error verificando Mercado Pago "
+                    "desde retorno SUCCESS. "
+                    "Pedido=%s, payment_id=%s: %s"
+                ),
+                pedido.numero,
+                payment_id,
+                error,
+            )
+
+        except ConfirmacionPagoError as error:
+
+            logger.exception(
+                (
+                    "Error confirmando pago Mercado Pago "
+                    "desde retorno SUCCESS. "
+                    "Pedido=%s, payment_id=%s: %s"
+                ),
+                pedido.numero,
+                payment_id,
+                error,
+            )
+
+        except Exception as error:
+
+            logger.exception(
+                (
+                    "Error inesperado procesando retorno "
+                    "SUCCESS de Mercado Pago. "
+                    "Pedido=%s, payment_id=%s: %s"
+                ),
+                pedido.numero,
+                payment_id,
+                error,
+            )
+
+    # =========================================================================
+    # ÚLTIMO REFRESH
+    # =========================================================================
+    #
+    # Es posible que el webhook haya terminado mientras
+    # procesábamos el retorno.
+    # =========================================================================
+
+    pedido.refresh_from_db()
+
+    if pedido.pago_aprobado:
+
+        carrito_vaciado = (
+            _vaciar_carrito_pago_confirmado(
+                request,
+                pedido,
+            )
+        )
+
+        return render(
+            request,
+            "core/pago_exitoso.html",
+            {
+                "pedido": pedido,
+                "carrito_vaciado": (
+                    carrito_vaciado
+                ),
+            },
+        )
+
+    # =========================================================================
+    # TODAVÍA NO CONFIRMADO
+    # =========================================================================
+
+    logger.info(
+        (
+            "Retorno SUCCESS del pedido %s "
+            "sin confirmación final. "
+            "payment_id=%s, status_retorno=%s."
+        ),
+        pedido.numero,
+        payment_id or "vacío",
+        status_retorno or "vacío",
     )
 
     return render(
@@ -4644,6 +5258,11 @@ def mercadopago_retorno_exitoso(
         },
         status=202,
     )
+
+
+
+
+
 
 
 @require_GET
@@ -5348,88 +5967,397 @@ def mercadopago_webhook(request):
 
 
 
-def confirmar_pago_mercadopago(pago):
-    if not isinstance(pago, dict):
+def confirmar_pago_mercadopago(
+    pago,
+):
+    """
+    Confirma un pago de Mercado Pago contra un Pedido.
+
+    Valida:
+
+    - estructura del pago;
+    - payment_id;
+    - estado approved;
+    - external_reference;
+    - existencia del pedido;
+    - monto pagado;
+    - idempotencia del pago.
+
+    La confirmación definitiva del pedido se delega en
+    marcar_pedido_como_pagado().
+    """
+
+    # =========================================================================
+    # VALIDAR PAYLOAD
+    # =========================================================================
+
+    if not isinstance(
+        pago,
+        dict,
+    ):
         raise ConfirmacionPagoError(
-            "Los datos del pago de Mercado Pago no son válidos."
+            (
+                "Los datos del pago de "
+                "Mercado Pago no son válidos."
+            )
         )
 
+    # =========================================================================
+    # DATOS PRINCIPALES
+    # =========================================================================
+
     payment_id = str(
-        pago.get("id")
+        pago.get(
+            "id"
+        )
         or ""
     ).strip()
 
     estado_pago = str(
-        pago.get("status")
+        pago.get(
+            "status"
+        )
         or ""
     ).strip().lower()
 
-    numero_pedido = str(
-        pago.get("external_reference")
+    status_detail = str(
+        pago.get(
+            "status_detail"
+        )
         or ""
     ).strip()
 
+    numero_pedido = str(
+        pago.get(
+            "external_reference"
+        )
+        or ""
+    ).strip()
+
+    payment_type = str(
+        pago.get(
+            "payment_type_id"
+        )
+        or ""
+    ).strip()
+
+    currency_id = str(
+        pago.get(
+            "currency_id"
+        )
+        or ""
+    ).strip().upper()
+
+    # =========================================================================
+    # VALIDACIONES BÁSICAS
+    # =========================================================================
+
     if not payment_id:
         raise ConfirmacionPagoError(
-            "El pago no contiene un ID."
+            (
+                "El pago de Mercado Pago "
+                "no contiene un ID."
+            )
         )
 
     if not numero_pedido:
         raise ConfirmacionPagoError(
-            "El pago no contiene external_reference."
+            (
+                "El pago no contiene "
+                "external_reference."
+            )
         )
 
     if estado_pago != "approved":
         raise ConfirmacionPagoError(
             (
                 "El pago todavía no está aprobado. "
-                f"Estado recibido: {estado_pago or 'sin estado'}"
+                f"Estado recibido: "
+                f"{estado_pago or 'sin estado'}."
             )
         )
 
+    # =========================================================================
+    # MONTO PAGADO
+    # =========================================================================
+
     try:
-        pedido = Pedido.objects.get(
-            numero=numero_pedido,
+        monto_pagado = Decimal(
+            str(
+                pago.get(
+                    "transaction_amount"
+                )
+                or "0"
+            )
         )
+
+    except (
+        TypeError,
+        ValueError,
+        InvalidOperation,
+    ) as error:
+        raise ConfirmacionPagoError(
+            (
+                "Mercado Pago devolvió "
+                "un monto inválido."
+            )
+        ) from error
+
+    if monto_pagado <= 0:
+        raise ConfirmacionPagoError(
+            (
+                "El monto pagado debe "
+                "ser mayor que $0."
+            )
+        )
+
+    # =========================================================================
+    # OBTENER PEDIDO
+    # =========================================================================
+
+    try:
+        pedido = (
+            Pedido.objects
+            .select_related(
+                "usuario"
+            )
+            .get(
+                numero=numero_pedido,
+            )
+        )
+
     except Pedido.DoesNotExist as error:
         raise ConfirmacionPagoError(
             (
-                "No existe un pedido asociado a la referencia "
+                "No existe un pedido asociado "
+                "a la referencia "
                 f"{numero_pedido}."
             )
         ) from error
 
-    monto_pagado = Decimal(
-        str(
-            pago.get("transaction_amount")
-            or "0"
-        )
-    )
+    # =========================================================================
+    # TOTAL DEL PEDIDO
+    # =========================================================================
 
-    if monto_pagado != pedido.total:
+    try:
+        total_pedido = Decimal(
+            str(
+                pedido.total
+                or 0
+            )
+        )
+
+    except (
+        TypeError,
+        ValueError,
+        InvalidOperation,
+    ) as error:
         raise ConfirmacionPagoError(
             (
-                "El monto pagado no coincide con el pedido. "
-                f"Pedido: {pedido.total}. "
+                "El pedido tiene un "
+                "total inválido."
+            )
+        ) from error
+
+    if total_pedido <= 0:
+        raise ConfirmacionPagoError(
+            (
+                "El pedido no tiene "
+                "un total válido."
+            )
+        )
+
+    # =========================================================================
+    # VALIDAR MONTO
+    # =========================================================================
+
+    if monto_pagado != total_pedido:
+        raise ConfirmacionPagoError(
+            (
+                "El monto pagado no coincide "
+                "con el total del pedido. "
+                f"Pedido: {total_pedido}. "
                 f"Pago: {monto_pagado}."
             )
         )
 
-    return marcar_pedido_como_pagado(
-        pedido_id=pedido.pk,
-        datos_pago={
-            "metodo": Pedido.MetodoPago.MERCADOPAGO,
-            "payment_id": payment_id,
-            "mercadopago_status": estado_pago,
-            "mercadopago_status_detail": pago.get(
-                "status_detail"
+    # =========================================================================
+    # VALIDAR MONEDA
+    # =========================================================================
+    #
+    # Como Audex trabaja en CLP, si Mercado Pago devuelve currency_id
+    # verificamos que efectivamente sea CLP.
+    # =========================================================================
+
+    if (
+        currency_id
+        and currency_id != "CLP"
+    ):
+        raise ConfirmacionPagoError(
+            (
+                "La moneda del pago no coincide "
+                "con la moneda del pedido. "
+                f"Moneda recibida: {currency_id}."
+            )
+        )
+
+    # =========================================================================
+    # IDEMPOTENCIA
+    # =========================================================================
+    #
+    # Mercado Pago puede llamar varias veces al webhook y además
+    # el navegador puede entrar por la URL de retorno exitoso.
+    #
+    # Si este mismo payment_id ya confirmó el pedido, no debemos:
+    #
+    # - volver a descontar stock;
+    # - volver a consumir código;
+    # - volver a enviar correo.
+    #
+    # =========================================================================
+
+    pedido_payment_id = str(
+        getattr(
+            pedido,
+            "mercadopago_payment_id",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if (
+        pedido.pago_aprobado
+        and pedido_payment_id
+        and pedido_payment_id == payment_id
+    ):
+        logger.info(
+            (
+                "Pago Mercado Pago ya confirmado. "
+                "Pedido=%s, payment_id=%s."
             ),
-            "payment_type": pago.get(
-                "payment_type_id"
-            ),
-            "transaction_amount": monto_pagado,
-        },
+            pedido.numero,
+            payment_id,
+        )
+
+        return pedido
+
+    # =========================================================================
+    # VALIDAR PAYMENT ID DISTINTO
+    # =========================================================================
+
+    if (
+        pedido_payment_id
+        and pedido_payment_id != payment_id
+        and pedido.pago_aprobado
+    ):
+        raise ConfirmacionPagoError(
+            (
+                "El pedido ya fue confirmado "
+                "con otro pago de Mercado Pago. "
+                f"Pedido={pedido.numero}, "
+                f"payment_id_actual={pedido_payment_id}, "
+                f"payment_id_recibido={payment_id}."
+            )
+        )
+
+    # =========================================================================
+    # LOG
+    # =========================================================================
+
+    logger.info(
+        (
+            "Confirmando pago Mercado Pago. "
+            "Pedido=%s, payment_id=%s, "
+            "status=%s, monto=%s, "
+            "payment_type=%s."
+        ),
+        pedido.numero,
+        payment_id,
+        estado_pago,
+        monto_pagado,
+        payment_type,
     )
+
+    # =========================================================================
+    # CONFIRMAR PEDIDO
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # marcar_pedido_como_pagado debe estar IMPORTADA
+    # en este archivo si está definida en core/services/pagos.py.
+    #
+    # Ejemplo:
+    #
+   
+    #
+    # =========================================================================
+
+    try:
+        pedido_confirmado = (
+            marcar_pedido_como_pagado(
+                pedido_id=pedido.pk,
+
+                datos_pago={
+                    "metodo": (
+                        Pedido
+                        .MetodoPago
+                        .MERCADOPAGO
+                    ),
+
+                    "payment_id": (
+                        payment_id
+                    ),
+
+                    "mercadopago_status": (
+                        estado_pago
+                    ),
+
+                    "mercadopago_status_detail": (
+                        status_detail
+                    ),
+
+                    "payment_type": (
+                        payment_type
+                    ),
+
+                    "transaction_amount": (
+                        monto_pagado
+                    ),
+                },
+            )
+        )
+
+    except ConfirmacionPagoError:
+        raise
+
+    except Exception as error:
+        raise ConfirmacionPagoError(
+            (
+                "No fue posible marcar el "
+                "pedido como pagado. "
+                f"Pedido={pedido.numero}. "
+                f"Detalle: {error}"
+            )
+        ) from error
+
+    # =========================================================================
+    # LOG FINAL
+    # =========================================================================
+
+    logger.info(
+        (
+            "Pago Mercado Pago confirmado correctamente. "
+            "Pedido=%s, payment_id=%s."
+        ),
+        pedido.numero,
+        payment_id,
+    )
+
+    return pedido_confirmado
+
+
+
 
 
 
@@ -5959,4 +6887,1025 @@ def mi_perfil(request):
         request,
         "core/cuenta/perfil.html",
         contexto,
+    )
+
+
+
+
+
+@csrf_exempt
+def webpay_retorno(request):
+    """
+    Procesa el retorno desde Webpay Plus.
+
+    Flujo:
+
+    1. Obtiene token_ws.
+    2. Confirma la transacción directamente con Transbank.
+    3. Valida:
+       - response_code == 0
+       - status == AUTHORIZED
+       - buy_order
+       - monto
+       - token de sesión
+    4. Marca el Pedido como pagado.
+    5. Verifica el estado persistido en base de datos.
+    6. Vacía el carrito únicamente después del pago confirmado.
+    7. Limpia los datos temporales de Webpay.
+    8. Redirige a la confirmación del pedido.
+
+    El carrito NO se elimina antes de confirmar realmente
+    la transacción con Transbank.
+    """
+
+    # =========================================================================
+    # TOKEN RETORNADO POR WEBPAY
+    # =========================================================================
+
+    token_ws = (
+        request.POST.get(
+            "token_ws",
+            "",
+        )
+        or request.GET.get(
+            "token_ws",
+            "",
+        )
+        or ""
+    ).strip()
+
+    # =========================================================================
+    # DATOS WEBPAY GUARDADOS EN SESIÓN
+    # =========================================================================
+
+    numero_pedido_sesion = str(
+        request.session.get(
+            "webpay_pedido",
+            "",
+        )
+        or ""
+    ).strip()
+
+    token_sesion = str(
+        request.session.get(
+            "webpay_token",
+            "",
+        )
+        or ""
+    ).strip()
+
+    pedido_pago_en_curso = str(
+        request.session.get(
+            "pedido_pago_en_curso",
+            "",
+        )
+        or ""
+    ).strip()
+
+    logger.info(
+        (
+            "Retorno Webpay recibido. "
+            "pedido_webpay=%s "
+            "pedido_pago_en_curso=%s "
+            "token_sesion=%s "
+            "token_retorno=%s"
+        ),
+        numero_pedido_sesion or "vacío",
+        pedido_pago_en_curso or "vacío",
+        bool(token_sesion),
+        bool(token_ws),
+    )
+
+    # =========================================================================
+    # SIN TOKEN
+    # =========================================================================
+
+    if not token_ws:
+
+        logger.warning(
+            (
+                "Retorno Webpay sin token. "
+                "Pedido en sesión=%s"
+            ),
+            numero_pedido_sesion,
+        )
+
+        messages.warning(
+            request,
+            (
+                "El pago con Webpay fue cancelado "
+                "o no pudo completarse."
+            ),
+        )
+
+        if numero_pedido_sesion:
+            return redirect(
+                "core:pedido_confirmacion",
+                numero=numero_pedido_sesion,
+            )
+
+        return redirect(
+            "core:productos"
+        )
+
+    # =========================================================================
+    # VALIDAR TOKEN CONTRA SESIÓN
+    # =========================================================================
+
+    if (
+        token_sesion
+        and token_sesion != token_ws
+    ):
+
+        logger.error(
+            (
+                "Token Webpay distinto al iniciado. "
+                "Pedido sesión=%s"
+            ),
+            numero_pedido_sesion,
+        )
+
+        messages.error(
+            request,
+            (
+                "La transacción retornada por Webpay "
+                "no coincide con el pago iniciado."
+            ),
+        )
+
+        if numero_pedido_sesion:
+            return redirect(
+                "core:pedido_confirmacion",
+                numero=numero_pedido_sesion,
+            )
+
+        return redirect(
+            "core:productos"
+        )
+
+    # =========================================================================
+    # CONFIRMAR TRANSACCIÓN DIRECTAMENTE CON TRANSBANK
+    # =========================================================================
+
+    try:
+
+        transaccion = (
+            obtener_transaccion_webpay()
+        )
+
+        respuesta = (
+            transaccion.commit(
+                token_ws
+            )
+        )
+
+        logger.info(
+            "RESPUESTA COMMIT WEBPAY: %s",
+            respuesta,
+        )
+
+    except Exception as error:
+
+        logger.exception(
+            (
+                "Error confirmando transacción "
+                "Webpay: %s"
+            ),
+            error,
+        )
+
+        messages.error(
+            request,
+            (
+                "No fue posible confirmar "
+                "la transacción con Webpay."
+            ),
+        )
+
+        if numero_pedido_sesion:
+            return redirect(
+                "core:pedido_confirmacion",
+                numero=numero_pedido_sesion,
+            )
+
+        return redirect(
+            "core:productos"
+        )
+
+    # =========================================================================
+    # NORMALIZAR RESPUESTA TRANSBANK
+    # =========================================================================
+
+    if isinstance(
+        respuesta,
+        dict,
+    ):
+
+        response_code = (
+            respuesta.get(
+                "response_code"
+            )
+        )
+
+        status = str(
+            respuesta.get(
+                "status",
+                "",
+            )
+            or ""
+        ).strip().upper()
+
+        buy_order = str(
+            respuesta.get(
+                "buy_order",
+                "",
+            )
+            or ""
+        ).strip()
+
+        amount_raw = (
+            respuesta.get(
+                "amount"
+            )
+        )
+
+        authorization_code = str(
+            respuesta.get(
+                "authorization_code",
+                "",
+            )
+            or ""
+        ).strip()
+
+        payment_type_code = str(
+            respuesta.get(
+                "payment_type_code",
+                "",
+            )
+            or ""
+        ).strip()
+
+        card_detail = (
+            respuesta.get(
+                "card_detail"
+            )
+            or {}
+        )
+
+    else:
+
+        response_code = getattr(
+            respuesta,
+            "response_code",
+            None,
+        )
+
+        status = str(
+            getattr(
+                respuesta,
+                "status",
+                "",
+            )
+            or ""
+        ).strip().upper()
+
+        buy_order = str(
+            getattr(
+                respuesta,
+                "buy_order",
+                "",
+            )
+            or ""
+        ).strip()
+
+        amount_raw = getattr(
+            respuesta,
+            "amount",
+            None,
+        )
+
+        authorization_code = str(
+            getattr(
+                respuesta,
+                "authorization_code",
+                "",
+            )
+            or ""
+        ).strip()
+
+        payment_type_code = str(
+            getattr(
+                respuesta,
+                "payment_type_code",
+                "",
+            )
+            or ""
+        ).strip()
+
+        card_detail = (
+            getattr(
+                respuesta,
+                "card_detail",
+                {},
+            )
+            or {}
+        )
+
+    # =========================================================================
+    # LOG RESPUESTA TRANSBANK
+    # =========================================================================
+
+    logger.info(
+        (
+            "CONFIRMACIÓN WEBPAY: "
+            "response_code=%s "
+            "status=%s "
+            "buy_order=%s "
+            "amount=%s "
+            "authorization_code=%s "
+            "payment_type_code=%s "
+            "pedido_sesion=%s"
+        ),
+        response_code,
+        status,
+        buy_order,
+        amount_raw,
+        authorization_code,
+        payment_type_code,
+        numero_pedido_sesion,
+    )
+
+    # =========================================================================
+    # VALIDAR BUY ORDER
+    # =========================================================================
+
+    if not buy_order:
+
+        logger.error(
+            "Webpay no devolvió buy_order válido."
+        )
+
+        messages.error(
+            request,
+            (
+                "Webpay no devolvió una "
+                "orden de compra válida."
+            ),
+        )
+
+        return redirect(
+            "core:productos"
+        )
+
+    # =========================================================================
+    # BUSCAR PEDIDO
+    # =========================================================================
+
+    try:
+
+        pedido = (
+            Pedido.objects.get(
+                numero=buy_order
+            )
+        )
+
+    except Pedido.DoesNotExist:
+
+        logger.error(
+            (
+                "Webpay devolvió buy_order "
+                "inexistente: %s"
+            ),
+            buy_order,
+        )
+
+        messages.error(
+            request,
+            (
+                "No fue posible asociar "
+                "el pago con un pedido válido."
+            ),
+        )
+
+        return redirect(
+            "core:productos"
+        )
+
+    # =========================================================================
+    # VALIDAR MÉTODO DE PAGO
+    # =========================================================================
+
+    metodo_pedido = str(
+        pedido.metodo_pago
+        or ""
+    ).strip().lower()
+
+    if metodo_pedido != "webpay":
+
+        logger.error(
+            (
+                "Intento de confirmar con Webpay "
+                "un pedido de otro método. "
+                "Pedido=%s metodo=%s"
+            ),
+            pedido.numero,
+            metodo_pedido,
+        )
+
+        messages.error(
+            request,
+            (
+                "El método de pago del pedido "
+                "no coincide con Webpay."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # VALIDAR PEDIDO CONTRA SESIÓN WEBPAY
+    # =========================================================================
+
+    if (
+        numero_pedido_sesion
+        and numero_pedido_sesion
+        != buy_order
+    ):
+
+        logger.error(
+            (
+                "Webpay buy_order no coincide "
+                "con pedido en sesión. "
+                "Sesion=%s Webpay=%s"
+            ),
+            numero_pedido_sesion,
+            buy_order,
+        )
+
+        messages.error(
+            request,
+            (
+                "La transacción de Webpay "
+                "no coincide con el pedido iniciado."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # VALIDAR PEDIDO EN CURSO
+    # =========================================================================
+
+    if (
+        pedido_pago_en_curso
+        and pedido_pago_en_curso
+        != pedido.numero
+    ):
+
+        logger.error(
+            (
+                "Pedido Webpay no coincide con "
+                "pedido_pago_en_curso. "
+                "Pedido=%s "
+                "Sesion=%s"
+            ),
+            pedido.numero,
+            pedido_pago_en_curso,
+        )
+
+        messages.error(
+            request,
+            (
+                "El pedido confirmado no coincide "
+                "con el proceso de pago iniciado."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # VALIDAR MONTO
+    # =========================================================================
+
+    try:
+
+        amount = Decimal(
+            str(
+                amount_raw
+            )
+        )
+
+        total_pedido = Decimal(
+            str(
+                pedido.total
+                or 0
+            )
+        )
+
+    except Exception as error:
+
+        logger.exception(
+            (
+                "Error validando monto "
+                "Webpay: %s"
+            ),
+            error,
+        )
+
+        messages.error(
+            request,
+            (
+                "Webpay devolvió un monto "
+                "que no pudo ser validado."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # COMPARAR MONTO
+    # =========================================================================
+
+    if amount != total_pedido:
+
+        logger.error(
+            (
+                "Monto Webpay distinto "
+                "al total del pedido. "
+                "Pedido=%s "
+                "Total pedido=%s "
+                "Webpay=%s"
+            ),
+            pedido.numero,
+            total_pedido,
+            amount,
+        )
+
+        messages.error(
+            request,
+            (
+                "El monto confirmado por Webpay "
+                "no coincide con el total del pedido."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # VALIDAR APROBACIÓN TRANSBANK
+    # =========================================================================
+
+    aprobado = bool(
+        response_code == 0
+        and status == "AUTHORIZED"
+    )
+
+    if not aprobado:
+
+        logger.warning(
+            (
+                "Pago Webpay no aprobado. "
+                "Pedido=%s "
+                "status=%s "
+                "response_code=%s"
+            ),
+            pedido.numero,
+            status,
+            response_code,
+        )
+
+        messages.warning(
+            request,
+            (
+                "El pago mediante Webpay "
+                "no fue aprobado."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # WEBPAY CONFIRMÓ EL PAGO
+    # =========================================================================
+
+    logger.info(
+        (
+            "Webpay AUTORIZÓ el pago. "
+            "Pedido=%s "
+            "response_code=%s "
+            "status=%s "
+            "amount=%s"
+        ),
+        pedido.numero,
+        response_code,
+        status,
+        amount,
+    )
+
+    # =========================================================================
+    # ÚLTIMOS DÍGITOS TARJETA
+    # =========================================================================
+
+    card_number = ""
+
+    if isinstance(
+        card_detail,
+        dict,
+    ):
+
+        card_number = str(
+            card_detail.get(
+                "card_number",
+                "",
+            )
+            or ""
+        ).strip()
+
+    # =========================================================================
+    # MARCAR PEDIDO COMO PAGADO
+    # =========================================================================
+
+    try:
+
+        pedido = (
+            marcar_pedido_como_pagado(
+                pedido_id=pedido.pk,
+
+                datos_pago={
+                    "metodo": (
+                        "webpay"
+                    ),
+
+                    "payment_id": (
+                        authorization_code
+                        or token_ws
+                    ),
+
+                    "transaction_id": (
+                        authorization_code
+                        or token_ws
+                    ),
+
+                    "status": (
+                        status
+                    ),
+
+                    "transaction_amount": (
+                        amount
+                    ),
+
+                    "response_code": (
+                        response_code
+                    ),
+
+                    "authorization_code": (
+                        authorization_code
+                    ),
+
+                    "payment_type_code": (
+                        payment_type_code
+                    ),
+
+                    "card_number": (
+                        card_number
+                    ),
+
+                    "token_ws": (
+                        token_ws
+                    ),
+                },
+            )
+        )
+
+    except ValueError as error:
+
+        logger.exception(
+            (
+                "Error confirmando pedido "
+                "Webpay %s: %s"
+            ),
+            pedido.numero,
+            error,
+        )
+
+        messages.error(
+            request,
+            str(
+                error
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    except Exception as error:
+
+        logger.exception(
+            (
+                "Error inesperado confirmando "
+                "pedido Webpay %s: %s"
+            ),
+            pedido.numero,
+            error,
+        )
+
+        messages.error(
+            request,
+            (
+                "El pago fue autorizado, pero ocurrió "
+                "un problema al confirmar el pedido."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # RECARGAR PEDIDO DESDE BASE DE DATOS
+    # =========================================================================
+
+    pedido.refresh_from_db()
+
+    # =========================================================================
+    # LOG DEL ESTADO PERSISTIDO
+    # =========================================================================
+
+    logger.info(
+        (
+            "PEDIDO DESPUÉS WEBPAY: "
+            "numero=%s "
+            "metodo=%s "
+            "pagado=%s "
+            "estado_pago=%s "
+            "estado=%s "
+            "fecha_pago=%s "
+            "stock_descontado=%s"
+        ),
+        pedido.numero,
+        pedido.metodo_pago,
+        pedido.pagado,
+        pedido.estado_pago,
+        pedido.estado,
+        pedido.fecha_pago,
+        pedido.stock_descontado,
+    )
+
+    # =========================================================================
+    # VALIDACIÓN FINAL DEL PEDIDO
+    # =========================================================================
+
+    pedido_confirmado = bool(
+        pedido.pagado
+        and pedido.estado_pago
+        == Pedido.EstadoPago.APROBADO
+    )
+
+    if not pedido_confirmado:
+
+        logger.error(
+            (
+                "Webpay autorizó el pago pero "
+                "el pedido no quedó confirmado. "
+                "Pedido=%s "
+                "pagado=%s "
+                "estado_pago=%s"
+            ),
+            pedido.numero,
+            pedido.pagado,
+            pedido.estado_pago,
+        )
+
+        messages.error(
+            request,
+            (
+                "El pago fue aprobado por Webpay, "
+                "pero no fue posible confirmar "
+                "el pedido correctamente."
+            ),
+        )
+
+        return redirect(
+            "core:pedido_confirmacion",
+            numero=pedido.numero,
+        )
+
+    # =========================================================================
+    # VERIFICAR CARRITO ANTES DE VACIAR
+    # =========================================================================
+
+    carrito_antes = (
+        _obtener_carrito(
+            request
+        )
+    )
+
+    logger.info(
+        (
+            "CARRITO ANTES DE VACIAR WEBPAY. "
+            "Pedido=%s "
+            "contenido=%s"
+        ),
+        pedido.numero,
+        carrito_antes,
+    )
+
+    # =========================================================================
+    # VACIAR CARRITO CONFIRMADO
+    # =========================================================================
+    #
+    # Esta función:
+    #
+    # - comprueba pedido_pago_en_curso;
+    # - utiliza _guardar_carrito(request, {});
+    # - funciona con tu carrito persistente;
+    # - elimina pedido_pago_en_curso después.
+    # =========================================================================
+
+    carrito_vaciado = (
+        _vaciar_carrito_pago_confirmado(
+            request,
+            pedido,
+        )
+    )
+
+    # =========================================================================
+    # VERIFICAR CARRITO DESPUÉS DEL VACIADO
+    # =========================================================================
+
+    carrito_despues = (
+        _obtener_carrito(
+            request
+        )
+    )
+
+    logger.info(
+        (
+            "CARRITO DESPUÉS DE VACIAR WEBPAY. "
+            "Pedido=%s "
+            "carrito_vaciado=%s "
+            "contenido=%s"
+        ),
+        pedido.numero,
+        carrito_vaciado,
+        carrito_despues,
+    )
+
+    # =========================================================================
+    # SEGURIDAD ADICIONAL
+    # =========================================================================
+    #
+    # Si por alguna razón la función protegida no pudo vaciarlo,
+    # NO borramos el carrito a la fuerza si el pedido de sesión
+    # correspondía a otro pedido.
+    #
+    # Sin embargo, si todavía tenemos exactamente este mismo
+    # pedido registrado en sesión, realizamos un segundo intento.
+    # =========================================================================
+
+    if (
+        carrito_despues
+        and pedido_pago_en_curso
+        == pedido.numero
+    ):
+
+        logger.warning(
+            (
+                "El carrito sigue con contenido después "
+                "del primer vaciado Webpay. "
+                "Se realizará un segundo intento seguro. "
+                "Pedido=%s"
+            ),
+            pedido.numero,
+        )
+
+        _guardar_carrito(
+            request,
+            {},
+        )
+
+        request.session.pop(
+            "pedido_pago_en_curso",
+            None,
+        )
+
+        request.session.modified = True
+
+        carrito_despues = (
+            _obtener_carrito(
+                request
+            )
+        )
+
+        carrito_vaciado = (
+            not bool(
+                carrito_despues
+            )
+        )
+
+        logger.info(
+            (
+                "Segundo intento de vaciado Webpay. "
+                "Pedido=%s "
+                "carrito_vaciado=%s "
+                "contenido=%s"
+            ),
+            pedido.numero,
+            carrito_vaciado,
+            carrito_despues,
+        )
+
+    # =========================================================================
+    # LIMPIAR INFORMACIÓN TEMPORAL WEBPAY
+    # =========================================================================
+
+    request.session.pop(
+        "webpay_token",
+        None,
+    )
+
+    request.session.pop(
+        "webpay_pedido",
+        None,
+    )
+
+    # pedido_pago_en_curso normalmente ya fue eliminado
+    # por _vaciar_carrito_pago_confirmado().
+    #
+    # Lo quitamos nuevamente de forma idempotente
+    # únicamente al final del flujo exitoso.
+
+    request.session.pop(
+        "pedido_pago_en_curso",
+        None,
+    )
+
+    request.session.modified = True
+
+    # =========================================================================
+    # LOG FINAL
+    # =========================================================================
+
+    logger.info(
+        (
+            "WEBPAY COMPLETADO CORRECTAMENTE. "
+            "Pedido=%s "
+            "pagado=%s "
+            "estado_pago=%s "
+            "status_webpay=%s "
+            "response_code=%s "
+            "monto=%s "
+            "carrito_vaciado=%s "
+            "carrito_final=%s"
+        ),
+        pedido.numero,
+        pedido.pagado,
+        pedido.estado_pago,
+        status,
+        response_code,
+        amount,
+        carrito_vaciado,
+        carrito_despues,
+    )
+
+    # =========================================================================
+    # MENSAJE DE ÉXITO
+    # =========================================================================
+
+    messages.success(
+        request,
+        (
+            "Tu pago mediante Webpay "
+            "fue confirmado correctamente."
+        ),
+    )
+
+    # =========================================================================
+    # REDIRECCIONAR A CONFIRMACIÓN
+    # =========================================================================
+
+    return redirect(
+        "core:pedido_confirmacion",
+        numero=pedido.numero,
     )

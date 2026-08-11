@@ -10,7 +10,7 @@
 {% block extra_css %}
     <link
         rel="stylesheet"
-        href="{% static 'core/css/pago_exitoso.css' %}?v=6"
+        href="{% static 'core/css/pago_exitoso.css' %}?v=7"
     >
 {% endblock %}
 
@@ -76,7 +76,7 @@
                 <div class="pago-exitoso__acciones">
 
                     <a
-                        href="/productos/"
+                        href="{% url 'core:productos' %}"
                         class="boton boton--primario"
                     >
                         Seguir comprando
@@ -84,7 +84,7 @@
                     </a>
 
                     <a
-                        href="/"
+                        href="{% url 'core:inicio' %}"
                         class="boton boton--secundario"
                     >
                         <i class="bi bi-house"></i>
@@ -209,7 +209,9 @@
                 </div>
 
 
-                <!-- TOTALES -->
+                <!-- =================================================
+                     TOTALES
+                ================================================== -->
 
                 <div class="pago-totales">
 
@@ -291,7 +293,9 @@
 
             <aside class="pago-exitoso__lateral">
 
-                <!-- ESTADO DEL PEDIDO -->
+                <!-- =================================================
+                     ESTADO DEL PEDIDO
+                ================================================== -->
 
                 <article class="pago-tarjeta">
 
@@ -381,23 +385,70 @@
                 </article>
 
 
-                <!-- INFORMACIÓN DE PAGO -->
+                <!-- =================================================
+                     INFORMACIÓN DE PAGO
+                ================================================== -->
 
                 <article class="pago-tarjeta">
 
                     <div class="pago-tarjeta__icono">
-                        <i class="bi bi-credit-card-2-front"></i>
+
+                        {% if pedido.metodo_pago == "webpay" %}
+
+                            <i class="bi bi-credit-card-2-front"></i>
+
+                        {% elif pedido.metodo_pago == "mercadopago" %}
+
+                            <i class="bi bi-wallet2"></i>
+
+                        {% elif pedido.metodo_pago == "transferencia" %}
+
+                            <i class="bi bi-bank"></i>
+
+                        {% else %}
+
+                            <i class="bi bi-credit-card"></i>
+
+                        {% endif %}
+
                     </div>
 
                     <span class="pago-tarjeta__eyebrow">
                         Información del pago
                     </span>
 
+                    <!-- =====================================================
+                         NOMBRE DEL MÉTODO DE PAGO
+                    ====================================================== -->
+
                     <h2>
-                        Mercado Pago
+
+                        {% if pedido.metodo_pago == "webpay" %}
+
+                            Webpay Plus
+
+                        {% elif pedido.metodo_pago == "mercadopago" %}
+
+                            Mercado Pago
+
+                        {% elif pedido.metodo_pago == "transferencia" %}
+
+                            Transferencia bancaria
+
+                        {% else %}
+
+                            {{ pedido.get_metodo_pago_display }}
+
+                        {% endif %}
+
                     </h2>
 
+
                     <div class="pago-datos">
+
+                        <!-- =============================================
+                             ESTADO
+                        ============================================== -->
 
                         <div class="pago-datos__fila">
 
@@ -413,22 +464,9 @@
                         </div>
 
 
-                        {% if pedido.mercadopago_payment_id %}
-
-                            <div class="pago-datos__fila">
-
-                                <span>
-                                    ID de pago
-                                </span>
-
-                                <strong>
-                                    {{ pedido.mercadopago_payment_id }}
-                                </strong>
-
-                            </div>
-
-                        {% endif %}
-
+                        <!-- =============================================
+                             FECHA DE PAGO
+                        ============================================== -->
 
                         {% if pedido.fecha_pago %}
 
@@ -447,24 +485,83 @@
                         {% endif %}
 
 
-                        {% if pedido.mercadopago_payment_type %}
+                        <!-- =============================================
+                             MERCADO PAGO
+                        ============================================== -->
 
-                            <div class="pago-datos__fila">
+                        {% if pedido.metodo_pago == "mercadopago" %}
 
-                                <span>
-                                    Medio
-                                </span>
+                            {% if pedido.mercadopago_payment_id %}
 
-                                <strong>
-                                    {{ pedido.mercadopago_payment_type }}
-                                </strong>
+                                <div class="pago-datos__fila">
 
-                            </div>
+                                    <span>
+                                        ID de pago
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.mercadopago_payment_id }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if pedido.mercadopago_payment_type %}
+
+                                <div class="pago-datos__fila">
+
+                                    <span>
+                                        Medio
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.mercadopago_payment_type }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if pedido.mercadopago_transaction_amount %}
+
+                                <div class="pago-datos__fila">
+
+                                    <span>
+                                        Monto
+                                    </span>
+
+                                    <strong>
+                                        ${{ pedido.mercadopago_transaction_amount|floatformat:0|intcomma }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
 
                         {% endif %}
 
 
-                        {% if pedido.mercadopago_transaction_amount %}
+                        <!-- =============================================
+                             WEBPAY
+                        ============================================== -->
+
+                        {% if pedido.metodo_pago == "webpay" %}
+
+                            <div class="pago-datos__fila">
+
+                                <span>
+                                    Proveedor
+                                </span>
+
+                                <strong>
+                                    Transbank
+                                </strong>
+
+                            </div>
+
 
                             <div class="pago-datos__fila">
 
@@ -473,7 +570,28 @@
                                 </span>
 
                                 <strong>
-                                    ${{ pedido.mercadopago_transaction_amount|floatformat:0|intcomma }}
+                                    ${{ pedido.total|floatformat:0|intcomma }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- =============================================
+                             TRANSFERENCIA
+                        ============================================== -->
+
+                        {% if pedido.metodo_pago == "transferencia" %}
+
+                            <div class="pago-datos__fila">
+
+                                <span>
+                                    Medio
+                                </span>
+
+                                <strong>
+                                    Transferencia bancaria
                                 </strong>
 
                             </div>
@@ -485,7 +603,9 @@
                 </article>
 
 
-                <!-- CONFIRMACIÓN POR CORREO -->
+                <!-- =================================================
+                     CONFIRMACIÓN POR CORREO
+                ================================================== -->
 
                 <article class="pago-tarjeta">
 
@@ -660,9 +780,30 @@
                 </h3>
 
                 <p>
-                    Tu pago fue procesado de manera segura
-                    mediante Mercado Pago.
+
+                    {% if pedido.metodo_pago == "webpay" %}
+
+                        Tu pago fue procesado de manera segura
+                        mediante Webpay Plus de Transbank.
+
+                    {% elif pedido.metodo_pago == "mercadopago" %}
+
+                        Tu pago fue procesado de manera segura
+                        mediante Mercado Pago.
+
+                    {% elif pedido.metodo_pago == "transferencia" %}
+
+                        Tu pedido fue registrado mediante
+                        transferencia bancaria.
+
+                    {% else %}
+
+                        Tu compra fue procesada de manera segura.
+
+                    {% endif %}
+
                 </p>
+
             </div>
 
         </article>
@@ -697,58 +838,74 @@
 {% block extra_js %}
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const botonCopiar = document.querySelector(
-            ".pago-exitoso__copiar"
-        );
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
 
-        if (!botonCopiar) {
-            return;
-        }
+            const botonCopiar = document.querySelector(
+                ".pago-exitoso__copiar"
+            );
 
-        botonCopiar.addEventListener("click", async () => {
-            const numeroPedido =
-                botonCopiar.dataset.numeroPedido;
-
-            try {
-                await navigator.clipboard.writeText(
-                    numeroPedido
-                );
-
-                botonCopiar.innerHTML =
-                    '<i class="bi bi-check-lg"></i>';
-
-                botonCopiar.classList.add(
-                    "pago-exitoso__copiar--correcto"
-                );
-
-                botonCopiar.setAttribute(
-                    "aria-label",
-                    "Número copiado"
-                );
-
-                window.setTimeout(() => {
-                    botonCopiar.innerHTML =
-                        '<i class="bi bi-copy"></i>';
-
-                    botonCopiar.classList.remove(
-                        "pago-exitoso__copiar--correcto"
-                    );
-
-                    botonCopiar.setAttribute(
-                        "aria-label",
-                        "Copiar número del pedido"
-                    );
-                }, 1800);
-
-            } catch (error) {
-                console.error(
-                    "No fue posible copiar el pedido:",
-                    error
-                );
+            if (!botonCopiar) {
+                return;
             }
-        });
-    });
+
+            botonCopiar.addEventListener(
+                "click",
+                async () => {
+
+                    const numeroPedido =
+                        botonCopiar.dataset.numeroPedido;
+
+                    try {
+
+                        await navigator.clipboard.writeText(
+                            numeroPedido
+                        );
+
+                        botonCopiar.innerHTML =
+                            '<i class="bi bi-check-lg"></i>';
+
+                        botonCopiar.classList.add(
+                            "pago-exitoso__copiar--correcto"
+                        );
+
+                        botonCopiar.setAttribute(
+                            "aria-label",
+                            "Número copiado"
+                        );
+
+                        window.setTimeout(
+                            () => {
+
+                                botonCopiar.innerHTML =
+                                    '<i class="bi bi-copy"></i>';
+
+                                botonCopiar.classList.remove(
+                                    "pago-exitoso__copiar--correcto"
+                                );
+
+                                botonCopiar.setAttribute(
+                                    "aria-label",
+                                    "Copiar número del pedido"
+                                );
+
+                            },
+                            1800,
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            "No fue posible copiar el pedido:",
+                            error,
+                        );
+
+                    }
+                },
+            );
+        },
+    );
 </script>
 
 {% endblock %}

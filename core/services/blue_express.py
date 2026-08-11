@@ -23,7 +23,7 @@ from dataclasses import dataclass
 
 TARIFAS_BLUE_EXPRESS = {
     "SANTIAGO": {
-        "XS": 3100,
+        "XS": 100,
         "S": 4200,
         "M": 4800,
         "L": 5400,

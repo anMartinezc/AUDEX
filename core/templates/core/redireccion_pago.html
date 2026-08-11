@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirigiendo al pago...</title>
+</head>
+
+<body>
+
+<form
+    id="formPago"
+    method="post"
+    action="{{ url }}"
+>
+    {% for nombre, valor in datos.items %}
+        <input
+            type="hidden"
+            name="{{ nombre }}"
+            value="{{ valor }}"
+        >
+    {% endfor %}
+</form>
+
+<script>
+    document
+        .getElementById("formPago")
+        .submit();
+</script>
+
+</body>
+</html>

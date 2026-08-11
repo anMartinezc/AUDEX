@@ -391,4 +391,15 @@ path(
     name="mostrar_meta_fidelidad",
 ),
 
+
+
+
+
+
+
+    path(
+        "webpay/retorno/",
+        views.webpay_retorno,
+        name="webpay_retorno",
+    ),
 ]

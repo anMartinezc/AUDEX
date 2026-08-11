@@ -17,6 +17,10 @@ from core.services.descuentos import (
     reservar_codigo_descuento,
     resolver_descuento,
 )
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 META_DESPACHO_GRATIS = Decimal(
@@ -46,12 +50,21 @@ def procesar_pedido_checkout(
     - Impide que un RUT repita un código.
     - Reserva el código hasta confirmar el pago.
     - Guarda el detalle histórico del descuento.
+    - Guarda explícitamente el email ingresado en checkout.
     """
+
+    # =========================================================================
+    # VALIDAR CARRITO
+    # =========================================================================
 
     if not carrito:
         raise ValueError(
             "El carrito está vacío."
         )
+
+    # =========================================================================
+    # IDS DE PRODUCTOS
+    # =========================================================================
 
     ids_productos = []
 
@@ -75,6 +88,10 @@ def procesar_pedido_checkout(
             )
         )
 
+    # =========================================================================
+    # PRODUCTOS BLOQUEADOS
+    # =========================================================================
+
     productos = {
         producto.id: producto
         for producto in (
@@ -87,10 +104,18 @@ def procesar_pedido_checkout(
         )
     }
 
+    # =========================================================================
+    # VALIDAR ITEMS Y CALCULAR SUBTOTAL
+    # =========================================================================
+
     items_para_crear = []
     subtotal = Decimal("0")
 
-    for producto_id_texto, datos in carrito.items():
+    for (
+        producto_id_texto,
+        datos,
+    ) in carrito.items():
+
         try:
             producto_id = int(
                 producto_id_texto
@@ -115,6 +140,10 @@ def procesar_pedido_checkout(
                 )
             ) from error
 
+        # ---------------------------------------------------------------------
+        # VALIDAR CANTIDAD
+        # ---------------------------------------------------------------------
+
         if cantidad <= 0:
             raise ValueError(
                 (
@@ -122,6 +151,10 @@ def procesar_pedido_checkout(
                     "no es válida."
                 )
             )
+
+        # ---------------------------------------------------------------------
+        # VALIDAR PRODUCTO
+        # ---------------------------------------------------------------------
 
         producto = productos.get(
             producto_id
@@ -134,6 +167,10 @@ def procesar_pedido_checkout(
                     "está disponible."
                 )
             )
+
+        # ---------------------------------------------------------------------
+        # STOCK DISPONIBLE
+        # ---------------------------------------------------------------------
 
         stock_disponible = max(
             producto.stock
@@ -150,37 +187,64 @@ def procesar_pedido_checkout(
                 )
             )
 
+        # ---------------------------------------------------------------------
+        # PRECIOS
+        # ---------------------------------------------------------------------
+
         precio_lista = Decimal(
-            str(producto.precio)
+            str(
+                producto.precio
+            )
         )
 
         precio_venta = Decimal(
-            str(producto.precio_actual)
+            str(
+                producto.precio_actual
+            )
         )
 
         descuento_producto_unitario = max(
-            precio_lista - precio_venta,
+            precio_lista
+            - precio_venta,
             Decimal("0"),
         )
 
         total_linea = (
-            precio_venta * cantidad
+            precio_venta
+            * cantidad
         )
 
-        subtotal += total_linea
+        subtotal += (
+            total_linea
+        )
 
         items_para_crear.append(
             {
                 "producto": producto,
+
                 "cantidad": cantidad,
-                "precio_lista": precio_lista,
-                "precio_venta": precio_venta,
+
+                "precio_lista": (
+                    precio_lista
+                ),
+
+                "precio_venta": (
+                    precio_venta
+                ),
+
                 "descuento_producto_unitario": (
                     descuento_producto_unitario
                 ),
-                "total": total_linea,
+
+                "total": (
+                    total_linea
+                ),
             }
         )
+
+    # =========================================================================
+    # VALIDAR ITEMS
+    # =========================================================================
 
     if not items_para_crear:
         raise ValueError(
@@ -189,6 +253,10 @@ def procesar_pedido_checkout(
                 "productos del pedido."
             )
         )
+
+    # =========================================================================
+    # DATOS DEL CHECKOUT
+    # =========================================================================
 
     codigo = (
         form.cleaned_data.get(
@@ -206,19 +274,79 @@ def procesar_pedido_checkout(
         or ""
     ).strip()
 
+    # =========================================================================
+    # EMAIL DEL CHECKOUT
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # Este debe ser el correo ingresado por el cliente
+    # en el formulario de checkout.
+    #
+    # No utilizamos request.user.email aquí.
+    # =========================================================================
+
+    email_checkout = (
+        form.cleaned_data.get(
+            "email",
+            "",
+        )
+        or ""
+    ).strip().lower()
+
+    if not email_checkout:
+        raise ValueError(
+            (
+                "Debes ingresar un correo electrónico "
+                "válido para recibir la confirmación."
+            )
+        )
+
+    # =========================================================================
+    # DATOS PERSONALES
+    # =========================================================================
+
+    nombre_checkout = (
+        form.cleaned_data.get(
+            "nombre",
+            "",
+        )
+        or ""
+    ).strip()
+
+    apellido_checkout = (
+        form.cleaned_data.get(
+            "apellido",
+            "",
+        )
+        or ""
+    ).strip()
+
+    # =========================================================================
+    # RESOLVER DESCUENTO
+    # =========================================================================
+
     try:
-        resultado_descuento = resolver_descuento(
-            usuario=request.user,
-            rut=rut,
-            subtotal=subtotal,
-            codigo=codigo,
-            bloquear=True,
+        resultado_descuento = (
+            resolver_descuento(
+                usuario=request.user,
+                rut=rut,
+                subtotal=subtotal,
+                codigo=codigo,
+                bloquear=True,
+            )
         )
 
     except DescuentoError as error:
         raise ValueError(
-            str(error)
+            str(
+                error
+            )
         ) from error
+
+    # =========================================================================
+    # MONTO DESCUENTO
+    # =========================================================================
 
     descuento = Decimal(
         str(
@@ -226,6 +354,10 @@ def procesar_pedido_checkout(
             or 0
         )
     )
+
+    # =========================================================================
+    # BASE DESPACHO
+    # =========================================================================
 
     base_despacho = max(
         subtotal - descuento,
@@ -238,6 +370,10 @@ def procesar_pedido_checkout(
         >= META_DESPACHO_GRATIS
         else COSTO_DESPACHO
     )
+
+    # =========================================================================
+    # TOTAL
+    # =========================================================================
 
     total = (
         base_despacho
@@ -252,15 +388,63 @@ def procesar_pedido_checkout(
             )
         )
 
+    # =========================================================================
+    # CREAR PEDIDO DESDE FORM
+    # =========================================================================
+
     pedido = form.save(
         commit=False
     )
+
+    # =========================================================================
+    # USUARIO
+    # =========================================================================
 
     pedido.usuario = (
         request.user
         if request.user.is_authenticated
         else None
     )
+
+    # =========================================================================
+    # DATOS DEL CHECKOUT
+    # =========================================================================
+    #
+    # Los asignamos explícitamente para garantizar
+    # que el Pedido use los datos escritos en checkout.
+    # =========================================================================
+
+    pedido.email = (
+        email_checkout
+    )
+
+    if hasattr(
+        pedido,
+        "nombre",
+    ):
+        pedido.nombre = (
+            nombre_checkout
+        )
+
+    if hasattr(
+        pedido,
+        "apellido",
+    ):
+        pedido.apellido = (
+            apellido_checkout
+        )
+
+    if hasattr(
+        pedido,
+        "rut",
+    ):
+        pedido.rut = (
+            rut
+        )
+
+    # =========================================================================
+    # DESCUENTO
+    # =========================================================================
 
     pedido.codigo_descuento_obj = (
         resultado_descuento.codigo_objeto
@@ -279,10 +463,29 @@ def procesar_pedido_checkout(
         resultado_descuento.porcentaje
     )
 
-    pedido.subtotal = subtotal
-    pedido.descuento = descuento
-    pedido.despacho = despacho
-    pedido.total = total
+    # =========================================================================
+    # MONTOS
+    # =========================================================================
+
+    pedido.subtotal = (
+        subtotal
+    )
+
+    pedido.descuento = (
+        descuento
+    )
+
+    pedido.despacho = (
+        despacho
+    )
+
+    pedido.total = (
+        total
+    )
+
+    # =========================================================================
+    # ESTADOS INICIALES
+    # =========================================================================
 
     pedido.estado = (
         Pedido.EstadoPedido.PENDIENTE
@@ -293,15 +496,54 @@ def procesar_pedido_checkout(
     )
 
     pedido.pagado = False
+
     pedido.stock_descontado = False
 
     pedido.correo_confirmacion_enviado = (
         False
     )
 
-    pedido.fidelidad_contabilizada = False
+    pedido.fidelidad_contabilizada = (
+        False
+    )
+
+    # =========================================================================
+    # GUARDAR PEDIDO
+    # =========================================================================
 
     pedido.save()
+
+    # =========================================================================
+    # LOG DE DIAGNÓSTICO
+    # =========================================================================
+    #
+    # Esto te permitirá comprobar en terminal
+    # qué correo quedó realmente guardado.
+    # =========================================================================
+
+    logger.info(
+        (
+            "Pedido creado desde checkout. "
+            "Pedido=%s "
+            "metodo_pago=%s "
+            "email_checkout=%s "
+            "email_usuario=%s "
+            "email_guardado=%s"
+        ),
+        pedido.numero,
+        pedido.metodo_pago,
+        email_checkout,
+        (
+            request.user.email
+            if request.user.is_authenticated
+            else ""
+        ),
+        pedido.email,
+    )
+
+    # =========================================================================
+    # RESERVAR CÓDIGO
+    # =========================================================================
 
     reservar_codigo_descuento(
         resultado=resultado_descuento,
@@ -310,21 +552,36 @@ def procesar_pedido_checkout(
         rut=rut,
     )
 
-    descuento_pendiente = descuento
+    # =========================================================================
+    # DISTRIBUIR DESCUENTO ENTRE ITEMS
+    # =========================================================================
+
+    descuento_pendiente = (
+        descuento
+    )
+
     items_pedido = []
 
-    for indice, datos_item in enumerate(
+    for (
+        indice,
+        datos_item,
+    ) in enumerate(
         items_para_crear
     ):
+
         es_ultimo_item = (
             indice
-            == len(items_para_crear) - 1
+            == len(
+                items_para_crear
+            )
+            - 1
         )
 
         if (
             subtotal > Decimal("0")
             and not es_ultimo_item
         ):
+
             proporcion = (
                 datos_item["total"]
                 / subtotal
@@ -344,6 +601,7 @@ def procesar_pedido_checkout(
             )
 
         else:
+
             descuento_linea = (
                 descuento_pendiente
             )
@@ -358,69 +616,98 @@ def procesar_pedido_checkout(
             Decimal("0"),
         )
 
-        producto = datos_item[
-            "producto"
-        ]
+        producto = (
+            datos_item[
+                "producto"
+            ]
+        )
 
         items_pedido.append(
             PedidoItem(
                 pedido=pedido,
-                producto=producto,
+
+                producto=(
+                    producto
+                ),
+
                 nombre_producto=(
                     producto.nombre
                 ),
+
                 precio_lista_unitario=(
                     datos_item[
                         "precio_lista"
                     ]
                 ),
+
                 precio_unitario=(
                     datos_item[
                         "precio_venta"
                     ]
                 ),
+
                 descuento_producto_unitario=(
                     datos_item[
                         "descuento_producto_unitario"
                     ]
                 ),
+
                 cantidad=(
                     datos_item[
                         "cantidad"
                     ]
                 ),
+
                 total=(
                     datos_item[
                         "total"
                     ]
                 ),
+
                 descuento_codigo=(
                     descuento_linea
                 ),
+
                 total_final=(
                     total_final_linea
                 ),
             )
         )
 
+    # =========================================================================
+    # CREAR ITEMS
+    # =========================================================================
+
     PedidoItem.objects.bulk_create(
         items_pedido
     )
 
+    # =========================================================================
+    # HISTORIAL
+    # =========================================================================
+
     PedidoHistorialEstado.objects.create(
         pedido=pedido,
+
         estado_anterior="",
+
         estado_nuevo=(
             Pedido.EstadoPedido.PENDIENTE
         ),
+
         comentario=(
             "Pedido creado desde el checkout."
         ),
+
         usuario=(
             request.user
             if request.user.is_authenticated
             else None
         ),
     )
+
+    # =========================================================================
+    # RETORNAR
+    # =========================================================================
 
     return pedido
