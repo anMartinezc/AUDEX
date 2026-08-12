@@ -1,0 +1,1061 @@
+/* =========================================================
+   SEGUIMIENTO DE PEDIDO
+   Archivo:
+   core/static/core/css/seguimiento_pedido.css
+========================================================= */
+
+
+/* =========================================================
+   PÁGINA
+========================================================= */
+
+.seguimiento-pagina {
+    position: relative;
+
+    padding:
+        58px
+        0
+        88px;
+}
+
+
+/* =========================================================
+   BUSCAR PEDIDO
+========================================================= */
+
+.buscar-pedido {
+    width: min(
+        720px,
+        100%
+    );
+
+    margin:
+        30px auto
+        0;
+
+    padding:
+        54px
+        48px;
+
+    text-align: center;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius:
+        var(--radio-medio);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                255,
+                255,
+                255,
+                0.025
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.008
+            )
+        ),
+        var(--color-fondo-secundario);
+
+    box-shadow:
+        inset
+        0
+        1px
+        0
+        rgba(
+            255,
+            255,
+            255,
+            0.02
+        );
+}
+
+
+/* =========================================================
+   ICONO BUSCADOR
+========================================================= */
+
+.buscar-pedido__icono {
+    width: 82px;
+    height: 82px;
+
+    margin:
+        0 auto
+        24px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 2rem;
+
+    border:
+        1px solid
+        var(--borde-azul);
+
+    border-radius: 50%;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.08
+        );
+
+    box-shadow:
+        0
+        0
+        32px
+        rgba(
+            54,
+            169,
+            214,
+            0.05
+        );
+}
+
+
+/* =========================================================
+   TEXTO BUSCADOR
+========================================================= */
+
+.buscar-pedido h1 {
+    margin-top: 16px;
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size:
+        clamp(
+            2.2rem,
+            6vw,
+            3.7rem
+        );
+
+    font-weight: 800;
+
+    line-height: 1.05;
+
+    letter-spacing:
+        -0.04em;
+}
+
+.buscar-pedido > p {
+    max-width: 520px;
+
+    margin:
+        17px auto
+        28px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.84rem;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   FORMULARIO
+========================================================= */
+
+.buscar-pedido__form {
+    display: grid;
+
+    gap: 17px;
+
+    text-align: left;
+}
+
+.campo {
+    display: grid;
+
+    gap: 8px;
+}
+
+.campo label {
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+    width: 100%;
+
+    min-height: 48px;
+
+    padding:
+        0
+        15px;
+
+    color:
+        var(--color-blanco);
+
+    font: inherit;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius: 12px;
+
+    outline: none;
+
+    background:
+        rgba(
+            5,
+            10,
+            14,
+            0.75
+        );
+
+    transition:
+        border-color var(--transicion),
+        box-shadow var(--transicion),
+        background var(--transicion);
+}
+
+.campo textarea {
+    min-height: 110px;
+
+    padding:
+        13px
+        15px;
+
+    resize: vertical;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+    border-color:
+        var(--color-azul-claro);
+
+    background:
+        rgba(
+            5,
+            10,
+            14,
+            0.9
+        );
+
+    box-shadow:
+        0
+        0
+        0
+        3px
+        rgba(
+            54,
+            169,
+            214,
+            0.055
+        );
+}
+
+.campo input::placeholder {
+    color:
+        var(--color-gris);
+}
+
+
+/* =========================================================
+   ERRORES
+========================================================= */
+
+.form-error,
+.errorlist {
+    margin: 0;
+
+    padding: 0;
+
+    color: #ff9ba3;
+
+    font-size: 0.72rem;
+
+    list-style: none;
+}
+
+.form-error {
+    padding: 12px 14px;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            91,
+            101,
+            0.18
+        );
+
+    border-radius: 10px;
+
+    background:
+        rgba(
+            255,
+            91,
+            101,
+            0.04
+        );
+}
+
+
+/* =========================================================
+   CABECERA DE SEGUIMIENTO
+========================================================= */
+
+.seguimiento-cabecera {
+    margin-top: 18px;
+    margin-bottom: 30px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 30px;
+}
+
+.seguimiento-cabecera > div {
+    min-width: 0;
+}
+
+.seguimiento-cabecera h1 {
+    margin-top: 15px;
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size:
+        clamp(
+            2.4rem,
+            5vw,
+            4.2rem
+        );
+
+    font-weight: 800;
+
+    line-height: 1;
+
+    letter-spacing:
+        -0.045em;
+
+    overflow-wrap:
+        anywhere;
+}
+
+.seguimiento-cabecera p {
+    margin-top: 12px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.8rem;
+}
+
+
+/* =========================================================
+   ESTADO DEL PEDIDO
+========================================================= */
+
+.pedido-estado {
+    min-width: max-content;
+
+    min-height: 38px;
+
+    padding:
+        0
+        14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.7rem;
+    font-weight: 900;
+
+    line-height: 1;
+
+    border:
+        1px solid
+        var(--borde-azul);
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.08
+        );
+}
+
+
+/* Confirmado */
+
+.pedido-estado--confirmado {
+    color: #72e49d;
+
+    border-color:
+        rgba(
+            37,
+            211,
+            102,
+            0.28
+        );
+
+    background:
+        rgba(
+            37,
+            211,
+            102,
+            0.07
+        );
+}
+
+
+/* Preparación */
+
+.pedido-estado--preparacion {
+    color:
+        var(--color-azul-claro);
+
+    border-color:
+        var(--borde-azul);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.075
+        );
+}
+
+
+/* Listo */
+
+.pedido-estado--listo {
+    color: #83ddff;
+
+    border-color:
+        rgba(
+            83,
+            202,
+            245,
+            0.30
+        );
+
+    background:
+        rgba(
+            83,
+            202,
+            245,
+            0.07
+        );
+}
+
+
+/* Enviado */
+
+.pedido-estado--enviado {
+    color: #b6a8ff;
+
+    border-color:
+        rgba(
+            139,
+            112,
+            255,
+            0.30
+        );
+
+    background:
+        rgba(
+            139,
+            112,
+            255,
+            0.07
+        );
+}
+
+
+/* Entregado */
+
+.pedido-estado--entregado {
+    color: #72e49d;
+
+    border-color:
+        rgba(
+            37,
+            211,
+            102,
+            0.30
+        );
+
+    background:
+        rgba(
+            37,
+            211,
+            102,
+            0.07
+        );
+}
+
+
+/* Cancelado */
+
+.pedido-estado--cancelado {
+    color: #ff9098;
+
+    border-color:
+        rgba(
+            255,
+            91,
+            101,
+            0.30
+        );
+
+    background:
+        rgba(
+            255,
+            91,
+            101,
+            0.07
+        );
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.seguimiento-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.25fr)
+        minmax(320px, 0.75fr);
+
+    gap: 22px;
+
+    align-items: start;
+}
+
+.seguimiento-lateral {
+    min-width: 0;
+
+    display: grid;
+
+    gap: 18px;
+}
+
+
+/* =========================================================
+   TARJETAS
+========================================================= */
+
+.seguimiento-tarjeta {
+    min-width: 0;
+
+    padding: 26px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius:
+        var(--radio-medio);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                255,
+                255,
+                255,
+                0.024
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.008
+            )
+        ),
+        var(--color-fondo-secundario);
+
+    box-shadow:
+        inset
+        0
+        1px
+        0
+        rgba(
+            255,
+            255,
+            255,
+            0.018
+        );
+}
+
+.seguimiento-tarjeta h2 {
+    margin-bottom: 22px;
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.seguimiento-tarjeta > p {
+    margin: 0;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.76rem;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   TIMELINE
+========================================================= */
+
+.timeline-pedido {
+    display: grid;
+}
+
+.timeline-paso {
+    position: relative;
+
+    min-height: 102px;
+
+    display: grid;
+
+    grid-template-columns:
+        50px
+        minmax(0, 1fr);
+
+    gap: 15px;
+
+    opacity: 0.36;
+
+    transition:
+        opacity var(--transicion);
+}
+
+.timeline-paso:not(:last-child)::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50px;
+    left: 24px;
+
+    width: 2px;
+
+    height:
+        calc(
+            100% - 44px
+        );
+
+    background:
+        var(--borde);
+}
+
+.timeline-paso__icono {
+    position: relative;
+    z-index: 2;
+
+    width: 50px;
+    height: 50px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-gris);
+
+    font-size: 1rem;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius: 50%;
+
+    background:
+        var(--color-fondo-secundario);
+}
+
+.timeline-paso strong {
+    display: block;
+
+    padding-top: 2px;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.timeline-paso p {
+    max-width: 540px;
+
+    margin-top: 6px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.71rem;
+
+    line-height: 1.55;
+}
+
+.timeline-paso time {
+    display: inline-block;
+
+    margin-top: 7px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.65rem;
+}
+
+
+/* =========================================================
+   COMPLETADO
+========================================================= */
+
+.timeline-paso--completado {
+    opacity: 1;
+}
+
+.timeline-paso--completado
+.timeline-paso__icono {
+    color: #041017;
+
+    border-color: transparent;
+
+    background:
+        var(--color-azul-claro);
+
+    box-shadow:
+        0
+        0
+        0
+        4px
+        rgba(
+            54,
+            169,
+            214,
+            0.055
+        );
+}
+
+.timeline-paso--completado:not(:last-child)::after {
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.55
+        );
+}
+
+
+/* =========================================================
+   ACTIVO
+========================================================= */
+
+.timeline-paso--activo {
+    opacity: 1;
+}
+
+.timeline-paso--activo
+.timeline-paso__icono {
+    color:
+        var(--color-azul-claro);
+
+    border-color:
+        var(--color-azul-claro);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.08
+        );
+
+    box-shadow:
+        0
+        0
+        0
+        5px
+        rgba(
+            54,
+            169,
+            214,
+            0.045
+        );
+}
+
+.timeline-paso--activo strong {
+    color:
+        var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   RESUMEN DE PRODUCTOS
+========================================================= */
+
+.seguimiento-producto {
+    padding:
+        13px
+        0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    border-bottom:
+        1px solid
+        var(--borde);
+}
+
+.seguimiento-producto:first-of-type {
+    padding-top: 0;
+}
+
+.seguimiento-producto:last-of-type {
+    border-bottom: 0;
+}
+
+.seguimiento-producto > span {
+    min-width: 0;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.73rem;
+
+    line-height: 1.45;
+
+    overflow-wrap:
+        anywhere;
+}
+
+.seguimiento-producto > strong {
+    flex-shrink: 0;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.76rem;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   TOTAL
+========================================================= */
+
+.seguimiento-total {
+    margin-top: 17px;
+
+    padding-top: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    border-top:
+        1px solid
+        var(--borde);
+}
+
+.seguimiento-total span {
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.seguimiento-total strong {
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1.35rem;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   BOTÓN COMPLETO
+========================================================= */
+
+.boton--completo {
+    width: 100%;
+}
+
+
+/* =========================================================
+   RESPONSIVE TABLET
+========================================================= */
+
+@media (
+    max-width: 900px
+) {
+
+    .seguimiento-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE MÓVIL
+========================================================= */
+
+@media (
+    max-width: 700px
+) {
+
+    .seguimiento-pagina {
+        padding:
+            40px
+            0
+            65px;
+    }
+
+    .buscar-pedido {
+        margin-top: 15px;
+
+        padding:
+            38px
+            24px;
+    }
+
+    .buscar-pedido__icono {
+        width: 72px;
+        height: 72px;
+
+        font-size: 1.7rem;
+    }
+
+    .seguimiento-cabecera {
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+        gap: 18px;
+    }
+
+    .seguimiento-cabecera h1 {
+        font-size:
+            clamp(
+                2.1rem,
+                11vw,
+                3.2rem
+            );
+    }
+
+    .seguimiento-tarjeta {
+        padding:
+            22px
+            19px;
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE MÓVIL PEQUEÑO
+========================================================= */
+
+@media (
+    max-width: 480px
+) {
+
+    .buscar-pedido {
+        padding:
+            32px
+            18px;
+    }
+
+    .buscar-pedido h1 {
+        font-size:
+            clamp(
+                2rem,
+                11vw,
+                2.8rem
+            );
+    }
+
+    .timeline-paso {
+        grid-template-columns:
+            44px
+            minmax(0, 1fr);
+
+        gap: 12px;
+    }
+
+    .timeline-paso__icono {
+        width: 44px;
+        height: 44px;
+    }
+
+    .timeline-paso:not(:last-child)::after {
+        top: 44px;
+        left: 21px;
+    }
+
+    .seguimiento-producto {
+        align-items:
+            flex-start;
+    }
+
+    .seguimiento-producto > strong {
+        margin-top: 1px;
+    }
+
+}

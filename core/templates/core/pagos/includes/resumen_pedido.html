@@ -1,0 +1,145 @@
+{% load humanize %}
+
+<div
+    style="
+        margin: 34px auto 0;
+        max-width: 560px;
+        padding: 22px 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.025);
+        text-align: left;
+    "
+>
+
+    <!-- ============================================================= -->
+    <!-- PEDIDO -->
+    <!-- ============================================================= -->
+
+
+
+    <!-- ============================================================= -->
+    <!-- MÉTODO DE PAGO -->
+    <!-- ============================================================= -->
+
+    <div
+        style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 14px;
+        "
+    >
+        <span
+            style="
+                color: var(--color-gris-claro);
+            "
+        >
+            Método
+        </span>
+
+        <strong
+            style="
+                text-align: right;
+            "
+        >
+            {% if proveedor == "webpay" %}
+                Webpay 
+
+            {% elif proveedor == "mercadopago" %}
+                Mercado Pago
+
+            {% elif proveedor == "transferencia" %}
+                Transferencia bancaria
+
+            {% elif proveedor_nombre %}
+                {{ proveedor_nombre }}
+
+            {% else %}
+                {{ pedido.get_metodo_pago_display }}
+            {% endif %}
+        </strong>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- ESTADO DEL PAGO -->
+    <!-- ============================================================= -->
+
+    <div
+        style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 14px;
+        "
+    >
+        <span
+            style="
+                color: var(--color-gris-claro);
+            "
+        >
+            Estado
+        </span>
+
+        <strong
+            style="
+                text-align: right;
+            "
+        >
+            {% if resultado == "aprobado" %}
+                Aprobado
+
+            {% elif resultado == "rechazado" %}
+                Rechazado
+
+            {% elif resultado == "cancelado" %}
+                Cancelado
+
+            {% elif resultado == "pendiente" %}
+                Pendiente
+
+            {% elif resultado == "revision" %}
+                En revisión
+
+            {% elif resultado == "reembolsado" %}
+                Reembolsado
+
+            {% else %}
+                {{ pedido.get_estado_pago_display }}
+            {% endif %}
+        </strong>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- TOTAL -->
+    <!-- ============================================================= -->
+
+    <div
+        style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        "
+    >
+        <span
+            style="
+                color: var(--color-gris-claro);
+            "
+        >
+            Total
+        </span>
+
+        <strong
+            style="
+                text-align: right;
+                font-size: 1.05rem;
+            "
+        >
+            ${{ pedido.total|floatformat:0|intcomma }}
+        </strong>
+    </div>
+
+</div>

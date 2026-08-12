@@ -1,18 +1,800 @@
 /* =========================================================
-   PANEL DE PEDIDOS ESCALABLE
+   PANEL DE PEDIDOS
+   Archivo:
+   core/static/core/css/panel_pedidos.css
 ========================================================= */
 
-.gestion-resumen__tarjeta {
-    padding: 20px;
+
+/* =========================================================
+   VARIABLES LOCALES
+========================================================= */
+
+.gestion-pedidos {
+    --gestion-bg-card:
+        rgba(15, 28, 38, 0.92);
+
+    --gestion-bg-card-hover:
+        rgba(18, 34, 45, 0.98);
+
+    --gestion-bg-soft:
+        rgba(255, 255, 255, 0.025);
+
+    --gestion-border:
+        rgba(255, 255, 255, 0.09);
+
+    --gestion-border-hover:
+        rgba(91, 202, 239, 0.32);
+
+    --gestion-celeste:
+        var(--color-azul-claro);
+
+    --gestion-verde:
+        #72e49d;
+
+    --gestion-amarillo:
+        #f4c95d;
+
+    --gestion-rojo:
+        #ff8e98;
+
+    --gestion-radio:
+        18px;
+
+    position: relative;
+    min-height: 70vh;
+}
+
+
+/* =========================================================
+   CONTENEDOR
+========================================================= */
+
+.gestion-pedidos__contenedor {
+    position: relative;
+    z-index: 1;
+
+    padding-top: 50px;
+    padding-bottom: 70px;
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.gestion-cabecera {
+    margin-bottom: 32px;
 
     display: flex;
+    align-items: flex-end;
     justify-content: space-between;
+    gap: 32px;
+}
+
+.gestion-cabecera > div {
+    max-width: 720px;
+}
+
+.gestion-cabecera h1 {
+    margin-top: 14px;
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: clamp(
+        2.5rem,
+        5vw,
+        4.5rem
+    );
+
+    font-weight: 800;
+    line-height: 1;
+
+    letter-spacing: -0.045em;
+}
+
+.gestion-cabecera p {
+    max-width: 650px;
+
+    margin-top: 16px;
+
+    color: var(--color-gris);
+
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   BUSCADOR
+========================================================= */
+
+.gestion-buscador {
+    width: min(
+        460px,
+        100%
+    );
+
+    min-height: 50px;
+
+    padding-left: 15px;
+
+    display: grid;
+    grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 10px;
+
+    border: 1px solid var(--gestion-border);
+    border-radius: 14px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        box-shadow var(--transicion);
+}
+
+.gestion-buscador:focus-within {
+    border-color:
+        var(--gestion-border-hover);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.04
+        );
+
+    box-shadow:
+        0 0 0 3px
+        rgba(
+            54,
+            169,
+            214,
+            0.04
+        );
+}
+
+.gestion-buscador > i {
+    color:
+        var(--color-gris);
+
+    font-size: 0.95rem;
+}
+
+.gestion-buscador input {
+    width: 100%;
+    min-width: 0;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.78rem;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+}
+
+.gestion-buscador input::placeholder {
+    color:
+        var(--color-gris);
+}
+
+.gestion-buscador button {
+    min-height: 48px;
+
+    padding:
+        0
+        18px;
+
+    color: #041017;
+
+    font-size: 0.75rem;
+    font-weight: 900;
+
+    border: 0;
+    border-radius: 12px;
+
+    background:
+        var(--color-azul-claro);
+
+    cursor: pointer;
+
+    transition:
+        transform var(--transicion),
+        box-shadow var(--transicion),
+        filter var(--transicion);
+}
+
+.gestion-buscador button:hover {
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 8px 24px
+        rgba(
+            54,
+            169,
+            214,
+            0.18
+        );
+
+    filter: brightness(1.04);
+}
+
+
+/* =========================================================
+   RESUMEN OPERATIVO
+========================================================= */
+
+.gestion-resumen {
+    margin-bottom: 24px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 14px;
+}
+
+.gestion-resumen__tarjeta {
+    min-height: 82px;
+
+    padding:
+        18px
+        20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        var(--gestion-border);
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                255,
+                255,
+                255,
+                0.028
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.008
+            )
+        ),
+        var(--gestion-bg-card);
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion),
+        box-shadow var(--transicion);
+}
+
+.gestion-resumen__tarjeta:hover,
+.gestion-resumen__tarjeta--activa {
+    border-color:
+        var(--gestion-border-hover);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                54,
+                169,
+                214,
+                0.08
+            ),
+            rgba(
+                54,
+                169,
+                214,
+                0.025
+            )
+        ),
+        var(--gestion-bg-card);
+
+    box-shadow:
+        0 15px 34px
+        rgba(
+            0,
+            0,
+            0,
+            0.17
+        );
+
+    transform:
+        translateY(-3px);
+}
+
+.gestion-resumen__tarjeta span {
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.gestion-resumen__tarjeta strong {
+    min-width: 38px;
+    height: 38px;
+
+    padding:
+        0
+        10px;
+
+    display: grid;
+    place-items: center;
+
+    color: #041017;
+
+    font-size: 0.87rem;
+    font-weight: 900;
+
+    border-radius: 999px;
+
+    background:
+        var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   ALERTAS ADMINISTRATIVAS
+========================================================= */
+
+.gestion-alertas {
+    margin-bottom: 30px;
+
+    display: grid;
+    gap: 12px;
+}
+
+
+/* =========================================================
+   ALERTA GENERAL
+========================================================= */
+
+.gestion-pendientes {
+    position: relative;
+
+    min-height: 84px;
+
+    padding:
+        16px
+        20px;
+
+    display: grid;
+    grid-template-columns:
+        48px
+        minmax(0, 1fr)
+        auto;
+
     align-items: center;
 
-    border: 1px solid var(--borde);
-    border-radius: 15px;
+    gap: 16px;
 
-    background: var(--color-fondo-secundario);
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(
+            244,
+            201,
+            93,
+            0.22
+        );
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(
+                244,
+                201,
+                93,
+                0.075
+            ),
+            rgba(
+                244,
+                201,
+                93,
+                0.022
+            )
+        );
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion),
+        box-shadow var(--transicion);
+}
+
+.gestion-pendientes::before {
+    content: "";
+
+    position: absolute;
+    inset: 0 auto 0 0;
+
+    width: 3px;
+
+    opacity: 0;
+
+    background:
+        var(--gestion-amarillo);
+
+    transition:
+        opacity var(--transicion);
+}
+
+.gestion-pendientes:hover {
+    border-color:
+        rgba(
+            244,
+            201,
+            93,
+            0.42
+        );
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(
+                244,
+                201,
+                93,
+                0.11
+            ),
+            rgba(
+                244,
+                201,
+                93,
+                0.035
+            )
+        );
+
+    box-shadow:
+        0 14px 32px
+        rgba(
+            0,
+            0,
+            0,
+            0.14
+        );
+
+    transform:
+        translateY(-2px);
+}
+
+.gestion-pendientes:hover::before {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   PAGOS PENDIENTES RECIENTES
+========================================================= */
+
+.gestion-pendientes--atencion {
+    border-color:
+        rgba(
+            244,
+            201,
+            93,
+            0.35
+        );
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(
+                244,
+                201,
+                93,
+                0.105
+            ),
+            rgba(
+                244,
+                201,
+                93,
+                0.035
+            )
+        );
+}
+
+.gestion-pendientes--atencion::before {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   ICONO DE ALERTA
+========================================================= */
+
+.gestion-pendientes__icono {
+    width: 48px;
+    height: 48px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--gestion-amarillo);
+
+    font-size: 1.05rem;
+
+    border:
+        1px solid
+        rgba(
+            244,
+            201,
+            93,
+            0.08
+        );
+
+    border-radius: 13px;
+
+    background:
+        rgba(
+            244,
+            201,
+            93,
+            0.09
+        );
+}
+
+.gestion-pendientes strong {
+    display: block;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.gestion-pendientes span {
+    display: block;
+
+    max-width: 900px;
+
+    margin-top: 5px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.69rem;
+    line-height: 1.5;
+}
+
+.gestion-pendientes > i:last-child {
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.95rem;
+
+    transition:
+        color var(--transicion),
+        transform var(--transicion);
+}
+
+.gestion-pendientes:hover > i:last-child {
+    color:
+        var(--gestion-amarillo);
+
+    transform:
+        translateX(4px);
+}
+
+
+/* =========================================================
+   TABLERO
+========================================================= */
+
+.tablero-pedidos {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    align-items: start;
+
+    gap: 18px;
+}
+
+
+/* =========================================================
+   BANDEJA
+========================================================= */
+
+.bandeja-pedidos {
+    min-width: 0;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        var(--gestion-border);
+
+    border-radius:
+        var(--gestion-radio);
+
+    background:
+        rgba(
+            12,
+            25,
+            35,
+            0.78
+        );
+
+    box-shadow:
+        inset
+        0
+        1px
+        0
+        rgba(
+            255,
+            255,
+            255,
+            0.018
+        );
+}
+
+
+/* =========================================================
+   CABECERA BANDEJA
+========================================================= */
+
+.bandeja-pedidos__cabecera {
+    min-height: 68px;
+
+    margin: 0;
+
+    padding:
+        17px
+        16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    border-bottom:
+        1px solid
+        var(--gestion-border);
+}
+
+.bandeja-pedidos__cabecera > div {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.bandeja-pedidos__cabecera i {
+    flex-shrink: 0;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.9rem;
+}
+
+.bandeja-pedidos__cabecera h2 {
+    overflow: hidden;
+
+    color:
+        var(--color-blanco);
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: 0.92rem;
+    font-weight: 800;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bandeja-pedidos__cabecera > span {
+    flex-shrink: 0;
+
+    min-width: 30px;
+    height: 30px;
+
+    padding:
+        0
+        8px;
+
+    display: grid;
+    place-items: center;
+
+    color: #041017;
+
+    font-size: 0.7rem;
+    font-weight: 900;
+
+    border-radius: 999px;
+
+    background:
+        var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   CONTENIDO BANDEJA
+========================================================= */
+
+.bandeja-pedidos__contenido {
+    padding: 15px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 11px;
+}
+
+
+/* =========================================================
+   WRAPPER TARJETA + BOLETA
+========================================================= */
+
+.tarjeta-pedido-admin-wrap {
+    position: relative;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        var(--gestion-border);
+
+    border-radius: 14px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.018
+        );
 
     transition:
         border-color var(--transicion),
@@ -20,124 +802,217 @@
         transform var(--transicion);
 }
 
-.gestion-resumen__tarjeta:hover,
-.gestion-resumen__tarjeta--activa {
-    border-color: var(--borde-azul);
-    background: rgba(54, 169, 214, 0.07);
-    transform: translateY(-3px);
+.tarjeta-pedido-admin-wrap:hover {
+    border-color:
+        var(--gestion-border-hover);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+
+    transform:
+        translateY(-2px);
 }
 
-.gestion-resumen__tarjeta span {
-    color: var(--color-gris);
-}
 
-.gestion-resumen__tarjeta strong {
-    color: var(--color-azul-claro);
-    font-size: 1.35rem;
-}
+/* =========================================================
+   TARJETA PEDIDO
+========================================================= */
 
-
-/* PENDIENTES DE PAGO */
-
-.gestion-pendientes {
-    margin-bottom: 28px;
-    padding: 17px 20px;
-
-    display: grid;
-    grid-template-columns: 46px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 15px;
-
-    border: 1px solid rgba(255, 193, 7, 0.22);
-    border-radius: 15px;
-
-    background: rgba(255, 193, 7, 0.055);
-}
-
-.gestion-pendientes__icono {
-    width: 46px;
-    height: 46px;
-
-    display: grid;
-    place-items: center;
-
-    color: #ffd66b;
-
-    border-radius: 13px;
-    background: rgba(255, 193, 7, 0.09);
-}
-
-.gestion-pendientes strong {
+.tarjeta-pedido-admin {
     display: block;
-    font-size: 0.83rem;
+
+    padding:
+        15px
+        16px;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
 }
 
-.gestion-pendientes span {
-    display: block;
-    margin-top: 4px;
-
-    color: var(--color-gris);
-    font-size: 0.7rem;
+.tarjeta-pedido-admin:hover {
+    transform: none !important;
 }
 
+.tarjeta-pedido-admin__superior {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 
-/* BANDEJAS */
-
-.bandeja-pedidos {
-    min-height: 0;
-    padding: 0;
-    overflow: hidden;
+    gap: 10px;
 }
 
-.bandeja-pedidos__cabecera {
-    min-height: 66px;
-    margin: 0;
-    padding: 17px;
+.tarjeta-pedido-admin__superior strong {
+    min-width: 0;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.84rem;
+    font-weight: 900;
+
+    overflow-wrap: anywhere;
+}
+
+.tarjeta-pedido-admin__superior span {
+    flex-shrink: 0;
+
+    max-width: 90px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.6rem;
+    line-height: 1.3;
+
+    text-align: right;
+}
+
+.tarjeta-pedido-admin h3 {
+    margin-top: 15px;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.76rem;
+    font-weight: 800;
+
+    line-height: 1.45;
+}
+
+.tarjeta-pedido-admin > p {
+    margin-top: 6px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.65rem;
+}
+
+.tarjeta-pedido-admin footer {
+    margin-top: 15px;
+
+    padding-top: 13px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    border-bottom: 1px solid var(--borde);
+    gap: 12px;
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
 }
 
-.bandeja-pedidos__cabecera > div {
+.tarjeta-pedido-admin footer time {
+    color:
+        var(--color-gris);
+
+    font-size: 0.62rem;
+}
+
+.tarjeta-pedido-admin footer strong {
+    color:
+        var(--color-blanco);
+
+    font-size: 0.94rem;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   BOLETA RÁPIDA EN TARJETA
+========================================================= */
+
+.tarjeta-pedido-admin__boleta {
+    min-height: 42px;
+
+    padding:
+        0
+        15px;
+
     display: flex;
     align-items: center;
-    gap: 10px;
-}
+    justify-content: space-between;
 
-.bandeja-pedidos__cabecera i {
-    color: var(--color-azul-claro);
-}
+    gap: 9px;
 
-.bandeja-pedidos__cabecera h2 {
-    font-size: 1rem;
-}
+    color:
+        var(--color-azul-claro);
 
-.bandeja-pedidos__cabecera > span {
-    min-width: 28px;
-    height: 28px;
-
-    display: grid;
-    place-items: center;
-
-    color: #041017;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     font-weight: 800;
 
-    border-radius: 999px;
-    background: var(--color-azul-claro);
+    border-top:
+        1px solid
+        var(--gestion-border);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+
+    transition:
+        color var(--transicion),
+        background var(--transicion);
 }
 
-.bandeja-pedidos__contenido {
-    padding: 15px;
+.tarjeta-pedido-admin__boleta:hover {
+    color:
+        var(--color-blanco);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.10
+        );
 }
+
+.tarjeta-pedido-admin__boleta
+i:first-child {
+    color:
+        var(--color-azul-claro);
+}
+
+.tarjeta-pedido-admin__boleta
+i:last-child {
+    margin-left: auto;
+
+    font-size: 0.68rem;
+
+    opacity: 0.8;
+}
+
+
+/* =========================================================
+   PIE BANDEJA
+========================================================= */
 
 .bandeja-pedidos__pie {
-    padding: 13px 15px;
+    padding:
+        13px
+        15px;
 
-    border-top: 1px solid var(--borde);
+    border-top:
+        1px solid
+        var(--gestion-border);
 }
 
 .bandeja-pedidos__pie a {
@@ -146,101 +1021,228 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
     gap: 9px;
 
-    color: var(--color-azul-claro);
-    font-size: 0.75rem;
-    font-weight: 800;
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.7rem;
+    font-weight: 900;
 
     border-radius: 11px;
-    background: rgba(54, 169, 214, 0.07);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.065
+        );
 
     transition:
         background var(--transicion),
+        color var(--transicion),
         transform var(--transicion);
 }
 
 .bandeja-pedidos__pie a:hover {
-    background: rgba(54, 169, 214, 0.13);
-    transform: translateY(-2px);
+    color:
+        var(--color-blanco);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.13
+        );
+
+    transform:
+        translateY(-2px);
 }
 
 
-/* BUSCADOR */
+/* =========================================================
+   BANDEJA VACÍA
+========================================================= */
 
-.gestion-buscador button {
-    min-height: 48px;
-    padding: 0 17px;
+.bandeja-vacia {
+    min-height: 110px;
 
-    color: #041017;
-    font-weight: 800;
+    padding: 25px;
 
-    border-radius: 12px;
-    background: var(--color-azul-claro);
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.76rem;
+
+    text-align: center;
 }
 
 
-/* LISTADO COMPLETO */
+/* =========================================================
+   LISTADO COMPLETO
+========================================================= */
 
 .gestion-listado {
-    margin-top: 30px;
+    margin-top: 28px;
 }
 
 .gestion-listado__cabecera {
-    margin-bottom: 22px;
+    margin-bottom: 23px;
+}
+
+.gestion-volver {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    transition:
+        color var(--transicion),
+        transform var(--transicion);
+}
+
+.gestion-volver:hover {
+    color:
+        var(--color-azul-claro);
+
+    transform:
+        translateX(-3px);
 }
 
 .gestion-listado__cabecera h2 {
-    margin-top: 10px;
+    margin-top: 26px;
 
-    font-family: "Montserrat", sans-serif;
-    font-size: 2rem;
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: clamp(
+        2rem,
+        4vw,
+        2.7rem
+    );
+
+    font-weight: 800;
+
+    letter-spacing: -0.035em;
 }
 
 .gestion-listado__cabecera p {
-    margin-top: 7px;
-    color: var(--color-gris);
+    margin-top: 8px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.82rem;
 }
+
+
+/* =========================================================
+   CONTENEDOR LISTADO
+========================================================= */
 
 .gestion-listado__pedidos {
     overflow: hidden;
 
-    border: 1px solid var(--borde);
-    border-radius: var(--radio-medio);
+    border:
+        1px solid
+        var(--gestion-border);
 
-    background: var(--color-fondo-secundario);
+    border-radius:
+        var(--gestion-radio);
+
+    background:
+        rgba(
+            12,
+            25,
+            35,
+            0.82
+        );
 }
 
-.pedido-admin-fila {
-    min-height: 92px;
-    padding: 17px 20px;
 
-    display: grid;
-    grid-template-columns:
-        minmax(130px, 0.8fr)
-        minmax(190px, 1.3fr)
-        minmax(140px, 0.8fr)
-        90px
-        minmax(140px, 0.9fr)
-        minmax(100px, 0.6fr)
-        20px;
+/* =========================================================
+   ITEM ADMIN COMPLETO
+========================================================= */
 
-    align-items: center;
-    gap: 18px;
+.pedido-admin-item {
+    position: relative;
 
-    border-bottom: 1px solid var(--borde);
+    border-bottom:
+        1px solid
+        var(--gestion-border);
 
     transition:
-        background var(--transicion),
-        transform var(--transicion);
+        background var(--transicion);
 }
 
-.pedido-admin-fila:last-child {
+.pedido-admin-item:last-child {
     border-bottom: 0;
 }
 
+.pedido-admin-item:hover {
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.025
+        );
+}
+
+
+/* =========================================================
+   FILA ADMIN
+========================================================= */
+
+.pedido-admin-fila {
+    min-height: 92px;
+
+    padding:
+        17px
+        20px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(130px, 0.8fr)
+        minmax(190px, 1.35fr)
+        minmax(145px, 0.8fr)
+        82px
+        minmax(140px, 0.9fr)
+        minmax(100px, 0.65fr)
+        20px;
+
+    align-items: center;
+
+    gap: 18px;
+
+    background: transparent;
+
+    transition:
+        background var(--transicion);
+}
+
 .pedido-admin-fila:hover {
-    background: rgba(54, 169, 214, 0.055);
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.045
+        );
 }
 
 .pedido-admin-fila > div {
@@ -248,79 +1250,696 @@
 
     display: flex;
     flex-direction: column;
+
     gap: 5px;
 }
 
 .pedido-admin-fila span {
-    color: var(--color-gris);
-    font-size: 0.65rem;
+    color:
+        var(--color-gris);
+
+    font-size: 0.61rem;
 }
 
 .pedido-admin-fila strong {
-    font-size: 0.77rem;
+    color:
+        var(--color-blanco);
+
+    font-size: 0.74rem;
+    font-weight: 800;
+
     overflow-wrap: anywhere;
 }
 
 .pedido-admin-fila small {
-    color: var(--color-gris);
-    font-size: 0.65rem;
-
     overflow: hidden;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.61rem;
+
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.pedido-admin-fila__total strong {
-    color: var(--color-azul-claro);
-    font-size: 0.9rem;
+.pedido-admin-fila
+> i:last-child {
+    color:
+        var(--color-gris-claro);
+
+    transition:
+        color var(--transicion),
+        transform var(--transicion);
+}
+
+.pedido-admin-fila:hover
+> i:last-child {
+    color:
+        var(--color-azul-claro);
+
+    transform:
+        translateX(3px);
 }
 
 
-/* RESPONSIVE */
+/* =========================================================
+   TOTAL
+========================================================= */
 
-@media (max-width: 1050px) {
+.pedido-admin-fila__total strong {
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.85rem;
+}
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+.pedido-admin-fila
+.pedido-estado {
+    width: fit-content;
+
+    min-height: 34px;
+
+    padding:
+        0
+        12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.67rem;
+    font-weight: 900;
+
+    border:
+        1px solid
+        var(--gestion-border-hover);
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.06
+        );
+}
+
+
+/* =========================================================
+   DOCUMENTOS DE LA FILA
+========================================================= */
+
+.pedido-admin-item__documentos {
+    padding:
+        0
+        20px
+        14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: 10px;
+}
+
+
+/* =========================================================
+   BOTÓN DESCARGAR BOLETA
+========================================================= */
+
+.pedido-admin-item__documentos
+.boton {
+    min-height: 38px;
+
+    padding:
+        0
+        14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.68rem;
+    font-weight: 800;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.18
+        );
+
+    border-radius: 10px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.045
+        );
+
+    box-shadow: none;
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        color var(--transicion),
+        transform var(--transicion);
+}
+
+.pedido-admin-item__documentos
+.boton:hover {
+    color:
+        var(--color-blanco);
+
+    border-color:
+        var(--gestion-border-hover);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.11
+        );
+
+    transform:
+        translateY(-1px);
+}
+
+.pedido-admin-item__documentos
+.boton i {
+    color:
+        var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   ESTADO BOLETA
+========================================================= */
+
+.pedido-admin-boleta {
+    min-height: 36px;
+
+    padding:
+        0
+        12px;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.67rem;
+    font-weight: 700;
+
+    border:
+        1px solid
+        var(--gestion-border);
+
+    border-radius: 10px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.018
+        );
+}
+
+.pedido-admin-boleta i {
+    color:
+        var(--gestion-amarillo);
+}
+
+.pedido-admin-boleta--error {
+    color:
+        var(--gestion-rojo);
+
+    border-color:
+        rgba(
+            255,
+            90,
+            100,
+            0.18
+        );
+
+    background:
+        rgba(
+            255,
+            90,
+            100,
+            0.04
+        );
+}
+
+.pedido-admin-boleta--error i {
+    color:
+        var(--gestion-rojo);
+}
+
+
+/* =========================================================
+   PAGOS PENDIENTES — BANDEJA ESPECIAL
+========================================================= */
+
+.gestion-listado:has(
+    .pedido-admin-item
+)
+{
+    position: relative;
+}
+
+
+/* Cuando estamos viendo pendientes */
+
+.gestion-pedidos
+a[href*="bandeja=pendientes"]
+.gestion-resumen__tarjeta--activa {
+    border-color:
+        rgba(
+            244,
+            201,
+            93,
+            0.4
+        );
+}
+
+
+/* =========================================================
+   PERSONALIZACIÓN VISUAL PARA PAGOS PENDIENTES
+========================================================= */
+
+body:has(
+    .gestion-volver
+)
+.gestion-listado {
+    animation:
+        gestionEntrada
+        0.28s
+        ease both;
+}
+
+@keyframes gestionEntrada {
+
+    from {
+        opacity: 0;
+        transform:
+            translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0);
+    }
+
+}
+
+
+/* =========================================================
+   PAGINACIÓN
+========================================================= */
+
+.gestion-pedidos .paginacion {
+    margin-top: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 14px;
+}
+
+.gestion-pedidos
+.paginacion > span {
+    color:
+        var(--color-gris);
+
+    font-size: 0.72rem;
+}
+
+.gestion-pedidos
+.paginacion > span strong {
+    color:
+        var(--color-blanco);
+}
+
+.gestion-pedidos
+.paginacion a {
+    min-height: 42px;
+
+    padding:
+        0
+        16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.7rem;
+    font-weight: 900;
+
+    border:
+        1px solid
+        var(--gestion-border-hover);
+
+    border-radius: 11px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.055
+        );
+
+    transition:
+        color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion);
+}
+
+.gestion-pedidos
+.paginacion a:hover {
+    color: #041017;
+
+    background:
+        var(--color-azul-claro);
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* =========================================================
+   TABLET GRANDE
+========================================================= */
+
+@media (
+    max-width: 1250px
+) {
+
+    .tablero-pedidos {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .gestion-resumen {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (
+    max-width: 1050px
+) {
+
+    .gestion-cabecera {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .gestion-buscador {
+        width: 100%;
+    }
+
+
+    /* LISTADO */
+
     .pedido-admin-fila {
         grid-template-columns:
             minmax(130px, 1fr)
-            minmax(170px, 1fr)
-            minmax(120px, 0.8fr)
+            minmax(170px, 1.25fr)
+            minmax(130px, 0.85fr)
             minmax(100px, 0.7fr)
             20px;
     }
 
     .pedido-admin-fila__productos,
     .pedido-admin-fila__fecha {
-        display: none !important;
+        display:
+            none !important;
     }
+
 }
 
-@media (max-width: 700px) {
+
+/* =========================================================
+   MÓVIL
+========================================================= */
+
+@media (
+    max-width: 700px
+) {
+
+    .gestion-pedidos__contenedor {
+        padding-top: 38px;
+        padding-bottom: 50px;
+    }
+
+
+    /* CABECERA */
+
+    .gestion-cabecera h1 {
+        font-size:
+            clamp(
+                2.2rem,
+                11vw,
+                3.2rem
+            );
+    }
+
+
+    /* BUSCADOR */
+
+    .gestion-buscador {
+        grid-template-columns:
+            auto
+            minmax(0, 1fr);
+
+        padding:
+            12px
+            14px;
+    }
+
+    .gestion-buscador button {
+        grid-column:
+            1 / -1;
+
+        width: 100%;
+    }
+
+
+    /* RESUMEN */
+
+    .gestion-resumen {
+        grid-template-columns: 1fr;
+    }
+
+
+    /* ALERTAS */
+
+    .gestion-pendientes {
+        grid-template-columns:
+            42px
+            minmax(0, 1fr);
+
+        padding:
+            15px;
+    }
+
+    .gestion-pendientes__icono {
+        width: 42px;
+        height: 42px;
+    }
+
+    .gestion-pendientes
+    > i:last-child {
+        display: none;
+    }
+
+
+    /* TABLERO */
+
+    .tablero-pedidos {
+        grid-template-columns: 1fr;
+    }
+
+
+    /* LISTADO */
+
     .pedido-admin-fila {
-        grid-template-columns: 1fr auto;
-        gap: 12px;
+        padding:
+            18px
+            17px;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+
+        gap:
+            13px
+            16px;
+    }
+
+    .pedido-admin-fila__numero {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .pedido-admin-fila
+    > i:last-child {
+        grid-column: 2;
+        grid-row: 1;
+
+        align-self: center;
     }
 
     .pedido-admin-fila__cliente,
     .pedido-admin-fila__estado,
     .pedido-admin-fila__productos,
     .pedido-admin-fila__fecha {
-        grid-column: 1 / -1;
+        grid-column:
+            1 / -1;
+    }
+
+    .pedido-admin-fila__productos,
+    .pedido-admin-fila__fecha {
+        display:
+            flex !important;
     }
 
     .pedido-admin-fila__total {
-        grid-column: 1;
+        grid-column:
+            1 / -1;
+
+        padding-top: 11px;
+
+        border-top:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.055
+            );
     }
 
-    .pedido-admin-fila > i {
-        grid-column: 2;
-        grid-row: 1;
+
+    /* DOCUMENTOS */
+
+    .pedido-admin-item__documentos {
+        padding:
+            0
+            17px
+            16px;
+
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .gestion-pendientes {
-        grid-template-columns: 42px minmax(0, 1fr);
+    .pedido-admin-item__documentos
+    .boton,
+    .pedido-admin-boleta {
+        width: 100%;
+
+        justify-content: center;
     }
 
-    .gestion-pendientes > i:last-child {
-        display: none;
+
+    /* PAGINACIÓN */
+
+    .gestion-pedidos
+    .paginacion {
+        gap: 10px;
     }
+
+    .gestion-pedidos
+    .paginacion > span {
+        width: 100%;
+
+        order: -1;
+
+        text-align: center;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL PEQUEÑO
+========================================================= */
+
+@media (
+    max-width: 480px
+) {
+
+    .gestion-resumen__tarjeta {
+        min-height: 70px;
+
+        padding:
+            15px
+            16px;
+    }
+
+    .bandeja-pedidos__contenido {
+        padding: 11px;
+    }
+
+    .tarjeta-pedido-admin {
+        padding:
+            14px
+            13px;
+    }
+
+    .tarjeta-pedido-admin__superior {
+        gap: 7px;
+    }
+
+    .gestion-listado__cabecera h2 {
+        font-size: 1.9rem;
+    }
+
 }

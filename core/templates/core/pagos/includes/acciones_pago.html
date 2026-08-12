@@ -1,0 +1,83 @@
+<div
+    style="
+        margin-top: 35px;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    "
+>
+
+    <a
+        href="{% url 'core:productos' %}"
+        class="boton boton--secundario"
+    >
+        Ver productos
+    </a>
+
+    {% if resultado == "rechazado" %}
+
+        <a
+            href="{% url 'core:carrito_completo' %}"
+            class="boton boton--primario"
+        >
+            Intentar nuevamente
+        </a>
+
+    {% elif resultado == "cancelado" %}
+
+        <a
+            href="{% url 'core:carrito_completo' %}"
+            class="boton boton--primario"
+        >
+            Volver al carrito
+        </a>
+
+    {% elif resultado == "pendiente" %}
+
+        <a
+            href="{% url 'core:pedido_confirmacion' numero=pedido.numero %}"
+            class="boton boton--primario"
+        >
+            Actualizar estado
+        </a>
+
+    {% elif resultado == "revision" %}
+
+        <a
+            href="{% url 'core:pedido_confirmacion' numero=pedido.numero %}"
+            class="boton boton--primario"
+        >
+            Revisar estado
+        </a>
+
+    {% elif resultado == "reembolsado" %}
+
+        <a
+            href="{% url 'core:inicio' %}"
+            class="boton boton--primario"
+        >
+            Volver al inicio
+        </a>
+
+    {% elif resultado == "aprobado" %}
+
+        <a
+            href="{% url 'core:inicio' %}"
+            class="boton boton--primario"
+        >
+            Volver al inicio
+        </a>
+
+    {% else %}
+
+        <a
+            href="{% url 'core:inicio' %}"
+            class="boton boton--primario"
+        >
+            Volver al inicio
+        </a>
+
+    {% endif %}
+
+</div>

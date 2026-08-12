@@ -1,20 +1,26 @@
 {% extends 'core/base.html' %}
 {% load static humanize %}
 
-{% block title %}
-    Gestión de pedidos | Audex
-{% endblock %}
-{% block extra_css %}
-    <link
-        rel="stylesheet"
-        href="{% static 'core/css/pedidos.css' %}?v=4"
-    >
 
-    <link
-        rel="stylesheet"
-        href="{% static 'core/css/panel_pedidos.css' %}?v=1"
-    >
+{% block title %}
+Gestión de pedidos | Audex
 {% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/pedidos.css' %}?v=8"
+>
+
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/panel_pedidos.css' %}?v=2"
+>
+
+{% endblock %}
+
 
 {% block content %}
 
@@ -29,9 +35,13 @@
         <header class="gestion-cabecera">
 
             <div>
+
                 <span class="etiqueta-seccion">
+
                     <i class="bi bi-kanban"></i>
+
                     Administración
+
                 </span>
 
                 <h1>
@@ -39,11 +49,16 @@
                 </h1>
 
                 <p>
-                    Controla cada venta desde la confirmación
-                    hasta la entrega.
+                    Controla las ventas confirmadas desde
+                    la aprobación del pago hasta la entrega.
                 </p>
+
             </div>
 
+
+            <!-- =================================================
+                 BUSCADOR
+            ================================================== -->
 
             <form
                 method="get"
@@ -51,14 +66,18 @@
             >
 
                 {% if bandeja_actual %}
+
                     <input
                         type="hidden"
                         name="bandeja"
                         value="{{ bandeja_actual }}"
                     >
+
                 {% endif %}
 
+
                 <i class="bi bi-search"></i>
+
 
                 <input
                     type="search"
@@ -67,6 +86,7 @@
                     placeholder="Pedido, cliente, RUT o correo"
                     autocomplete="off"
                 >
+
 
                 <button
                     type="submit"
@@ -81,224 +101,534 @@
 
 
         <!-- =====================================================
-             RESUMEN
+             RESUMEN OPERATIVO
         ====================================================== -->
 
         <div class="gestion-resumen">
+
+            <!-- NUEVOS -->
 
             <a
                 href="?bandeja=nuevos"
                 class="
                     gestion-resumen__tarjeta
+
                     {% if bandeja_actual == 'nuevos' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
                 "
             >
-                <span>Nuevos pagados</span>
-                <strong>{{ total_principal }}</strong>
+
+                <span>
+                    Nuevos pagados
+                </span>
+
+                <strong>
+                    {{ total_principal }}
+                </strong>
+
             </a>
+
+
+            <!-- OPERACIÓN -->
 
             <a
                 href="?bandeja=operacion"
                 class="
                     gestion-resumen__tarjeta
+
                     {% if bandeja_actual == 'operacion' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
                 "
             >
-                <span>En operación</span>
-                <strong>{{ total_operacion }}</strong>
+
+                <span>
+                    En operación
+                </span>
+
+                <strong>
+                    {{ total_operacion }}
+                </strong>
+
             </a>
+
+
+            <!-- DESPACHO -->
 
             <a
                 href="?bandeja=despacho"
                 class="
                     gestion-resumen__tarjeta
+
                     {% if bandeja_actual == 'despacho' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
                 "
             >
-                <span>En despacho</span>
-                <strong>{{ total_despacho }}</strong>
+
+                <span>
+                    En despacho
+                </span>
+
+                <strong>
+                    {{ total_despacho }}
+                </strong>
+
             </a>
+
+
+            <!-- FINALIZADOS -->
 
             <a
                 href="?bandeja=finalizados"
                 class="
                     gestion-resumen__tarjeta
+
                     {% if bandeja_actual == 'finalizados' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
                 "
             >
-                <span>Finalizados</span>
-                <strong>{{ total_cerrados }}</strong>
+
+                <span>
+                    Finalizados
+                </span>
+
+                <strong>
+                    {{ total_cerrados }}
+                </strong>
+
             </a>
 
         </div>
 
 
-        <!-- PENDIENTES DE PAGO -->
+        <!-- =====================================================
+             ALERTAS ADMINISTRATIVAS
+        ====================================================== -->
 
-        {% if total_pendientes_pago > 0 %}
+        <div class="gestion-alertas">
 
-            <a
-                href="?bandeja=pendientes"
-                class="gestion-pendientes"
-            >
-                <div class="gestion-pendientes__icono">
-                    <i class="bi bi-clock-history"></i>
-                </div>
+            <!-- =================================================
+                 PAGOS PENDIENTES RECIENTES
+            ================================================== -->
 
-                <div>
-                    <strong>
-                        {{ total_pendientes_pago }}
-                        pedido{{ total_pendientes_pago|pluralize }}
-                        pendiente{{ total_pendientes_pago|pluralize }}
-                        de pago
-                    </strong>
+            {% if total_pendientes_recientes > 0 %}
 
-                    <span>
-                        Estos pedidos todavía no cuentan como
-                        ventas confirmadas.
-                    </span>
-                </div>
+                <a
+                    href="?bandeja=pendientes"
+                    class="
+                        gestion-pendientes
+                        gestion-pendientes--atencion
+                    "
+                >
 
-                <i class="bi bi-arrow-right"></i>
-            </a>
+                    <div class="gestion-pendientes__icono">
 
-        {% endif %}
+                        <i class="bi bi-clock-history"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+
+                            {{ total_pendientes_recientes }}
+
+                            pago{{ total_pendientes_recientes|pluralize }}
+
+                            pendiente{{ total_pendientes_recientes|pluralize }}
+
+                            reciente{{ total_pendientes_recientes|pluralize }}
+
+                        </strong>
+
+
+                        <span>
+
+                            Intentos de pago con actividad
+                            durante las últimas 24 horas.
+
+                            {% if total_pendientes_pago > total_pendientes_recientes %}
+
+                                Hay {{ total_pendientes_pago }}
+                                pendientes en el histórico.
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+
+            {% elif total_pendientes_pago > 0 %}
+
+                <!-- =============================================
+                     SOLO PENDIENTES ANTIGUOS
+                ============================================== -->
+
+                <a
+                    href="?bandeja=pendientes"
+                    class="gestion-pendientes"
+                >
+
+                    <div class="gestion-pendientes__icono">
+
+                        <i class="bi bi-archive"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Historial de pagos pendientes
+                        </strong>
+
+                        <span>
+
+                            Existen
+                            {{ total_pendientes_pago }}
+                            intentos pendientes históricos,
+                            pero ninguno tuvo actividad
+                            durante las últimas 24 horas.
+
+                        </span>
+
+                    </div>
+
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 BSALE PENDIENTE
+            ================================================== -->
+
+            {% if total_boletas_pendientes > 0 %}
+
+                <a
+                    href="?bandeja=boletas"
+                    class="gestion-pendientes"
+                >
+
+                    <div class="gestion-pendientes__icono">
+
+                        <i class="bi bi-receipt-cutoff"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+
+                            {{ total_boletas_pendientes }}
+
+                            boleta{{ total_boletas_pendientes|pluralize }}
+
+                            pendiente{{ total_boletas_pendientes|pluralize }}
+
+                        </strong>
+
+
+                        <span>
+                            Ventas pagadas que todavía no registran
+                            una boleta electrónica emitida.
+                        </span>
+
+                    </div>
+
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            {% endif %}
+
+        </div>
 
 
         <!-- =====================================================
-             VISTA DE BANDEJA COMPLETA
+             BANDEJA COMPLETA
         ====================================================== -->
 
-        {% if bandeja_actual and page_obj %}
+        {% if mostrar_bandeja and page_obj %}
 
             <section class="gestion-listado">
+
+                <!-- =================================================
+                     CABECERA BANDEJA
+                ================================================== -->
 
                 <header class="gestion-listado__cabecera">
 
                     <div>
+
                         <a
                             href="{% url 'core:panel_pedidos' %}"
                             class="gestion-volver"
                         >
+
                             <i class="bi bi-arrow-left"></i>
+
                             Volver al tablero
+
                         </a>
+
 
                         <h2>
                             {{ titulo_bandeja }}
                         </h2>
 
+
                         <p>
+
                             {{ page_obj.paginator.count }}
+
                             pedido{{ page_obj.paginator.count|pluralize }}
+
                             en esta bandeja.
+
                         </p>
+
                     </div>
 
                 </header>
 
 
+                <!-- =================================================
+                     PEDIDOS
+                ================================================== -->
+
                 <div class="gestion-listado__pedidos">
 
                     {% for pedido in page_obj %}
 
-                        <a
-                            href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
-                            class="pedido-admin-fila"
-                        >
+                        <div class="pedido-admin-item">
 
-                            <div class="pedido-admin-fila__numero">
+                            <!-- =========================================
+                                 DETALLE DEL PEDIDO
+                            ========================================== -->
 
-                                <span>Pedido</span>
+                            <a
+                                href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
+                                class="pedido-admin-fila"
+                            >
 
-                                <strong>
-                                    {{ pedido.numero }}
-                                </strong>
+                                <!-- PEDIDO -->
 
-                            </div>
+                                <div class="pedido-admin-fila__numero">
 
+                                    <span>
+                                        Pedido
+                                    </span>
 
-                            <div class="pedido-admin-fila__cliente">
+                                    <strong>
+                                        {{ pedido.numero }}
+                                    </strong>
 
-                                <span>Cliente</span>
-
-                                <strong>
-                                    {{ pedido.nombre }}
-                                    {{ pedido.apellido }}
-                                </strong>
-
-                                <small>
-                                    {{ pedido.email }}
-                                </small>
-
-                            </div>
+                                </div>
 
 
-                            <div class="pedido-admin-fila__estado">
+                                <!-- CLIENTE -->
 
-                                <span>Estado</span>
+                                <div class="pedido-admin-fila__cliente">
 
-                                <strong
-                                    class="
-                                        pedido-estado
-                                        pedido-estado--{{ pedido.estado }}
-                                    "
-                                >
-                                    {{ pedido.get_estado_display }}
-                                </strong>
+                                    <span>
+                                        Cliente
+                                    </span>
 
-                            </div>
+                                    <strong>
 
+                                        {{ pedido.nombre }}
+                                        {{ pedido.apellido }}
 
-                            <div class="pedido-admin-fila__productos">
+                                    </strong>
 
-                                <span>Productos</span>
+                                    <small>
+                                        {{ pedido.email }}
+                                    </small>
 
-                                <strong>
-                                    {{ pedido.items.count }}
-                                </strong>
-
-                            </div>
+                                </div>
 
 
-                            <div class="pedido-admin-fila__fecha">
+                                <!-- ESTADO -->
 
-                                <span>Actualizado</span>
+                                <div class="pedido-admin-fila__estado">
 
-                                <strong>
-                                    {{ pedido.actualizado|date:"d/m/Y H:i" }}
-                                </strong>
+                                    <span>
+                                        Estado
+                                    </span>
 
-                            </div>
+                                    <strong
+                                        class="
+                                            pedido-estado
+                                            pedido-estado--{{ pedido.estado }}
+                                        "
+                                    >
+                                        {{ pedido.get_estado_display }}
+                                    </strong>
 
-
-                            <div class="pedido-admin-fila__total">
-
-                                <span>Total</span>
-
-                                <strong>
-                                    ${{ pedido.total|floatformat:0|intcomma }}
-                                </strong>
-
-                            </div>
+                                </div>
 
 
-                            <i class="bi bi-chevron-right"></i>
+                                <!-- UNIDADES -->
 
-                        </a>
+                                <div class="pedido-admin-fila__productos">
+
+                                    <span>
+                                        Unidades
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.total_unidades|default:0 }}
+                                    </strong>
+
+                                </div>
+
+
+                                <!-- ACTUALIZACIÓN -->
+
+                                <div class="pedido-admin-fila__fecha">
+
+                                    <span>
+                                        Actualizado
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.actualizado|date:"d/m/Y H:i" }}
+                                    </strong>
+
+                                </div>
+
+
+                                <!-- TOTAL -->
+
+                                <div class="pedido-admin-fila__total">
+
+                                    <span>
+                                        Total
+                                    </span>
+
+                                    <strong>
+                                        ${{ pedido.total|floatformat:0|intcomma }}
+                                    </strong>
+
+                                </div>
+
+
+                                <i class="bi bi-chevron-right"></i>
+
+                            </a>
+
+
+                            <!-- =========================================
+                                 DOCUMENTOS
+                            ========================================== -->
+
+                            {% if pedido.pagado %}
+
+                                <div class="pedido-admin-item__documentos">
+
+                                    {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
+
+                                        <a
+                                            href="{{ pedido.bsale_url_pdf }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="boton boton--secundario"
+                                        >
+
+                                            <i class="bi bi-download"></i>
+
+                                            Descargar boleta
+
+                                            {% if pedido.bsale_folio %}
+
+                                                N.º {{ pedido.bsale_folio }}
+
+                                            {% endif %}
+
+                                        </a>
+
+
+                                    {% elif pedido.bsale_emitido and pedido.bsale_url_publica %}
+
+                                        <a
+                                            href="{{ pedido.bsale_url_publica }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="boton boton--secundario"
+                                        >
+
+                                            <i class="bi bi-receipt"></i>
+
+                                            Ver boleta
+
+                                        </a>
+
+
+                                    {% elif pedido.bsale_ultimo_error %}
+
+                                        <span class="pedido-admin-boleta pedido-admin-boleta--error">
+
+                                            <i class="bi bi-exclamation-triangle"></i>
+
+                                            Error de emisión Bsale
+
+                                        </span>
+
+
+                                    {% else %}
+
+                                        <span class="pedido-admin-boleta">
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            Boleta pendiente
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
 
                     {% empty %}
 
                         <div class="bandeja-vacia">
-                            No hay pedidos en esta bandeja.
+
+                            {% if bandeja_actual == "pendientes" %}
+
+                                No existen pagos pendientes.
+
+                            {% elif bandeja_actual == "boletas" %}
+
+                                Todas las ventas pagadas tienen
+                                su boleta electrónica.
+
+                            {% else %}
+
+                                No hay pedidos en esta bandeja.
+
+                            {% endif %}
+
                         </div>
 
                     {% endfor %}
@@ -306,37 +636,61 @@
                 </div>
 
 
-                <!-- PAGINACIÓN -->
+                <!-- =================================================
+                     PAGINACIÓN
+                ================================================== -->
 
                 {% if page_obj.paginator.num_pages > 1 %}
 
-                    <nav class="paginacion">
+                    <nav
+                        class="paginacion"
+                        aria-label="Paginación de pedidos"
+                    >
 
                         {% if page_obj.has_previous %}
 
                             <a
-                                href="?bandeja={{ bandeja_actual }}&page={{ page_obj.previous_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                                href="?bandeja={{ bandeja_actual|urlencode }}&page={{ page_obj.previous_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                                rel="prev"
                             >
+
                                 <i class="bi bi-arrow-left"></i>
+
                                 Anterior
+
                             </a>
 
                         {% endif %}
 
 
                         <span>
-                            Página {{ page_obj.number }}
-                            de {{ page_obj.paginator.num_pages }}
+
+                            Página
+
+                            <strong>
+                                {{ page_obj.number }}
+                            </strong>
+
+                            de
+
+                            <strong>
+                                {{ page_obj.paginator.num_pages }}
+                            </strong>
+
                         </span>
 
 
                         {% if page_obj.has_next %}
 
                             <a
-                                href="?bandeja={{ bandeja_actual }}&page={{ page_obj.next_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                                href="?bandeja={{ bandeja_actual|urlencode }}&page={{ page_obj.next_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                                rel="next"
                             >
+
                                 Siguiente
+
                                 <i class="bi bi-arrow-right"></i>
+
                             </a>
 
                         {% endif %}
@@ -360,15 +714,22 @@
 
                     <section class="bandeja-pedidos">
 
+                        <!-- =========================================
+                             CABECERA
+                        ========================================== -->
+
                         <header class="bandeja-pedidos__cabecera">
 
                             <div>
+
                                 <i class="bi {{ bandeja.icono }}"></i>
 
                                 <h2>
                                     {{ bandeja.nombre }}
                                 </h2>
+
                             </div>
+
 
                             <span>
                                 {{ bandeja.total }}
@@ -377,53 +738,117 @@
                         </header>
 
 
+                        <!-- =========================================
+                             CONTENIDO
+                        ========================================== -->
+
                         <div class="bandeja-pedidos__contenido">
 
                             {% for pedido in bandeja.pedidos %}
 
-                                <a
-                                    href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
-                                    class="tarjeta-pedido-admin"
-                                >
+                                <div class="tarjeta-pedido-admin-wrap">
 
-                                    <div class="tarjeta-pedido-admin__superior">
+                                    <a
+                                        href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
+                                        class="tarjeta-pedido-admin"
+                                    >
 
-                                        <strong>
-                                            {{ pedido.numero }}
-                                        </strong>
+                                        <!-- SUPERIOR -->
 
-                                        <span>
-                                            {{ pedido.get_estado_display }}
-                                        </span>
+                                        <div class="tarjeta-pedido-admin__superior">
 
-                                    </div>
+                                            <strong>
+                                                {{ pedido.numero }}
+                                            </strong>
 
 
-                                    <h3>
-                                        {{ pedido.nombre }}
-                                        {{ pedido.apellido }}
-                                    </h3>
+                                            <span>
+                                                {{ pedido.get_estado_display }}
+                                            </span>
+
+                                        </div>
 
 
-                                    <p>
-                                        {{ pedido.items.count }}
-                                        producto{{ pedido.items.count|pluralize }}
-                                    </p>
+                                        <!-- CLIENTE -->
+
+                                        <h3>
+
+                                            {{ pedido.nombre }}
+                                            {{ pedido.apellido }}
+
+                                        </h3>
 
 
-                                    <footer>
+                                        <!-- UNIDADES -->
 
-                                        <time>
-                                            {{ pedido.actualizado|date:"d/m H:i" }}
-                                        </time>
+                                        <p>
 
-                                        <strong>
-                                            ${{ pedido.total|floatformat:0|intcomma }}
-                                        </strong>
+                                            {{ pedido.total_unidades|default:0 }}
 
-                                    </footer>
+                                            unidad{{ pedido.total_unidades|default:0|pluralize }}
 
-                                </a>
+                                        </p>
+
+
+                                        <!-- PIE -->
+
+                                        <footer>
+
+                                            <time>
+                                                {{ pedido.actualizado|date:"d/m H:i" }}
+                                            </time>
+
+
+                                            <strong>
+                                                ${{ pedido.total|floatformat:0|intcomma }}
+                                            </strong>
+
+                                        </footer>
+
+                                    </a>
+
+
+                                    <!-- =====================================
+                                         BOLETA RÁPIDA
+                                    ====================================== -->
+
+                                    {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
+
+                                        <a
+                                            href="{{ pedido.bsale_url_pdf }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="tarjeta-pedido-admin__boleta"
+                                            title="Descargar boleta electrónica"
+                                        >
+
+                                            <i class="bi bi-receipt"></i>
+
+                                            Boleta
+
+                                            <i class="bi bi-download"></i>
+
+                                        </a>
+
+                                    {% elif pedido.bsale_emitido and pedido.bsale_url_publica %}
+
+                                        <a
+                                            href="{{ pedido.bsale_url_publica }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="tarjeta-pedido-admin__boleta"
+                                        >
+
+                                            <i class="bi bi-receipt"></i>
+
+                                            Ver boleta
+
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+
 
                             {% empty %}
 
@@ -436,6 +861,10 @@
                         </div>
 
 
+                        <!-- =========================================
+                             PIE
+                        ========================================== -->
+
                         {% if bandeja.total > 0 %}
 
                             <footer class="bandeja-pedidos__pie">
@@ -443,13 +872,22 @@
                                 <a
                                     href="?bandeja={{ bandeja.clave }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
                                 >
+
                                     {% if bandeja.hay_mas %}
-                                        Ver los {{ bandeja.total }} pedidos
+
+                                        Ver los
+                                        {{ bandeja.total }}
+                                        pedidos
+
                                     {% else %}
+
                                         Ver bandeja
+
                                     {% endif %}
 
+
                                     <i class="bi bi-arrow-right"></i>
+
                                 </a>
 
                             </footer>

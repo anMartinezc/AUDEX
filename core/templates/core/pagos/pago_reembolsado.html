@@ -1,0 +1,71 @@
+{% extends "core/base.html" %}
+{% load static humanize %}
+
+{% block title %}
+Pago reembolsado | Audex
+{% endblock %}
+
+{% block content %}
+
+<section
+    style="
+        min-height: 68vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 70px 20px;
+    "
+>
+    <div
+        style="
+            width: min(760px, 100%);
+            text-align: center;
+        "
+    >
+
+        <div
+            style="
+                width: 96px;
+                height: 96px;
+                margin: 0 auto 28px;
+                display: grid;
+                place-items: center;
+                color: #041017;
+                font-size: 2.2rem;
+                border-radius: 50%;
+                background: #8fd3ff;
+            "
+        >
+            <i class="bi bi-arrow-counterclockwise"></i>
+        </div>
+
+        <span class="etiqueta-seccion">
+            Pago reembolsado
+        </span>
+
+        <h1
+            style="
+                margin-top: 18px;
+                font-size: clamp(2.4rem, 6vw, 4.3rem);
+            "
+        >
+            {{ titulo_resultado|default:"Tu pago fue reembolsado" }}
+        </h1>
+
+        <p
+            style="
+                margin-top: 20px;
+                color: var(--color-gris-claro);
+            "
+        >
+            {{ mensaje_resultado|default:"Este pedido registra un pago que posteriormente fue reembolsado." }}
+        </p>
+
+        {% include "core/pagos/includes/resumen_pedido.html" %}
+
+        {% include "core/pagos/includes/acciones_pago.html" %}
+
+    </div>
+</section>
+
+{% endblock %}

@@ -3,15 +3,15 @@
 
 
 {% block title %}
-    Compra confirmada | Audex
+Compra confirmada | Audex
 {% endblock %}
 
 
 {% block extra_css %}
-    <link
-        rel="stylesheet"
-        href="{% static 'core/css/pago_exitoso.css' %}?v=7"
-    >
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/pago_exitoso.css' %}?v=8"
+>
 {% endblock %}
 
 
@@ -51,6 +51,10 @@
                     enviarlos lo antes posible.
                 </p>
 
+                <!-- =================================================
+                     NÚMERO DE PEDIDO
+                ================================================== -->
+
                 <div class="pago-exitoso__numero">
 
                     <span>
@@ -72,6 +76,10 @@
                     </button>
 
                 </div>
+
+                <!-- =================================================
+                     ACCIONES PRINCIPALES
+                ================================================== -->
 
                 <div class="pago-exitoso__acciones">
 
@@ -99,16 +107,21 @@
 
 
         <!-- =====================================================
-             RESUMEN DEL PEDIDO
+             RESUMEN PRINCIPAL
         ====================================================== -->
 
         <div class="pago-exitoso__grid">
+
+            <!-- =================================================
+                 PRODUCTOS
+            ================================================== -->
 
             <article class="pago-tarjeta pago-tarjeta--productos">
 
                 <div class="pago-tarjeta__encabezado">
 
                     <div>
+
                         <span class="etiqueta-seccion">
                             <i class="bi bi-bag-check"></i>
                             Resumen del pedido
@@ -117,6 +130,7 @@
                         <h2>
                             Productos comprados
                         </h2>
+
                     </div>
 
                     <span class="pago-tarjeta__estado">
@@ -132,6 +146,10 @@
                     {% for item in pedido.items.all %}
 
                         <article class="pago-producto">
+
+                            <!-- =====================================
+                                 IMAGEN
+                            ====================================== -->
 
                             <div class="pago-producto__imagen">
 
@@ -154,14 +172,22 @@
                             </div>
 
 
+                            <!-- =====================================
+                                 INFORMACIÓN
+                            ====================================== -->
+
                             <div class="pago-producto__informacion">
 
                                 <span class="pago-producto__categoria">
 
                                     {% if item.producto and item.producto.categoria %}
+
                                         {{ item.producto.categoria.nombre }}
+
                                     {% else %}
+
                                         Producto Audex
+
                                     {% endif %}
 
                                 </span>
@@ -185,8 +211,12 @@
                             </div>
 
 
+                            <!-- =====================================
+                                 TOTAL
+                            ====================================== -->
+
                             <strong class="pago-producto__total">
-                                ${{ item.total|floatformat:0|intcomma }}
+                                ${{ item.total_final|default:item.total|floatformat:0|intcomma }}
                             </strong>
 
                         </article>
@@ -216,6 +246,7 @@
                 <div class="pago-totales">
 
                     <div class="pago-totales__fila">
+
                         <span>
                             Subtotal
                         </span>
@@ -223,6 +254,7 @@
                         <strong>
                             ${{ pedido.subtotal|floatformat:0|intcomma }}
                         </strong>
+
                     </div>
 
 
@@ -234,6 +266,7 @@
                                 pago-totales__fila--descuento
                             "
                         >
+
                             <span>
                                 <i class="bi bi-tag"></i>
                                 Descuento
@@ -242,6 +275,7 @@
                             <strong>
                                 -${{ pedido.descuento|floatformat:0|intcomma }}
                             </strong>
+
                         </div>
 
                     {% endif %}
@@ -254,11 +288,17 @@
                         </span>
 
                         <strong>
+
                             {% if pedido.despacho > 0 %}
+
                                 ${{ pedido.despacho|floatformat:0|intcomma }}
+
                             {% else %}
+
                                 Gratis
+
                             {% endif %}
+
                         </strong>
 
                     </div>
@@ -273,6 +313,7 @@
                             pago-totales__fila--total
                         "
                     >
+
                         <span>
                             Total pagado
                         </span>
@@ -280,6 +321,7 @@
                         <strong>
                             ${{ pedido.total|floatformat:0|intcomma }}
                         </strong>
+
                     </div>
 
                 </div>
@@ -311,7 +353,12 @@
                         Comenzamos a prepararlo
                     </h2>
 
+
                     <div class="pago-seguimiento">
+
+                        <!-- =========================================
+                             CONFIRMADO
+                        ========================================== -->
 
                         <div
                             class="
@@ -325,6 +372,7 @@
                             </div>
 
                             <div>
+
                                 <strong>
                                     Pago confirmado
                                 </strong>
@@ -332,6 +380,7 @@
                                 <span>
                                     Tu pago fue procesado correctamente.
                                 </span>
+
                             </div>
 
                         </div>
@@ -339,6 +388,10 @@
 
                         <div class="pago-seguimiento__linea"></div>
 
+
+                        <!-- =========================================
+                             PREPARACIÓN
+                        ========================================== -->
 
                         <div class="pago-seguimiento__item">
 
@@ -347,6 +400,7 @@
                             </div>
 
                             <div>
+
                                 <strong>
                                     En preparación
                                 </strong>
@@ -354,6 +408,7 @@
                                 <span>
                                     Nuestro equipo preparará tu pedido.
                                 </span>
+
                             </div>
 
                         </div>
@@ -362,6 +417,10 @@
                         <div class="pago-seguimiento__linea"></div>
 
 
+                        <!-- =========================================
+                             DESPACHO
+                        ========================================== -->
+
                         <div class="pago-seguimiento__item">
 
                             <div class="pago-seguimiento__punto">
@@ -369,6 +428,7 @@
                             </div>
 
                             <div>
+
                                 <strong>
                                     Despacho
                                 </strong>
@@ -376,6 +436,7 @@
                                 <span>
                                     Recibirás el seguimiento por correo.
                                 </span>
+
                             </div>
 
                         </div>
@@ -386,7 +447,7 @@
 
 
                 <!-- =================================================
-                     INFORMACIÓN DE PAGO
+                     INFORMACIÓN DEL PAGO
                 ================================================== -->
 
                 <article class="pago-tarjeta">
@@ -417,15 +478,12 @@
                         Información del pago
                     </span>
 
-                    <!-- =====================================================
-                         NOMBRE DEL MÉTODO DE PAGO
-                    ====================================================== -->
 
                     <h2>
 
                         {% if pedido.metodo_pago == "webpay" %}
 
-                            Webpay Plus
+                            Webpay
 
                         {% elif pedido.metodo_pago == "mercadopago" %}
 
@@ -446,9 +504,9 @@
 
                     <div class="pago-datos">
 
-                        <!-- =============================================
+                        <!-- =========================================
                              ESTADO
-                        ============================================== -->
+                        ========================================== -->
 
                         <div class="pago-datos__fila">
 
@@ -464,9 +522,9 @@
                         </div>
 
 
-                        <!-- =============================================
-                             FECHA DE PAGO
-                        ============================================== -->
+                        <!-- =========================================
+                             FECHA
+                        ========================================== -->
 
                         {% if pedido.fecha_pago %}
 
@@ -485,9 +543,9 @@
                         {% endif %}
 
 
-                        <!-- =============================================
+                        <!-- =========================================
                              MERCADO PAGO
-                        ============================================== -->
+                        ========================================== -->
 
                         {% if pedido.metodo_pago == "mercadopago" %}
 
@@ -544,9 +602,9 @@
                         {% endif %}
 
 
-                        <!-- =============================================
+                        <!-- =========================================
                              WEBPAY
-                        ============================================== -->
+                        ========================================== -->
 
                         {% if pedido.metodo_pago == "webpay" %}
 
@@ -561,6 +619,23 @@
                                 </strong>
 
                             </div>
+
+
+                            {% if pedido.webpay_authorization_code %}
+
+                                <div class="pago-datos__fila">
+
+                                    <span>
+                                        Autorización
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.webpay_authorization_code }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
 
 
                             <div class="pago-datos__fila">
@@ -578,9 +653,9 @@
                         {% endif %}
 
 
-                        <!-- =============================================
+                        <!-- =========================================
                              TRANSFERENCIA
-                        ============================================== -->
+                        ========================================== -->
 
                         {% if pedido.metodo_pago == "transferencia" %}
 
@@ -654,6 +729,347 @@
 
 
         <!-- =====================================================
+             DOCUMENTOS DE LA COMPRA
+        ====================================================== -->
+
+        <article
+            class="pago-tarjeta"
+            style="
+                margin-top: 28px;
+                overflow: hidden;
+                padding: 0;
+            "
+        >
+
+            <!-- =================================================
+                 ENCABEZADO
+            ================================================== -->
+
+            <div
+                style="
+                    padding: 28px 30px 20px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                "
+            >
+
+                <span class="pago-tarjeta__eyebrow">
+                    Documentos de la compra
+                </span>
+
+                <h2
+                    style="
+                        margin-top: 8px;
+                        margin-bottom: 8px;
+                    "
+                >
+                    Tus documentos
+                </h2>
+
+                <p
+                    style="
+                        margin: 0;
+                        color: var(--color-gris-claro);
+                        line-height: 1.6;
+                    "
+                >
+                    Puedes consultar y descargar los documentos
+                    asociados a esta compra cuando los necesites.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 BOLETA ELECTRÓNICA BSALE
+            ================================================== -->
+
+            {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
+
+                <a
+                    href="{{ pedido.bsale_url_pdf }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 22px;
+                        padding: 24px 30px;
+                        text-decoration: none;
+                        color: inherit;
+                        transition:
+                            background .2s ease,
+                            transform .2s ease;
+                    "
+                >
+
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 18px;
+                            min-width: 0;
+                        "
+                    >
+
+                        <div
+                            style="
+                                width: 52px;
+                                height: 52px;
+                                flex: 0 0 52px;
+                                display: grid;
+                                place-items: center;
+                                border-radius: 14px;
+                                background: rgba(92, 207, 242, 0.10);
+                                border: 1px solid rgba(92, 207, 242, 0.18);
+                                color: var(--color-celeste);
+                                font-size: 1.35rem;
+                            "
+                        >
+                            <i class="bi bi-receipt"></i>
+                        </div>
+
+
+                        <div
+                            style="
+                                min-width: 0;
+                            "
+                        >
+
+                            <strong
+                                style="
+                                    display: block;
+                                    margin-bottom: 5px;
+                                    font-size: 1.05rem;
+                                "
+                            >
+                                Descargar boleta electrónica
+                            </strong>
+
+                            <span
+                                style="
+                                    display: block;
+                                    color: var(--color-gris-claro);
+                                    font-size: .92rem;
+                                "
+                            >
+
+                                {% if pedido.bsale_folio %}
+
+                                    Boleta N.º
+                                    {{ pedido.bsale_folio }}
+
+                                {% else %}
+
+                                    Documento tributario de tu compra
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        style="
+                            width: 44px;
+                            height: 44px;
+                            flex: 0 0 44px;
+                            display: grid;
+                            place-items: center;
+                            border-radius: 50%;
+                            border: 1px solid rgba(255, 255, 255, 0.10);
+                            color: var(--color-celeste);
+                            font-size: 1.25rem;
+                        "
+                    >
+                        <i class="bi bi-download"></i>
+                    </div>
+
+                </a>
+
+
+                {% if pedido.bsale_url_publica %}
+
+                    <div
+                        style="
+                            border-top: 1px solid rgba(255, 255, 255, 0.07);
+                        "
+                    >
+
+                        <a
+                            href="{{ pedido.bsale_url_publica }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: 20px;
+                                padding: 20px 30px;
+                                color: var(--color-gris-claro);
+                                text-decoration: none;
+                            "
+                        >
+
+                            <span>
+                                <i
+                                    class="bi bi-box-arrow-up-right"
+                                    style="
+                                        margin-right: 8px;
+                                    "
+                                ></i>
+
+                                Ver boleta electrónica en línea
+                            </span>
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+
+            {% elif pedido.bsale_emitido %}
+
+                <!-- =================================================
+                     BSALE EMITIDO PERO SIN PDF
+                ================================================== -->
+
+                <div
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 18px;
+                        padding: 24px 30px;
+                    "
+                >
+
+                    <div
+                        style="
+                            width: 52px;
+                            height: 52px;
+                            flex: 0 0 52px;
+                            display: grid;
+                            place-items: center;
+                            border-radius: 14px;
+                            background: rgba(244, 201, 93, 0.10);
+                            color: #f4c95d;
+                            font-size: 1.3rem;
+                        "
+                    >
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+
+                    <div>
+
+                        <strong
+                            style="
+                                display: block;
+                                margin-bottom: 5px;
+                            "
+                        >
+                            Boleta emitida
+                        </strong>
+
+                        <span
+                            style="
+                                color: var(--color-gris-claro);
+                            "
+                        >
+                            Estamos preparando el enlace de descarga.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+            {% else %}
+
+                <!-- =================================================
+                     BOLETA TODAVÍA EN PROCESO
+                ================================================== -->
+
+                <div
+                    style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 22px;
+                        padding: 24px 30px;
+                    "
+                >
+
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 18px;
+                        "
+                    >
+
+                        <div
+                            style="
+                                width: 52px;
+                                height: 52px;
+                                flex: 0 0 52px;
+                                display: grid;
+                                place-items: center;
+                                border-radius: 14px;
+                                background: rgba(244, 201, 93, 0.10);
+                                color: #f4c95d;
+                                font-size: 1.3rem;
+                            "
+                        >
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+
+                        <div>
+
+                            <strong
+                                style="
+                                    display: block;
+                                    margin-bottom: 5px;
+                                "
+                            >
+                                Boleta electrónica en preparación
+                            </strong>
+
+                            <span
+                                style="
+                                    color: var(--color-gris-claro);
+                                "
+                            >
+                                La boleta estará disponible
+                                en unos instantes.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <a
+                        href="{% url 'core:pedido_confirmacion' numero=pedido.numero %}"
+                        class="boton boton--secundario"
+                    >
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Actualizar
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </article>
+
+
+        <!-- =====================================================
              DIRECCIÓN DE DESPACHO
         ====================================================== -->
 
@@ -675,17 +1091,21 @@
                 </h2>
 
                 <p>
+
                     {{ pedido.direccion }}
                     {{ pedido.numero_direccion }}
 
                     {% if pedido.departamento %}
+
                         , {{ pedido.departamento }}
+
                     {% endif %}
 
                     <br>
 
                     {{ pedido.comuna }},
                     {{ pedido.region }}
+
                 </p>
 
 
@@ -702,6 +1122,7 @@
                 {% endif %}
 
             </div>
+
 
             <div class="pago-direccion__escudo">
 
@@ -735,6 +1156,7 @@
             </div>
 
             <div>
+
                 <h3>
                     Despacho seguro
                 </h3>
@@ -743,6 +1165,7 @@
                     Prepararemos tu pedido con cuidado para
                     que llegue en perfectas condiciones.
                 </p>
+
             </div>
 
         </article>
@@ -755,6 +1178,7 @@
             </div>
 
             <div>
+
                 <h3>
                     Notificaciones
                 </h3>
@@ -763,6 +1187,7 @@
                     Recibirás las novedades y el seguimiento
                     directamente en tu correo.
                 </p>
+
             </div>
 
         </article>
@@ -775,6 +1200,7 @@
             </div>
 
             <div>
+
                 <h3>
                     Compra protegida
                 </h3>
@@ -816,6 +1242,7 @@
             </div>
 
             <div>
+
                 <h3>
                     ¿Necesitas ayuda?
                 </h3>
@@ -824,6 +1251,7 @@
                     Nuestro equipo está disponible para ayudarte
                     con cualquier duda sobre el pedido.
                 </p>
+
             </div>
 
         </article>

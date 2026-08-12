@@ -99,6 +99,36 @@ TRANSBANK_API_KEY = os.getenv(
 )
 
 
+
+
+
+BSALE_ACCESS_TOKEN = os.getenv("BSALE_ACCESS_TOKEN")
+
+BSALE_API_URL = os.getenv(
+    "BSALE_API_URL",
+    "https://api.bsale.io/v1",
+)
+
+BSALE_CODE_SII = int(
+    os.getenv("BSALE_CODE_SII", "39")
+)
+
+BSALE_OFFICE_ID = int(
+    os.getenv("BSALE_OFFICE_ID", "1")
+)
+
+BSALE_DECLARE_SII = int(
+    os.getenv("BSALE_DECLARE_SII", "0")
+)
+
+BSALE_SEND_EMAIL = int(
+    os.getenv("BSALE_SEND_EMAIL", "1")
+)
+
+
+
+
+
 # =============================================================================
 # APLICACIONES
 # =============================================================================

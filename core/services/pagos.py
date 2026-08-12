@@ -10,6 +10,9 @@ from ..models import *
 from .correos import enviar_confirmacion_pago
 from core.services.descuentos import *
 
+from core.services.bsale import (
+    emitir_boleta_bsale_por_pedido,
+)
 
 # =============================================================================
 # EXCEPCIONES
@@ -608,38 +611,39 @@ def confirmar_codigo_descuento_pedido(
 # MARCAR PEDIDO COMO PAGADO
 # =============================================================================
 
-
 def marcar_pedido_como_pagado(
     *,
     pedido_id,
     datos_pago=None,
 ):
     """
-    Función central para confirmar un pago.
+    Función central para confirmar definitivamente un pago.
 
     Puede ser utilizada por:
 
-    - webhook de Mercado Pago;
-    - retorno confirmado de Mercado Pago;
-    - retorno confirmado de Webpay;
+    - Mercado Pago webhook;
+    - Mercado Pago retorno exitoso;
+    - Webpay retorno confirmado;
     - futuros proveedores.
 
-    Se encarga de:
+    Responsabilidades:
 
     - bloquear el pedido;
     - validar idempotencia;
-    - validar el monto;
+    - validar el monto pagado;
     - registrar información del proveedor;
     - descontar stock una sola vez;
-    - confirmar el código reservado;
+    - confirmar el código de descuento;
     - marcar el pedido como pagado;
-    - enviar el correo después del commit.
+    - programar el correo después del commit;
+    - programar la boleta Bsale después del commit.
 
     IMPORTANTE:
 
-    Esta función solamente debe llamarse cuando
-    el proveedor de pago ya confirmó efectivamente
-    que la transacción fue aprobada.
+    Bsale jamás debe ejecutarse antes de que el pago
+    esté confirmado y persistido.
+
+    Si Bsale falla, el pago continúa aprobado.
     """
 
     # =========================================================================
@@ -652,7 +656,7 @@ def marcar_pedido_como_pagado(
     )
 
     # =========================================================================
-    # TRANSACCIÓN
+    # TRANSACCIÓN PRINCIPAL
     # =========================================================================
 
     with transaction.atomic():
@@ -666,10 +670,10 @@ def marcar_pedido_como_pagado(
                 Pedido.objects
                 .select_for_update()
                 .select_related(
-                    "usuario"
+                    "usuario",
                 )
                 .get(
-                    pk=pedido_id
+                    pk=pedido_id,
                 )
             )
 
@@ -694,7 +698,7 @@ def marcar_pedido_como_pagado(
         ).strip().lower()
 
         # =====================================================================
-        # IDENTIFICADOR DEL PAGO
+        # IDENTIFICADOR DE TRANSACCIÓN
         # =====================================================================
 
         payment_id = str(
@@ -708,7 +712,7 @@ def marcar_pedido_como_pagado(
         ).strip()
 
         # =====================================================================
-        # ESTADO MERCADO PAGO
+        # ESTADO DEL PROVEEDOR
         # =====================================================================
 
         status = str(
@@ -731,9 +735,29 @@ def marcar_pedido_como_pagado(
             or ""
         ).strip()
 
+        # =====================================================================
+        # TIPO DE PAGO
+        # =====================================================================
+        #
+        # Mercado Pago:
+        #   credit_card
+        #   debit_card
+        #   etc.
+        #
+        # Webpay:
+        #   VD
+        #   VN
+        #   VC
+        #   SI
+        #   etc.
+        # =====================================================================
+
         payment_type = str(
             datos_pago.get(
                 "payment_type"
+            )
+            or datos_pago.get(
+                "payment_type_code"
             )
             or ""
         ).strip()
@@ -766,12 +790,13 @@ def marcar_pedido_como_pagado(
                 raise ValueError(
                     (
                         "El monto recibido desde "
-                        "el proveedor de pago no es válido."
+                        "el proveedor de pago "
+                        "no es válido."
                     )
                 ) from error
 
         # =====================================================================
-        # IDEMPOTENCIA
+        # COMPROBAR SI YA ESTABA PAGADO
         # =====================================================================
 
         pago_ya_aprobado = bool(
@@ -780,26 +805,27 @@ def marcar_pedido_como_pagado(
             == Pedido.EstadoPago.APROBADO
         )
 
+        # =====================================================================
+        # IDEMPOTENCIA
+        # =====================================================================
+
         if pago_ya_aprobado:
 
             # -----------------------------------------------------------------
-            # Para Mercado Pago podemos comparar
-            # el payment_id almacenado.
+            # MERCADO PAGO
+            # -----------------------------------------------------------------
+            #
+            # Si ya fue aprobado con un payment_id,
+            # no aceptamos otro pago diferente.
             # -----------------------------------------------------------------
 
             if (
                 metodo
-                == str(
-                    Pedido.MetodoPago.MERCADOPAGO
-                )
+                == Pedido.MetodoPago.MERCADOPAGO
             ):
 
                 payment_id_actual = str(
-                    getattr(
-                        pedido,
-                        "mercadopago_payment_id",
-                        "",
-                    )
+                    pedido.mercadopago_payment_id
                     or ""
                 ).strip()
 
@@ -812,15 +838,55 @@ def marcar_pedido_como_pagado(
                     raise ValueError(
                         (
                             "El pedido ya fue confirmado "
-                            "con otro pago."
+                            "con otro pago de Mercado Pago."
                         )
                     )
 
             # -----------------------------------------------------------------
-            # Ya estaba aprobado.
-            # No ejecutar nuevamente stock,
-            # descuentos ni correo.
+            # REINTENTAR BSALE SI ES NECESARIO
             # -----------------------------------------------------------------
+            #
+            # Esto es importante porque puede ocurrir:
+            #
+            # Pago aprobado
+            #     ↓
+            # Bsale caído
+            #     ↓
+            # webhook repetido
+            #     ↓
+            # reintentar Bsale
+            #
+            # emitir_boleta_bsale_por_pedido()
+            # comprobará si ya existe una boleta.
+            # -----------------------------------------------------------------
+
+            if not getattr(
+                pedido,
+                "bsale_emitido",
+                False,
+            ):
+
+                transaction.on_commit(
+                    partial(
+                        emitir_boleta_bsale_por_pedido,
+                        pedido_id=pedido.pk,
+                    ),
+                    robust=True,
+                )
+
+            logger.info(
+                (
+                    "Pedido %s ya estaba pagado. "
+                    "No se repetirá stock ni descuento. "
+                    "Bsale_emitido=%s."
+                ),
+                pedido.numero,
+                getattr(
+                    pedido,
+                    "bsale_emitido",
+                    False,
+                ),
+            )
 
             return pedido
 
@@ -837,86 +903,66 @@ def marcar_pedido_como_pagado(
                 )
             )
 
+            if transaction_amount <= 0:
+                raise ValueError(
+                    (
+                        "El monto pagado debe "
+                        "ser mayor que $0."
+                    )
+                )
+
             if (
                 transaction_amount
                 != total_pedido
             ):
 
                 # =============================================================
-                # REGISTRAR DATOS DE MP SI CORRESPONDE
+                # GUARDAR INFORMACIÓN PARA REVISIÓN
                 # =============================================================
 
                 campos_revision = []
 
+                # -------------------------------------------------------------
+                # MERCADO PAGO
+                # -------------------------------------------------------------
+
                 if (
                     metodo
-                    == str(
-                        Pedido.MetodoPago.MERCADOPAGO
-                    )
+                    == Pedido.MetodoPago.MERCADOPAGO
                 ):
 
-                    if hasattr(
-                        pedido,
-                        "mercadopago_payment_id",
-                    ):
-                        pedido.mercadopago_payment_id = (
-                            payment_id
-                        )
+                    pedido.mercadopago_payment_id = (
+                        payment_id
+                    )
 
-                        campos_revision.append(
-                            "mercadopago_payment_id"
-                        )
+                    pedido.mercadopago_status = (
+                        status
+                    )
 
-                    if hasattr(
-                        pedido,
-                        "mercadopago_status",
-                    ):
-                        pedido.mercadopago_status = (
-                            status
-                        )
+                    pedido.mercadopago_status_detail = (
+                        status_detail
+                    )
 
-                        campos_revision.append(
-                            "mercadopago_status"
-                        )
+                    pedido.mercadopago_payment_type = (
+                        payment_type
+                    )
 
-                    if hasattr(
-                        pedido,
-                        "mercadopago_status_detail",
-                    ):
-                        pedido.mercadopago_status_detail = (
-                            status_detail
-                        )
+                    pedido.mercadopago_transaction_amount = (
+                        transaction_amount
+                    )
 
-                        campos_revision.append(
-                            "mercadopago_status_detail"
-                        )
-
-                    if hasattr(
-                        pedido,
-                        "mercadopago_payment_type",
-                    ):
-                        pedido.mercadopago_payment_type = (
-                            payment_type
-                        )
-
-                        campos_revision.append(
-                            "mercadopago_payment_type"
-                        )
-
-                    if hasattr(
-                        pedido,
-                        "mercadopago_transaction_amount",
-                    ):
-                        pedido.mercadopago_transaction_amount = (
-                            transaction_amount
-                        )
-
-                        campos_revision.append(
-                            "mercadopago_transaction_amount"
-                        )
+                    campos_revision.extend(
+                        [
+                            "mercadopago_payment_id",
+                            "mercadopago_status",
+                            "mercadopago_status_detail",
+                            "mercadopago_payment_type",
+                            "mercadopago_transaction_amount",
+                        ]
+                    )
 
                 # =============================================================
-                # MARCAR REVISIÓN
+                # MARCAR PEDIDO PARA REVISIÓN
                 # =============================================================
 
                 pedido.pagado = False
@@ -947,7 +993,7 @@ def marcar_pedido_como_pagado(
                 pedido.save(
                     update_fields=(
                         campos_revision
-                    )
+                    ),
                 )
 
                 raise ValueError(
@@ -960,76 +1006,154 @@ def marcar_pedido_como_pagado(
                 )
 
         # =====================================================================
-        # REGISTRAR MERCADO PAGO
+        # CAMPOS DEL PROVEEDOR
         # =====================================================================
 
         campos_proveedor = []
 
+        # =====================================================================
+        # MERCADO PAGO
+        # =====================================================================
+
         if (
             metodo
-            == str(
-                Pedido.MetodoPago.MERCADOPAGO
-            )
+            == Pedido.MetodoPago.MERCADOPAGO
         ):
 
-            if hasattr(
-                pedido,
-                "mercadopago_payment_id",
-            ):
-                pedido.mercadopago_payment_id = (
-                    payment_id
+            pedido.mercadopago_payment_id = (
+                payment_id
+            )
+
+            pedido.mercadopago_status = (
+                status
+            )
+
+            pedido.mercadopago_status_detail = (
+                status_detail
+            )
+
+            pedido.mercadopago_payment_type = (
+                payment_type
+            )
+
+            pedido.mercadopago_transaction_amount = (
+                transaction_amount
+            )
+
+            campos_proveedor.extend(
+                [
+                    "mercadopago_payment_id",
+                    "mercadopago_status",
+                    "mercadopago_status_detail",
+                    "mercadopago_payment_type",
+                    "mercadopago_transaction_amount",
+                ]
+            )
+
+        # =====================================================================
+        # WEBPAY
+        # =====================================================================
+
+        elif (
+            metodo
+            == Pedido.MetodoPago.WEBPAY
+        ):
+
+            token_ws = str(
+                datos_pago.get(
+                    "token_ws"
+                )
+                or ""
+            ).strip()
+
+            authorization_code = str(
+                datos_pago.get(
+                    "authorization_code"
+                )
+                or ""
+            ).strip()
+
+            response_code = (
+                datos_pago.get(
+                    "response_code"
+                )
+            )
+
+            # -----------------------------------------------------------------
+            # TOKEN
+            # -----------------------------------------------------------------
+
+            if token_ws:
+                pedido.webpay_token = (
+                    token_ws
                 )
 
                 campos_proveedor.append(
-                    "mercadopago_payment_id"
+                    "webpay_token"
                 )
 
-            if hasattr(
-                pedido,
-                "mercadopago_status",
-            ):
-                pedido.mercadopago_status = (
-                    status
+            # -----------------------------------------------------------------
+            # BUY ORDER
+            # -----------------------------------------------------------------
+
+            pedido.webpay_buy_order = (
+                pedido.numero
+            )
+
+            campos_proveedor.append(
+                "webpay_buy_order"
+            )
+
+            # -----------------------------------------------------------------
+            # AUTORIZACIÓN
+            # -----------------------------------------------------------------
+
+            if authorization_code:
+                pedido.webpay_authorization_code = (
+                    authorization_code
                 )
 
                 campos_proveedor.append(
-                    "mercadopago_status"
+                    "webpay_authorization_code"
                 )
 
-            if hasattr(
-                pedido,
-                "mercadopago_status_detail",
-            ):
-                pedido.mercadopago_status_detail = (
-                    status_detail
-                )
+            # -----------------------------------------------------------------
+            # RESPONSE CODE
+            # -----------------------------------------------------------------
+
+            if response_code is not None:
+
+                try:
+                    pedido.webpay_response_code = int(
+                        response_code
+                    )
+
+                except (
+                    TypeError,
+                    ValueError,
+                ):
+                    raise ValueError(
+                        (
+                            "Webpay devolvió un "
+                            "response_code inválido."
+                        )
+                    )
 
                 campos_proveedor.append(
-                    "mercadopago_status_detail"
+                    "webpay_response_code"
                 )
 
-            if hasattr(
-                pedido,
-                "mercadopago_payment_type",
-            ):
-                pedido.mercadopago_payment_type = (
+            # -----------------------------------------------------------------
+            # PAYMENT TYPE CODE
+            # -----------------------------------------------------------------
+
+            if payment_type:
+                pedido.webpay_payment_type_code = (
                     payment_type
                 )
 
                 campos_proveedor.append(
-                    "mercadopago_payment_type"
-                )
-
-            if hasattr(
-                pedido,
-                "mercadopago_transaction_amount",
-            ):
-                pedido.mercadopago_transaction_amount = (
-                    transaction_amount
-                )
-
-                campos_proveedor.append(
-                    "mercadopago_transaction_amount"
+                    "webpay_payment_type_code"
                 )
 
         # =====================================================================
@@ -1043,6 +1167,14 @@ def marcar_pedido_como_pagado(
             )
 
             pedido.stock_descontado = True
+
+            logger.info(
+                (
+                    "Stock descontado para "
+                    "pedido %s."
+                ),
+                pedido.numero,
+            )
 
         # =====================================================================
         # CONFIRMAR CÓDIGO DE DESCUENTO
@@ -1067,12 +1199,13 @@ def marcar_pedido_como_pagado(
         )
 
         if not pedido.fecha_pago:
+
             pedido.fecha_pago = (
                 timezone.now()
             )
 
         # =====================================================================
-        # CAMPOS A GUARDAR
+        # CAMPOS A ACTUALIZAR
         # =====================================================================
 
         campos_actualizar = [
@@ -1104,12 +1237,25 @@ def marcar_pedido_como_pagado(
             ),
         )
 
+        logger.info(
+            (
+                "Pedido %s guardado como pagado. "
+                "Método=%s payment_id=%s "
+                "total=%s."
+            ),
+            pedido.numero,
+            metodo,
+            payment_id or "sin-id",
+            pedido.total,
+        )
+
         # =====================================================================
-        # CORREO DE CONFIRMACIÓN
+        # CORREO DE CONFIRMACIÓN AUDEX
         # =====================================================================
         #
-        # Solo se ejecutará después de que la
-        # transacción de base de datos confirme.
+        # Primero confirmamos la transacción de BD.
+        #
+        # Después Django envía su correo normal.
         # =====================================================================
 
         if not pedido.correo_confirmacion_enviado:
@@ -1118,8 +1264,62 @@ def marcar_pedido_como_pagado(
                 partial(
                     enviar_confirmacion_pago,
                     pedido_id=pedido.pk,
-                )
+                ),
+                robust=True,
             )
+
+        # =====================================================================
+        # BOLETA BSALE
+        # =====================================================================
+        #
+        # La boleta también se genera después
+        # del commit.
+        #
+        # IMPORTANTE:
+        #
+        # El correo de Bsale es independiente
+        # del correo de confirmación de Audex.
+        #
+        # Bsale enviará la boleta porque
+        # BSALE_SEND_EMAIL=1.
+        # =====================================================================
+
+        if not getattr(
+            pedido,
+            "bsale_emitido",
+            False,
+        ):
+
+            transaction.on_commit(
+                partial(
+                    emitir_boleta_bsale_por_pedido,
+                    pedido_id=pedido.pk,
+                ),
+                robust=True,
+            )
+
+        # =====================================================================
+        # LOG FINAL
+        # =====================================================================
+
+        logger.info(
+            (
+                "Postventa programada para pedido %s. "
+                "Correo_Audex=%s Bsale=%s."
+            ),
+            pedido.numero,
+            (
+                not pedido
+                .correo_confirmacion_enviado
+            ),
+            (
+                not getattr(
+                    pedido,
+                    "bsale_emitido",
+                    False,
+                )
+            ),
+        )
 
         # =====================================================================
         # RESULTADO

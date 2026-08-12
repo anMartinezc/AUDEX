@@ -6,91 +6,535 @@
 {% endblock %}
 
 {% block extra_css %}
+
     <link
         rel="stylesheet"
-        href="{% static 'core/css/pedidos.css' %}?v=1"
+        href="{% static 'core/css/pedidos.css' %}?v=8"
     >
+
+
+
 {% endblock %}
+
 
 {% block content %}
 
-<section class="gestion-pedidos">
+<section class="gestion-pedidos detalle-admin">
 
     <div class="contenedor">
+
+        <!-- =====================================================
+             VOLVER
+        ====================================================== -->
 
         <a
             href="{% url 'core:panel_pedidos' %}"
             class="gestion-volver"
         >
             <i class="bi bi-arrow-left"></i>
+
             Volver a las bandejas
         </a>
 
 
+        <!-- =====================================================
+             CABECERA
+        ====================================================== -->
+
         <header class="detalle-admin__cabecera">
 
             <div>
+
                 <span class="etiqueta-seccion">
+                    <i class="bi bi-box-seam"></i>
                     Pedido
                 </span>
 
-                <h1>{{ pedido.numero }}</h1>
+                <h1>
+                    {{ pedido.numero }}
+                </h1>
 
                 <p>
                     {{ pedido.nombre }}
                     {{ pedido.apellido }}
                 </p>
+
             </div>
 
-            <span
-                class="
-                    pedido-estado
-                    pedido-estado--{{ pedido.estado }}
-                "
-            >
-                {{ pedido.get_estado_display }}
-            </span>
+
+            <div class="detalle-admin__cabecera-estado">
+
+                <span
+                    class="
+                        pedido-estado
+                        pedido-estado--{{ pedido.estado }}
+                    "
+                >
+                    {{ pedido.get_estado_display }}
+                </span>
+
+
+                {% if pedido.pagado %}
+
+                    <span class="detalle-admin__pago detalle-admin__pago--ok">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        Pago confirmado
+
+                    </span>
+
+                {% else %}
+
+                    <span class="detalle-admin__pago">
+
+                        <i class="bi bi-clock-history"></i>
+
+                        {{ pedido.get_estado_pago_display }}
+
+                    </span>
+
+                {% endif %}
+
+            </div>
 
         </header>
 
 
+        <!-- =====================================================
+             GRID
+        ====================================================== -->
+
         <div class="detalle-admin__grid">
+
+            <!-- =================================================
+                 COLUMNA PRINCIPAL
+            ================================================== -->
 
             <div class="detalle-admin__principal">
 
+                <!-- =================================================
+                     PRODUCTOS
+                ================================================== -->
+
                 <article class="seguimiento-tarjeta">
 
-                    <h2>Productos</h2>
+                    <div class="detalle-admin__seccion-cabecera">
 
-                    {% for item in pedido.items.all %}
+                        <div>
 
-                        <div class="seguimiento-producto">
-                            <span>
-                                {{ item.nombre_producto }}
-                                × {{ item.cantidad }}
+                            <span class="detalle-admin__eyebrow">
+                                Compra
                             </span>
 
-                            <strong>
-                                ${{ item.total|floatformat:0|intcomma }}
-                            </strong>
+                            <h2>
+                                Productos
+                            </h2>
+
                         </div>
 
-                    {% endfor %}
+
+                        <span class="detalle-admin__contador">
+
+                            {{ pedido.items.count }}
+
+                            línea{{ pedido.items.count|pluralize }}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detalle-admin__productos">
+
+                        {% for item in pedido.items.all %}
+
+                            <div class="seguimiento-producto">
+
+                                <!-- =====================================
+                                     PRODUCTO + IMAGEN
+                                ====================================== -->
+
+                                <div class="seguimiento-producto__contenido">
+
+                                    <!-- =================================
+                                         IMAGEN
+                                    ================================== -->
+
+                                    <div class="seguimiento-producto__imagen">
+
+                                        {% if item.producto and item.producto.imagen_mostrable %}
+
+                                            <img
+                                                src="{{ item.producto.imagen_mostrable }}"
+                                                alt="{{ item.nombre_producto }}"
+                                                loading="lazy"
+                                            >
+
+                                        {% elif item.producto and item.producto.imagen %}
+
+                                            <img
+                                                src="{{ item.producto.imagen.url }}"
+                                                alt="{{ item.nombre_producto }}"
+                                                loading="lazy"
+                                            >
+
+                                        {% else %}
+
+                                            <div class="seguimiento-producto__sin-imagen">
+
+                                                <i class="bi bi-box-seam"></i>
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- =================================
+                                         INFORMACIÓN
+                                    ================================== -->
+
+                                    <div class="seguimiento-producto__info">
+
+                                        <span class="seguimiento-producto__nombre">
+
+                                            {{ item.nombre_producto }}
+
+                                        </span>
+
+
+                                        <small>
+
+                                            Cantidad
+
+                                            <strong>
+                                                × {{ item.cantidad }}
+                                            </strong>
+
+                                        </small>
+
+
+                                        {% if item.producto and item.producto.sku %}
+
+                                            <span class="seguimiento-producto__sku">
+
+                                                SKU:
+                                                {{ item.producto.sku }}
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     PRECIO
+                                ====================================== -->
+
+                                <strong class="seguimiento-producto__precio">
+
+                                    ${{ item.total|floatformat:0|intcomma }}
+
+                                </strong>
+
+                            </div>
+
+                        {% empty %}
+
+                            <p>
+                                Este pedido no tiene productos registrados.
+                            </p>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <!-- =================================================
+                         TOTAL
+                    ================================================== -->
 
                     <div class="seguimiento-total">
-                        <span>Total</span>
+
+                        <span>
+                            Total pagado
+                        </span>
 
                         <strong>
                             ${{ pedido.total|floatformat:0|intcomma }}
                         </strong>
+
                     </div>
 
                 </article>
 
 
+                <!-- =================================================
+                     DOCUMENTOS / BOLETA
+                ================================================== -->
+
+                <article class="seguimiento-tarjeta detalle-admin__documentos">
+
+                    <div class="detalle-admin__seccion-cabecera">
+
+                        <div>
+
+                            <span class="detalle-admin__eyebrow">
+                                Documentos
+                            </span>
+
+                            <h2>
+                                Boleta electrónica
+                            </h2>
+
+                        </div>
+
+
+                        {% if pedido.bsale_emitido %}
+
+                            <span class="detalle-admin__documento-estado detalle-admin__documento-estado--ok">
+
+                                <i class="bi bi-check-circle-fill"></i>
+
+                                Emitida
+
+                            </span>
+
+                        {% elif pedido.bsale_ultimo_error %}
+
+                            <span class="detalle-admin__documento-estado detalle-admin__documento-estado--error">
+
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+
+                                Error
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="detalle-admin__documento-estado">
+
+                                <i class="bi bi-hourglass-split"></i>
+
+                                Pendiente
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    {% if pedido.pagado %}
+
+                        {% if pedido.bsale_emitido %}
+
+                            <div class="detalle-admin__boleta">
+
+                                <div class="detalle-admin__boleta-icono">
+
+                                    <i class="bi bi-receipt"></i>
+
+                                </div>
+
+
+                                <div class="detalle-admin__boleta-info">
+
+                                    <span>
+                                        Documento tributario
+                                    </span>
+
+                                    <strong>
+
+                                        {% if pedido.bsale_folio %}
+
+                                            Boleta N.º
+                                            {{ pedido.bsale_folio }}
+
+                                        {% else %}
+
+                                            Boleta electrónica
+
+                                        {% endif %}
+
+                                    </strong>
+
+
+                                    {% if pedido.bsale_document_id %}
+
+                                        <small>
+                                            ID Bsale:
+                                            {{ pedido.bsale_document_id }}
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="detalle-admin__boleta-acciones">
+
+                                    {% if pedido.bsale_url_pdf %}
+
+                                        <a
+                                            href="{{ pedido.bsale_url_pdf }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="boton boton--primario"
+                                        >
+
+                                            <i class="bi bi-download"></i>
+
+                                            Descargar boleta
+
+                                        </a>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.bsale_url_publica %}
+
+                                        <a
+                                            href="{{ pedido.bsale_url_publica }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="boton boton--secundario"
+                                        >
+
+                                            <i class="bi bi-box-arrow-up-right"></i>
+
+                                            Ver en línea
+
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                        {% elif pedido.bsale_ultimo_error %}
+
+                            <div class="detalle-admin__boleta-error">
+
+                                <div>
+
+                                    <i class="bi bi-exclamation-triangle"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+                                        No fue posible emitir la boleta
+                                    </strong>
+
+                                    <p>
+                                        Bsale registró un problema durante
+                                        la emisión de este documento.
+                                    </p>
+
+
+                                    <details>
+
+                                        <summary>
+                                            Ver detalle técnico
+                                        </summary>
+
+                                        <pre>{{ pedido.bsale_ultimo_error }}</pre>
+
+                                    </details>
+
+                                </div>
+
+                            </div>
+
+
+                        {% else %}
+
+                            <div class="detalle-admin__boleta-pendiente">
+
+                                <div class="detalle-admin__boleta-icono">
+
+                                    <i class="bi bi-hourglass-split"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+                                        Boleta todavía no emitida
+                                    </strong>
+
+                                    <p>
+                                        El pedido está pagado, pero todavía
+                                        no registra una boleta electrónica
+                                        en Bsale.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                    {% else %}
+
+                        <div class="detalle-admin__boleta-bloqueada">
+
+                            <i class="bi bi-lock"></i>
+
+                            <div>
+
+                                <strong>
+                                    Boleta no disponible
+                                </strong>
+
+                                <p>
+                                    La boleta electrónica solo se genera
+                                    después de confirmar el pago.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </article>
+
+
+                <!-- =================================================
+                     HISTORIAL
+                ================================================== -->
+
                 <article class="seguimiento-tarjeta">
 
-                    <h2>Historial del pedido</h2>
+                    <div class="detalle-admin__seccion-cabecera">
+
+                        <div>
+
+                            <span class="detalle-admin__eyebrow">
+                                Trazabilidad
+                            </span>
+
+                            <h2>
+                                Historial del pedido
+                            </h2>
+
+                        </div>
+
+                    </div>
+
 
                     <div class="historial-estados">
 
@@ -100,33 +544,48 @@
 
                                 <div class="historial-estado__punto"></div>
 
+
                                 <div>
+
                                     <strong>
                                         {{ movimiento.get_estado_nuevo_display }}
                                     </strong>
+
 
                                     <time>
                                         {{ movimiento.creado|date:"d/m/Y H:i" }}
                                     </time>
 
+
                                     {% if movimiento.comentario %}
+
                                         <p>
                                             {{ movimiento.comentario }}
                                         </p>
+
                                     {% endif %}
 
+
                                     {% if movimiento.usuario %}
+
                                         <small>
                                             Actualizado por
                                             {{ movimiento.usuario }}
                                         </small>
+
                                     {% endif %}
+
                                 </div>
 
                             </div>
 
+
                         {% empty %}
-                            <p>No existen movimientos registrados.</p>
+
+                            <p>
+                                No existen movimientos registrados.
+                            </p>
+
                         {% endfor %}
 
                     </div>
@@ -136,88 +595,349 @@
             </div>
 
 
+            <!-- =================================================
+                 LATERAL
+            ================================================== -->
+
             <aside class="detalle-admin__lateral">
+
+                <!-- =================================================
+                     ACTUALIZAR ESTADO
+                ================================================== -->
 
                 <article class="seguimiento-tarjeta">
 
-                    <h2>Avanzar pedido</h2>
+                    <span class="detalle-admin__eyebrow">
+                        Operación
+                    </span>
+
+                    <h2>
+                        Avanzar pedido
+                    </h2>
+
 
                     {% if form.nuevo_estado.field.choices %}
 
-                        <form method="post" class="form-admin">
+                        <form
+                            method="post"
+                            class="form-admin"
+                        >
 
                             {% csrf_token %}
 
+
                             {{ form.non_field_errors }}
 
-                            <div class="campo">
-                                {{ form.nuevo_estado.label_tag }}
-                                {{ form.nuevo_estado }}
-                                {{ form.nuevo_estado.errors }}
-                            </div>
 
                             <div class="campo">
-                                {{ form.comentario.label_tag }}
-                                {{ form.comentario }}
-                                {{ form.comentario.errors }}
+
+                                {{ form.nuevo_estado.label_tag }}
+
+                                {{ form.nuevo_estado }}
+
+                                {{ form.nuevo_estado.errors }}
+
                             </div>
+
+
+                            <div class="campo">
+
+                                {{ form.comentario.label_tag }}
+
+                                {{ form.comentario }}
+
+                                {{ form.comentario.errors }}
+
+                            </div>
+
 
                             <button
                                 type="submit"
-                                class="boton boton--primario boton--completo"
+                                class="
+                                    boton
+                                    boton--primario
+                                    boton--completo
+                                "
                             >
+
+                                <i class="bi bi-arrow-right-circle"></i>
+
                                 Actualizar estado
+
                             </button>
 
                         </form>
 
+
                     {% else %}
 
-                        <p>
-                            Este pedido se encuentra cerrado
-                            y no tiene más fases disponibles.
-                        </p>
+                        <div class="detalle-admin__cerrado">
+
+                            <i class="bi bi-check2-circle"></i>
+
+                            <p>
+                                Este pedido se encuentra cerrado
+                                y no tiene más fases disponibles.
+                            </p>
+
+                        </div>
 
                     {% endif %}
 
                 </article>
 
 
+                <!-- =================================================
+                     PAGO
+                ================================================== -->
+
                 <article class="seguimiento-tarjeta">
 
-                    <h2>Cliente</h2>
+                    <span class="detalle-admin__eyebrow">
+                        Transacción
+                    </span>
 
-                    <p>
-                        <strong>
-                            {{ pedido.nombre }}
-                            {{ pedido.apellido }}
-                        </strong>
-                    </p>
+                    <h2>
+                        Pago
+                    </h2>
 
-                    <p>{{ pedido.rut }}</p>
-                    <p>{{ pedido.email }}</p>
-                    <p>{{ pedido.telefono }}</p>
+
+                    <div class="detalle-admin__datos">
+
+                        <div>
+
+                            <span>
+                                Estado
+                            </span>
+
+                            <strong>
+
+                                {% if pedido.pagado %}
+
+                                    <span class="detalle-admin__dato-ok">
+
+                                        <i class="bi bi-check-circle-fill"></i>
+
+                                        Confirmado
+
+                                    </span>
+
+                                {% else %}
+
+                                    {{ pedido.get_estado_pago_display }}
+
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Método
+                            </span>
+
+                            <strong>
+                                {{ pedido.get_metodo_pago_display }}
+                            </strong>
+
+                        </div>
+
+
+                        {% if pedido.fecha_pago %}
+
+                            <div>
+
+                                <span>
+                                    Fecha
+                                </span>
+
+                                <strong>
+                                    {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if pedido.metodo_pago == "webpay" %}
+
+                            {% if pedido.webpay_authorization_code %}
+
+                                <div>
+
+                                    <span>
+                                        Autorización
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.webpay_authorization_code }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endif %}
+
+
+                        {% if pedido.metodo_pago == "mercadopago" %}
+
+                            {% if pedido.mercadopago_payment_id %}
+
+                                <div>
+
+                                    <span>
+                                        Payment ID
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.mercadopago_payment_id }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                    </div>
 
                 </article>
 
 
+                <!-- =================================================
+                     CLIENTE
+                ================================================== -->
+
                 <article class="seguimiento-tarjeta">
 
-                    <h2>Despacho</h2>
+                    <span class="detalle-admin__eyebrow">
+                        Comprador
+                    </span>
 
-                    <p>
-                        {{ pedido.direccion }}
-                        {{ pedido.numero_direccion }}
+                    <h2>
+                        Cliente
+                    </h2>
 
-                        {% if pedido.departamento %}
-                            , {{ pedido.departamento }}
-                        {% endif %}
 
-                        <br>
+                    <div class="detalle-admin__datos">
 
-                        {{ pedido.comuna }},
-                        {{ pedido.region }}
-                    </p>
+                        <div>
+
+                            <span>
+                                Nombre
+                            </span>
+
+                            <strong>
+                                {{ pedido.nombre }}
+                                {{ pedido.apellido }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                RUT
+                            </span>
+
+                            <strong>
+                                {{ pedido.rut }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Correo
+                            </span>
+
+                            <strong>
+                                {{ pedido.email }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Teléfono
+                            </span>
+
+                            <strong>
+                                {{ pedido.telefono }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+
+                <!-- =================================================
+                     DESPACHO
+                ================================================== -->
+
+                <article class="seguimiento-tarjeta">
+
+                    <span class="detalle-admin__eyebrow">
+                        Entrega
+                    </span>
+
+                    <h2>
+                        Despacho
+                    </h2>
+
+
+                    <div class="detalle-admin__direccion">
+
+                        <i class="bi bi-geo-alt"></i>
+
+
+                        <p>
+
+                            {{ pedido.direccion }}
+                            {{ pedido.numero_direccion }}
+
+
+                            {% if pedido.departamento %}
+
+                                , {{ pedido.departamento }}
+
+                            {% endif %}
+
+
+                            <br>
+
+
+                            {{ pedido.comuna }},
+                            {{ pedido.region }}
+
+                        </p>
+
+                    </div>
+
+
+                    {% if pedido.referencia %}
+
+                        <div class="detalle-admin__referencia">
+
+                            <i class="bi bi-info-circle"></i>
+
+                            {{ pedido.referencia }}
+
+                        </div>
+
+                    {% endif %}
 
                 </article>
 

@@ -391,7 +391,6 @@ class Producto(models.Model):
             },
         )
 
-
 class Pedido(models.Model):
     # -------------------------------------------------------------------------
     # ESTADOS DEL PEDIDO
@@ -525,6 +524,7 @@ class Pedido(models.Model):
             "fidelidad",
             "Premio de fidelidad",
         )
+
     # -------------------------------------------------------------------------
     # COMPATIBILIDAD CON CÓDIGO ANTERIOR
     # -------------------------------------------------------------------------
@@ -786,6 +786,71 @@ class Pedido(models.Model):
     )
 
     # -------------------------------------------------------------------------
+    # BSALE
+    # -------------------------------------------------------------------------
+
+    bsale_document_id = models.BigIntegerField(
+        null=True,
+        blank=True,
+        unique=True,
+        verbose_name="ID documento Bsale",
+    )
+
+    bsale_folio = models.BigIntegerField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Folio Bsale",
+    )
+
+    bsale_client_id = models.BigIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="ID cliente Bsale",
+    )
+
+    bsale_url_pdf = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name="PDF Bsale",
+    )
+
+    bsale_url_publica = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name="URL pública Bsale",
+    )
+
+    bsale_url_xml = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name="XML Bsale",
+    )
+
+    bsale_token_documento = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Token documento Bsale",
+    )
+
+    bsale_emitido = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="Boleta Bsale emitida",
+    )
+
+    bsale_emitido_en = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha emisión Bsale",
+    )
+
+    bsale_ultimo_error = models.TextField(
+        blank=True,
+        verbose_name="Último error Bsale",
+    )
+
+    # -------------------------------------------------------------------------
     # DESCUENTOS
     # -------------------------------------------------------------------------
 
@@ -933,6 +998,15 @@ class Pedido(models.Model):
                 ],
                 name=(
                     "pedido_fidelidad_idx"
+                ),
+            ),
+            models.Index(
+                fields=[
+                    "bsale_emitido",
+                    "creado",
+                ],
+                name=(
+                    "pedido_bsale_emitido_idx"
                 ),
             ),
         ]
@@ -1149,6 +1223,10 @@ class Pedido(models.Model):
                 return numero
 
 
+
+
+
+            
 class PedidoItem(models.Model):
     pedido = models.ForeignKey(
         Pedido,

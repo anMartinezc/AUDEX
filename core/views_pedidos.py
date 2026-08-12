@@ -5,6 +5,8 @@ from django.contrib.admin.views.decorators import (
 from django.contrib.auth.decorators import (
     login_required,
 )
+from datetime import timedelta
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -16,6 +18,7 @@ from django.shortcuts import (
 from django.views.decorators.http import (
     require_http_methods,
 )
+from django.db.models import Sum
 
 from core.forms import (
     ActualizarEstadoPedidoForm,
@@ -184,84 +187,83 @@ def _usuario_puede_ver(
 # HISTORIAL DE COMPRAS DEL CLIENTE
 # ==========================================================================
 
+
 @login_required
 def mis_compras(request):
     """
-    Historial de compras del usuario autenticado.
+    Historial de compras confirmadas del usuario.
 
-    Por defecto muestra únicamente pedidos pagados.
+    Solo muestra pedidos cuyo pago fue aprobado.
 
-    Los pedidos pendientes de pago se consultan mediante:
+    Permite filtrar por estado operativo:
 
-        ?tipo=pendientes
+    - confirmado
+    - preparacion
+    - listo
+    - enviado
+    - entregado
+    - cancelado
+
+    Los intentos de pago pendientes, rechazados
+    o cancelados antes de pagar no aparecen aquí.
     """
 
-    pedidos_usuario = (
+    # =========================================================================
+    # QUERYSET BASE
+    # =========================================================================
+
+    pedidos_base = (
         _queryset_pedidos()
         .filter(
             usuario=request.user,
-        )
-    )
-
-    # ---------------------------------------------------------
-    # GRUPOS DE PEDIDOS
-    # ---------------------------------------------------------
-
-    pedidos_pagados = (
-        pedidos_usuario
-        .filter(
             pagado=True,
+            estado_pago=Pedido.EstadoPago.APROBADO,
+        )
+        .annotate(
+            total_unidades=Sum(
+                "items__cantidad"
+            ),
         )
         .order_by(
             "-creado",
         )
     )
 
-    pedidos_pendientes = (
-        pedidos_usuario
-        .filter(
-            pagado=False,
-            estado="pendiente",
+    # =========================================================================
+    # TOTAL REAL DE COMPRAS
+    # =========================================================================
+
+    total_compras = (
+        pedidos_base.count()
+    )
+
+    # =========================================================================
+    # FILTROS DISPONIBLES
+    # =========================================================================
+
+    estados_filtro = [
+        (
+            valor,
+            etiqueta,
         )
-        .order_by(
-            "-creado",
+        for valor, etiqueta
+        in Pedido.EstadoPedido.choices
+        if (
+            valor
+            != Pedido.EstadoPedido.PENDIENTE
         )
-    )
+    ]
 
-    total_pagados = (
-        pedidos_pagados.count()
-    )
-
-    total_pendientes_pago = (
-        pedidos_pendientes.count()
-    )
-
-    # ---------------------------------------------------------
-    # TIPO DE BANDEJA
-    # ---------------------------------------------------------
-
-    tipo_actual = (
-        request.GET.get(
-            "tipo",
-            "pagados",
-        )
-        .strip()
-        .lower()
-    )
-
-    tipos_validos = {
-        "pagados",
-        "pendientes",
+    estados_validos = {
+        valor
+        for valor, _ in estados_filtro
     }
 
-    if tipo_actual not in tipos_validos:
-        tipo_actual = "pagados"
+    # =========================================================================
+    # ESTADO SOLICITADO
+    # =========================================================================
 
-    # ---------------------------------------------------------
-    # FILTRO POR ESTADO
-    # ---------------------------------------------------------
-
-    estado = (
+    estado_actual = (
         request.GET.get(
             "estado",
             "",
@@ -270,40 +272,155 @@ def mis_compras(request):
         .lower()
     )
 
-    estados_filtro = [
-        (
-            valor,
-            etiqueta,
-        )
-        for valor, etiqueta in Pedido.ESTADOS
-        if valor != "pendiente"
-    ]
+    if (
+        estado_actual
+        not in estados_validos
+    ):
+        estado_actual = ""
 
-    estados_validos = {
-        valor
-        for valor, _ in estados_filtro
+    # =========================================================================
+    # FILTRAR
+    # =========================================================================
+
+    pedidos = pedidos_base
+
+    if estado_actual:
+
+        pedidos = pedidos.filter(
+            estado=estado_actual,
+        )
+
+    # =========================================================================
+    # INFORMACIÓN DEL FILTRO
+    # =========================================================================
+
+    etiquetas_estado = dict(
+        estados_filtro
+    )
+
+    etiqueta_estado_actual = (
+        etiquetas_estado.get(
+            estado_actual,
+            "",
+        )
+    )
+
+    total_filtrados = (
+        pedidos.count()
+    )
+
+    # =========================================================================
+    # ESTADOS VACÍOS
+    # =========================================================================
+
+    estados_vacios = {
+
+        Pedido.EstadoPedido.CONFIRMADO: {
+            "icono": "bi-check-circle",
+            "titulo": (
+                "No tienes compras recién confirmadas"
+            ),
+            "mensaje": (
+                "Tus compras confirmadas que avancen "
+                "a preparación dejarán de aparecer "
+                "en este filtro."
+            ),
+        },
+
+        Pedido.EstadoPedido.PREPARACION: {
+            "icono": "bi-box-seam",
+            "titulo": (
+                "No tienes pedidos en preparación"
+            ),
+            "mensaje": (
+                "Cuando comencemos a preparar una "
+                "de tus compras, aparecerá aquí."
+            ),
+        },
+
+        Pedido.EstadoPedido.LISTO: {
+            "icono": "bi-box-seam",
+            "titulo": (
+                "No tienes pedidos listos para despacho"
+            ),
+            "mensaje": (
+                "Cuando uno de tus pedidos esté listo "
+                "para ser entregado al transportista, "
+                "aparecerá en esta sección."
+            ),
+        },
+
+        Pedido.EstadoPedido.ENVIADO: {
+            "icono": "bi-truck",
+            "titulo": (
+                "No tienes pedidos enviados"
+            ),
+            "mensaje": (
+                "Cuando un pedido salga a despacho, "
+                "podrás consultarlo desde este filtro."
+            ),
+        },
+
+        Pedido.EstadoPedido.ENTREGADO: {
+            "icono": "bi-house-check",
+            "titulo": (
+                "No tienes pedidos entregados"
+            ),
+            "mensaje": (
+                "Tus compras entregadas aparecerán "
+                "aquí una vez finalice el despacho."
+            ),
+        },
+
+        Pedido.EstadoPedido.CANCELADO: {
+            "icono": "bi-x-circle",
+            "titulo": (
+                "No tienes compras canceladas"
+            ),
+            "mensaje": (
+                "No existen compras confirmadas "
+                "que hayan sido canceladas."
+            ),
+        },
     }
 
-    if tipo_actual == "pendientes":
-        pedidos = pedidos_pendientes
+    # =========================================================================
+    # VACÍO GENERAL
+    # =========================================================================
 
-        # La bandeja pendiente no necesita filtro
-        # de estado porque todos están pendientes.
-        estado = ""
+    if estado_actual:
+
+        vacio = estados_vacios.get(
+            estado_actual,
+            {
+                "icono": "bi-bag-x",
+                "titulo": (
+                    "No hay compras en este estado"
+                ),
+                "mensaje": (
+                    "No encontramos compras que "
+                    "coincidan con este filtro."
+                ),
+            },
+        )
 
     else:
-        pedidos = pedidos_pagados
 
-        if estado in estados_validos:
-            pedidos = pedidos.filter(
-                estado=estado,
-            )
-        else:
-            estado = ""
+        vacio = {
+            "icono": "bi-bag-x",
+            "titulo": (
+                "Aún no tienes compras"
+            ),
+            "mensaje": (
+                "Cuando completes una compra "
+                "y su pago sea confirmado, "
+                "aparecerá aquí."
+            ),
+        }
 
-    # ---------------------------------------------------------
+    # =========================================================================
     # PAGINACIÓN
-    # ---------------------------------------------------------
+    # =========================================================================
 
     paginador = Paginator(
         pedidos,
@@ -311,27 +428,45 @@ def mis_compras(request):
     )
 
     pagina = paginador.get_page(
-        request.GET.get("page")
+        request.GET.get(
+            "page",
+            1,
+        )
     )
 
-    # ---------------------------------------------------------
-    # TEMPLATE
-    # ---------------------------------------------------------
+    # =========================================================================
+    # RENDER
+    # =========================================================================
 
     return render(
         request,
         "core/mis_compras.html",
         {
             "page_obj": pagina,
-            "tipo_actual": tipo_actual,
-            "estado_actual": estado,
-            "estados": estados_filtro,
-            "total_pagados": total_pagados,
-            "total_pendientes_pago": (
-                total_pendientes_pago
+
+            "estado_actual": (
+                estado_actual
             ),
+
+            "etiqueta_estado_actual": (
+                etiqueta_estado_actual
+            ),
+
+            "estados": (
+                estados_filtro
+            ),
+
+            "total_compras": (
+                total_compras
+            ),
+
+            "total_filtrados": (
+                total_filtrados
+            ),
+
+            "vacio": vacio,
         },
-    )
+    )   
 # ==========================================================================
 # SEGUIMIENTO PÚBLICO POR NÚMERO DE PEDIDO
 # ==========================================================================
@@ -345,125 +480,239 @@ def seguimiento_pedido(
     numero=None,
 ):
     """
-    Permite consultar un pedido mediante su número exacto.
+    Seguimiento público de pedidos.
 
-    Usuario autenticado:
-    - Puede acceder directamente a sus propios pedidos.
-    - También puede buscar un número desde el formulario.
+    Flujo:
 
-    Usuario invitado:
-    - Debe buscar el número exacto del pedido.
-    - El número queda autorizado temporalmente en su sesión.
+    1. Si la URL contiene un número de pedido:
+       /seguimiento/AUD-XXXXXXXX/
+
+       Se busca y muestra directamente el pedido.
+
+    2. Si no existe número en la URL:
+       /seguimiento/
+
+       Se muestra el formulario para buscar el pedido.
+
+    3. El formulario puede buscar por número de pedido.
+
+    No es necesario iniciar sesión ni ingresar nuevamente
+    datos cuando el número del pedido ya viene en la URL.
     """
 
+    # =========================================================================
+    # VARIABLES
+    # =========================================================================
+
     pedido = None
+    timeline = []
 
-    numero_inicial = (
-        _normalizar_numero_pedido(
-            numero
+    # =========================================================================
+    # ACCESO DIRECTO POR URL
+    # =========================================================================
+
+    if numero:
+
+        numero_normalizado = (
+            _normalizar_numero_pedido(
+                numero
+            )
         )
-    )
 
-    form = BuscarPedidoForm(
-        request.POST or None,
-        initial={
-            "numero": numero_inicial,
-        },
-    )
+        pedido = (
+            _queryset_pedidos()
+            .filter(
+                numero__iexact=(
+                    numero_normalizado
+                )
+            )
+            .first()
+        )
 
-    # ------------------------------------------------------------------
-    # BÚSQUEDA POR FORMULARIO
-    # ------------------------------------------------------------------
+        # =====================================================================
+        # PEDIDO NO ENCONTRADO
+        # =====================================================================
+
+        if pedido is None:
+
+            messages.warning(
+                request,
+                (
+                    "No encontramos el pedido indicado. "
+                    "Verifica el número e intenta nuevamente."
+                ),
+            )
+
+            form = BuscarPedidoForm(
+                initial={
+                    "numero": (
+                        numero_normalizado
+                    ),
+                }
+            )
+
+        else:
+
+            # =================================================================
+            # CONSTRUIR TIMELINE
+            # =================================================================
+
+            timeline = construir_timeline(
+                pedido
+            )
+
+            # =================================================================
+            # NO NECESITAMOS FORMULARIO
+            # =================================================================
+
+            form = BuscarPedidoForm()
+
+            # =================================================================
+            # RENDER DIRECTO
+            # =================================================================
+
+            return render(
+                request,
+                "core/seguimiento_pedido.html",
+                {
+                    "pedido": pedido,
+                    "form": form,
+                    "timeline": timeline,
+                },
+            )
+
+    # =========================================================================
+    # SIN NÚMERO EN URL
+    # =========================================================================
+    #
+    # /seguimiento/
+    #
+    # Se utiliza únicamente para buscar manualmente.
+    # =========================================================================
+
+    else:
+
+        form = BuscarPedidoForm(
+            request.POST or None
+        )
+
+    # =========================================================================
+    # BÚSQUEDA MANUAL
+    # =========================================================================
 
     if (
         request.method == "POST"
         and form.is_valid()
     ):
-        numero_buscado = (
-            _normalizar_numero_pedido(
-                form.cleaned_data[
-                    "numero"
-                ]
+
+        # =====================================================================
+        # NÚMERO
+        # =====================================================================
+
+        numero_form = (
+            form.cleaned_data.get(
+                "numero"
             )
+            or ""
         )
 
-        pedido_encontrado = (
-            _queryset_pedidos()
-            .filter(
-                numero__iexact=numero_buscado,
+        numero_form = (
+            str(
+                numero_form
             )
-            .first()
+            .strip()
         )
 
-        if pedido_encontrado is None:
-            form.add_error(
-                "numero",
-                (
-                    "No encontramos un pedido "
-                    "con ese número."
-                ),
-            )
+        # =====================================================================
+        # VALIDAR
+        # =====================================================================
+
+        if not numero_form:
+
+            if "numero" in form.fields:
+
+                form.add_error(
+                    "numero",
+                    (
+                        "Ingresa el número "
+                        "del pedido."
+                    ),
+                )
+
+            else:
+
+                form.add_error(
+                    None,
+                    (
+                        "No fue posible obtener "
+                        "el número del pedido."
+                    ),
+                )
 
         else:
-            _autorizar_pedido_en_sesion(
-                request,
-                pedido_encontrado.numero,
+
+            # =================================================================
+            # NORMALIZAR
+            # =================================================================
+
+            numero_normalizado = (
+                _normalizar_numero_pedido(
+                    numero_form
+                )
             )
 
-            return redirect(
-                "core:seguimiento_pedido_numero",
-                numero=pedido_encontrado.numero,
+            # =================================================================
+            # BUSCAR
+            # =================================================================
+
+            pedido = (
+                _queryset_pedidos()
+                .filter(
+                    numero__iexact=(
+                        numero_normalizado
+                    )
+                )
+                .first()
             )
 
-    # ------------------------------------------------------------------
-    # VISUALIZACIÓN POR URL
-    # ------------------------------------------------------------------
+            # =================================================================
+            # NO ENCONTRADO
+            # =================================================================
 
-    if numero_inicial:
-        pedido_encontrado = (
-            _queryset_pedidos()
-            .filter(
-                numero__iexact=numero_inicial,
-            )
-            .first()
+            if pedido is None:
+
+                form.add_error(
+                    "numero",
+                    (
+                        "No encontramos un pedido "
+                        "con ese número."
+                    ),
+                )
+
+            # =================================================================
+            # ENCONTRADO
+            # =================================================================
+
+            else:
+
+                return redirect(
+                    "core:seguimiento_pedido_numero",
+                    numero=pedido.numero,
+                )
+
+    # =========================================================================
+    # TIMELINE
+    # =========================================================================
+
+    if pedido:
+
+        timeline = construir_timeline(
+            pedido
         )
 
-        if pedido_encontrado is None:
-            form.add_error(
-                "numero",
-                (
-                    "No encontramos un pedido "
-                    "con ese número."
-                ),
-            )
-
-        elif _usuario_puede_ver(
-            request,
-            pedido_encontrado,
-        ):
-            pedido = pedido_encontrado
-
-        else:
-            form = BuscarPedidoForm(
-                initial={
-                    "numero": numero_inicial,
-                }
-            )
-
-            form.add_error(
-                "numero",
-                (
-                    "Para acceder al seguimiento, "
-                    "ingresa el número del pedido "
-                    "y presiona Buscar."
-                ),
-            )
-
-    timeline = (
-        construir_timeline(pedido)
-        if pedido is not None
-        else []
-    )
+    # =========================================================================
+    # RENDER
+    # =========================================================================
 
     return render(
         request,
@@ -475,34 +724,69 @@ def seguimiento_pedido(
         },
     )
 
-
 # ==========================================================================
 # PANEL ADMINISTRATIVO DE PEDIDOS
 # ==========================================================================
-
 @staff_member_required
 def panel_pedidos(request):
     """
-    Panel administrativo escalable.
+    Panel administrativo de pedidos.
 
-    Tablero general:
-    - Muestra un máximo de 8 pedidos por bandeja.
-    - Conserva el contador total real.
+    El tablero principal muestra exclusivamente ventas
+    cuyo pago fue confirmado.
 
-    Bandeja completa:
-    - Se abre mediante ?bandeja=nuevos, operacion, etc.
-    - Muestra 20 pedidos por página.
+    Organización:
 
-    Los pedidos pendientes de pago se separan de las ventas
-    confirmadas.
+    - Nuevos:
+        pedidos pagados y confirmados.
+
+    - En operación:
+        preparación / listo para despacho.
+
+    - En despacho:
+        pedidos enviados.
+
+    - Finalizados:
+        entregados o cancelados después de una venta válida.
+
+    Pagos pendientes:
+
+    - No forman parte del tablero operativo.
+    - Se muestran como una alerta administrativa.
+    - Se consideran "recientes" los actualizados
+      durante las últimas 24 horas.
+    - El administrador puede abrir la bandeja completa
+      para revisar todo el histórico.
+
+    Bsale:
+
+    - Se contabilizan boletas pendientes de emisión.
+    - El template puede acceder directamente a:
+        pedido.bsale_url_pdf
+        pedido.bsale_url_publica
+        pedido.bsale_folio
+        pedido.bsale_emitido
     """
+
+    # =========================================================================
+    # QUERYSET BASE
+    # =========================================================================
 
     pedidos = (
         _queryset_pedidos()
+        .annotate(
+            total_unidades=Sum(
+                "items__cantidad"
+            ),
+        )
         .order_by(
             "-actualizado",
         )
     )
+
+    # =========================================================================
+    # BUSCADOR
+    # =========================================================================
 
     busqueda = (
         request.GET.get(
@@ -513,6 +797,7 @@ def panel_pedidos(request):
     )
 
     if busqueda:
+
         pedidos = pedidos.filter(
             Q(
                 numero__icontains=busqueda
@@ -531,55 +816,128 @@ def panel_pedidos(request):
             )
         )
 
-    # ------------------------------------------------------------------
-    # BANDEJAS
-    # ------------------------------------------------------------------
+    # =========================================================================
+    # VENTAS CONFIRMADAS
+    # =========================================================================
+    #
+    # Este queryset es la base REAL del tablero operativo.
+    #
+    # Un intento de pago rechazado, cancelado o pendiente
+    # nunca debe mezclarse aquí.
+    # =========================================================================
+
+    ventas_confirmadas = pedidos.filter(
+        pagado=True,
+        estado_pago=Pedido.EstadoPago.APROBADO,
+    )
+
+    # =========================================================================
+    # PAGOS PENDIENTES
+    # =========================================================================
 
     pendientes_pago = pedidos.filter(
-        estado="pendiente",
         pagado=False,
-    )
-
-    nuevos = pedidos.filter(
-        estado="confirmado",
-        pagado=True,
-    )
-
-    operacion = pedidos.filter(
-        estado__in=[
-            "preparacion",
-            "listo",
-        ],
-        pagado=True,
-    )
-
-    despacho = pedidos.filter(
-        estado="enviado",
-        pagado=True,
-    )
-
-    finalizados = pedidos.filter(
-        estado__in=[
-            "entregado",
-            "cancelado",
+        estado_pago__in=[
+            Pedido.EstadoPago.PENDIENTE,
+            Pedido.EstadoPago.INICIADO,
         ],
     )
+
+    # =========================================================================
+    # PENDIENTES RECIENTES
+    # =========================================================================
+    #
+    # Solo estos merecen atención destacada en el tablero.
+    # Los intentos antiguos continúan disponibles desde
+    # la bandeja completa.
+    # =========================================================================
+
+    limite_pendientes_recientes = (
+        timezone.now()
+        - timedelta(
+            hours=24
+        )
+    )
+
+    pendientes_pago_recientes = (
+        pendientes_pago.filter(
+            actualizado__gte=(
+                limite_pendientes_recientes
+            ),
+        )
+    )
+
+    # =========================================================================
+    # BANDEJAS OPERATIVAS
+    # =========================================================================
+
+    nuevos = ventas_confirmadas.filter(
+        estado=Pedido.EstadoPedido.CONFIRMADO,
+    )
+
+    operacion = ventas_confirmadas.filter(
+        estado__in=[
+            Pedido.EstadoPedido.PREPARACION,
+            Pedido.EstadoPedido.LISTO,
+        ],
+    )
+
+    despacho = ventas_confirmadas.filter(
+        estado=Pedido.EstadoPedido.ENVIADO,
+    )
+
+    finalizados = ventas_confirmadas.filter(
+        estado__in=[
+            Pedido.EstadoPedido.ENTREGADO,
+            Pedido.EstadoPedido.CANCELADO,
+        ],
+    )
+
+    # =========================================================================
+    # BSALE
+    # =========================================================================
+    #
+    # Venta pagada que todavía no registra una boleta emitida.
+    # Sirve como alerta administrativa.
+    # =========================================================================
+
+    boletas_pendientes = ventas_confirmadas.filter(
+        bsale_emitido=False,
+    )
+
+    # =========================================================================
+    # QUERYSETS DISPONIBLES
+    # =========================================================================
 
     bandejas_querysets = {
         "nuevos": nuevos,
         "operacion": operacion,
         "despacho": despacho,
         "finalizados": finalizados,
+
+        # Solo accesible como bandeja administrativa.
         "pendientes": pendientes_pago,
+
+        # Bandeja útil para revisar problemas Bsale.
+        "boletas": boletas_pendientes,
     }
+
+    # =========================================================================
+    # NOMBRES
+    # =========================================================================
 
     bandejas_nombres = {
         "nuevos": "Nuevos",
         "operacion": "En operación",
         "despacho": "En despacho",
         "finalizados": "Finalizados",
-        "pendientes": "Pendientes de pago",
+        "pendientes": "Pagos pendientes",
+        "boletas": "Boletas pendientes",
     }
+
+    # =========================================================================
+    # ICONOS
+    # =========================================================================
 
     bandejas_iconos = {
         "nuevos": "bi-bag-check",
@@ -587,11 +945,12 @@ def panel_pedidos(request):
         "despacho": "bi-truck",
         "finalizados": "bi-check2-circle",
         "pendientes": "bi-clock-history",
+        "boletas": "bi-receipt-cutoff",
     }
 
-    # ------------------------------------------------------------------
+    # =========================================================================
     # CONTADORES
-    # ------------------------------------------------------------------
+    # =========================================================================
 
     totales = {
         clave: queryset.count()
@@ -599,9 +958,21 @@ def panel_pedidos(request):
         in bandejas_querysets.items()
     }
 
-    # ------------------------------------------------------------------
-    # BANDEJA SELECCIONADA
-    # ------------------------------------------------------------------
+    total_pendientes_recientes = (
+        pendientes_pago_recientes.count()
+    )
+
+    total_pendientes_historicos = (
+        pendientes_pago.count()
+    )
+
+    total_boletas_pendientes = (
+        boletas_pendientes.count()
+    )
+
+    # =========================================================================
+    # BANDEJA SOLICITADA
+    # =========================================================================
 
     bandeja_actual = (
         request.GET.get(
@@ -621,6 +992,7 @@ def panel_pedidos(request):
     titulo_bandeja = ""
 
     if mostrar_bandeja:
+
         queryset_bandeja = (
             bandejas_querysets[
                 bandeja_actual
@@ -633,7 +1005,10 @@ def panel_pedidos(request):
         )
 
         page_obj = paginador.get_page(
-            request.GET.get("page")
+            request.GET.get(
+                "page",
+                1,
+            )
         )
 
         titulo_bandeja = (
@@ -642,9 +1017,15 @@ def panel_pedidos(request):
             ]
         )
 
-    # ------------------------------------------------------------------
-    # TARJETAS DEL TABLERO GENERAL
-    # ------------------------------------------------------------------
+    # =========================================================================
+    # TARJETAS DEL TABLERO
+    # =========================================================================
+    #
+    # No añadimos "pendientes" ni "boletas".
+    #
+    # El tablero Kanban representa operación logística,
+    # no incidencias de pago/documentos.
+    # =========================================================================
 
     bandejas = []
 
@@ -656,31 +1037,41 @@ def panel_pedidos(request):
     ]
 
     for clave in claves_tablero:
+
         queryset = (
             bandejas_querysets[
                 clave
             ]
         )
 
-        total = totales[clave]
+        total = (
+            totales[
+                clave
+            ]
+        )
 
         bandejas.append(
             {
                 "clave": clave,
+
                 "nombre": (
                     bandejas_nombres[
                         clave
                     ]
                 ),
+
                 "icono": (
                     bandejas_iconos[
                         clave
                     ]
                 ),
+
                 "total": total,
+
                 "pedidos": queryset[
                     :PEDIDOS_VISIBLES_POR_BANDEJA
                 ],
+
                 "hay_mas": (
                     total
                     > PEDIDOS_VISIBLES_POR_BANDEJA
@@ -688,63 +1079,113 @@ def panel_pedidos(request):
             }
         )
 
-    # ------------------------------------------------------------------
+    # =========================================================================
     # CONTEXTO
-    # ------------------------------------------------------------------
+    # =========================================================================
 
     return render(
         request,
         "core/gestion/panel_pedidos.html",
         {
-            # Nuevo tablero escalable.
+            # =============================================================
+            # TABLERO
+            # =============================================================
+
             "bandejas": bandejas,
-            "bandeja_actual": bandeja_actual,
-            "titulo_bandeja": titulo_bandeja,
-            "mostrar_bandeja": mostrar_bandeja,
-            "page_obj": page_obj,
 
-            # Buscador.
-            "busqueda": busqueda,
+            # =============================================================
+            # BANDEJA COMPLETA
+            # =============================================================
 
-            # Contadores.
+            "bandeja_actual": (
+                bandeja_actual
+            ),
+
+            "titulo_bandeja": (
+                titulo_bandeja
+            ),
+
+            "mostrar_bandeja": (
+                mostrar_bandeja
+            ),
+
+            "page_obj": (
+                page_obj
+            ),
+
+            # =============================================================
+            # BUSCADOR
+            # =============================================================
+
+            "busqueda": (
+                busqueda
+            ),
+
+            # =============================================================
+            # CONTADORES OPERATIVOS
+            # =============================================================
+
             "total_principal": (
                 totales["nuevos"]
             ),
+
             "total_operacion": (
                 totales["operacion"]
             ),
+
             "total_despacho": (
                 totales["despacho"]
             ),
+
             "total_cerrados": (
                 totales["finalizados"]
             ),
+
+            # =============================================================
+            # PAGOS
+            # =============================================================
+
             "total_pendientes_pago": (
-                totales["pendientes"]
+                total_pendientes_historicos
             ),
 
-            # Compatibilidad temporal con el template anterior.
-            # Solo entrega un máximo de 8 pedidos por columna.
+            "total_pendientes_recientes": (
+                total_pendientes_recientes
+            ),
+
+            # =============================================================
+            # BSALE
+            # =============================================================
+
+            "total_boletas_pendientes": (
+                total_boletas_pendientes
+            ),
+
+            # =============================================================
+            # COMPATIBILIDAD
+            # =============================================================
+
             "principal": nuevos[
                 :PEDIDOS_VISIBLES_POR_BANDEJA
             ],
+
             "operacion": operacion[
                 :PEDIDOS_VISIBLES_POR_BANDEJA
             ],
+
             "despacho": despacho[
                 :PEDIDOS_VISIBLES_POR_BANDEJA
             ],
+
             "cerrados": finalizados[
                 :PEDIDOS_VISIBLES_POR_BANDEJA
             ],
         },
     )
 
-
 # ==========================================================================
 # DETALLE Y ADMINISTRACIÓN DE UN PEDIDO
 # ==========================================================================
-
 @staff_member_required
 @require_http_methods([
     "GET",
@@ -754,24 +1195,54 @@ def panel_pedido_detalle(
     request,
     numero,
 ):
+    """
+    Detalle administrativo de un pedido.
+
+    Permite:
+
+    - revisar productos;
+    - consultar cliente y despacho;
+    - revisar información del pago;
+    - consultar/descargar la boleta Bsale;
+    - revisar historial;
+    - avanzar el estado operativo.
+    """
+
+    # =========================================================================
+    # NORMALIZAR NÚMERO
+    # =========================================================================
+
     numero = _normalizar_numero_pedido(
         numero
     )
+
+    # =========================================================================
+    # PEDIDO
+    # =========================================================================
 
     pedido = get_object_or_404(
         _queryset_pedidos(),
         numero__iexact=numero,
     )
 
+    # =========================================================================
+    # FORMULARIO
+    # =========================================================================
+
     form = ActualizarEstadoPedidoForm(
         request.POST or None,
         pedido=pedido,
     )
 
+    # =========================================================================
+    # ACTUALIZAR ESTADO
+    # =========================================================================
+
     if (
         request.method == "POST"
         and form.is_valid()
     ):
+
         nuevo_estado = (
             form.cleaned_data[
                 "nuevo_estado"
@@ -786,6 +1257,7 @@ def panel_pedido_detalle(
         )
 
         try:
+
             pedido_actualizado = (
                 cambiar_estado_pedido(
                     pedido=pedido,
@@ -796,6 +1268,7 @@ def panel_pedido_detalle(
             )
 
         except ValidationError as error:
+
             errores = getattr(
                 error,
                 "messages",
@@ -805,12 +1278,14 @@ def panel_pedido_detalle(
             )
 
             for mensaje_error in errores:
+
                 form.add_error(
                     None,
                     mensaje_error,
                 )
 
         else:
+
             messages.success(
                 request,
                 (
@@ -827,6 +1302,10 @@ def panel_pedido_detalle(
                 ),
             )
 
+    # =========================================================================
+    # HISTORIAL
+    # =========================================================================
+
     historial = (
         pedido.historial_estados
         .select_related(
@@ -835,15 +1314,21 @@ def panel_pedido_detalle(
         .all()
     )
 
+    # =========================================================================
+    # RENDER
+    # =========================================================================
+
     return render(
         request,
         "core/gestion/panel_pedido_detalle.html",
         {
             "pedido": pedido,
             "form": form,
+
             "timeline": construir_timeline(
                 pedido
             ),
+
             "historial": historial,
         },
     )

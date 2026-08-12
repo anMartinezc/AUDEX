@@ -122,7 +122,11 @@ urlpatterns = [
 
 
 
-
+    path(
+        "pedido/<str:numero>/confirmacion/",
+        views.pedido_confirmacion,
+        name="pedido_confirmacion",
+    ),
 
 
     path(
@@ -152,10 +156,6 @@ urlpatterns = [
         "mercadopago/webhook/",
         views.webhook_mercado_pago,
         name="webhook_mercado_pago",
-    ),path(
-        "mi-cuenta/compras/",
-        views_pedidos.mis_compras,
-        name="mis_compras",
     ),
 
     path(
