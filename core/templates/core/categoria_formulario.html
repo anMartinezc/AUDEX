@@ -1,0 +1,1071 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    {% if form.instance.pk %}
+        Editar categoría | Audex
+    {% else %}
+        Nueva categoría | Audex
+    {% endif %}
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    html,
+    body {
+        background-color: #071018;
+    }
+
+    .categoria-form-page {
+        position: relative;
+        min-height: 100vh;
+        padding: 48px 20px 80px;
+
+        background:
+            radial-gradient(
+                circle at 50% -20%,
+                rgba(56, 166, 208, .08),
+                transparent 38%
+            ),
+            #071018;
+    }
+
+    .categoria-form-container {
+        width: min(1050px, 100%);
+        margin: 0 auto;
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================== */
+
+    .categoria-form-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 28px;
+    }
+
+    .categoria-form-eyebrow {
+        display: inline-block;
+        margin-bottom: 8px;
+
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+
+        color: #60cff0;
+    }
+
+    .categoria-form-title {
+        margin: 0;
+
+        font-size: clamp(32px, 5vw, 52px);
+        line-height: 1;
+        font-weight: 900;
+
+        color: #f4f8fb;
+    }
+
+    .categoria-form-subtitle {
+        max-width: 650px;
+        margin: 14px 0 0;
+
+        color: #98a9b7;
+        line-height: 1.6;
+    }
+
+
+    /* =========================================================
+       TARJETA
+    ========================================================== */
+
+    .categoria-form-card {
+        overflow: hidden;
+
+        border: 1px solid rgba(120, 175, 200, .18);
+        border-radius: 24px;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(18, 32, 42, .96),
+                rgba(10, 22, 31, .98)
+            );
+
+        box-shadow:
+            0 22px 60px rgba(0, 0, 0, .25);
+    }
+
+    .categoria-form {
+        display: block;
+    }
+
+
+    /* =========================================================
+       SECCIONES
+    ========================================================== */
+
+    .categoria-form-section {
+        padding: 34px;
+
+        border-bottom:
+            1px solid rgba(255, 255, 255, .06);
+    }
+
+    .categoria-section-heading {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+
+        margin-bottom: 28px;
+    }
+
+    .categoria-section-heading > div {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .categoria-section-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 38px;
+        height: 38px;
+
+        border:
+            1px solid rgba(83, 203, 237, .24);
+
+        border-radius: 12px;
+
+        color: #59c9e9;
+
+        background:
+            rgba(83, 203, 237, .08);
+
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+    .categoria-section-heading h2 {
+        margin: 0;
+
+        color: #f2f7fa;
+
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .categoria-section-heading > p {
+        max-width: 380px;
+        margin: 0;
+
+        color: #8093a0;
+        font-size: 13px;
+        line-height: 1.5;
+
+        text-align: right;
+    }
+
+
+    /* =========================================================
+       GRID
+    ========================================================== */
+
+    .categoria-form-grid,
+    .categoria-settings-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 22px;
+    }
+
+    .categoria-field--full {
+        grid-column: 1 / -1;
+    }
+
+
+    /* =========================================================
+       CAMPOS
+    ========================================================== */
+
+    .categoria-field {
+        min-width: 0;
+    }
+
+    .categoria-label {
+        display: block;
+        margin-bottom: 9px;
+
+        color: #d8e3e9;
+
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .required {
+        color: #5ccbea;
+    }
+
+    .categoria-input-wrapper
+    input:not([type="checkbox"]),
+    .categoria-input-wrapper textarea,
+    .categoria-input-wrapper select {
+        display: block;
+
+        box-sizing: border-box;
+        width: 100%;
+
+        border:
+            1px solid rgba(142, 180, 198, .17);
+
+        border-radius: 13px;
+        outline: none;
+
+        padding: 13px 15px;
+
+        color: #f3f8fa;
+
+        background:
+            rgba(255, 255, 255, .035);
+
+        font: inherit;
+
+        transition:
+            border-color .2s ease,
+            box-shadow .2s ease,
+            background .2s ease;
+    }
+
+    .categoria-input-wrapper textarea {
+        min-height: 130px;
+        resize: vertical;
+    }
+
+    .categoria-input-wrapper input:focus,
+    .categoria-input-wrapper textarea:focus,
+    .categoria-input-wrapper select:focus {
+        border-color:
+            rgba(83, 203, 237, .7);
+
+        background:
+            rgba(83, 203, 237, .045);
+
+        box-shadow:
+            0 0 0 4px
+            rgba(83, 203, 237, .07);
+    }
+
+    .categoria-help {
+        display: block;
+        margin-top: 7px;
+
+        color: #718491;
+
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       ERRORES
+    ========================================================== */
+
+    .categoria-field-errors {
+        display: grid;
+        gap: 5px;
+
+        margin-top: 8px;
+
+        color: #ff8f8f;
+
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .categoria-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+
+        margin: 28px 34px 0;
+        padding: 16px;
+
+        border-radius: 14px;
+    }
+
+    .categoria-alert--error {
+        border:
+            1px solid rgba(255, 102, 102, .24);
+
+        color: #ffb2b2;
+
+        background:
+            rgba(255, 91, 91, .07);
+    }
+
+    .categoria-alert__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex: 0 0 30px;
+
+        width: 30px;
+        height: 30px;
+
+        border-radius: 50%;
+
+        background:
+            rgba(255, 99, 99, .12);
+
+        font-weight: 900;
+    }
+
+    .categoria-alert p {
+        margin: 5px 0 0;
+    }
+
+
+    /* =========================================================
+       CONFIGURACIÓN
+    ========================================================== */
+
+    .categoria-setting-card {
+        position: relative;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+
+        min-height: 115px;
+
+        box-sizing: border-box;
+        padding: 20px;
+
+        border:
+            1px solid rgba(128, 176, 196, .14);
+
+        border-radius: 16px;
+
+        background:
+            rgba(255, 255, 255, .025);
+    }
+
+    .categoria-setting-card__content {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .categoria-setting-card__content strong {
+        display: block;
+        margin-bottom: 4px;
+
+        color: #edf5f8;
+    }
+
+    .categoria-setting-card__content p {
+        margin: 0;
+
+        color: #7d909d;
+
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .categoria-setting-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex: 0 0 42px;
+
+        width: 42px;
+        height: 42px;
+
+        border-radius: 13px;
+
+        color: #55c8ea;
+
+        background:
+            rgba(85, 200, 234, .09);
+    }
+
+    .categoria-switch input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+
+        accent-color: #55c8ea;
+
+        cursor: pointer;
+    }
+
+
+    /* =========================================================
+       RESUMEN
+    ========================================================== */
+
+    .categoria-summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+
+        margin: 28px 34px 0;
+        padding: 16px 18px;
+
+        border:
+            1px solid rgba(83, 203, 237, .12);
+
+        border-radius: 14px;
+
+        background:
+            rgba(83, 203, 237, .04);
+    }
+
+    .categoria-summary__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex: 0 0 28px;
+
+        width: 28px;
+        height: 28px;
+
+        border-radius: 50%;
+
+        color: #61cdec;
+
+        background:
+            rgba(83, 203, 237, .1);
+
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+    .categoria-summary strong {
+        color: #dceaf0;
+    }
+
+    .categoria-summary p {
+        margin: 4px 0 0;
+
+        color: #80939f;
+
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       BOTONES
+    ========================================================== */
+
+    .categoria-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+
+        padding: 28px 34px 34px;
+    }
+
+    .btn-categoria {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+
+        box-sizing: border-box;
+        min-height: 44px;
+
+        padding: 0 19px;
+
+        border-radius: 12px;
+
+        font-size: 13px;
+        font-weight: 800;
+        font-family: inherit;
+
+        text-decoration: none;
+
+        cursor: pointer;
+
+        transition:
+            transform .18s ease,
+            background .18s ease,
+            border-color .18s ease,
+            box-shadow .18s ease;
+    }
+
+    .btn-categoria:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-categoria--secondary {
+        border:
+            1px solid rgba(150, 180, 195, .18);
+
+        color: #c7d5dc;
+
+        background:
+            rgba(255, 255, 255, .035);
+    }
+
+    .btn-categoria--primary {
+        border: 0;
+
+        color: #06131a;
+
+        background:
+            linear-gradient(
+                135deg,
+                #7ad8f0,
+                #42bce0
+            );
+
+        box-shadow:
+            0 8px 24px
+            rgba(67, 190, 225, .17);
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @media (max-width: 760px) {
+
+        .categoria-form-page {
+            padding:
+                30px
+                14px
+                60px;
+        }
+
+        .categoria-form-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .categoria-form-header__actions {
+            width: 100%;
+        }
+
+        .categoria-form-header__actions
+        .btn-categoria {
+            width: 100%;
+        }
+
+        .categoria-form-section {
+            padding:
+                26px
+                20px;
+        }
+
+        .categoria-section-heading {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .categoria-section-heading > p {
+            max-width: none;
+            text-align: left;
+        }
+
+        .categoria-form-grid,
+        .categoria-settings-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .categoria-field--full {
+            grid-column: auto;
+        }
+
+        .categoria-setting-card {
+            align-items: flex-start;
+        }
+
+        .categoria-alert,
+        .categoria-summary {
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        .categoria-form-actions {
+            flex-direction: column-reverse;
+
+            padding:
+                24px
+                20px
+                28px;
+        }
+
+        .categoria-form-actions
+        .btn-categoria {
+            width: 100%;
+        }
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="categoria-form-page">
+
+    <div class="categoria-form-container">
+
+        <header class="categoria-form-header">
+
+            <div class="categoria-form-header__info">
+
+                <span class="categoria-form-eyebrow">
+                    Gestión de catálogo
+                </span>
+
+                <h1 class="categoria-form-title">
+
+                    {% if form.instance.pk %}
+                        Editar categoría
+                    {% else %}
+                        Nueva categoría
+                    {% endif %}
+
+                </h1>
+
+                <p class="categoria-form-subtitle">
+
+                    {% if form.instance.pk %}
+
+                        Actualiza la información de la categoría
+                        <strong>
+                            {{ form.instance.nombre }}
+                        </strong>.
+
+                    {% else %}
+
+                        Crea una nueva categoría para organizar
+                        los productos de Audex.
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+
+            <div class="categoria-form-header__actions">
+
+                <a
+                    href="javascript:history.back()"
+                    class="btn-categoria btn-categoria--secondary"
+                >
+                    <span aria-hidden="true">
+                        ←
+                    </span>
+
+                    Volver
+                </a>
+
+            </div>
+
+        </header>
+
+
+        <div class="categoria-form-card">
+
+            <form
+                method="post"
+                novalidate
+                class="categoria-form"
+            >
+
+                {% csrf_token %}
+
+
+                {% if form.non_field_errors %}
+
+                    <div
+                        class="categoria-alert categoria-alert--error"
+                        role="alert"
+                    >
+
+                        <div class="categoria-alert__icon">
+                            !
+                        </div>
+
+                        <div class="categoria-alert__content">
+
+                            <strong>
+                                No pudimos guardar la categoría
+                            </strong>
+
+                            {% for error in form.non_field_errors %}
+
+                                <p>
+                                    {{ error }}
+                                </p>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="categoria-form-section">
+
+                    <div class="categoria-section-heading">
+
+                        <div>
+
+                            <span class="categoria-section-number">
+                                01
+                            </span>
+
+                            <h2>
+                                Información principal
+                            </h2>
+
+                        </div>
+
+                        <p>
+                            Define cómo se identificará esta
+                            categoría dentro del catálogo.
+                        </p>
+
+                    </div>
+
+
+                    <div class="categoria-form-grid">
+
+                        <div
+                            class="
+                                categoria-field
+                                categoria-field--full
+                            "
+                        >
+
+                            <label
+                                for="{{ form.nombre.id_for_label }}"
+                                class="categoria-label"
+                            >
+                                Nombre de la categoría
+
+                                <span class="required">
+                                    *
+                                </span>
+                            </label>
+
+                            <div class="categoria-input-wrapper">
+                                {{ form.nombre }}
+                            </div>
+
+                            {% if form.nombre.help_text %}
+
+                                <small class="categoria-help">
+                                    {{ form.nombre.help_text }}
+                                </small>
+
+                            {% endif %}
+
+                            {% if form.nombre.errors %}
+
+                                <div class="categoria-field-errors">
+
+                                    {% for error in form.nombre.errors %}
+
+                                        <span>
+                                            {{ error }}
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        {% if form.slug %}
+
+                            <div
+                                class="
+                                    categoria-field
+                                    categoria-field--full
+                                "
+                            >
+
+                                <label
+                                    for="{{ form.slug.id_for_label }}"
+                                    class="categoria-label"
+                                >
+                                    URL / Slug
+                                </label>
+
+                                <div class="categoria-input-wrapper">
+                                    {{ form.slug }}
+                                </div>
+
+                                <small class="categoria-help">
+                                    Puedes dejarlo vacío para que
+                                    Audex lo genere automáticamente.
+                                </small>
+
+                                {% if form.slug.errors %}
+
+                                    <div class="categoria-field-errors">
+
+                                        {% for error in form.slug.errors %}
+
+                                            <span>
+                                                {{ error }}
+                                            </span>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div
+                            class="
+                                categoria-field
+                                categoria-field--full
+                            "
+                        >
+
+                            <label
+                                for="{{ form.descripcion.id_for_label }}"
+                                class="categoria-label"
+                            >
+                                Descripción
+                            </label>
+
+                            <div class="categoria-input-wrapper">
+                                {{ form.descripcion }}
+                            </div>
+
+                            <small class="categoria-help">
+                                Agrega una breve descripción que
+                                permita identificar fácilmente
+                                el contenido de esta categoría.
+                            </small>
+
+                            {% if form.descripcion.errors %}
+
+                                <div class="categoria-field-errors">
+
+                                    {% for error in form.descripcion.errors %}
+
+                                        <span>
+                                            {{ error }}
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="categoria-form-section">
+
+                    <div class="categoria-section-heading">
+
+                        <div>
+
+                            <span class="categoria-section-number">
+                                02
+                            </span>
+
+                            <h2>
+                                Configuración
+                            </h2>
+
+                        </div>
+
+                        <p>
+                            Controla la visibilidad y posición
+                            de la categoría.
+                        </p>
+
+                    </div>
+
+
+                    <div class="categoria-settings-grid">
+
+                        <div class="categoria-setting-card">
+
+                            <div class="categoria-setting-card__content">
+
+                                <div class="categoria-setting-icon">
+                                    ◉
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        Categoría activa
+                                    </strong>
+
+                                    <p>
+                                        Permite mostrar los productos
+                                        pertenecientes a esta categoría
+                                        en el sitio.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="categoria-switch">
+                                {{ form.activa }}
+                            </div>
+
+                            {% if form.activa.errors %}
+
+                                <div class="categoria-field-errors">
+
+                                    {% for error in form.activa.errors %}
+
+                                        <span>
+                                            {{ error }}
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="categoria-field">
+
+                            <label
+                                for="{{ form.orden.id_for_label }}"
+                                class="categoria-label"
+                            >
+                                Orden de visualización
+                            </label>
+
+                            <div class="categoria-input-wrapper">
+                                {{ form.orden }}
+                            </div>
+
+                            <small class="categoria-help">
+                                Los números menores aparecerán
+                                primero.
+                            </small>
+
+                            {% if form.orden.errors %}
+
+                                <div class="categoria-field-errors">
+
+                                    {% for error in form.orden.errors %}
+
+                                        <span>
+                                            {{ error }}
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="categoria-summary">
+
+                    <div class="categoria-summary__icon">
+                        i
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Antes de guardar
+                        </strong>
+
+                        <p>
+                            Los productos asociados a una categoría
+                            inactiva no serán mostrados en el catálogo
+                            público.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <footer class="categoria-form-actions">
+
+                    <a
+                        href="javascript:history.back()"
+                        class="btn-categoria btn-categoria--secondary"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn-categoria btn-categoria--primary"
+                    >
+
+                        {% if form.instance.pk %}
+                            Guardar cambios
+                        {% else %}
+                            Crear categoría
+                        {% endif %}
+
+                    </button>
+
+                </footer>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

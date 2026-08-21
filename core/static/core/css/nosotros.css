@@ -1,461 +1,988 @@
+/* =========================================================
+   NOSOTROS
+========================================================= */
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
 .nosotros-hero {
     position: relative;
     overflow: hidden;
 
-    padding: 110px 0;
+    padding: 100px 0;
 
     border-bottom: 1px solid var(--borde);
 
     background:
         radial-gradient(
-            circle at 80% 30%,
-            rgba(54, 169, 214, 0.2),
-            transparent 35%
+            circle at 82% 28%,
+            rgba(54, 169, 214, 0.18),
+            transparent 36%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(7, 12, 17, 0.15),
+            rgba(15, 50, 66, 0.12)
         );
 }
 
+
+/* =========================================================
+   CONTENEDOR HERO
+========================================================= */
+
 .nosotros-hero__contenido {
     display: grid;
-    grid-template-columns: 1fr 0.8fr;
+
+    grid-template-columns:
+        minmax(0, 1.05fr)
+        minmax(430px, 0.95fr);
+
     align-items: center;
+
     gap: 70px;
 }
 
-.nosotros-hero h1 {
-    font-family: "Montserrat", sans-serif;
-    font-size: clamp(3rem, 7vw, 5.8rem);
-    line-height: 0.98;
-    letter-spacing: -0.06em;
+
+/* =========================================================
+   TEXTO HERO
+========================================================= */
+
+.nosotros-hero__texto {
+    position: relative;
+    z-index: 5;
 }
+
+
+.nosotros-hero h1 {
+    margin: 26px 0 0;
+
+    font-family: "Montserrat", sans-serif;
+
+    font-size: clamp(
+        3.2rem,
+        6.2vw,
+        5.7rem
+    );
+
+    font-weight: 800;
+
+    line-height: 0.98;
+
+    letter-spacing: -0.055em;
+}
+
 
 .nosotros-hero h1 span {
     display: block;
 
+    margin-top: 8px;
+
     color: var(--color-azul-claro);
 }
 
+
 .nosotros-hero__texto > p {
-    max-width: 650px;
-    margin: 26px 0 30px;
+    max-width: 670px;
+
+    margin: 24px 0 0;
 
     color: var(--color-gris-claro);
+
     font-size: 1.05rem;
     line-height: 1.75;
 }
 
+
+.nosotros-hero__texto > p + p {
+    margin-top: 18px;
+}
+
+
+.nosotros-hero__texto .boton {
+    margin-top: 32px;
+}
+
+
+/* =========================================================
+   VISUAL HERO
+========================================================= */
+
 .nosotros-hero__visual {
     position: relative;
 
-    min-height: 500px;
-
-    display: grid;
-    place-items: center;
-}
-
-.onda {
-    position: absolute;
-
-    border: 1px solid rgba(131, 216, 243, 0.18);
-    border-radius: 50%;
-
-    animation: ondaPulso 4s ease-in-out infinite;
-}
-
-.onda--1 {
-    width: 480px;
-    height: 480px;
-}
-
-.onda--2 {
-    width: 360px;
-    height: 360px;
-
-    animation-delay: 0.5s;
-}
-
-.onda--3 {
-    width: 240px;
-    height: 240px;
-
-    animation-delay: 1s;
-}
-
-.nosotros-hero__logo {
-    position: relative;
-    z-index: 3;
+    width: 100%;
+    min-height: 570px;
 
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
 
-.nosotros-hero__logo .logo__simbolo {
-    height: 110px;
-    margin-bottom: 20px;
 
-    transform: scale(2);
+/* =========================================================
+   CONTENEDOR DE CÍRCULOS
+========================================================= */
+
+.nosotros-hero__circulos {
+    position: relative;
+
+    width: min(100%, 570px);
+
+    aspect-ratio: 1 / 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.nosotros-hero__logo strong {
-    font-family: "Montserrat", sans-serif;
-    font-size: 4rem;
 
-    background: linear-gradient(
-        90deg,
-        var(--color-azul-claro),
-        #ffffff
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+/* =========================================================
+   CÍRCULOS DECORATIVOS
+========================================================= */
+
+.nosotros-circulo {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    border:
+        1px solid
+        rgba(131, 216, 243, 0.18);
+
+    border-radius: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events: none;
 }
 
-.nosotros-hero__logo small {
-    color: var(--color-gris);
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
+
+.nosotros-circulo--1 {
+    width: 100%;
+    height: 100%;
 }
+
+
+.nosotros-circulo--2 {
+    width: 76%;
+    height: 76%;
+}
+
+
+.nosotros-circulo--3 {
+    width: 52%;
+    height: 52%;
+}
+
+
+/* =========================================================
+   RESPLANDOR CENTRAL
+
+   Este elemento NO crea un fondo sólido.
+   Solamente genera una iluminación muy suave.
+========================================================= */
+
+.nosotros-hero__circulos::before {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 58%;
+    height: 58%;
+
+    transform:
+        translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(54, 169, 214, 0.10) 0%,
+            rgba(54, 169, 214, 0.045) 35%,
+            transparent 70%
+        );
+
+    filter: blur(12px);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CONTENEDOR DEL LOGO CENTRAL
+
+   IMPORTANTE:
+   Este contenedor NO tiene fondo.
+   El PNG puede mostrar su transparencia real.
+========================================================= */
+
+.nosotros-hero__imagen-central {
+    position: relative;
+    z-index: 4;
+
+    width: 44%;
+
+    aspect-ratio: 1 / 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: visible;
+
+    border: none;
+    border-radius: 0;
+
+    background: transparent;
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   LOGO AUDEX CENTRAL
+
+   LogoAudex9.png
+========================================================= */
+
+.nosotros-hero__imagen {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+    object-position: center;
+
+    border: none;
+    border-radius: 0;
+
+    background: transparent;
+
+    box-shadow: none;
+
+    filter: none;
+
+    transition:
+        transform 0.4s ease;
+}
+
+
+/* Hover muy sutil */
+
+.nosotros-hero__imagen-central:hover
+.nosotros-hero__imagen {
+    transform: scale(1.025);
+}
+
+
+/* =========================================================
+   SECCIÓN QUÉ ES AUDEX
+========================================================= */
 
 .historia {
     padding: 100px 0;
 }
 
+
 .historia__grid {
     display: grid;
-    grid-template-columns: 0.9fr 1fr;
+
+    grid-template-columns:
+        minmax(0, 0.95fr)
+        minmax(0, 1fr);
+
     align-items: center;
-    gap: 70px;
+
+    gap: 75px;
 }
+
+
+/* =========================================================
+   VISUAL AUDEX + EARFUN
+========================================================= */
+
+.historia__visual {
+    width: 100%;
+
+    min-width: 0;
+}
+
+
+/* =========================================================
+   CONTENEDOR IMAGEN AUDEX + EARFUN
+========================================================= */
 
 .historia__imagen {
     position: relative;
+
+    width: 100%;
+    min-width: 0;
+
+    height: 560px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(131, 216, 243, 0.12);
+
+    border-radius: 28px;
+
+    background:
+        radial-gradient(
+            circle at 75% 25%,
+            rgba(54, 169, 214, 0.13),
+            transparent 42%
+        ),
+        linear-gradient(
+            145deg,
+            #071019,
+            #0b1b29
+        );
+
+    box-shadow:
+        0 26px 60px
+        rgba(0, 0, 0, 0.24);
 }
+
+
+/* =========================================================
+   LOGO AUDEX + EARFUN
+
+   LogoAudex8.png
+
+   contain evita que la imagen se corte.
+========================================================= */
+
+.historia__imagen-logo {
+    width: 100%;
+    height: 100%;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    display: block;
+
+    padding: 28px;
+
+    object-fit: contain;
+    object-position: center;
+
+    filter: none;
+
+    border: none;
+    border-radius: 0;
+}
+
+
+/* =========================================================
+   SOBRESCRITURA PARA IMÁGENES DE HISTORIA
+========================================================= */
 
 .historia__imagen img {
     width: 100%;
-    min-height: 560px;
+    height: 100%;
 
-    object-fit: cover;
+    min-height: 0;
 
-    border-radius: 26px;
+    object-fit: contain;
+    object-position: center;
 
-    filter: saturate(0.75);
+    filter: none;
 }
+
+
+/* No colocar degradado sobre la imagen */
 
 .historia__imagen::after {
-    content: "";
-
-    position: absolute;
-    inset: 0;
-
-    border-radius: 26px;
-
-    background:
-        linear-gradient(
-            180deg,
-            transparent 50%,
-            rgba(7, 12, 17, 0.75)
-        );
+    display: none;
 }
 
-.historia__dato {
-    position: absolute;
-    z-index: 3;
-    left: 25px;
-    bottom: 25px;
 
-    padding: 20px;
+/* =========================================================
+   CONTENIDO HISTORIA
+========================================================= */
 
-    display: flex;
-    flex-direction: column;
-
-    border: 1px solid var(--borde-azul);
-    border-radius: 16px;
-
-    background: rgba(7, 12, 17, 0.8);
-    backdrop-filter: blur(12px);
+.historia__contenido {
+    min-width: 0;
 }
 
-.historia__dato strong {
-    color: var(--color-azul-claro);
-    font-size: 2rem;
-}
-
-.historia__dato span {
-    color: var(--color-gris-claro);
-    font-size: 0.75rem;
-}
 
 .historia__contenido h2 {
-    margin-bottom: 22px;
+    max-width: 720px;
 
-    font-family: "Montserrat", sans-serif;
-    font-size: clamp(2.3rem, 5vw, 4rem);
-    line-height: 1.08;
+    margin: 24px 0 22px;
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: clamp(
+        2.5rem,
+        4.8vw,
+        4rem
+    );
+
+    font-weight: 800;
+
+    line-height: 1.06;
+
+    letter-spacing: -0.04em;
 }
 
+
 .historia__contenido > p {
+    max-width: 700px;
+
     margin-bottom: 16px;
 
     color: var(--color-gris-claro);
+
+    font-size: 1rem;
+
     line-height: 1.75;
 }
+
+
+/* =========================================================
+   PUNTOS
+========================================================= */
 
 .historia__puntos {
     margin-top: 30px;
 
     display: flex;
     flex-direction: column;
+
     gap: 18px;
 }
 
+
+.historia__punto,
 .historia__puntos article {
-    padding: 20px;
+    position: relative;
+
+    padding: 20px 22px;
 
     display: flex;
     align-items: flex-start;
+
     gap: 16px;
 
-    border: 1px solid var(--borde);
-    border-radius: 16px;
+    overflow: hidden;
 
-    background: rgba(255, 255, 255, 0.025);
-}
+    border:
+        1px solid
+        var(--borde);
 
-.historia__puntos i {
-    width: 48px;
-    height: 48px;
-
-    flex-shrink: 0;
-
-    display: grid;
-    place-items: center;
-
-    color: var(--color-azul-claro);
-    font-size: 1.25rem;
-
-    border-radius: 14px;
-    background: rgba(54, 169, 214, 0.1);
-}
-
-.historia__puntos h3 {
-    margin-bottom: 5px;
-}
-
-.historia__puntos p {
-    color: var(--color-gris);
-    font-size: 0.82rem;
-}
-
-.valores {
-    padding: 90px 0;
-
-    border-top: 1px solid var(--borde);
-    border-bottom: 1px solid var(--borde);
-
-    background: rgba(255, 255, 255, 0.015);
-}
-
-.valores__encabezado {
-    margin-bottom: 40px;
-
-    text-align: center;
-}
-
-.valores__encabezado .etiqueta-seccion {
-    margin-inline: auto;
-}
-
-.valores h2 {
-    font-family: "Montserrat", sans-serif;
-    font-size: clamp(2.2rem, 5vw, 4rem);
-}
-
-.valores__grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-}
-
-.valor-card {
-    padding: 30px;
-
-    border: 1px solid var(--borde);
-    border-radius: 20px;
-
-    background: rgba(255, 255, 255, 0.025);
-
-    transition: 0.35s ease;
-}
-
-.valor-card:hover {
-    border-color: var(--borde-azul);
-
-    transform: translateY(-7px);
-    box-shadow: var(--sombra-azul);
-}
-
-.valor-card > i {
-    width: 58px;
-    height: 58px;
-
-    display: grid;
-    place-items: center;
-
-    color: var(--color-azul-claro);
-    font-size: 1.5rem;
-
-    border-radius: 16px;
-    background: rgba(54, 169, 214, 0.1);
-}
-
-.valor-card h3 {
-    margin: 20px 0 10px;
-
-    font-size: 1.2rem;
-}
-
-.valor-card p {
-    color: var(--color-gris);
-    font-size: 0.85rem;
-    line-height: 1.65;
-}
-
-.metricas {
-    padding: 80px 0;
-}
-
-.metricas__grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-}
-
-.metricas article {
-    padding: 30px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    text-align: center;
-
-    border: 1px solid var(--borde);
-    border-radius: 18px;
-
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.metricas strong {
-    color: var(--color-azul-claro);
-    font-family: "Montserrat", sans-serif;
-    font-size: 2.8rem;
-}
-
-.metricas span {
-    color: var(--color-gris);
-    font-size: 0.8rem;
-}
-
-.contacto-nosotros {
-    padding: 40px 0 100px;
-}
-
-.contacto-nosotros__contenido {
-    padding: 50px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 40px;
-
-    border: 1px solid var(--borde-azul);
-    border-radius: 24px;
+    border-radius: 17px;
 
     background:
         linear-gradient(
             120deg,
-            rgba(54, 169, 214, 0.14),
-            rgba(255, 255, 255, 0.02)
+            rgba(255, 255, 255, 0.025),
+            rgba(54, 169, 214, 0.025)
+        );
+
+    transition:
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        background 0.3s ease;
+}
+
+
+.historia__punto:hover,
+.historia__puntos article:hover {
+    transform:
+        translateY(-3px);
+
+    border-color:
+        rgba(131, 216, 243, 0.28);
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(255, 255, 255, 0.035),
+            rgba(54, 169, 214, 0.055)
         );
 }
 
-.contacto-nosotros h2 {
-    font-size: clamp(2rem, 4vw, 3.3rem);
+
+/* =========================================================
+   ICONOS
+========================================================= */
+
+.historia__punto-icono {
+    width: 50px;
+    height: 50px;
+
+    flex: 0 0 50px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid
+        rgba(131, 216, 243, 0.07);
+
+    border-radius: 14px;
+
+    background:
+        rgba(54, 169, 214, 0.1);
 }
 
-.contacto-nosotros p {
-    max-width: 620px;
-    margin-top: 10px;
 
-    color: var(--color-gris-claro);
+.historia__punto-icono i {
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1.25rem;
 }
 
-@keyframes ondaPulso {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.45;
-    }
 
-    50% {
-        transform: scale(1.08);
-        opacity: 1;
-    }
+/* =========================================================
+   COMPATIBILIDAD CON ESTRUCTURA ANTERIOR
+========================================================= */
+
+.historia__puntos > article > i {
+    width: 50px;
+    height: 50px;
+
+    flex: 0 0 50px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1.25rem;
+
+    border:
+        1px solid
+        rgba(131, 216, 243, 0.07);
+
+    border-radius: 14px;
+
+    background:
+        rgba(54, 169, 214, 0.1);
 }
 
-@media (max-width: 950px) {
-    .nosotros-hero__contenido,
-    .historia__grid {
-        grid-template-columns: 1fr;
-    }
 
-    .valores__grid,
-    .metricas__grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+/* =========================================================
+   TEXTO DE LOS PUNTOS
+========================================================= */
+
+.historia__punto-contenido {
+    min-width: 0;
 }
 
-@media (max-width: 600px) {
-    .nosotros-hero {
-        padding-top: 75px;
+
+.historia__puntos h3 {
+    margin: 2px 0 6px;
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: 1.03rem;
+
+    font-weight: 700;
+}
+
+
+.historia__puntos p {
+    margin: 0;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.84rem;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   NOTEBOOK
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .nosotros-hero__contenido {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(390px, 0.85fr);
+
+        gap: 50px;
     }
+
 
     .nosotros-hero__visual {
-        min-height: 380px;
+        min-height: 500px;
     }
 
-    .onda--1 {
-        width: 330px;
-        height: 330px;
+
+    .nosotros-hero__circulos {
+        width:
+            min(100%, 500px);
     }
 
-    .onda--2 {
-        width: 250px;
-        height: 250px;
+
+    .nosotros-hero__imagen-central {
+        width: 44%;
     }
 
-    .onda--3 {
-        width: 170px;
-        height: 170px;
+
+    .historia__grid {
+        gap: 50px;
     }
 
-    .nosotros-hero__logo strong {
-        font-size: 2.8rem;
+
+    .historia__imagen {
+        height: 500px;
     }
 
-    .historia__imagen img {
-        min-height: 420px;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 950px) {
+
+    .nosotros-hero {
+        padding: 80px 0;
     }
 
-    .valores__grid,
-    .metricas__grid {
+
+    .nosotros-hero__contenido {
         grid-template-columns: 1fr;
+
+        gap: 50px;
     }
 
-    .contacto-nosotros__contenido {
-        align-items: stretch;
-        flex-direction: column;
-        padding: 30px 24px;
+
+    .nosotros-hero__texto {
+        max-width: 760px;
     }
+
+
+    .nosotros-hero__visual {
+        min-height: auto;
+
+        padding: 20px 0;
+
+        justify-content: center;
+    }
+
+
+    .nosotros-hero__circulos {
+        width:
+            min(100%, 540px);
+    }
+
+
+    .nosotros-hero__imagen-central {
+        width: 44%;
+    }
+
+
+    /* =====================================================
+       HISTORIA
+    ===================================================== */
+
+    .historia {
+        padding: 80px 0;
+    }
+
+
+    .historia__grid {
+        grid-template-columns: 1fr;
+
+        gap: 50px;
+    }
+
+
+    .historia__visual {
+        max-width: 720px;
+
+        margin-inline: auto;
+    }
+
+
+    .historia__imagen {
+        height: auto;
+
+        aspect-ratio: 16 / 10;
+    }
+
+
+    .historia__imagen-logo {
+        padding: 30px;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .nosotros-hero {
+        padding:
+            65px 0 70px;
+    }
+
+
+    .nosotros-hero__contenido {
+        gap: 38px;
+    }
+
+
+    /* =====================================================
+       TÍTULO
+    ===================================================== */
+
+    .nosotros-hero h1 {
+        margin-top: 20px;
+
+        font-size: clamp(
+            2.65rem,
+            14vw,
+            4rem
+        );
+
+        line-height: 1;
+    }
+
+
+    .nosotros-hero h1 span {
+        margin-top: 6px;
+    }
+
+
+    /* =====================================================
+       TEXTO
+    ===================================================== */
+
+    .nosotros-hero__texto > p {
+        margin-top: 20px;
+
+        font-size: 0.95rem;
+
+        line-height: 1.7;
+    }
+
+
+    .nosotros-hero__texto > p + p {
+        margin-top: 14px;
+    }
+
+
+    .nosotros-hero__texto .boton {
+        margin-top: 26px;
+    }
+
+
+    /* =====================================================
+       VISUAL
+    ===================================================== */
+
+    .nosotros-hero__visual {
+        padding: 5px 0;
+    }
+
+
+    .nosotros-hero__circulos {
+        width:
+            min(100%, 390px);
+    }
+
+
+    .nosotros-circulo--2 {
+        width: 75%;
+        height: 75%;
+    }
+
+
+    .nosotros-circulo--3 {
+        width: 50%;
+        height: 50%;
+    }
+
+
+    .nosotros-hero__imagen-central {
+        width: 45%;
+    }
+
+
+    .nosotros-hero__imagen {
+        object-fit: contain;
+    }
+
+
+    .nosotros-hero__imagen-central:hover
+    .nosotros-hero__imagen {
+        transform: none;
+    }
+
+
+    /* =====================================================
+       HISTORIA
+    ===================================================== */
+
+    .historia {
+        padding: 65px 0;
+    }
+
+
+    .historia__grid {
+        gap: 40px;
+    }
+
+
+    .historia__imagen {
+        width: 100%;
+
+        height: auto;
+
+        aspect-ratio: 1 / 1;
+
+        border-radius: 20px;
+    }
+
+
+    .historia__imagen-logo,
+    .historia__imagen img {
+        padding: 12px;
+
+        object-fit: contain;
+    }
+
+
+    .historia__contenido h2 {
+        margin-top: 20px;
+
+        font-size: clamp(
+            2.15rem,
+            10vw,
+            3rem
+        );
+    }
+
+
+    .historia__contenido > p {
+        font-size: 0.94rem;
+
+        line-height: 1.7;
+    }
+
+
+    /* =====================================================
+       CARDS
+    ===================================================== */
+
+    .historia__puntos {
+        margin-top: 25px;
+
+        gap: 14px;
+    }
+
+
+    .historia__punto,
+    .historia__puntos article {
+        padding: 17px;
+
+        gap: 14px;
+    }
+
+
+    .historia__punto-icono,
+    .historia__puntos > article > i {
+        width: 46px;
+        height: 46px;
+
+        flex-basis: 46px;
+    }
+
+
+    .historia__puntos h3 {
+        font-size: 0.98rem;
+    }
+
+
+    .historia__puntos p {
+        font-size: 0.8rem;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVILES PEQUEÑOS
+========================================================= */
+
+@media (max-width: 390px) {
+
+    .nosotros-hero h1 {
+        font-size: 2.55rem;
+    }
+
+
+    .nosotros-hero__circulos {
+        width: 330px;
+
+        max-width: 100%;
+    }
+
+
+    .nosotros-hero__imagen-central {
+        width: 46%;
+    }
+
+
+    .historia__imagen-logo,
+    .historia__imagen img {
+        padding: 8px;
+    }
+
+
+    .historia__punto,
+    .historia__puntos article {
+        padding: 15px;
+    }
+
+}
+
+
+/* =========================================================
+   REDUCIR MOVIMIENTO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .nosotros-hero__imagen,
+    .historia__punto,
+    .historia__puntos article {
+        transition: none;
+    }
+
 }

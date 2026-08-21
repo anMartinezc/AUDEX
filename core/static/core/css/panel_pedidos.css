@@ -41,6 +41,7 @@
         18px;
 
     position: relative;
+
     min-height: 70vh;
 }
 
@@ -54,7 +55,7 @@
     z-index: 1;
 
     padding-top: 50px;
-    padding-bottom: 70px;
+    padding-bottom: 90px;
 }
 
 
@@ -68,6 +69,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
+
     gap: 32px;
 }
 
@@ -82,11 +84,12 @@
         "Montserrat",
         sans-serif;
 
-    font-size: clamp(
-        2.5rem,
-        5vw,
-        4.5rem
-    );
+    font-size:
+        clamp(
+            2.5rem,
+            5vw,
+            4.5rem
+        );
 
     font-weight: 800;
     line-height: 1;
@@ -99,9 +102,11 @@
 
     margin-top: 16px;
 
-    color: var(--color-gris);
+    color:
+        var(--color-gris);
 
     font-size: 0.9rem;
+
     line-height: 1.7;
 }
 
@@ -121,15 +126,20 @@
     padding-left: 15px;
 
     display: grid;
+
     grid-template-columns:
         auto
         minmax(0, 1fr)
         auto;
 
     align-items: center;
+
     gap: 10px;
 
-    border: 1px solid var(--gestion-border);
+    border:
+        1px solid
+        var(--gestion-border);
+
     border-radius: 14px;
 
     background:
@@ -159,7 +169,10 @@
         );
 
     box-shadow:
-        0 0 0 3px
+        0
+        0
+        0
+        3px
         rgba(
             54,
             169,
@@ -185,6 +198,7 @@
     font-size: 0.78rem;
 
     border: 0;
+
     outline: 0;
 
     background: transparent;
@@ -208,6 +222,7 @@
     font-weight: 900;
 
     border: 0;
+
     border-radius: 12px;
 
     background:
@@ -226,7 +241,9 @@
         translateY(-1px);
 
     box-shadow:
-        0 8px 24px
+        0
+        8px
+        24px
         rgba(
             54,
             169,
@@ -326,7 +343,9 @@
         var(--gestion-bg-card);
 
     box-shadow:
-        0 15px 34px
+        0
+        15px
+        34px
         rgba(
             0,
             0,
@@ -377,6 +396,7 @@
     margin-bottom: 30px;
 
     display: grid;
+
     gap: 12px;
 }
 
@@ -395,6 +415,7 @@
         20px;
 
     display: grid;
+
     grid-template-columns:
         48px
         minmax(0, 1fr)
@@ -445,7 +466,12 @@
     content: "";
 
     position: absolute;
-    inset: 0 auto 0 0;
+
+    inset:
+        0
+        auto
+        0
+        0;
 
     width: 3px;
 
@@ -485,7 +511,9 @@
         );
 
     box-shadow:
-        0 14px 32px
+        0
+        14px
+        32px
         rgba(
             0,
             0,
@@ -539,7 +567,7 @@
 
 
 /* =========================================================
-   ICONO DE ALERTA
+   ICONO ALERTA
 ========================================================= */
 
 .gestion-pendientes__icono {
@@ -595,6 +623,7 @@
         var(--color-gris);
 
     font-size: 0.69rem;
+
     line-height: 1.5;
 }
 
@@ -731,6 +760,7 @@
     font-weight: 800;
 
     white-space: nowrap;
+
     text-overflow: ellipsis;
 }
 
@@ -774,7 +804,7 @@
 
 
 /* =========================================================
-   WRAPPER TARJETA + BOLETA
+   WRAPPER TARJETA
 ========================================================= */
 
 .tarjeta-pedido-admin-wrap {
@@ -831,14 +861,22 @@
         16px;
 
     border: 0 !important;
+
     border-radius: 0 !important;
 
-    background: transparent !important;
+    background:
+        transparent !important;
 }
 
 .tarjeta-pedido-admin:hover {
-    transform: none !important;
+    transform:
+        none !important;
 }
+
+
+/* =========================================================
+   CABECERA TARJETA
+========================================================= */
 
 .tarjeta-pedido-admin__superior {
     display: flex;
@@ -869,13 +907,19 @@
         var(--color-gris);
 
     font-size: 0.6rem;
+
     line-height: 1.3;
 
     text-align: right;
 }
 
+
+/* =========================================================
+   CLIENTE
+========================================================= */
+
 .tarjeta-pedido-admin h3 {
-    margin-top: 15px;
+    margin-top: 14px;
 
     color:
         var(--color-blanco);
@@ -883,20 +927,227 @@
     font-size: 0.76rem;
     font-weight: 800;
 
-    line-height: 1.45;
+    line-height: 1.4;
 }
 
-.tarjeta-pedido-admin > p {
-    margin-top: 6px;
 
+/* =========================================================
+   PRODUCTO — TARJETA TABLERO
+========================================================= */
+
+.tarjeta-pedido-admin__producto {
+    margin-top: 13px;
+
+    padding: 9px;
+
+    display: grid;
+
+    grid-template-columns:
+        46px
+        minmax(0, 1fr);
+
+    align-items: center;
+
+    gap: 10px;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.10
+        );
+
+    border-radius: 11px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+}
+
+
+/* =========================================================
+   IMAGEN PRODUCTO — TABLERO
+========================================================= */
+
+.tarjeta-pedido-admin__producto-imagen {
+    width: 46px;
+    height: 46px;
+
+    min-width: 46px;
+    max-width: 46px;
+
+    min-height: 46px;
+    max-height: 46px;
+
+    overflow: hidden;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.85rem;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
+
+    border-radius: 9px;
+
+    background:
+        #ffffff;
+}
+
+.tarjeta-pedido-admin__producto-imagen img {
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    max-width: 46px !important;
+    max-height: 46px !important;
+
+    display: block;
+
+    padding: 3px;
+
+    object-fit:
+        contain !important;
+
+    object-position: center;
+
+    background:
+        #ffffff;
+}
+
+
+/* =========================================================
+   INFO PRODUCTO — TABLERO
+========================================================= */
+
+.tarjeta-pedido-admin__producto-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 4px;
+}
+
+.tarjeta-pedido-admin__producto-nombre {
+    width: 100%;
+
+    overflow: hidden;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.67rem;
+    font-weight: 750;
+
+    line-height: 1.3;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   CANTIDAD CELESTE — TABLERO
+========================================================= */
+
+.tarjeta-pedido-admin__producto-cantidad {
+    min-height: 21px;
+
+    padding:
+        0
+        7px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.65rem;
+    font-weight: 900;
+
+    line-height: 1;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.18
+        );
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.07
+        );
+}
+
+
+/* =========================================================
+   MÁS PRODUCTOS — TABLERO
+========================================================= */
+
+.tarjeta-pedido-admin__producto-mas {
     color:
         var(--color-gris);
 
-    font-size: 0.65rem;
+    font-size: 0.59rem;
+
+    line-height: 1.25;
 }
 
+
+/* =========================================================
+   TOTAL UNIDADES — TABLERO
+========================================================= */
+
+.tarjeta-pedido-admin__unidades {
+    margin-top: 7px !important;
+
+    color:
+        var(--color-gris) !important;
+
+    font-size: 0.61rem !important;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   PIE TARJETA
+========================================================= */
+
 .tarjeta-pedido-admin footer {
-    margin-top: 15px;
+    margin-top: 14px;
 
     padding-top: 13px;
 
@@ -933,7 +1184,7 @@
 
 
 /* =========================================================
-   BOLETA RÁPIDA EN TARJETA
+   BOLETA RÁPIDA
 ========================================================= */
 
 .tarjeta-pedido-admin__boleta {
@@ -1128,15 +1379,17 @@ i:last-child {
         "Montserrat",
         sans-serif;
 
-    font-size: clamp(
-        2rem,
-        4vw,
-        2.7rem
-    );
+    font-size:
+        clamp(
+            2rem,
+            4vw,
+            2.7rem
+        );
 
     font-weight: 800;
 
-    letter-spacing: -0.035em;
+    letter-spacing:
+        -0.035em;
 }
 
 .gestion-listado__cabecera p {
@@ -1174,7 +1427,7 @@ i:last-child {
 
 
 /* =========================================================
-   ITEM ADMIN COMPLETO
+   ITEM ADMIN
 ========================================================= */
 
 .pedido-admin-item {
@@ -1208,7 +1461,7 @@ i:last-child {
 ========================================================= */
 
 .pedido-admin-fila {
-    min-height: 92px;
+    min-height: 106px;
 
     padding:
         17px
@@ -1216,13 +1469,16 @@ i:last-child {
 
     display: grid;
 
+    /*
+     * El producto necesita más espacio que antes.
+     */
     grid-template-columns:
+        minmax(120px, 0.75fr)
+        minmax(170px, 1.15fr)
+        minmax(130px, 0.75fr)
+        minmax(220px, 1.45fr)
         minmax(130px, 0.8fr)
-        minmax(190px, 1.35fr)
-        minmax(145px, 0.8fr)
-        82px
-        minmax(140px, 0.9fr)
-        minmax(100px, 0.65fr)
+        minmax(90px, 0.55fr)
         20px;
 
     align-items: center;
@@ -1280,6 +1536,7 @@ i:last-child {
     font-size: 0.61rem;
 
     white-space: nowrap;
+
     text-overflow: ellipsis;
 }
 
@@ -1304,7 +1561,222 @@ i:last-child {
 
 
 /* =========================================================
-   TOTAL
+   PRODUCTO — BANDEJA COMPLETA
+========================================================= */
+
+.pedido-admin-fila__productos {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   PRODUCTO INTERNO
+========================================================= */
+
+.pedido-admin-producto {
+    min-width: 0;
+
+    margin-top: 3px;
+
+    display: grid;
+
+    grid-template-columns:
+        48px
+        minmax(0, 1fr);
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+/* =========================================================
+   IMAGEN — BANDEJA COMPLETA
+========================================================= */
+
+.pedido-admin-producto__imagen {
+    width: 48px;
+    height: 48px;
+
+    min-width: 48px;
+    max-width: 48px;
+
+    min-height: 48px;
+    max-height: 48px;
+
+    overflow: hidden;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.86rem;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
+
+    border-radius: 9px;
+
+    background:
+        #ffffff;
+}
+
+.pedido-admin-producto__imagen img {
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    max-width: 48px !important;
+    max-height: 48px !important;
+
+    display: block;
+
+    padding: 3px;
+
+    object-fit:
+        contain !important;
+
+    object-position: center;
+
+    background:
+        #ffffff;
+}
+
+
+/* =========================================================
+   INFO — BANDEJA COMPLETA
+========================================================= */
+
+.pedido-admin-producto__info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 4px;
+}
+
+.pedido-admin-producto__nombre {
+    width: 100%;
+
+    overflow: hidden;
+
+    color:
+        var(--color-blanco) !important;
+
+    font-size:
+        0.69rem !important;
+
+    font-weight:
+        800 !important;
+
+    line-height: 1.25;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   CANTIDAD CELESTE — BANDEJA COMPLETA
+========================================================= */
+
+.pedido-admin-producto__cantidad {
+    min-height: 21px;
+
+    padding:
+        0
+        7px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color:
+        var(--color-azul-claro) !important;
+
+    font-size:
+        0.65rem !important;
+
+    font-weight:
+        900 !important;
+
+    line-height: 1;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.18
+        );
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.07
+        );
+}
+
+
+/* =========================================================
+   PRODUCTOS ADICIONALES
+========================================================= */
+
+.pedido-admin-producto__mas {
+    max-width: 100%;
+
+    color:
+        var(--color-gris) !important;
+
+    font-size:
+        0.58rem !important;
+
+    line-height: 1.25;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   TOTAL DE UNIDADES
+========================================================= */
+
+.pedido-admin-producto__unidades-total {
+    margin-top: 4px;
+
+    color:
+        var(--color-gris) !important;
+
+    font-size:
+        0.58rem !important;
+}
+
+
+/* =========================================================
+   TOTAL PEDIDO
 ========================================================= */
 
 .pedido-admin-fila__total strong {
@@ -1356,7 +1828,7 @@ i:last-child {
 
 
 /* =========================================================
-   DOCUMENTOS DE LA FILA
+   DOCUMENTOS FILA
 ========================================================= */
 
 .pedido-admin-item__documentos {
@@ -1374,7 +1846,7 @@ i:last-child {
 
 
 /* =========================================================
-   BOTÓN DESCARGAR BOLETA
+   BOTÓN BOLETA
 ========================================================= */
 
 .pedido-admin-item__documentos
@@ -1522,34 +1994,7 @@ i:last-child {
 
 
 /* =========================================================
-   PAGOS PENDIENTES — BANDEJA ESPECIAL
-========================================================= */
-
-.gestion-listado:has(
-    .pedido-admin-item
-)
-{
-    position: relative;
-}
-
-
-/* Cuando estamos viendo pendientes */
-
-.gestion-pedidos
-a[href*="bandeja=pendientes"]
-.gestion-resumen__tarjeta--activa {
-    border-color:
-        rgba(
-            244,
-            201,
-            93,
-            0.4
-        );
-}
-
-
-/* =========================================================
-   PERSONALIZACIÓN VISUAL PARA PAGOS PENDIENTES
+   ANIMACIÓN BANDEJA
 ========================================================= */
 
 body:has(
@@ -1559,19 +2004,22 @@ body:has(
     animation:
         gestionEntrada
         0.28s
-        ease both;
+        ease
+        both;
 }
 
 @keyframes gestionEntrada {
 
     from {
         opacity: 0;
+
         transform:
             translateY(8px);
     }
 
     to {
         opacity: 1;
+
         transform:
             translateY(0);
     }
@@ -1584,7 +2032,8 @@ body:has(
 ========================================================= */
 
 .gestion-pedidos .paginacion {
-    margin-top: 30px;
+    margin-top: 34px;
+    margin-bottom: 30px;
 
     display: flex;
     align-items: center;
@@ -1662,6 +2111,30 @@ body:has(
 
 
 /* =========================================================
+   DESKTOP MEDIO
+========================================================= */
+
+@media (
+    max-width: 1350px
+) {
+
+    .pedido-admin-fila {
+        grid-template-columns:
+            minmax(110px, 0.7fr)
+            minmax(155px, 1fr)
+            minmax(120px, 0.7fr)
+            minmax(195px, 1.3fr)
+            minmax(115px, 0.75fr)
+            minmax(85px, 0.5fr)
+            20px;
+
+        gap: 14px;
+    }
+
+}
+
+
+/* =========================================================
    TABLET GRANDE
 ========================================================= */
 
@@ -1698,6 +2171,7 @@ body:has(
 
     .gestion-cabecera {
         align-items: stretch;
+
         flex-direction: column;
     }
 
@@ -1710,17 +2184,58 @@ body:has(
 
     .pedido-admin-fila {
         grid-template-columns:
-            minmax(130px, 1fr)
-            minmax(170px, 1.25fr)
-            minmax(130px, 0.85fr)
-            minmax(100px, 0.7fr)
+            minmax(120px, 0.8fr)
+            minmax(165px, 1fr)
+            minmax(190px, 1.2fr)
+            minmax(90px, 0.55fr)
             20px;
     }
 
-    .pedido-admin-fila__productos,
-    .pedido-admin-fila__fecha {
+    /*
+     * Ocultamos fecha y estado primero,
+     * pero mantenemos producto visible,
+     * porque ahora es información importante.
+     */
+
+    .pedido-admin-fila__fecha,
+    .pedido-admin-fila__estado {
         display:
             none !important;
+    }
+
+}
+
+
+/* =========================================================
+   TABLET PEQUEÑO
+========================================================= */
+
+@media (
+    max-width: 820px
+) {
+
+    .pedido-admin-fila {
+        grid-template-columns:
+            minmax(110px, 0.75fr)
+            minmax(150px, 0.9fr)
+            minmax(180px, 1.1fr)
+            20px;
+    }
+
+    .pedido-admin-fila__total {
+        grid-column:
+            1 / -1;
+
+        padding-top: 10px;
+
+        border-top:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.05
+            );
     }
 
 }
@@ -1736,7 +2251,7 @@ body:has(
 
     .gestion-pedidos__contenedor {
         padding-top: 38px;
-        padding-bottom: 50px;
+        padding-bottom: 65px;
     }
 
 
@@ -1775,7 +2290,8 @@ body:has(
     /* RESUMEN */
 
     .gestion-resumen {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
 
 
@@ -1786,8 +2302,7 @@ body:has(
             42px
             minmax(0, 1fr);
 
-        padding:
-            15px;
+        padding: 15px;
     }
 
     .gestion-pendientes__icono {
@@ -1804,7 +2319,36 @@ body:has(
     /* TABLERO */
 
     .tablero-pedidos {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
+    }
+
+
+    /* TARJETA TABLERO */
+
+    .tarjeta-pedido-admin__producto {
+        grid-template-columns:
+            50px
+            minmax(0, 1fr);
+    }
+
+    .tarjeta-pedido-admin__producto-imagen {
+        width: 50px;
+        height: 50px;
+
+        min-width: 50px;
+        max-width: 50px;
+
+        min-height: 50px;
+        max-height: 50px;
+    }
+
+    .tarjeta-pedido-admin__producto-imagen img {
+        max-width:
+            50px !important;
+
+        max-height:
+            50px !important;
     }
 
 
@@ -1820,18 +2364,20 @@ body:has(
             auto;
 
         gap:
-            13px
+            14px
             16px;
     }
 
     .pedido-admin-fila__numero {
         grid-column: 1;
+
         grid-row: 1;
     }
 
     .pedido-admin-fila
     > i:last-child {
         grid-column: 2;
+
         grid-row: 1;
 
         align-self: center;
@@ -1840,21 +2386,65 @@ body:has(
     .pedido-admin-fila__cliente,
     .pedido-admin-fila__estado,
     .pedido-admin-fila__productos,
-    .pedido-admin-fila__fecha {
+    .pedido-admin-fila__fecha,
+    .pedido-admin-fila__total {
         grid-column:
             1 / -1;
     }
 
+    .pedido-admin-fila__estado,
     .pedido-admin-fila__productos,
     .pedido-admin-fila__fecha {
         display:
             flex !important;
     }
 
-    .pedido-admin-fila__total {
-        grid-column:
-            1 / -1;
 
+    /* PRODUCTO LISTADO */
+
+    .pedido-admin-producto {
+        max-width: 100%;
+
+        grid-template-columns:
+            52px
+            minmax(0, 1fr);
+    }
+
+    .pedido-admin-producto__imagen {
+        width: 52px;
+        height: 52px;
+
+        min-width: 52px;
+        max-width: 52px;
+
+        min-height: 52px;
+        max-height: 52px;
+    }
+
+    .pedido-admin-producto__imagen img {
+        max-width:
+            52px !important;
+
+        max-height:
+            52px !important;
+    }
+
+    .pedido-admin-producto__nombre {
+        white-space: normal;
+
+        display: -webkit-box;
+
+        -webkit-box-orient: vertical;
+
+        -webkit-line-clamp: 2;
+
+        line-clamp: 2;
+    }
+
+
+    /* TOTAL */
+
+    .pedido-admin-fila__total {
         padding-top: 11px;
 
         border-top:
@@ -1877,6 +2467,7 @@ body:has(
             16px;
 
         flex-direction: column;
+
         align-items: stretch;
     }
 
@@ -1924,9 +2515,15 @@ body:has(
             16px;
     }
 
+
+    /* BANDEJA */
+
     .bandeja-pedidos__contenido {
         padding: 11px;
     }
+
+
+    /* TARJETA */
 
     .tarjeta-pedido-admin {
         padding:
@@ -1938,8 +2535,79 @@ body:has(
         gap: 7px;
     }
 
+    .tarjeta-pedido-admin__superior strong {
+        font-size: 0.78rem;
+    }
+
+    .tarjeta-pedido-admin h3 {
+        font-size: 0.72rem;
+    }
+
+
+    /* PRODUCTO TABLERO */
+
+    .tarjeta-pedido-admin__producto {
+        padding: 8px;
+
+        grid-template-columns:
+            46px
+            minmax(0, 1fr);
+
+        gap: 9px;
+    }
+
+    .tarjeta-pedido-admin__producto-imagen {
+        width: 46px;
+        height: 46px;
+
+        min-width: 46px;
+        max-width: 46px;
+
+        min-height: 46px;
+        max-height: 46px;
+    }
+
+    .tarjeta-pedido-admin__producto-imagen img {
+        max-width:
+            46px !important;
+
+        max-height:
+            46px !important;
+    }
+
+
+    /* LISTADO */
+
     .gestion-listado__cabecera h2 {
         font-size: 1.9rem;
+    }
+
+
+    /* PRODUCTO LISTADO */
+
+    .pedido-admin-producto {
+        grid-template-columns:
+            48px
+            minmax(0, 1fr);
+    }
+
+    .pedido-admin-producto__imagen {
+        width: 48px;
+        height: 48px;
+
+        min-width: 48px;
+        max-width: 48px;
+
+        min-height: 48px;
+        max-height: 48px;
+    }
+
+    .pedido-admin-producto__imagen img {
+        max-width:
+            48px !important;
+
+        max-height:
+            48px !important;
     }
 
 }

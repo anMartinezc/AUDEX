@@ -19,7 +19,9 @@
 
     <div class="contenedor">
 
-        <!-- Migas de navegación -->
+        <!-- =====================================================
+             MIGAS DE NAVEGACIÓN
+        ====================================================== -->
         <nav
             class="detalle-breadcrumb"
             aria-label="Migas de navegación"
@@ -41,11 +43,16 @@
             </span>
         </nav>
 
-        <!-- Panel administrativo -->
+
+        <!-- =====================================================
+             PANEL ADMINISTRATIVO
+        ====================================================== -->
         {% if puede_administrar %}
+
             <aside class="detalle-admin">
 
                 <div class="detalle-admin__informacion">
+
                     <div class="detalle-admin__icono">
                         <i class="bi bi-shield-check"></i>
                     </div>
@@ -54,12 +61,17 @@
                         <span>Administración</span>
                         <strong>Gestión del producto</strong>
                     </div>
+
                 </div>
 
                 <div class="detalle-admin__acciones">
+
                     <a
                         href="{% url 'core:producto_editar' producto.slug %}"
-                        class="detalle-admin__boton detalle-admin__boton--editar"
+                        class="
+                            detalle-admin__boton
+                            detalle-admin__boton--editar
+                        "
                     >
                         <i class="bi bi-pencil"></i>
                         Editar producto
@@ -67,74 +79,120 @@
 
                     <a
                         href="{% url 'core:producto_eliminar' producto.slug %}"
-                        class="detalle-admin__boton detalle-admin__boton--eliminar"
+                        class="
+                            detalle-admin__boton
+                            detalle-admin__boton--eliminar
+                        "
                     >
                         <i class="bi bi-trash3"></i>
                         Eliminar
                     </a>
+
                 </div>
 
             </aside>
+
         {% endif %}
 
-        <!-- Bloque principal -->
+
+        <!-- =====================================================
+             BLOQUE PRINCIPAL
+        ====================================================== -->
         <div class="detalle-producto__principal">
 
-            <!-- Galería de imágenes -->
+
+            <!-- =================================================
+                 GALERÍA
+            ================================================== -->
             <section
                 class="detalle-galeria"
                 data-producto-id="{{ producto.id }}"
             >
+
                 {% with galeria=producto.imagenes.all %}
 
                     <div
                         class="
                             detalle-galeria__principal
+
                             {% if producto.en_oferta %}
                                 detalle-galeria__principal--oferta
                             {% endif %}
                         "
                         id="contenedorImagenProducto"
                     >
+
+                        <!-- BADGE OFERTA / DESTACADO -->
                         {% if producto.en_oferta %}
+
                             <div class="detalle-oferta-badge">
+
                                 <strong>
                                     -{{ producto.porcentaje_descuento }}%
                                 </strong>
-                                <span>Oferta</span>
+
+                                <span>
+                                    Oferta
+                                </span>
+
                             </div>
+
                         {% elif producto.destacado %}
+
                             <span class="detalle-destacado">
+
                                 <i class="bi bi-stars"></i>
+
                                 Destacado
+
                             </span>
+
                         {% endif %}
 
+
+                        <!-- IMAGEN PRINCIPAL -->
                         {% if galeria %}
+
                             {% with primera=galeria.0 %}
+
                                 {% firstof primera.imagen.url primera.imagen_mostrable primera.url producto.imagen_mostrable as imagen_principal %}
+
                                 <img
                                     src="{{ imagen_principal }}"
                                     alt="{{ producto.nombre }}"
                                     id="imagenProductoPrincipal"
                                     data-indice="0"
                                 >
+
                             {% endwith %}
+
                         {% elif producto.imagen_mostrable %}
+
                             <img
                                 src="{{ producto.imagen_mostrable }}"
                                 alt="{{ producto.nombre }}"
                                 id="imagenProductoPrincipal"
                                 data-indice="0"
                             >
+
                         {% else %}
+
                             <div class="detalle-sin-imagen">
+
                                 <i class="bi bi-earbuds"></i>
-                                <span>Imagen no disponible</span>
+
+                                <span>
+                                    Imagen no disponible
+                                </span>
+
                             </div>
+
                         {% endif %}
 
+
+                        <!-- BOTÓN ZOOM -->
                         {% if galeria or producto.imagen_mostrable %}
+
                             <button
                                 type="button"
                                 class="detalle-zoom-boton"
@@ -145,24 +203,35 @@
                             >
                                 <i class="bi bi-arrows-fullscreen"></i>
                             </button>
+
                         {% endif %}
+
                     </div>
 
+
+                    <!-- MINIATURAS -->
                     {% if galeria or producto.imagen_mostrable %}
+
                         <div class="detalle-galeria__inferior">
+
                             <div
                                 class="detalle-galeria__miniaturas"
                                 id="miniaturasProducto"
                                 role="list"
                                 aria-label="Imágenes de {{ producto.nombre }}"
                             >
+
                                 {% if galeria %}
+
                                     {% for foto in galeria %}
+
                                         {% firstof foto.imagen.url foto.imagen_mostrable foto.url as foto_url %}
+
                                         <button
                                             type="button"
                                             class="
                                                 detalle-miniatura
+
                                                 {% if forloop.first %}
                                                     detalle-miniatura--activa
                                                 {% endif %}
@@ -174,17 +243,25 @@
                                             aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
                                             role="listitem"
                                         >
+
                                             <img
                                                 src="{{ foto_url }}"
                                                 alt="{{ foto.alt|default:producto.nombre }}"
                                                 loading="lazy"
                                             >
+
                                         </button>
+
                                     {% endfor %}
+
                                 {% else %}
+
                                     <button
                                         type="button"
-                                        class="detalle-miniatura detalle-miniatura--activa"
+                                        class="
+                                            detalle-miniatura
+                                            detalle-miniatura--activa
+                                        "
                                         data-imagen-url="{{ producto.imagen_mostrable }}"
                                         data-imagen-alt="{{ producto.nombre }}"
                                         data-indice="0"
@@ -192,81 +269,85 @@
                                         aria-pressed="true"
                                         role="listitem"
                                     >
+
                                         <img
                                             src="{{ producto.imagen_mostrable }}"
                                             alt="Vista principal de {{ producto.nombre }}"
                                         >
+
                                     </button>
+
                                 {% endif %}
+
                             </div>
 
+
                             <div class="detalle-galeria__mensaje">
+
                                 <i class="bi bi-mouse"></i>
+
                                 <span>
                                     Selecciona una imagen o usa el botón para ampliarla.
                                 </span>
+
                             </div>
+
                         </div>
+
                     {% endif %}
 
                 {% endwith %}
+
             </section>
 
-            <!-- Información -->
+
+            <!-- =================================================
+                 INFORMACIÓN DEL PRODUCTO
+            ================================================== -->
             <section class="detalle-informacion">
 
+
+                <!-- =============================================
+                     INFORMACIÓN SUPERIOR
+                ============================================== -->
                 <div class="detalle-informacion__superior">
 
+
+                    <!-- CATEGORÍA -->
                     <div class="detalle-etiquetas">
 
                         <span class="detalle-categoria">
                             {{ producto.categoria.nombre }}
                         </span>
 
-                        {% if producto.stock > 0 %}
-                            <span class="detalle-stock detalle-stock--disponible">
-                                <i class="bi bi-check-circle-fill"></i>
-                                En stock
-                            </span>
-                        {% else %}
-                            <span class="detalle-stock detalle-stock--agotado">
-                                <i class="bi bi-x-circle-fill"></i>
-                                Agotado
-                            </span>
-                        {% endif %}
-
                     </div>
 
+
+                    <!-- NOMBRE -->
                     <h1>
                         {{ producto.nombre }}
                     </h1>
 
-                    <p class="detalle-descripcion-corta">
-                        {{ producto.descripcion_corta }}
-                    </p>
 
-                    <div class="detalle-valoracion">
-                        <div class="detalle-estrellas">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-half"></i>
-                        </div>
+                    <!-- DESCRIPCIÓN CORTA -->
+                    {% if producto.descripcion_corta %}
 
-                        <strong>4.8</strong>
+                        <p class="detalle-descripcion-corta">
+                            {{ producto.descripcion_corta }}
+                        </p>
 
-                        <span>
-                            Producto recomendado
-                        </span>
-                    </div>
+                    {% endif %}
 
                 </div>
 
-                <!-- Precio -->
+
+                <!-- =============================================
+                     PRECIO
+                ============================================== -->
                 <div
                     class="
                         detalle-precio
+
                         {% if producto.en_oferta %}
                             detalle-precio--oferta
                         {% endif %}
@@ -276,28 +357,36 @@
                     {% if producto.en_oferta %}
 
                         <div class="detalle-precio__descuento">
+
                             <i class="bi bi-lightning-charge-fill"></i>
 
                             <span>
                                 Oferta por tiempo limitado
                             </span>
+
                         </div>
 
+
                         <div class="detalle-precio__valores">
+
                             <del>
-                                ${{ producto.precio|floatformat:0|intcomma }}
+                                ${{ producto.precio|floatformat:0|intcomma }} CLP
                             </del>
 
                             <strong>
-                                ${{ producto.precio_oferta|floatformat:0|intcomma }}
+                                ${{ producto.precio_oferta|floatformat:0|intcomma }} CLP
                             </strong>
+
                         </div>
+
 
                         <p>
                             Ahorras
+
                             <strong>
                                 {{ producto.porcentaje_descuento }}%
                             </strong>
+
                             sobre el precio normal.
                         </p>
 
@@ -308,163 +397,531 @@
                         </span>
 
                         <strong class="detalle-precio__normal">
-                            ${{ producto.precio|floatformat:0|intcomma }}
+                            ${{ producto.precio|floatformat:0|intcomma }} CLP
                         </strong>
 
                     {% endif %}
 
                 </div>
 
-                <!-- Compra -->
+
+                <!-- =============================================
+                     CARACTERÍSTICAS PRINCIPALES
+                ============================================== -->
+                {% if producto.caracteristica_1 or producto.caracteristica_2 or producto.caracteristica_3 or producto.autonomia_horas or producto.bluetooth or producto.resistencia_agua or producto.cancelacion_ruido %}
+
+                    <div class="detalle-resumen-caracteristicas">
+
+                        <div class="detalle-resumen-caracteristicas__titulo">
+
+                            <i class="bi bi-stars"></i>
+
+                            <h2>
+                                Características principales
+                            </h2>
+
+                        </div>
+
+
+                        <ul class="detalle-resumen-caracteristicas__lista">
+
+
+                            {% if producto.caracteristica_1 %}
+
+                                <li>
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    <span>
+                                        {{ producto.caracteristica_1 }}
+                                    </span>
+
+                                </li>
+
+                            {% endif %}
+
+
+                            {% if producto.caracteristica_2 %}
+
+                                <li>
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    <span>
+                                        {{ producto.caracteristica_2 }}
+                                    </span>
+
+                                </li>
+
+                            {% endif %}
+
+
+                            {% if producto.caracteristica_3 %}
+
+                                <li>
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    <span>
+                                        {{ producto.caracteristica_3 }}
+                                    </span>
+
+                                </li>
+
+                            {% endif %}
+
+
+                            {% if producto.autonomia_horas %}
+
+                                <li>
+
+                                    <i class="bi bi-battery-charging"></i>
+
+                                    <span>
+                                        <strong>Autonomía:</strong>
+                                        hasta {{ producto.autonomia_horas }} horas
+                                    </span>
+
+                                </li>
+
+                            {% endif %}
+
+
+                            {% if producto.bluetooth %}
+
+                                <li>
+
+                                    <i class="bi bi-bluetooth"></i>
+
+                                    <span>
+                                        <strong>Bluetooth:</strong>
+                                        {{ producto.bluetooth }}
+                                    </span>
+
+                                </li>
+
+                            {% endif %}
+
+
+                            {% if producto.resistencia_agua %}
+
+                                <li>
+
+                                    <i class="bi bi-droplet"></i>
+
+                                    <span>
+                                        <strong>Resistencia:</strong>
+                                        {{ producto.resistencia_agua }}
+                                    </span>
+
+                                </li>
+
+                            {% endif %}
+
+
+                            {% if producto.cancelacion_ruido %}
+
+                                <li>
+
+                                    <i class="bi bi-volume-mute"></i>
+
+                                    <span>
+                                        Cancelación activa de ruido
+                                    </span>
+
+                                </li>
+
+                            {% endif %}
+
+                        </ul>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- =============================================
+                     DESCRIPCIÓN COMPLETA
+                ============================================== -->
+                <div class="detalle-resumen-descripcion">
+
+                    <div class="detalle-resumen-descripcion__titulo">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        <h2>
+                            Acerca de este producto
+                        </h2>
+
+                    </div>
+
+
+                    {% if producto.descripcion %}
+
+                        <div class="detalle-resumen-descripcion__texto">
+                            {{ producto.descripcion|linebreaks }}
+                        </div>
+
+                    {% else %}
+
+                        <p>
+                            {{ producto.nombre }} combina comodidad,
+                            conectividad y una experiencia de audio
+                            pensada para acompañarte en el uso diario.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- =============================================
+                     FICHA TÉCNICA
+                ============================================== -->
+                <div class="detalle-resumen-ficha">
+
+                    <div class="detalle-resumen-ficha__titulo">
+
+                        <i class="bi bi-card-list"></i>
+
+                        <h2>
+                            Ficha técnica
+                        </h2>
+
+                    </div>
+
+
+                    <dl class="detalle-resumen-ficha__lista">
+
+                        <div>
+
+                            <dt>
+                                Categoría
+                            </dt>
+
+                            <dd>
+                                {{ producto.categoria.nombre }}
+                            </dd>
+
+                        </div>
+
+
+                        {% if producto.bluetooth %}
+
+                            <div>
+
+                                <dt>
+                                    Bluetooth
+                                </dt>
+
+                                <dd>
+                                    {{ producto.bluetooth }}
+                                </dd>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if producto.autonomia_horas %}
+
+                            <div>
+
+                                <dt>
+                                    Autonomía
+                                </dt>
+
+                                <dd>
+                                    Hasta {{ producto.autonomia_horas }} horas
+                                </dd>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if producto.resistencia_agua %}
+
+                            <div>
+
+                                <dt>
+                                    Resistencia
+                                </dt>
+
+                                <dd>
+                                    {{ producto.resistencia_agua }}
+                                </dd>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div>
+
+                            <dt>
+                                Cancelación de ruido
+                            </dt>
+
+                            <dd>
+
+                                {% if producto.cancelacion_ruido %}
+                                    Sí
+                                {% else %}
+                                    No
+                                {% endif %}
+
+                            </dd>
+
+                        </div>
+
+                    </dl>
+
+                </div>
+
+
+                <!-- =============================================
+                     COMPRA
+                ============================================== -->
                 <div class="detalle-compra">
 
+
+                    <!-- CANTIDAD -->
                     <div
                         class="detalle-cantidad"
                         data-stock="{{ producto.stock }}"
                     >
-                        <span>Cantidad</span>
+
+                        <span>
+                            Cantidad
+                        </span>
+
 
                         <div
                             class="detalle-cantidad__control"
                             role="group"
                             aria-label="Seleccionar cantidad"
                         >
+
                             <button
                                 type="button"
                                 id="restarCantidad"
                                 aria-label="Disminuir cantidad"
-                                {% if producto.stock <= 0 %}
-                                    disabled
-                                {% else %}
-                                    disabled
-                                {% endif %}
+                                disabled
                             >
                                 <i class="bi bi-dash-lg"></i>
                             </button>
 
+
                             <input
-                                    type="text"
-                                    id="cantidadProducto"
-                                    value="1"
-                                    inputmode="numeric"
-                                    data-min="1"
-                                    data-max="{{ producto.stock }}"
-                                    readonly
-                                    aria-label="Cantidad del producto"
-                                >
+                                type="text"
+                                id="cantidadProducto"
+                                value="1"
+                                inputmode="numeric"
+                                data-min="1"
+                                data-max="{{ producto.stock }}"
+                                readonly
+                                aria-label="Cantidad del producto"
+                            >
+
 
                             <button
                                 type="button"
                                 id="sumarCantidad"
                                 aria-label="Aumentar cantidad"
-                                {% if producto.stock <= 1 %}
+
+                                {% if producto.stock <= 1 or puede_administrar %}
                                     disabled
                                 {% endif %}
                             >
                                 <i class="bi bi-plus-lg"></i>
                             </button>
+
                         </div>
 
-                        {% if producto.stock > 0 %}
-                            <small id="textoStockProducto">
-                                {{ producto.stock }}
-                                unidades disponibles
-                            </small>
-                        {% else %}
-                            <small
-                                class="detalle-stock-texto--agotado"
-                                id="textoStockProducto"
-                            >
-                                Producto sin stock
-                            </small>
-                        {% endif %}
                     </div>
 
-                    <button
-                        type="button"
-                        class="detalle-agregar-carrito"
-                        id="agregarCarritoDetalle"
-                        data-producto-id="{{ producto.id }}"
-                        data-producto="{{ producto.nombre|escape }}"
-                        data-stock="{{ producto.stock }}"
-                        data-cantidad="1"
-                        data-procesando="false"
-                        aria-label="Agregar {{ producto.nombre|escape }} al carrito"
-                        {% if producto.stock <= 0 %}
+
+                    <!-- =========================================
+                         AGREGAR AL CARRITO
+                    ========================================== -->
+                    {% if puede_administrar %}
+
+                        <button
+                            type="button"
+                            class="
+                                detalle-agregar-carrito
+                                detalle-agregar-carrito--bloqueado
+                            "
                             disabled
                             aria-disabled="true"
-                        {% else %}
-                            aria-disabled="false"
-                        {% endif %}
-                    >
-                        <i class="bi bi-bag-plus"></i>
+                            title="Los administradores no pueden agregar productos al carrito"
+                            aria-label="Agregar al carrito deshabilitado para administradores"
+                        >
 
-                        <span>
-                            {% if producto.stock > 0 %}
-                                Agregar al carrito
+                            <i
+                                class="bi bi-lock"
+                                aria-hidden="true"
+                            ></i>
+
+                            <span>
+                                Solo clientes
+                            </span>
+
+                        </button>
+
+                    {% else %}
+
+                        <button
+                            type="button"
+                            class="detalle-agregar-carrito"
+                            id="agregarCarritoDetalle"
+                            data-producto-id="{{ producto.id }}"
+                            data-producto="{{ producto.nombre|escape }}"
+                            data-stock="{{ producto.stock }}"
+                            data-cantidad="1"
+                            data-procesando="false"
+                            aria-label="Agregar {{ producto.nombre|escape }} al carrito"
+
+                            {% if producto.stock <= 0 %}
+                                disabled
+                                aria-disabled="true"
                             {% else %}
-                                Producto agotado
+                                aria-disabled="false"
                             {% endif %}
-                        </span>
-                    </button>
+                        >
 
-                   <button
-                        type="button"
-                        class="detalle-favorito js-favorito"
-                        id="favoritoDetalle"
-                        data-producto-id="{{ producto.id }}"
-                        data-url-estado="{% url 'core:favoritos_estado' %}"
-                        data-url-alternar="{% url 'core:favorito_alternar' %}"
-                        aria-label="Guardar {{ producto.nombre }} en favoritos"
-                        aria-pressed="false"
-                        title="Guardar en favoritos"
-                    >
-                        <i
-                            class="bi bi-heart"
-                            aria-hidden="true"
-                        ></i>
+                            <i class="bi bi-bag-plus"></i>
 
-                        <span class="js-favorito-texto">
-                            Guardar en favoritos
-                        </span>
-                    </button>
+                            <span>
+                                Agregar al carrito
+                            </span>
+
+                        </button>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         FAVORITOS
+                    ========================================== -->
+                    {% if puede_administrar %}
+
+                        <button
+                            type="button"
+                            class="
+                                detalle-favorito
+                                detalle-favorito--bloqueado
+                            "
+                            disabled
+                            aria-disabled="true"
+                            title="Los administradores no pueden guardar productos en favoritos"
+                            aria-label="Favoritos deshabilitados para administradores"
+                        >
+
+                            <i
+                                class="bi bi-lock"
+                                aria-hidden="true"
+                            ></i>
+
+                            <span>
+                                Solo clientes
+                            </span>
+
+                        </button>
+
+                    {% else %}
+
+                        <button
+                            type="button"
+                            class="
+                                detalle-favorito
+                                js-favorito
+                            "
+                            id="favoritoDetalle"
+                            data-producto-id="{{ producto.id }}"
+                            data-url-estado="{% url 'core:favoritos_estado' %}"
+                            data-url-alternar="{% url 'core:favorito_alternar' %}"
+                            aria-label="Guardar {{ producto.nombre }} en favoritos"
+                            aria-pressed="false"
+                            title="Guardar en favoritos"
+                        >
+
+                            <i
+                                class="bi bi-heart"
+                                aria-hidden="true"
+                            ></i>
+
+                            <span class="js-favorito-texto">
+                                Guardar en favoritos
+                            </span>
+
+                        </button>
+
+                    {% endif %}
 
                 </div>
 
-                <!-- Pago y despacho -->
+
+                <!-- =============================================
+                     PAGO Y DESPACHO
+                ============================================== -->
                 <div class="detalle-servicios">
 
                     <article>
+
                         <div>
                             <i class="bi bi-truck"></i>
                         </div>
 
                         <span>
-                            <strong>Despacho rápido</strong>
+
+                            <strong>
+                                Despacho rápido
+                            </strong>
+
                             Envíos disponibles a todo Chile.
+
                         </span>
+
                     </article>
 
+
                     <article>
+
                         <div>
                             <i class="bi bi-credit-card"></i>
                         </div>
 
                         <span>
-                            <strong>Pago seguro</strong>
+
+                            <strong>
+                                Pago seguro
+                            </strong>
+
                             Compra protegida y medios de pago confiables.
+
                         </span>
+
                     </article>
 
+
                     <article>
+
                         <div>
                             <i class="bi bi-shield-check"></i>
                         </div>
 
                         <span>
-                            <strong>Producto garantizado</strong>
+
+                            <strong>
+                                Producto garantizado
+                            </strong>
+
                             Respaldo y atención posventa Audex.
+
                         </span>
+
                     </article>
 
                 </div>
@@ -477,227 +934,16 @@
 
 </section>
 
-<!-- Características -->
-<section class="detalle-caracteristicas">
 
-    <div class="contenedor">
-
-        <div class="detalle-seccion-titulo">
-            <span class="etiqueta-seccion">
-                Rendimiento y tecnología
-            </span>
-
-            <h2>Características principales</h2>
-
-            <p>
-                Todo lo que necesitas saber antes de elegir
-                {{ producto.nombre }}.
-            </p>
-        </div>
-
-        <div class="detalle-caracteristicas__grid">
-
-            {% if producto.caracteristica_1 %}
-                <article class="detalle-caracteristica-card">
-                    <div>
-                        <i class="bi bi-soundwave"></i>
-                    </div>
-
-                    <span>Característica destacada</span>
-
-                    <h3>
-                        {{ producto.caracteristica_1 }}
-                    </h3>
-                </article>
-            {% endif %}
-
-            {% if producto.caracteristica_2 %}
-                <article class="detalle-caracteristica-card">
-                    <div>
-                        <i class="bi bi-earbuds"></i>
-                    </div>
-
-                    <span>Experiencia de audio</span>
-
-                    <h3>
-                        {{ producto.caracteristica_2 }}
-                    </h3>
-                </article>
-            {% endif %}
-
-            {% if producto.caracteristica_3 %}
-                <article class="detalle-caracteristica-card">
-                    <div>
-                        <i class="bi bi-stars"></i>
-                    </div>
-
-                    <span>Tecnología</span>
-
-                    <h3>
-                        {{ producto.caracteristica_3 }}
-                    </h3>
-                </article>
-            {% endif %}
-
-            {% if producto.autonomia_horas %}
-                <article class="detalle-caracteristica-card">
-                    <div>
-                        <i class="bi bi-battery-charging"></i>
-                    </div>
-
-                    <span>Autonomía</span>
-
-                    <h3>
-                        Hasta {{ producto.autonomia_horas }} horas
-                    </h3>
-                </article>
-            {% endif %}
-
-            {% if producto.bluetooth %}
-                <article class="detalle-caracteristica-card">
-                    <div>
-                        <i class="bi bi-bluetooth"></i>
-                    </div>
-
-                    <span>Conectividad</span>
-
-                    <h3>
-                        Bluetooth {{ producto.bluetooth }}
-                    </h3>
-                </article>
-            {% endif %}
-
-            {% if producto.resistencia_agua %}
-                <article class="detalle-caracteristica-card">
-                    <div>
-                        <i class="bi bi-droplet"></i>
-                    </div>
-
-                    <span>Protección</span>
-
-                    <h3>
-                        Resistencia {{ producto.resistencia_agua }}
-                    </h3>
-                </article>
-            {% endif %}
-
-            {% if producto.cancelacion_ruido %}
-                <article class="detalle-caracteristica-card">
-                    <div>
-                        <i class="bi bi-volume-mute"></i>
-                    </div>
-
-                    <span>Concentración</span>
-
-                    <h3>
-                        Cancelación activa de ruido
-                    </h3>
-                </article>
-            {% endif %}
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- Descripción completa -->
-<section class="detalle-descripcion">
-
-    <div class="contenedor detalle-descripcion__grid">
-
-        <div class="detalle-descripcion__contenido">
-            <span class="etiqueta-seccion">
-                Conoce el producto
-            </span>
-
-            <h2>
-                Diseñado para acompañarte todos los días.
-            </h2>
-
-            {% if producto.descripcion %}
-                <div class="detalle-descripcion__texto">
-                    {{ producto.descripcion|linebreaks }}
-                </div>
-            {% else %}
-                <p>
-                    {{ producto.nombre }} combina comodidad,
-                    conectividad y una experiencia de audio pensada
-                    para el uso diario.
-                </p>
-            {% endif %}
-        </div>
-
-        <aside class="detalle-ficha">
-
-            <h3>Ficha técnica</h3>
-
-            <dl>
-                <div>
-                    <dt>Categoría</dt>
-                    <dd>{{ producto.categoria.nombre }}</dd>
-                </div>
-
-                {% if producto.bluetooth %}
-                    <div>
-                        <dt>Bluetooth</dt>
-                        <dd>{{ producto.bluetooth }}</dd>
-                    </div>
-                {% endif %}
-
-                {% if producto.autonomia_horas %}
-                    <div>
-                        <dt>Autonomía</dt>
-                        <dd>
-                            {{ producto.autonomia_horas }} horas
-                        </dd>
-                    </div>
-                {% endif %}
-
-                {% if producto.resistencia_agua %}
-                    <div>
-                        <dt>Resistencia</dt>
-                        <dd>{{ producto.resistencia_agua }}</dd>
-                    </div>
-                {% endif %}
-
-                <div>
-                    <dt>Cancelación de ruido</dt>
-
-                    <dd>
-                        {% if producto.cancelacion_ruido %}
-                            Sí
-                        {% else %}
-                            No
-                        {% endif %}
-                    </dd>
-                </div>
-
-                <div>
-                    <dt>Disponibilidad</dt>
-
-                    <dd>
-                        {% if producto.stock > 0 %}
-                            {{ producto.stock }} unidades
-                        {% else %}
-                            Sin stock
-                        {% endif %}
-                    </dd>
-                </div>
-            </dl>
-
-        </aside>
-
-    </div>
-
-</section>
-
-<!-- Llamado final -->
+<!-- =========================================================
+     LLAMADO FINAL
+========================================================== -->
 <section class="detalle-ayuda">
 
     <div class="contenedor detalle-ayuda__contenido">
 
         <div>
+
             <span class="etiqueta-seccion">
                 Asesoría Audex
             </span>
@@ -710,7 +956,9 @@
                 Te ayudamos a confirmar si este modelo es el adecuado
                 para tu forma de escuchar música, trabajar o entrenar.
             </p>
+
         </div>
+
 
         <a
             href="https://wa.me/56900000000"
@@ -718,15 +966,21 @@
             rel="noopener noreferrer"
             class="boton boton--primario"
         >
+
             <i class="bi bi-whatsapp"></i>
+
             Hablar con un asesor
+
         </a>
 
     </div>
 
 </section>
 
-<!-- Modal de imagen -->
+
+<!-- =========================================================
+     MODAL DE IMAGEN
+========================================================== -->
 <div
     class="detalle-modal"
     id="modalImagenProducto"
@@ -735,6 +989,7 @@
     aria-modal="true"
     aria-label="Vista ampliada de {{ producto.nombre }}"
 >
+
     <button
         type="button"
         class="detalle-modal__cerrar"
@@ -744,14 +999,19 @@
         <i class="bi bi-x-lg"></i>
     </button>
 
+
     <button
         type="button"
-        class="detalle-modal__navegacion detalle-modal__navegacion--anterior"
+        class="
+            detalle-modal__navegacion
+            detalle-modal__navegacion--anterior
+        "
         id="imagenAnteriorProducto"
         aria-label="Imagen anterior"
     >
         <i class="bi bi-chevron-left"></i>
     </button>
+
 
     <img
         src=""
@@ -759,19 +1019,27 @@
         id="imagenModalProducto"
     >
 
+
     <button
         type="button"
-        class="detalle-modal__navegacion detalle-modal__navegacion--siguiente"
+        class="
+            detalle-modal__navegacion
+            detalle-modal__navegacion--siguiente
+        "
         id="imagenSiguienteProducto"
         aria-label="Imagen siguiente"
     >
         <i class="bi bi-chevron-right"></i>
     </button>
+
 </div>
 
 {% endblock %}
 
+
 {% block extra_js %}
+
 <script src="{% static 'core/js/producto_detalle.js' %}?v=2"></script>
 <script src="{% static 'core/js/favoritos.js' %}?v=1"></script>
+
 {% endblock %}

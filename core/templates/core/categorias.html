@@ -12,185 +12,1177 @@ Categorías | Audex
 >
 {% endblock %}
 
+
 {% block content %}
 
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
 <section class="categorias-hero">
+
     <div class="contenedor categorias-hero__contenido">
+
         <span class="etiqueta-seccion">
-            Compra según tu estilo
+            Descubre Audex
         </span>
 
         <h1>
-            Una categoría para
-            <span>cada forma de escuchar.</span>
+            Encuentra tu
+            <span>sonido.</span>
         </h1>
 
         <p>
-            Encuentra audífonos para entrenar, viajar, trabajar,
-            jugar o disfrutar tu música favorita.
+            Tecnología, comodidad y audio para cada momento.
         </p>
+
+        <a
+            href="#categorias"
+            class="categorias-hero__cta"
+        >
+            Explorar
+            <i class="bi bi-arrow-down"></i>
+        </a>
+
     </div>
+
 </section>
 
-<section class="categorias-principales" id="categorias">
+
+
+<!-- =====================================================
+     EXPERIENCIAS PRINCIPALES
+===================================================== -->
+
+<section
+    class="categorias-principales"
+    id="categorias"
+>
+
     <div class="contenedor categorias-grid">
 
-        <article
-            class="categoria-card categoria-card--grande"
-            data-categoria="inalambricos"
-        >
-            <div class="categoria-card__contenido">
-                <span>Uso diario</span>
-                <h2>Inalámbricos</h2>
 
-                <p>
-                    Libertad total, llamadas claras y música
-                    sin cables.
-                </p>
-
-                <a href="{% url 'core:productos' %}">
-                    Ver modelos
-                    <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-
-            <img
-                src="https://m.media-amazon.com/images/I/61JJP+Mp5CL._AC_SL1500_.jpg"
-                alt="Audífonos inalámbricos EarFun"
-            >
-        </article>
+        <!-- =================================================
+             1. CANCELACIÓN DE RUIDO
+        ================================================== -->
 
         <article
-            class="categoria-card"
-            data-categoria="over-ear"
-        >
-            <div class="categoria-card__contenido">
-                <span>Sonido envolvente</span>
-                <h2>Over-ear</h2>
-
-                <p>
-                    Máxima comodidad y aislamiento para sesiones largas.
-                </p>
-
-                <a href="{% url 'core:productos' %}">
-                    Explorar
-                    <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-
-            <img
-                src="https://m.media-amazon.com/images/I/61OfxWbSPfL._AC_SL1500_.jpg"
-                alt="Audífonos over-ear EarFun"
-            >
-        </article>
-
-        <article
-            class="categoria-card"
-            data-categoria="deportivos"
-        >
-            <div class="categoria-card__contenido">
-                <span>Movimiento</span>
-                <h2>Deportivos</h2>
-
-                <p>
-                    Ajuste seguro y resistencia para acompañar
-                    cada entrenamiento.
-                </p>
-
-                <a href="{% url 'core:productos' %}">
-                    Explorar
-                    <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-
-            <img
-                src="https://m.media-amazon.com/images/I/61-F3VX4FlL._AC_SL1500_.jpg"
-                alt="Audífonos deportivos EarFun"
-            >
-        </article>
-
-        <article
-            class="categoria-card categoria-card--horizontal"
+            class="
+                categoria-card
+                categoria-card--grande
+                categoria-card--anc
+                categoria-video
+            "
             data-categoria="cancelacion"
         >
-            <div class="categoria-card__contenido">
-                <span>Concentración total</span>
-                <h2>Cancelación de ruido</h2>
 
-                <p>
-                    Reduce el ruido exterior y disfruta cada detalle.
-                </p>
+            <div class="categoria-video__media">
 
-                <a href="{% url 'core:productos' %}">
-                    Ver audífonos ANC
-                    <i class="bi bi-arrow-right"></i>
-                </a>
+                <img
+                    class="categoria-video__poster"
+                    data-video-poster
+                    src="{% static 'core/img/EarfunCancelacion.png' %}"
+                    alt="Audífonos EarFun con cancelación activa de ruido"
+                    loading="lazy"
+                >
+
+                <video
+                    class="categoria-video__video"
+                    data-video
+                    preload="metadata"
+                    playsinline
+                >
+                    <source
+                        src="{% static 'core/videos/EarfunCancelacion.mp4' %}"
+                        type="video/mp4"
+                    >
+
+                    Tu navegador no soporta reproducción de video.
+                </video>
+
+                <div
+                    class="categoria-video__overlay"
+                    data-video-overlay
+                >
+
+                    <button
+                        type="button"
+                        class="categoria-video__boton-central"
+                        data-video-play
+                        aria-label="Reproducir experiencia de cancelación de ruido"
+                    >
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+
+                </div>
+
             </div>
 
-            <img
-                src="https://m.media-amazon.com/images/I/61vzw-XR3cL._AC_SL1500_.jpg"
-                alt="Audífonos con cancelación de ruido"
-            >
+
+            <div class="categoria-card__contenido">
+
+                <span>
+                    Concentración total
+                </span>
+
+                <h2>
+                    Cancelación
+                    <br>
+                    de ruido
+                </h2>
+
+                <p>
+                    Menos ruido. Más detalle.
+                </p>
+
+                <div class="categoria-card__acciones">
+
+                    <button
+                        type="button"
+                        class="categoria-video__play"
+                        data-video-play
+                    >
+                        <i class="bi bi-play-circle-fill"></i>
+                        Ver experiencia
+                    </button>
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="categoria-video__productos"
+                        data-productos-link
+                        hidden
+                    >
+                        Ver audífonos ANC
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
         </article>
 
+
+
+        <!-- =================================================
+             2. AUDEX CLIP
+        ================================================== -->
+
+        <article
+            class="
+                categoria-card
+                categoria-card--clip
+                categoria-video
+            "
+            data-categoria="clip"
+        >
+
+            <div class="categoria-video__media">
+
+                <img
+                    class="categoria-video__poster"
+                    data-video-poster
+                    src="{% static 'core/img/EarfunClip.png' %}"
+                    alt="Audífonos EarFun Clip"
+                    loading="lazy"
+                >
+
+                <video
+                    class="categoria-video__video"
+                    data-video
+                    preload="metadata"
+                    playsinline
+                >
+
+                    <source
+                        src="{% static 'core/videos/EarfunClip.mp4' %}"
+                        type="video/mp4"
+                    >
+
+                    Tu navegador no soporta reproducción de video.
+
+                </video>
+
+                <div
+                    class="categoria-video__overlay"
+                    data-video-overlay
+                >
+
+                    <button
+                        type="button"
+                        class="categoria-video__boton-central"
+                        data-video-play
+                        aria-label="Reproducir experiencia EarFun Clip"
+                    >
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="categoria-card__contenido">
+
+                <span>
+                    Diseño abierto
+                </span>
+
+                <h2>
+                    Audex Clip
+                </h2>
+
+                <p>
+                    Ligero, cómodo y conectado a tu entorno.
+                </p>
+
+                <div class="categoria-card__acciones">
+
+                    <button
+                        type="button"
+                        class="categoria-video__play"
+                        data-video-play
+                    >
+                        <i class="bi bi-play-circle-fill"></i>
+                        Ver experiencia
+                    </button>
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="categoria-video__productos"
+                        data-productos-link
+                        hidden
+                    >
+                        Ver modelos Clip
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+
+        <!-- =================================================
+             3. MÁS QUE SONIDO
+        ================================================== -->
+
+        <article
+            class="
+                categoria-card
+                categoria-card--tecnologia
+                categoria-video
+            "
+            data-categoria="tecnologia"
+        >
+
+            <div class="categoria-video__media">
+
+                <img
+                    class="categoria-video__poster"
+                    data-video-poster
+                    src="{% static 'core/img/Earfun8.png' %}"
+                    alt="Tecnología interna y componentes de audio EarFun"
+                    loading="lazy"
+                >
+
+                <video
+                    class="categoria-video__video"
+                    data-video
+                    preload="metadata"
+                    playsinline
+                >
+
+                    <source
+                        src="{% static 'core/videos/Earfun.mp4' %}"
+                        type="video/mp4"
+                    >
+
+                    Tu navegador no soporta reproducción de video.
+
+                </video>
+
+                <div
+                    class="categoria-video__overlay"
+                    data-video-overlay
+                >
+
+                    <button
+                        type="button"
+                        class="categoria-video__boton-central"
+                        data-video-play
+                        aria-label="Reproducir video de tecnología de audio"
+                    >
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="categoria-card__contenido">
+
+                <span>
+                    Ingeniería de audio
+                </span>
+
+                <h2>
+                    Más que
+                    <br>
+                    sonido
+                </h2>
+
+                <p>
+                    Tecnología diseñada para escuchar más.
+                </p>
+
+                <div class="categoria-card__acciones">
+
+                    <button
+                        type="button"
+                        class="categoria-video__play"
+                        data-video-play
+                    >
+                        <i class="bi bi-play-circle-fill"></i>
+                        Descubrir
+                    </button>
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="categoria-video__productos"
+                        data-productos-link
+                        hidden
+                    >
+                        Ver productos
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+
+        <!-- =================================================
+             4. CERTIFICACIONES DE AUDIO
+        ================================================== -->
+
+        <article
+            class="
+                categoria-card
+                categoria-card--horizontal
+                categoria-card--certificaciones
+                categoria-destacada
+            "
+            data-categoria="certificaciones"
+        >
+
+            <div class="categoria-card__contenido">
+
+                <span>
+                    Certificaciones de audio
+                </span>
+
+                <h2>
+                    Sonido
+                    <br>
+                    respaldado.
+                </h2>
+
+                <p>
+                    Nuestros modelos integran tecnologías de audio
+                    reconocidas para ofrecer mayor calidad,
+                    estabilidad y detalle.
+                </p>
+
+                <div class="certificaciones-lista">
+
+                    <span>aptX</span>
+                    <span>LDAC</span>
+                    <span>Hi-Res Audio</span>
+                    <span>Snapdragon Sound</span>
+                    <span>Auracast</span>
+
+                </div>
+
+                <a
+                    href="{% url 'core:productos' %}"
+                    class="categoria-card__enlace"
+                >
+                    Ver modelos compatibles
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+
+
+            <div class="categoria-destacada__visual">
+
+                <img
+                    class="categoria-destacada__imagen"
+                    src="{% static 'core/img/Earfun10.png' %}"
+                    alt="Certificaciones aptX, LDAC, Hi-Res Audio, Snapdragon Sound y Auracast"
+                    loading="lazy"
+                >
+
+            </div>
+
+        </article>
+
+
+
+        <!-- =================================================
+             5. EARFUN UBOOM
+             CARD GRANDE
+        ================================================== -->
+
+        <article
+            class="
+                categoria-card
+                categoria-video
+                categoria-card--video-extra
+                categoria-card--uboom
+            "
+            data-categoria="uboom"
+        >
+
+            <div class="categoria-video__media">
+
+                <img
+                    class="
+                        categoria-video__poster
+                        categoria-video__poster--producto
+                    "
+                    data-video-poster
+                    src="{% static 'core/img/EarfunBoom.png' %}"
+                    alt="Parlante portátil EarFun UBOOM"
+                    loading="lazy"
+                >
+
+                <video
+                    class="categoria-video__video"
+                    data-video
+                    preload="metadata"
+                    playsinline
+                >
+
+                    <source
+                        src="{% static 'core/videos/EarfunBoom.mp4' %}"
+                        type="video/mp4"
+                    >
+
+                    Tu navegador no soporta reproducción de video.
+
+                </video>
+
+                <div
+                    class="categoria-video__overlay"
+                    data-video-overlay
+                >
+
+                    <button
+                        type="button"
+                        class="categoria-video__boton-central"
+                        data-video-play
+                        aria-label="Reproducir video de EarFun UBOOM"
+                    >
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="categoria-card__contenido">
+
+                <span>
+                    Sonido portátil
+                </span>
+
+                <h2>
+                    Potencia que
+                    <br>
+                    puedes llevar
+                </h2>
+
+                <p>
+                    Sonido envolvente y graves potentes para disfrutar
+                    tu música donde quieras.
+                </p>
+
+                <div class="categoria-card__acciones">
+
+                    <button
+                        type="button"
+                        class="categoria-video__play"
+                        data-video-play
+                    >
+                        <i class="bi bi-play-circle-fill"></i>
+                        Ver UBOOM
+                    </button>
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="categoria-video__productos"
+                        data-productos-link
+                        hidden
+                    >
+                        Ver parlantes
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+
+        <!-- =================================================
+             6. EARFUN SPORT
+        ================================================== -->
+
+        <article
+            class="
+                categoria-card
+                categoria-video
+                categoria-card--video-extra
+                categoria-card--sport
+            "
+            data-categoria="sport"
+        >
+
+            <div class="categoria-video__media">
+
+                <img
+                    class="
+                        categoria-video__poster
+                        categoria-video__poster--producto
+                    "
+                    data-video-poster
+                    src="{% static 'core/img/EarfunSport.png' %}"
+                    alt="Audífonos deportivos EarFun"
+                    loading="lazy"
+                >
+
+                <video
+                    class="categoria-video__video"
+                    data-video
+                    preload="metadata"
+                    playsinline
+                >
+
+                    <source
+                        src="{% static 'core/videos/EarfunSport.mp4' %}"
+                        type="video/mp4"
+                    >
+
+                    Tu navegador no soporta reproducción de video.
+
+                </video>
+
+                <div
+                    class="categoria-video__overlay"
+                    data-video-overlay
+                >
+
+                    <button
+                        type="button"
+                        class="categoria-video__boton-central"
+                        data-video-play
+                        aria-label="Reproducir audífonos deportivos EarFun"
+                    >
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="categoria-card__contenido">
+
+                <span>
+                    Diseñados para moverte
+                </span>
+
+                <h2>
+                    Sonido que sigue
+                    <br>
+                    tu ritmo
+                </h2>
+
+                <p>
+                    Ajuste seguro, comodidad y libertad para entrenar
+                    sin interrupciones.
+                </p>
+
+                <div class="categoria-card__acciones">
+
+                    <button
+                        type="button"
+                        class="categoria-video__play"
+                        data-video-play
+                    >
+                        <i class="bi bi-play-circle-fill"></i>
+                        Ver en acción
+                    </button>
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="categoria-video__productos"
+                        data-productos-link
+                        hidden
+                    >
+                        Ver modelos deportivos
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+
+        <!-- =================================================
+             7. EARFUN CHILDREN
+        ================================================== -->
+
+        <article
+            class="
+                categoria-card
+                categoria-video
+                categoria-card--video-extra
+                categoria-card--children
+            "
+            data-categoria="children"
+        >
+
+            <div class="categoria-video__media">
+
+                <img
+                    class="
+                        categoria-video__poster
+                        categoria-video__poster--producto
+                    "
+                    data-video-poster
+                    src="{% static 'core/img/EarfunChildren.png' %}"
+                    alt="Audífonos EarFun para niños"
+                    loading="lazy"
+                >
+
+                <video
+                    class="categoria-video__video"
+                    data-video
+                    preload="metadata"
+                    playsinline
+                >
+
+                    <source
+                        src="{% static 'core/videos/EarfunChildren.mp4' %}"
+                        type="video/mp4"
+                    >
+
+                    Tu navegador no soporta reproducción de video.
+
+                </video>
+
+                <div
+                    class="categoria-video__overlay"
+                    data-video-overlay
+                >
+
+                    <button
+                        type="button"
+                        class="categoria-video__boton-central"
+                        data-video-play
+                        aria-label="Reproducir audífonos EarFun para niños"
+                    >
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="categoria-card__contenido">
+
+                <span>
+                    Audio para los más pequeños
+                </span>
+
+                <h2>
+                    Diversión hecha
+                    <br>
+                    para ellos
+                </h2>
+
+                <p>
+                    Cómodos, ligeros y diseñados para acompañar
+                    sus momentos favoritos.
+                </p>
+
+                <div class="categoria-card__acciones">
+
+                    <button
+                        type="button"
+                        class="categoria-video__play"
+                        data-video-play
+                    >
+                        <i class="bi bi-play-circle-fill"></i>
+                        Ver experiencia
+                    </button>
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="categoria-video__productos"
+                        data-productos-link
+                        hidden
+                    >
+                        Ver audífonos infantiles
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
     </div>
+
 </section>
 
+
+
+<!-- =====================================================
+     ASESORÍA
+===================================================== -->
+
 <section class="selector-uso">
+
     <div class="contenedor">
-        <div class="selector-uso__encabezado">
-            <span class="etiqueta-seccion">
-                Recomendador Audex
-            </span>
 
-            <h2>¿Para qué usarás tus audífonos?</h2>
+        <div class="selector-uso__simple">
 
-            <p>
-                Selecciona una opción y te mostraremos
-                nuestra recomendación.
-            </p>
-        </div>
+            <div class="selector-uso__simple-icono">
 
-        <div class="selector-uso__botones">
-            <button data-uso="trabajo">
-                <i class="bi bi-laptop"></i>
-                Trabajo
-            </button>
+                <i class="bi bi-whatsapp"></i>
 
-            <button data-uso="deporte">
-                <i class="bi bi-activity"></i>
-                Deporte
-            </button>
-
-            <button data-uso="viajes">
-                <i class="bi bi-airplane"></i>
-                Viajes
-            </button>
-
-            <button data-uso="gaming">
-                <i class="bi bi-controller"></i>
-                Gaming
-            </button>
-        </div>
-
-        <div class="recomendacion" id="recomendacionCategoria">
-            <div class="recomendacion__icono">
-                <i class="bi bi-headphones"></i>
             </div>
 
-            <div>
-                <span>Recomendación Audex</span>
-                <h3>Selecciona una actividad</h3>
+
+            <div class="selector-uso__simple-contenido">
+
+                <span>
+                    ¿Aún tienes dudas?
+                </span>
+
+                <h2>
+                    Te ayudamos a elegir.
+                </h2>
+
                 <p>
-                    Te ayudaremos a encontrar el modelo más adecuado.
+                    Cuéntanos qué buscas y recibe
+                    una recomendación personalizada.
                 </p>
+
             </div>
+
+
+            <button
+                type="button"
+                class="selector-uso__simple-boton"
+                id="btnWhatsappAyuda"
+            >
+
+                <i class="bi bi-whatsapp"></i>
+
+                Hablar por WhatsApp
+
+                <i class="bi bi-arrow-up-right"></i>
+
+            </button>
+
         </div>
+
     </div>
+
 </section>
 
 {% endblock %}
 
+
+
 {% block extra_js %}
+
 <script src="{% static 'core/js/categorias.js' %}"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const tarjetasVideo =
+        document.querySelectorAll(".categoria-video");
+
+
+    /*
+    =========================================================
+    RESTAURAR CARD
+    =========================================================
+    */
+    const restaurarTarjeta = (tarjeta) => {
+
+        const video =
+            tarjeta.querySelector("[data-video]");
+
+        const poster =
+            tarjeta.querySelector("[data-video-poster]");
+
+        const overlay =
+            tarjeta.querySelector("[data-video-overlay]");
+
+        const enlaceProductos =
+            tarjeta.querySelector("[data-productos-link]");
+
+
+        if (!video) {
+            return;
+        }
+
+
+        video.pause();
+        video.currentTime = 0;
+        video.controls = false;
+
+        video.classList.remove(
+            "is-visible"
+        );
+
+
+        tarjeta.classList.remove(
+            "video-reproduciendo",
+            "video-finalizado"
+        );
+
+
+        if (poster) {
+
+            poster.classList.remove(
+                "is-hidden"
+            );
+
+        }
+
+
+        if (overlay) {
+
+            overlay.classList.remove(
+                "is-hidden"
+            );
+
+        }
+
+
+        if (enlaceProductos) {
+
+            enlaceProductos.hidden = true;
+
+            enlaceProductos.classList.remove(
+                "is-visible"
+            );
+
+        }
+
+    };
+
+
+
+    /*
+    =========================================================
+    CONFIGURAR CADA VIDEO
+    =========================================================
+    */
+    tarjetasVideo.forEach((tarjeta) => {
+
+        const video =
+            tarjeta.querySelector("[data-video]");
+
+        const poster =
+            tarjeta.querySelector("[data-video-poster]");
+
+        const overlay =
+            tarjeta.querySelector("[data-video-overlay]");
+
+        const botonesPlay =
+            tarjeta.querySelectorAll("[data-video-play]");
+
+        const enlaceProductos =
+            tarjeta.querySelector("[data-productos-link]");
+
+
+        if (!video) {
+            return;
+        }
+
+
+
+        /*
+        =====================================================
+        REPRODUCIR VIDEO
+        =====================================================
+        */
+        const reproducirVideo = () => {
+
+            tarjetasVideo.forEach(
+                (otraTarjeta) => {
+
+                    if (otraTarjeta !== tarjeta) {
+
+                        restaurarTarjeta(
+                            otraTarjeta
+                        );
+
+                    }
+
+                }
+            );
+
+
+            tarjeta.classList.remove(
+                "video-finalizado"
+            );
+
+            tarjeta.classList.add(
+                "video-reproduciendo"
+            );
+
+
+            if (poster) {
+
+                poster.classList.add(
+                    "is-hidden"
+                );
+
+            }
+
+
+            if (overlay) {
+
+                overlay.classList.add(
+                    "is-hidden"
+                );
+
+            }
+
+
+            if (enlaceProductos) {
+
+                enlaceProductos.hidden = true;
+
+                enlaceProductos.classList.remove(
+                    "is-visible"
+                );
+
+            }
+
+
+            video.classList.add(
+                "is-visible"
+            );
+
+            video.controls = false;
+            video.currentTime = 0;
+
+
+            const promesa =
+                video.play();
+
+
+            if (promesa !== undefined) {
+
+                promesa.catch(() => {
+
+                    video.controls = true;
+
+                });
+
+            }
+
+        };
+
+
+
+        /*
+        =====================================================
+        BOTONES PLAY
+        =====================================================
+        */
+        botonesPlay.forEach((boton) => {
+
+            boton.addEventListener(
+                "click",
+                reproducirVideo
+            );
+
+        });
+
+
+
+        /*
+        =====================================================
+        VIDEO FINALIZADO
+        =====================================================
+        */
+        video.addEventListener(
+            "ended",
+            () => {
+
+                tarjeta.classList.remove(
+                    "video-reproduciendo"
+                );
+
+                tarjeta.classList.add(
+                    "video-finalizado"
+                );
+
+
+                if (enlaceProductos) {
+
+                    enlaceProductos.hidden = false;
+
+
+                    requestAnimationFrame(() => {
+
+                        enlaceProductos.classList.add(
+                            "is-visible"
+                        );
+
+                    });
+
+                }
+
+            }
+        );
+
+
+
+        /*
+        =====================================================
+        PAUSAR / REANUDAR
+        =====================================================
+        */
+        video.addEventListener(
+            "click",
+            () => {
+
+                if (video.ended) {
+                    return;
+                }
+
+
+                if (video.paused) {
+
+                    const promesa =
+                        video.play();
+
+
+                    if (promesa !== undefined) {
+
+                        promesa.catch(() => {
+
+                            video.controls = true;
+
+                        });
+
+                    }
+
+                } else {
+
+                    video.pause();
+
+                }
+
+            }
+        );
+
+    });
+
+
+
+    /*
+    =========================================================
+    WHATSAPP
+    =========================================================
+    */
+
+    const btnWhatsapp =
+        document.getElementById("btnWhatsappAyuda");
+
+
+    if (btnWhatsapp) {
+
+        btnWhatsapp.addEventListener(
+            "click",
+            function () {
+
+                /*
+                 * Agrega aquí el número oficial
+                 * de WhatsApp de Audex.
+                 *
+                 * Ejemplo:
+                 *
+                 * const numero = "56912345678";
+                 */
+                const numero = "";
+
+
+                const mensaje =
+                    "Hola, necesito asesoría para elegir un producto EarFun en Audex.";
+
+
+                if (!numero) {
+
+                    console.warn(
+                        "Debes configurar el número de WhatsApp de Audex."
+                    );
+
+                    return;
+
+                }
+
+
+                const url =
+                    "https://wa.me/" +
+                    numero +
+                    "?text=" +
+                    encodeURIComponent(mensaje);
+
+
+                window.open(
+                    url,
+                    "_blank",
+                    "noopener,noreferrer"
+                );
+
+            }
+        );
+
+    }
+
+});
+</script>
+
 {% endblock %}

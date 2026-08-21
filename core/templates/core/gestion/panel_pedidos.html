@@ -16,7 +16,7 @@ Gestión de pedidos | Audex
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/panel_pedidos.css' %}?v=2"
+    href="{% static 'core/css/panel_pedidos.css' %}?v=3"
 >
 
 {% endblock %}
@@ -27,6 +27,7 @@ Gestión de pedidos | Audex
 <section class="gestion-pedidos">
 
     <div class="contenedor gestion-pedidos__contenedor">
+
 
         <!-- =====================================================
              CABECERA
@@ -44,9 +45,11 @@ Gestión de pedidos | Audex
 
                 </span>
 
+
                 <h1>
                     Gestión de pedidos
                 </h1>
+
 
                 <p>
                     Controla las ventas confirmadas desde
@@ -106,13 +109,13 @@ Gestión de pedidos | Audex
 
         <div class="gestion-resumen">
 
+
             <!-- NUEVOS -->
 
             <a
                 href="?bandeja=nuevos"
                 class="
                     gestion-resumen__tarjeta
-
                     {% if bandeja_actual == 'nuevos' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
@@ -136,7 +139,6 @@ Gestión de pedidos | Audex
                 href="?bandeja=operacion"
                 class="
                     gestion-resumen__tarjeta
-
                     {% if bandeja_actual == 'operacion' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
@@ -160,7 +162,6 @@ Gestión de pedidos | Audex
                 href="?bandeja=despacho"
                 class="
                     gestion-resumen__tarjeta
-
                     {% if bandeja_actual == 'despacho' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
@@ -184,7 +185,6 @@ Gestión de pedidos | Audex
                 href="?bandeja=finalizados"
                 class="
                     gestion-resumen__tarjeta
-
                     {% if bandeja_actual == 'finalizados' %}
                         gestion-resumen__tarjeta--activa
                     {% endif %}
@@ -209,6 +209,7 @@ Gestión de pedidos | Audex
         ====================================================== -->
 
         <div class="gestion-alertas">
+
 
             <!-- =================================================
                  PAGOS PENDIENTES RECIENTES
@@ -270,10 +271,6 @@ Gestión de pedidos | Audex
 
             {% elif total_pendientes_pago > 0 %}
 
-                <!-- =============================================
-                     SOLO PENDIENTES ANTIGUOS
-                ============================================== -->
-
                 <a
                     href="?bandeja=pendientes"
                     class="gestion-pendientes"
@@ -291,6 +288,7 @@ Gestión de pedidos | Audex
                         <strong>
                             Historial de pagos pendientes
                         </strong>
+
 
                         <span>
 
@@ -368,6 +366,7 @@ Gestión de pedidos | Audex
 
             <section class="gestion-listado">
 
+
                 <!-- =================================================
                      CABECERA BANDEJA
                 ================================================== -->
@@ -418,6 +417,7 @@ Gestión de pedidos | Audex
 
                         <div class="pedido-admin-item">
 
+
                             <!-- =========================================
                                  DETALLE DEL PEDIDO
                             ========================================== -->
@@ -426,6 +426,7 @@ Gestión de pedidos | Audex
                                 href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
                                 class="pedido-admin-fila"
                             >
+
 
                                 <!-- PEDIDO -->
 
@@ -484,17 +485,109 @@ Gestión de pedidos | Audex
                                 </div>
 
 
-                                <!-- UNIDADES -->
+                                <!-- =====================================
+                                     PRODUCTO PRINCIPAL
+                                ====================================== -->
 
                                 <div class="pedido-admin-fila__productos">
 
                                     <span>
-                                        Unidades
+                                        Productos
                                     </span>
 
-                                    <strong>
-                                        {{ pedido.total_unidades|default:0 }}
-                                    </strong>
+                                    {% with primer_item=pedido.items.all.0 %}
+
+                                        {% if primer_item %}
+
+                                            <div class="pedido-admin-producto">
+
+
+                                                <!-- IMAGEN -->
+
+                                                <div class="pedido-admin-producto__imagen">
+
+                                                    {% if primer_item.producto and primer_item.producto.imagen_mostrable %}
+
+                                                        <img
+                                                            src="{{ primer_item.producto.imagen_mostrable }}"
+                                                            alt="{{ primer_item.nombre_producto }}"
+                                                            loading="lazy"
+                                                        >
+
+                                                    {% elif primer_item.producto and primer_item.producto.imagen %}
+
+                                                        <img
+                                                            src="{{ primer_item.producto.imagen.url }}"
+                                                            alt="{{ primer_item.nombre_producto }}"
+                                                            loading="lazy"
+                                                        >
+
+                                                    {% else %}
+
+                                                        <i class="bi bi-image"></i>
+
+                                                    {% endif %}
+
+                                                </div>
+
+
+                                                <!-- INFORMACIÓN -->
+
+                                                <div class="pedido-admin-producto__info">
+
+                                                    <strong class="pedido-admin-producto__nombre">
+
+                                                        {{ primer_item.nombre_producto }}
+
+                                                    </strong>
+
+
+                                                    <span class="pedido-admin-producto__cantidad">
+
+                                                        × {{ primer_item.cantidad }}
+
+                                                    </span>
+
+
+                                                    {% if pedido.items.count > 1 %}
+
+                                                        <small class="pedido-admin-producto__mas">
+
+                                                            +{{ pedido.items.count|add:"-1" }}
+
+                                                            producto{{ pedido.items.count|add:"-1"|pluralize }}
+
+                                                            más
+
+                                                        </small>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <small class="pedido-admin-producto__unidades-total">
+
+                                                {{ pedido.total_unidades|default:0 }}
+
+                                                unidad{{ pedido.total_unidades|default:0|pluralize }}
+
+                                                en total
+
+                                            </small>
+
+
+                                        {% else %}
+
+                                            <strong>
+                                                Sin productos
+                                            </strong>
+
+                                        {% endif %}
+
+                                    {% endwith %}
 
                                 </div>
 
@@ -582,7 +675,12 @@ Gestión de pedidos | Audex
 
                                     {% elif pedido.bsale_ultimo_error %}
 
-                                        <span class="pedido-admin-boleta pedido-admin-boleta--error">
+                                        <span
+                                            class="
+                                                pedido-admin-boleta
+                                                pedido-admin-boleta--error
+                                            "
+                                        >
 
                                             <i class="bi bi-exclamation-triangle"></i>
 
@@ -714,6 +812,7 @@ Gestión de pedidos | Audex
 
                     <section class="bandeja-pedidos">
 
+
                         <!-- =========================================
                              CABECERA
                         ========================================== -->
@@ -753,6 +852,7 @@ Gestión de pedidos | Audex
                                         class="tarjeta-pedido-admin"
                                     >
 
+
                                         <!-- SUPERIOR -->
 
                                         <div class="tarjeta-pedido-admin__superior">
@@ -779,15 +879,105 @@ Gestión de pedidos | Audex
                                         </h3>
 
 
-                                        <!-- UNIDADES -->
+                                        <!-- =================================
+                                             PRODUCTO PRINCIPAL
+                                        ================================== -->
 
-                                        <p>
+                                        {% with primer_item=pedido.items.all.0 %}
 
-                                            {{ pedido.total_unidades|default:0 }}
+                                            {% if primer_item %}
 
-                                            unidad{{ pedido.total_unidades|default:0|pluralize }}
+                                                <div class="tarjeta-pedido-admin__producto">
 
-                                        </p>
+
+                                                    <!-- IMAGEN -->
+
+                                                    <div class="tarjeta-pedido-admin__producto-imagen">
+
+                                                        {% if primer_item.producto and primer_item.producto.imagen_mostrable %}
+
+                                                            <img
+                                                                src="{{ primer_item.producto.imagen_mostrable }}"
+                                                                alt="{{ primer_item.nombre_producto }}"
+                                                                loading="lazy"
+                                                            >
+
+                                                        {% elif primer_item.producto and primer_item.producto.imagen %}
+
+                                                            <img
+                                                                src="{{ primer_item.producto.imagen.url }}"
+                                                                alt="{{ primer_item.nombre_producto }}"
+                                                                loading="lazy"
+                                                            >
+
+                                                        {% else %}
+
+                                                            <i class="bi bi-image"></i>
+
+                                                        {% endif %}
+
+                                                    </div>
+
+
+                                                    <!-- INFORMACIÓN -->
+
+                                                    <div class="tarjeta-pedido-admin__producto-info">
+
+                                                        <span class="tarjeta-pedido-admin__producto-nombre">
+
+                                                            {{ primer_item.nombre_producto }}
+
+                                                        </span>
+
+
+                                                        <strong class="tarjeta-pedido-admin__producto-cantidad">
+
+                                                            × {{ primer_item.cantidad }}
+
+                                                        </strong>
+
+
+                                                        {% if pedido.items.count > 1 %}
+
+                                                            <small class="tarjeta-pedido-admin__producto-mas">
+
+                                                                +{{ pedido.items.count|add:"-1" }}
+
+                                                                producto{{ pedido.items.count|add:"-1"|pluralize }}
+
+                                                                más
+
+                                                            </small>
+
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                <p class="tarjeta-pedido-admin__unidades">
+
+                                                    {{ pedido.total_unidades|default:0 }}
+
+                                                    unidad{{ pedido.total_unidades|default:0|pluralize }}
+
+                                                    en total
+
+                                                </p>
+
+
+                                            {% else %}
+
+                                                <p class="tarjeta-pedido-admin__unidades">
+
+                                                    Sin productos
+
+                                                </p>
+
+                                            {% endif %}
+
+                                        {% endwith %}
 
 
                                         <!-- PIE -->
@@ -829,6 +1019,7 @@ Gestión de pedidos | Audex
                                             <i class="bi bi-download"></i>
 
                                         </a>
+
 
                                     {% elif pedido.bsale_emitido and pedido.bsale_url_publica %}
 

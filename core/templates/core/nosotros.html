@@ -12,227 +12,236 @@ Nosotros | Audex
 >
 {% endblock %}
 
+
 {% block content %}
 
+<!-- =========================================================
+     HERO / PRESENTACIÓN DE AUDEX
+========================================================= -->
+
 <section class="nosotros-hero">
+
     <div class="contenedor nosotros-hero__contenido">
+
+        <!-- =================================================
+             TEXTO
+        ================================================== -->
+
         <div class="nosotros-hero__texto">
+
             <span class="etiqueta-seccion">
-                Nuestra historia
+                Nosotros
             </span>
 
             <h1>
-                Tecnología que se escucha.
-                <span>Experiencias que se sienten.</span>
+                Audex.
+                <span>
+                    Especialistas<br>
+                    en EarFun.
+                </span>
             </h1>
 
             <p>
-                Audex nace para acercar productos de audio modernos,
-                confiables y fáciles de usar a personas que valoran
-                la calidad y el diseño.
+                Somos una tienda de audio enfocada exclusivamente
+                en productos EarFun.
             </p>
 
-            <a href="#historia" class="boton boton--primario">
-                Conócenos
-                <i class="bi bi-arrow-down"></i>
+            <p>
+                Nuestro objetivo es ofrecer una experiencia de compra
+                simple, clara y segura, ayudándote a encontrar el modelo
+                que mejor se adapte a tu forma de escuchar.
+            </p>
+
+            <a
+                href="{% url 'core:productos' %}"
+                class="boton boton--primario"
+            >
+                Ver productos
+
+                <i class="bi bi-arrow-right"></i>
             </a>
+
         </div>
+
+
+        <!-- =================================================
+             VISUAL HERO
+             Imagen centrada dentro de circunferencias
+        ================================================== -->
 
         <div class="nosotros-hero__visual">
-            <div class="onda onda--1"></div>
-            <div class="onda onda--2"></div>
-            <div class="onda onda--3"></div>
 
-            <div class="nosotros-hero__logo">
-                <div class="logo__simbolo">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
+            <div class="nosotros-hero__circulos">
+
+                <!-- Círculo exterior -->
+                <span
+                    class="nosotros-circulo
+                           nosotros-circulo--1"
+                    aria-hidden="true"
+                ></span>
+
+                <!-- Círculo medio -->
+                <span
+                    class="nosotros-circulo
+                           nosotros-circulo--2"
+                    aria-hidden="true"
+                ></span>
+
+                <!-- Círculo interior -->
+                <span
+                    class="nosotros-circulo
+                           nosotros-circulo--3"
+                    aria-hidden="true"
+                ></span>
+
+
+                <!-- Imagen central -->
+                <div class="nosotros-hero__imagen-central">
+
+                    <img
+                        src="{% static 'core/img/LogoAudex9.png' %}"
+                        alt="Audex"
+                        class="nosotros-hero__imagen"
+                        loading="eager"
+                    >
+
                 </div>
 
-                <strong>Audex</strong>
-                <small>Contigo a todas</small>
             </div>
+
         </div>
+
     </div>
+
 </section>
 
-<section class="historia" id="historia">
+
+
+<!-- =========================================================
+     QUÉ ES AUDEX
+========================================================= -->
+
+<section class="historia">
+
     <div class="contenedor historia__grid">
 
-        <div class="historia__imagen">
-            <img
-                src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=80"
-                alt="Audífonos y tecnología de audio"
-            >
 
-            <div class="historia__dato">
-                <strong>2026</strong>
-                <span>Comienza nuestra historia</span>
+        <!-- =================================================
+             IMAGEN AUDEX + EARFUN
+        ================================================== -->
+
+        <div class="historia__visual">
+
+            <div class="historia__imagen">
+
+                <img
+                    src="{% static 'core/img/LogoAudex8.png' %}"
+                    alt="Audex y EarFun"
+                    class="historia__imagen-logo"
+                    loading="lazy"
+                >
+
             </div>
+
         </div>
 
+
+        <!-- =================================================
+             INFORMACIÓN
+        ================================================== -->
+
         <div class="historia__contenido">
+
             <span class="etiqueta-seccion">
-                Quiénes somos
+                Qué es Audex
             </span>
 
             <h2>
-                Más que audífonos:
-                una mejor forma de escuchar.
+                Una tienda especializada
+                en una sola marca.
             </h2>
 
             <p>
-                En Audex seleccionamos productos de audio que combinan
-                innovación, comodidad y rendimiento.
+                En Audex trabajamos únicamente con EarFun porque creemos
+                en su propuesta de tecnología, diseño y rendimiento.
             </p>
 
             <p>
-                Nuestro objetivo es simplificar la elección del cliente,
-                entregando información clara, asesoría cercana y una
-                experiencia de compra segura.
+                Queremos que elegir tus próximos audífonos sea fácil.
+                Por eso mostramos cada producto de forma clara y te
+                ayudamos a comparar las opciones disponibles.
             </p>
+
+
+            <!-- =============================================
+                 PUNTOS PRINCIPALES
+            ============================================== -->
 
             <div class="historia__puntos">
-                <article>
-                    <i class="bi bi-headphones"></i>
 
-                    <div>
-                        <h3>Productos seleccionados</h3>
-                        <p>
-                            Modelos EarFun elegidos por calidad,
-                            autonomía y facilidad de uso.
-                        </p>
+                <article class="historia__punto">
+
+                    <div class="historia__punto-icono">
+
+                        <i class="bi bi-headphones"></i>
+
                     </div>
+
+                    <div class="historia__punto-contenido">
+
+                        <h3>
+                            Solo EarFun
+                        </h3>
+
+                        <p>
+                            Un catálogo enfocado exclusivamente
+                            en productos de la marca.
+                        </p>
+
+                    </div>
+
                 </article>
 
-                <article>
-                    <i class="bi bi-chat-heart"></i>
 
-                    <div>
-                        <h3>Atención cercana</h3>
-                        <p>
-                            Ayudamos a cada cliente a escoger
-                            según sus necesidades.
-                        </p>
+                <article class="historia__punto">
+
+                    <div class="historia__punto-icono">
+
+                        <i class="bi bi-chat-heart"></i>
+
                     </div>
+
+                    <div class="historia__punto-contenido">
+
+                        <h3>
+                            Compra informada
+                        </h3>
+
+                        <p>
+                            Información clara para ayudarte
+                            a elegir el modelo adecuado.
+                        </p>
+
+                    </div>
+
                 </article>
+
             </div>
+
         </div>
 
     </div>
-</section>
 
-<section class="valores">
-    <div class="contenedor">
-        <div class="valores__encabezado">
-            <span class="etiqueta-seccion">
-                Lo que nos mueve
-            </span>
-
-            <h2>Nuestros valores</h2>
-        </div>
-
-        <div class="valores__grid">
-
-            <article class="valor-card">
-                <i class="bi bi-stars"></i>
-                <h3>Innovación</h3>
-
-                <p>
-                    Buscamos soluciones modernas que mejoren
-                    la experiencia diaria.
-                </p>
-            </article>
-
-            <article class="valor-card">
-                <i class="bi bi-shield-check"></i>
-                <h3>Confianza</h3>
-
-                <p>
-                    Información transparente, compra segura
-                    y respaldo en cada etapa.
-                </p>
-            </article>
-
-            <article class="valor-card">
-                <i class="bi bi-person-heart"></i>
-                <h3>Cercanía</h3>
-
-                <p>
-                    Escuchamos al cliente antes de recomendar
-                    cualquier producto.
-                </p>
-            </article>
-
-            <article class="valor-card">
-                <i class="bi bi-soundwave"></i>
-                <h3>Calidad</h3>
-
-                <p>
-                    Seleccionamos productos que ofrecen buen sonido,
-                    comodidad y durabilidad.
-                </p>
-            </article>
-
-        </div>
-    </div>
-</section>
-
-<section class="metricas">
-    <div class="contenedor metricas__grid">
-        <article>
-            <strong data-contador="500">0</strong>
-            <span>Clientes proyectados</span>
-        </article>
-
-        <article>
-            <strong data-contador="12">0</strong>
-            <span>Modelos seleccionados</span>
-        </article>
-
-        <article>
-            <strong data-contador="100">0</strong>
-            <span>Compromiso con el cliente</span>
-        </article>
-
-        <article>
-            <strong data-contador="24">0</strong>
-            <span>Horas de respuesta máxima</span>
-        </article>
-    </div>
-</section>
-
-<section class="contacto-nosotros">
-    <div class="contenedor contacto-nosotros__contenido">
-        <div>
-            <span class="etiqueta-seccion">
-                Hablemos
-            </span>
-
-            <h2>¿Necesitas ayuda para elegir?</h2>
-
-            <p>
-                Cuéntanos cómo usas tus audífonos y te ayudaremos
-                a encontrar el modelo más conveniente.
-            </p>
-        </div>
-
-        <a
-            href="https://wa.me/56900000000"
-            target="_blank"
-            class="boton boton--primario"
-        >
-            Contactar por WhatsApp
-            <i class="bi bi-whatsapp"></i>
-        </a>
-    </div>
 </section>
 
 {% endblock %}
 
+
+
 {% block extra_js %}
-<script src="{% static 'core/js/nosotros.js' %}"></script>
+
+<script
+    src="{% static 'core/js/nosotros.js' %}"
+></script>
+
 {% endblock %}

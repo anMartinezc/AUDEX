@@ -1,6 +1,6 @@
 /* ==========================================================================
    AUDEX
-   OFERTAS V17
+   OFERTAS V18
    ========================================================================== */
 
 
@@ -2031,8 +2031,13 @@ article > strong {
 
     display: grid;
 
+    /*
+     * V18:
+     * Se aumenta la columna del beneficio para que montos como
+     * "$29 000 CLP" entren completamente sin desbordarse.
+     */
     grid-template-columns:
-        155px
+        180px
         minmax(0, 1fr);
 
     overflow: hidden;
@@ -2082,9 +2087,11 @@ article > strong {
 .ofertas-meta-card__beneficio {
     min-width: 0;
 
+    width: 100%;
+
     padding:
         20px
-        11px;
+        8px;
 
     display: flex;
 
@@ -2112,6 +2119,7 @@ article > strong {
     width: 100%;
 
     min-width: 0;
+    max-width: 100%;
 
     margin: 0;
 
@@ -2146,21 +2154,45 @@ article > strong {
 }
 
 
+/*
+ * MONTOS FIJOS CLP
+ *
+ * Mantiene el monto completo en una sola línea dentro del
+ * recuadro celeste.
+ *
+ * Ejemplo:
+ * $29 000 CLP
+ */
 .ofertas-meta-card__valor--clp {
+    width: 100%;
+
+    min-width: 0;
+    max-width: 100%;
+
+    display: block;
+
     font-size:
         clamp(
-            1.15rem,
-            1.7vw,
-            1.55rem
+            1.05rem,
+            1.45vw,
+            1.35rem
         );
 
-    letter-spacing: -0.045em;
+    font-weight: 900;
+
+    line-height: 1.05;
+
+    letter-spacing: -0.055em;
 
     white-space: nowrap;
+
+    text-align: center;
 }
 
 
 .ofertas-meta-card__beneficio > span {
+    width: 100%;
+
     color:
         rgba(6, 16, 23, 0.74);
 
@@ -2169,6 +2201,8 @@ article > strong {
     font-weight: 800;
 
     line-height: 1.25;
+
+    text-align: center;
 }
 
 
@@ -2302,9 +2336,83 @@ article > strong {
 }
 
 
+.ofertas-meta-card__estado--utilizado {
+    color: var(--of-gris);
+
+    border-color:
+        rgba(255, 255, 255, 0.08);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+
+.ofertas-meta-card__estado--utilizado i {
+    color: var(--of-gris);
+}
+
+
+.ofertas-meta-card__estado--vencido {
+    color: var(--of-amarillo);
+
+    border-color:
+        rgba(247, 216, 138, 0.16);
+
+    background:
+        rgba(247, 216, 138, 0.045);
+}
+
+
+.ofertas-meta-card__estado--vencido i {
+    color: var(--of-amarillo);
+}
+
+
+.ofertas-meta-card__estado--desactivado {
+    color: var(--of-rojo);
+
+    border-color:
+        rgba(255, 127, 137, 0.16);
+
+    background:
+        rgba(255, 127, 137, 0.045);
+}
+
+
+.ofertas-meta-card__estado--desactivado i {
+    color: var(--of-rojo);
+}
+
+
+.ofertas-meta-card__estado--alcanzada {
+    color: var(--of-celeste);
+
+    border-color:
+        rgba(131, 216, 243, 0.16);
+
+    background:
+        rgba(54, 169, 214, 0.045);
+}
+
+
 .ofertas-meta-card
 .ofertas-copiar {
     width: 100%;
+}
+
+
+.ofertas-copiar--bloqueado {
+    color: var(--of-gris-2);
+
+    border-color:
+        rgba(255, 255, 255, 0.07);
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    cursor: not-allowed;
+
+    opacity: 0.7;
 }
 
 
@@ -2349,7 +2457,7 @@ article > strong {
 
 
 /* ==========================================================================
-   PRODUCTOS - GRID NUEVO
+   PRODUCTOS - GRID
    ========================================================================== */
 
 .ofertas-productos-grid {
@@ -3298,6 +3406,32 @@ article > strong {
 
 
 /* ==========================================================================
+   ADMIN - BOTÓN DE COMPRA BLOQUEADO
+   ========================================================================== */
+
+.oferta-producto-card__comprar--admin {
+    color: var(--of-gris-2) !important;
+
+    cursor: not-allowed !important;
+
+    border:
+        1px
+        solid
+        rgba(255, 255, 255, 0.07) !important;
+
+    background:
+        rgba(255, 255, 255, 0.045) !important;
+
+    opacity: 0.72;
+}
+
+
+.oferta-producto-card__comprar--admin i {
+    color: var(--of-gris-2);
+}
+
+
+/* ==========================================================================
    SIN PROMOCIONES
    ========================================================================== */
 
@@ -3433,13 +3567,6 @@ article > strong {
     margin: 0;
 
     color: var(--of-gris);
-
-    line-height: 1.65;
-}
-
-
-.ofertas-vacias .boton {
-    margin-top:(--of-gris);
 
     line-height: 1.65;
 }
@@ -3636,7 +3763,7 @@ article > strong {
 
     .ofertas-meta-card {
         grid-template-columns:
-            155px
+            180px
             minmax(0, 1fr);
     }
 
@@ -3989,9 +4116,11 @@ article > strong {
         font-size:
             clamp(
                 1.75rem,
-                9vw,
-                2.45rem
+                8vw,
+                2.35rem
             );
+
+        letter-spacing: -0.045em;
     }
 
 
@@ -4165,6 +4294,18 @@ article > strong {
 
     .superofertas-clp__controles {
         flex-wrap: wrap;
+    }
+
+
+    .ofertas-meta-card__valor--clp {
+        font-size:
+            clamp(
+                1.55rem,
+                7.8vw,
+                2.1rem
+            );
+
+        white-space: nowrap;
     }
 
 

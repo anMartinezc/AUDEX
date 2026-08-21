@@ -1,0 +1,108 @@
+{% load humanize %}
+
+AUDEX
+NOTIFICACIÓN ADMINISTRATIVA
+
+NUEVA COMPRA CONFIRMADA
+=======================
+
+Se confirmó correctamente una nueva venta en Audex.
+El pedido ya puede continuar con su proceso de preparación y despacho.
+
+
+RESUMEN DE LA VENTA
+-------------------
+
+Número de pedido:
+{{ pedido.numero }}
+
+Total de la venta:
+${{ pedido.total|floatformat:0|intcomma }}
+
+
+CLIENTE
+-------
+
+Nombre:
+{{ pedido.nombre_completo }}
+
+Correo:
+{{ pedido.email }}
+
+
+INFORMACIÓN DEL PAGO
+--------------------
+
+Método de pago:
+{{ pedido.get_metodo_pago_display }}
+
+Fecha de pago:
+{% if pedido.fecha_pago %}{{ pedido.fecha_pago|date:"d/m/Y H:i" }}{% else %}Confirmado{% endif %}
+
+
+PRODUCTOS VENDIDOS
+------------------
+
+{% for item in items %}
+{{ item.nombre_producto }}
+Cantidad: {{ item.cantidad }}
+Precio unitario: ${{ item.precio_unitario|floatformat:0|intcomma }}
+Total: ${{ item.total|floatformat:0|intcomma }}
+
+{% empty %}
+No se encontraron productos asociados al pedido.
+
+{% endfor %}
+
+
+TOTALES
+-------
+
+Subtotal:
+${{ pedido.subtotal|floatformat:0|intcomma }}
+
+{% if pedido.descuento > 0 %}
+Descuento:
+-${{ pedido.descuento|floatformat:0|intcomma }}
+
+{% endif %}
+Despacho:
+{% if pedido.despacho > 0 %}${{ pedido.despacho|floatformat:0|intcomma }}{% else %}Gratis{% endif %}
+
+TOTAL PAGADO:
+${{ pedido.total|floatformat:0|intcomma }}
+
+
+DIRECCIÓN DE DESPACHO
+---------------------
+
+{{ pedido.nombre_completo }}
+{{ pedido.direccion_completa }}
+
+{% if pedido.referencia %}
+Referencia:
+{{ pedido.referencia }}
+
+{% endif %}
+
+
+GESTIONAR PEDIDO
+----------------
+
+Puedes revisar y gestionar este pedido desde:
+
+{{ url_pedido }}
+
+
+IMPORTANTE
+----------
+
+Este pedido ya tiene el pago confirmado y requiere continuar
+con el proceso de preparación y despacho.
+
+
+Audex
+Notificación administrativa
+
+Este mensaje fue enviado automáticamente porque se confirmó
+una nueva compra asociada al pedido {{ pedido.numero }}.

@@ -1,0 +1,417 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Correo electrónico | Audex{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/cuenta.css' %}?v=4">
+
+<style>
+    .cuenta-login__acciones {
+        margin-top: 24px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .cuenta-login__enlace {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 48px;
+        padding: 0 18px;
+        color: var(--color-azul-claro);
+        font-size: 0.8rem;
+        font-weight: 800;
+        border: 1px solid var(--borde-azul);
+        border-radius: 14px;
+        background: rgba(54, 169, 214, 0.07);
+        transition:
+            color var(--transicion),
+            border-color var(--transicion),
+            background var(--transicion),
+            transform var(--transicion);
+    }
+
+    .cuenta-login__enlace:hover {
+        color: var(--color-blanco);
+        border-color: rgba(54, 169, 214, 0.55);
+        background: rgba(54, 169, 214, 0.14);
+        transform: translateY(-2px);
+    }
+
+    .cuenta-login__mensaje {
+        margin: 22px 0 0;
+        padding: 16px 18px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        color: var(--color-gris-claro);
+        font-size: 0.78rem;
+        line-height: 1.6;
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.025);
+    }
+
+    .cuenta-login__mensaje i {
+        margin-top: 2px;
+        color: var(--color-azul-claro);
+        font-size: 1rem;
+    }
+
+    .cuenta-login__mensaje--error {
+        border-color: rgba(255, 91, 101, 0.28);
+        background: rgba(255, 91, 101, 0.07);
+    }
+
+    .cuenta-login__mensaje--error i {
+        color: #ff9ca4;
+    }
+
+    .cuenta-formulario__errores {
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        color: #ffb3ba;
+        font-size: 0.76rem;
+        line-height: 1.55;
+        border: 1px solid rgba(255, 91, 101, 0.28);
+        border-radius: 14px;
+        background: rgba(255, 91, 101, 0.07);
+    }
+
+    .cuenta-formulario__errores ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .cuenta-listado {
+        margin-top: 22px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .cuenta-listado__item {
+        padding: 16px;
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.025);
+    }
+
+    .cuenta-listado__fila {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cuenta-listado__fila input[type="radio"] {
+        accent-color: var(--color-azul-claro);
+    }
+
+    .cuenta-listado__correo {
+        color: var(--color-blanco);
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .cuenta-badges {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .cuenta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 26px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 0.66rem;
+        font-weight: 800;
+        border: 1px solid var(--borde);
+        color: var(--color-gris-claro);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .cuenta-badge--ok {
+        color: #8af2bb;
+        border-color: rgba(72, 211, 138, 0.3);
+        background: rgba(72, 211, 138, 0.08);
+    }
+
+    .cuenta-badge--warn {
+        color: #ffd48a;
+        border-color: rgba(255, 186, 73, 0.3);
+        background: rgba(255, 186, 73, 0.08);
+    }
+
+    .cuenta-acciones-secundarias {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .cuenta-boton-secundario,
+    .cuenta-boton-peligro {
+        min-height: 44px;
+        padding: 0 14px;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 0.72rem;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .cuenta-boton-secundario {
+        color: var(--color-azul-claro);
+        border: 1px solid var(--borde-azul);
+        background: rgba(54, 169, 214, 0.07);
+    }
+
+    .cuenta-boton-peligro {
+        color: #ffb3ba;
+        border: 1px solid rgba(255, 91, 101, 0.28);
+        background: rgba(255, 91, 101, 0.07);
+    }
+
+    .cuenta-conexion {
+        margin-top: 14px;
+        padding: 16px;
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.025);
+    }
+
+    .cuenta-conexion__cabecera {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cuenta-conexion__icono {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        color: var(--color-azul-claro);
+        font-size: 1.1rem;
+        border: 1px solid var(--borde-azul);
+        border-radius: 12px;
+        background: rgba(54, 169, 214, 0.08);
+    }
+
+    .cuenta-conexion__texto {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+    }
+
+    .cuenta-conexion__texto strong {
+        color: var(--color-blanco);
+        font-size: 0.82rem;
+    }
+
+    .cuenta-conexion__texto span {
+        color: var(--color-gris);
+        font-size: 0.72rem;
+        overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 700px) {
+        .cuenta-acciones-secundarias {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<section class="cuenta-pagina">
+    <div class="contenedor">
+        <div class="cuenta-login">
+            <div class="cuenta-login__visual">
+                <span class="etiqueta-seccion">
+                    <i class="bi bi-envelope-at"></i>
+                    Seguridad de tu cuenta
+                </span>
+
+                <h1>
+                    Administra tu
+                    <span>correo.</span>
+                </h1>
+
+                <p>
+                    Mantén actualizada la dirección asociada a tu cuenta
+                    Audex y verifica los correos que utilices para ingresar.
+                </p>
+
+                <div class="cuenta-login__beneficios">
+                    <div>
+                        <i class="bi bi-shield-check"></i>
+                        <span>Protege el acceso a tu cuenta</span>
+                    </div>
+                    <div>
+                        <i class="bi bi-envelope-check"></i>
+                        <span>Verifica tus direcciones de correo</span>
+                    </div>
+                    <div>
+                        <i class="bi bi-person-check"></i>
+                        <span>Define tu correo principal</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cuenta-login__formulario">
+                <div class="cuenta-login__icono">
+                    <i class="bi bi-envelope-at"></i>
+                </div>
+
+                <span class="cuenta-login__eyebrow">
+                    Configuración de cuenta
+                </span>
+
+                <h2>
+                    Correos asociados
+                </h2>
+
+                <p>
+                    Desde aquí puedes gestionar las direcciones asociadas
+                    a tu cuenta.
+                </p>
+
+                {% if emailaddresses %}
+                    <form method="post" href="/mi-cuenta/perfil/" class="cuenta-formulario">
+                        {% csrf_token %}
+
+                        <div class="cuenta-listado">
+                            {% for radio in emailaddress_radios %}
+                                {% with emailaddress=radio.emailaddress %}
+                                    <label class="cuenta-listado__item" for="{{ radio.id }}">
+                                        <div class="cuenta-listado__fila">
+                                            <input
+                                                type="radio"
+                                                name="email"
+                                                value="{{ emailaddress.email }}"
+                                                id="{{ radio.id }}"
+                                                {% if radio.checked %}checked{% endif %}
+                                            >
+                                            <span class="cuenta-listado__correo">
+                                                {{ emailaddress.email }}
+                                            </span>
+                                        </div>
+
+                                        <div class="cuenta-badges">
+                                            {% if emailaddress.verified %}
+                                                <span class="cuenta-badge cuenta-badge--ok">
+                                                    <i class="bi bi-patch-check-fill"></i>
+                                                    Verificado
+                                                </span>
+                                            {% else %}
+                                                <span class="cuenta-badge cuenta-badge--warn">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    Sin verificar
+                                                </span>
+                                            {% endif %}
+
+                                            {% if emailaddress.primary %}
+                                                <span class="cuenta-badge">
+                                                    <i class="bi bi-star-fill"></i>
+                                                    Principal
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </label>
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="cuenta-acciones-secundarias">
+                            <button type="submit" name="action_primary" class="cuenta-boton-secundario">
+                                Hacer principal
+                            </button>
+
+                            <button type="submit" name="action_send" class="cuenta-boton-secundario">
+                                Reenviar verificación
+                            </button>
+
+                            <button type="submit" name="action_remove" class="cuenta-boton-peligro">
+                                Eliminar
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="cuenta-login__mensaje">
+                        <i class="bi bi-info-circle"></i>
+                        <span>No tienes direcciones de correo asociadas todavía.</span>
+                    </div>
+                {% endif %}
+
+                {% if can_add_email %}
+                    <div class="cuenta-login__separador" style="margin:24px 0;position:relative;text-align:center;">
+                        <span style="color:var(--color-gris);font-size:.68rem;font-weight:800;text-transform:uppercase;">
+                            Agregar correo
+                        </span>
+                    </div>
+
+                    <form method="post" action="{% url 'account_email' %}" class="cuenta-formulario" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="cuenta-formulario__errores">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="cuenta-campo">
+                            <label for="{{ form.email.id_for_label }}">
+                                Nuevo correo electrónico
+                            </label>
+
+                            <div class="cuenta-campo__control">
+                                <i class="bi bi-envelope-plus"></i>
+                                <input
+                                    type="email"
+                                    name="{{ form.email.html_name }}"
+                                    id="{{ form.email.id_for_label }}"
+                                    value="{{ form.email.value|default:'' }}"
+                                    placeholder="nombre@correo.cl"
+                                    autocomplete="email"
+                                    required
+                                >
+                            </div>
+
+                            {% for error in form.email.errors %}
+                                <div class="cuenta-campo__error">
+                                    <span>{{ error }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <button
+                            type="submit"
+                            name="action_add"
+                            class="boton boton--primario boton--completo"
+                        >
+                            Agregar correo
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </form>
+                {% endif %}
+
+                <div class="cuenta-login__acciones">
+                    <a href="/mi-cuenta/perfil/" class="cuenta-login__enlace">
+                        <i class="bi bi-arrow-left"></i>
+                        Volver a mi perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -416,6 +416,489 @@ def categorias(request):
     return render(request, "core/categorias.html")
 
 
+
+
+
+# ======================================================================
+# HELPERS DE FIDELIDAD
+# ======================================================================
+
+
+def _generar_codigo_fidelidad_unico(
+    usuario,
+    meta,
+):
+    """
+    Genera un código único para una recompensa de fidelidad.
+
+    Ejemplo:
+        AUDEXFIEL-12-3-A1B2C3D4
+
+    donde:
+        12 = ID del usuario
+        3  = ID de la meta
+    """
+
+    prefijo = (
+        meta.prefijo_codigo
+        or "AUDEXFIEL"
+    ).strip().upper()
+
+    while True:
+
+        token = (
+            uuid.uuid4()
+            .hex[:8]
+            .upper()
+        )
+
+        codigo = (
+            f"{prefijo}-"
+            f"{usuario.pk}-"
+            f"{meta.pk}-"
+            f"{token}"
+        )
+
+        # El modelo admite máximo 64 caracteres.
+        codigo = codigo[:64]
+
+        existe = (
+            CodigoDescuento.objects
+            .filter(
+                codigo=codigo,
+            )
+            .exists()
+        )
+
+        if not existe:
+            return codigo
+
+
+def _obtener_total_compras_aprobadas(
+    usuario,
+):
+    """
+    Calcula el acumulado REAL del usuario para fidelidad.
+
+    Solamente contabiliza:
+
+    - Pedidos pertenecientes al usuario.
+    - Pago marcado como pagado.
+    - Estado de pago APROBADO.
+    - Mercado Pago o Webpay.
+
+    No contabiliza:
+
+    - Transferencias.
+    - Pagos pendientes.
+    - Pagos iniciados.
+    - Pagos rechazados.
+    - Pagos cancelados.
+    - Pagos reembolsados.
+    - Pagos en revisión.
+    """
+
+    resultado = (
+        Pedido.objects
+        .filter(
+            usuario=usuario,
+            pagado=True,
+            estado_pago=(
+                Pedido
+                .EstadoPago
+                .APROBADO
+            ),
+            metodo_pago__in=[
+                Pedido
+                .MetodoPago
+                .WEBPAY,
+
+                Pedido
+                .MetodoPago
+                .MERCADOPAGO,
+            ],
+        )
+        .aggregate(
+            total=Sum(
+                "total"
+            )
+        )
+    )
+
+    return Decimal(
+        str(
+            resultado["total"]
+            or 0
+        )
+    )
+
+
+@transaction.atomic
+def _sincronizar_fidelidad_usuario(
+    usuario,
+):
+    """
+    Sincroniza completamente la fidelidad del usuario.
+
+    1. Recalcula el histórico usando pedidos realmente aprobados.
+    2. Actualiza SaldoFidelidad.
+    3. Marca como contabilizados los pedidos aprobados.
+    4. Detecta todas las metas alcanzadas.
+    5. Genera una recompensa si la meta nunca fue entregada.
+    6. NO vuelve a generar el código si:
+       - ya fue utilizado;
+       - fue desactivado por administración;
+       - ya existe por cualquier motivo.
+    """
+
+    # ==================================================================
+    # TOTAL REAL PAGADO
+    # ==================================================================
+
+    acumulado = (
+        _obtener_total_compras_aprobadas(
+            usuario
+        )
+    )
+
+    # ==================================================================
+    # SALDO DE FIDELIDAD
+    # ==================================================================
+
+    saldo, _ = (
+        SaldoFidelidad.objects
+        .select_for_update()
+        .get_or_create(
+            usuario=usuario,
+            defaults={
+                "saldo_actual": (
+                    acumulado
+                ),
+                "total_historico": (
+                    acumulado
+                ),
+                "metas_cumplidas": 0,
+            },
+        )
+    )
+
+    # El histórico se reconstruye desde Pedido.
+    #
+    # Así evitamos:
+    # - compras duplicadas;
+    # - acumulados antiguos incorrectos;
+    # - pedidos rechazados contabilizados;
+    # - pedidos reembolsados contabilizados.
+    saldo.total_historico = acumulado
+
+    # Por ahora saldo_actual representa también
+    # lo acumulado vigente para las metas.
+    saldo.saldo_actual = acumulado
+
+    # ==================================================================
+    # MARCAR PEDIDOS VÁLIDOS COMO CONTABILIZADOS
+    # ==================================================================
+
+    (
+        Pedido.objects
+        .filter(
+            usuario=usuario,
+            pagado=True,
+            estado_pago=(
+                Pedido
+                .EstadoPago
+                .APROBADO
+            ),
+            metodo_pago__in=[
+                Pedido
+                .MetodoPago
+                .WEBPAY,
+
+                Pedido
+                .MetodoPago
+                .MERCADOPAGO,
+            ],
+            fidelidad_contabilizada=False,
+        )
+        .update(
+            fidelidad_contabilizada=True
+        )
+    )
+
+    # Si un pedido dejó de ser válido
+    # (por ejemplo, reembolsado),
+    # dejamos consistente el indicador.
+    (
+        Pedido.objects
+        .filter(
+            usuario=usuario,
+            fidelidad_contabilizada=True,
+        )
+        .exclude(
+            pagado=True,
+            estado_pago=(
+                Pedido
+                .EstadoPago
+                .APROBADO
+            ),
+            metodo_pago__in=[
+                Pedido
+                .MetodoPago
+                .WEBPAY,
+
+                Pedido
+                .MetodoPago
+                .MERCADOPAGO,
+            ],
+        )
+        .update(
+            fidelidad_contabilizada=False
+        )
+    )
+
+    # ==================================================================
+    # METAS ACTIVAS
+    # ==================================================================
+
+    metas = list(
+        MetaFidelidad.objects
+        .filter(
+            activa=True,
+        )
+        .order_by(
+            "monto_objetivo",
+            "orden",
+            "pk",
+        )
+    )
+
+    # ==================================================================
+    # GENERAR RECOMPENSAS
+    # ==================================================================
+
+    for numero_meta, meta in enumerate(
+        metas,
+        start=1,
+    ):
+
+        objetivo = Decimal(
+            str(
+                meta.monto_objetivo
+                or 0
+            )
+        )
+
+        if objetivo <= 0:
+            continue
+
+        if acumulado < objetivo:
+            continue
+
+        # --------------------------------------------------------------
+        # MUY IMPORTANTE
+        #
+        # Buscamos el código aunque:
+        #
+        # - esté consumido;
+        # - esté desactivado;
+        # - esté vencido.
+        #
+        # Si existe, NO generamos otro.
+        #
+        # Así el administrador puede bloquearlo simplemente
+        # colocando activo=False.
+        #
+        # Y si el cliente ya lo utilizó, consumido=True evita
+        # que vuelva a recibir la recompensa.
+        # --------------------------------------------------------------
+
+        codigo_existente = (
+            CodigoDescuento.objects
+            .filter(
+                tipo=(
+                    CodigoDescuento
+                    .Tipo
+                    .FIDELIDAD
+                ),
+                usuario_exclusivo=usuario,
+                meta_fidelidad=meta,
+            )
+            .first()
+        )
+
+        if codigo_existente:
+            continue
+
+        ahora = timezone.now()
+
+        fecha_fin = (
+            ahora
+            + timezone.timedelta(
+                days=meta.vigencia_dias
+            )
+        )
+
+        datos_codigo = {
+            "tipo": (
+                CodigoDescuento
+                .Tipo
+                .FIDELIDAD
+            ),
+
+            "usuario_exclusivo": (
+                usuario
+            ),
+
+            "meta_fidelidad": (
+                meta
+            ),
+
+            "numero_meta": (
+                numero_meta
+            ),
+
+            "nombre": (
+                f"Premio fidelidad - "
+                f"{meta.nombre}"
+            ),
+
+            "codigo": (
+                _generar_codigo_fidelidad_unico(
+                    usuario,
+                    meta,
+                )
+            ),
+
+            "descripcion": (
+                f"Premio desbloqueado al "
+                f"alcanzar ${meta.monto_objetivo:,.0f} "
+                f"en compras aprobadas."
+            ),
+
+            "activo": True,
+
+            "consumido": False,
+
+            "modalidad": (
+                meta.modalidad
+            ),
+
+            "monto_minimo": (
+                meta.monto_minimo_compra
+                or Decimal("0")
+            ),
+
+            "fecha_inicio": (
+                ahora
+            ),
+
+            "fecha_fin": (
+                fecha_fin
+            ),
+        }
+
+        # --------------------------------------------------------------
+        # PREMIO PORCENTUAL
+        # --------------------------------------------------------------
+
+        if (
+            meta.modalidad
+            == MetaFidelidad
+            .Modalidad
+            .PORCENTAJE
+        ):
+
+            datos_codigo.update(
+                {
+                    "porcentaje": (
+                        meta.porcentaje
+                    ),
+
+                    "monto_descuento": (
+                        None
+                    ),
+
+                    "monto_maximo_descuento": (
+                        meta
+                        .monto_maximo_descuento
+                    ),
+                }
+            )
+
+        # --------------------------------------------------------------
+        # PREMIO MONTO FIJO
+        # --------------------------------------------------------------
+
+        else:
+
+            datos_codigo.update(
+                {
+                    "porcentaje": (
+                        None
+                    ),
+
+                    "monto_descuento": (
+                        meta.monto_descuento
+                    ),
+
+                    "monto_maximo_descuento": (
+                        None
+                    ),
+                }
+            )
+
+        CodigoDescuento.objects.create(
+            **datos_codigo
+        )
+
+    # ==================================================================
+    # CANTIDAD HISTÓRICA DE PREMIOS GENERADOS
+    # ==================================================================
+
+    #
+    # Aquí NO filtramos activo=True ni consumido=False.
+    #
+    # Si ya recibió un premio, sigue siendo una meta históricamente
+    # cumplida aunque:
+    #
+    # - haya usado el código;
+    # - el administrador lo haya desactivado;
+    # - el código haya vencido.
+    #
+
+    total_premios_generados = (
+        CodigoDescuento.objects
+        .filter(
+            tipo=(
+                CodigoDescuento
+                .Tipo
+                .FIDELIDAD
+            ),
+            usuario_exclusivo=usuario,
+        )
+        .count()
+    )
+
+    saldo.metas_cumplidas = (
+        total_premios_generados
+    )
+
+    saldo.save(
+        update_fields=[
+            "saldo_actual",
+            "total_historico",
+            "metas_cumplidas",
+            "actualizado",
+        ]
+    )
+
+    return saldo
+
+
+# ======================================================================
+# OFERTAS
+# ======================================================================
+
 @ensure_csrf_cookie
 def ofertas(request):
     """
@@ -428,16 +911,10 @@ def ofertas(request):
     - Códigos generales porcentuales.
     - Códigos generales de monto fijo en CLP.
     - Todas las metas activas del programa de fidelidad.
-    - Progreso del usuario hacia cada meta.
+    - Progreso real del usuario utilizando solamente compras
+      aprobadas por Mercado Pago o Webpay.
     - Próxima recompensa del usuario.
-    - Todos los códigos personales disponibles del usuario,
-      tanto porcentuales como de monto fijo.
-
-    El estado "oculto" utilizado en administración es solamente
-    visual para el administrador y no afecta esta página.
-
-    Para el cliente solamente importa que el código/meta esté
-    activo y vigente.
+    - Códigos personales disponibles.
     """
 
     ahora = timezone.now()
@@ -516,7 +993,8 @@ def ofertas(request):
     mayor_descuento = max(
         (
             producto.porcentaje_oferta
-            for producto in productos_oferta
+            for producto
+            in productos_oferta
         ),
         default=0,
     )
@@ -524,7 +1002,8 @@ def ofertas(request):
     mayor_stock = max(
         (
             producto.stock_oferta
-            for producto in productos_oferta
+            for producto
+            in productos_oferta
         ),
         default=1,
     )
@@ -634,7 +1113,7 @@ def ofertas(request):
     )
 
     # ==================================================================
-    # MARCAR CÓDIGOS GENERALES YA UTILIZADOS POR EL USUARIO
+    # CÓDIGOS GENERALES UTILIZADOS
     # ==================================================================
 
     codigos_generales = [
@@ -720,7 +1199,7 @@ def ofertas(request):
     )
 
     # ==================================================================
-    # METAS ACTIVAS DE FIDELIDAD
+    # METAS ACTIVAS
     # ==================================================================
 
     metas_fidelidad = list(
@@ -740,43 +1219,87 @@ def ofertas(request):
     )
 
     # ==================================================================
-    # FIDELIDAD DEL USUARIO
+    # FIDELIDAD
     # ==================================================================
 
     fidelidad = None
-
     codigos_personales = []
 
     if request.user.is_authenticated:
 
-        saldo = (
-            SaldoFidelidad.objects
-            .filter(
-                usuario=request.user,
-            )
-            .first()
+        # --------------------------------------------------------------
+        # CLAVE DEL CLIENTE
+        # --------------------------------------------------------------
+
+        cliente_clave = (
+            f"USER:{request.user.pk}"
         )
 
         # --------------------------------------------------------------
-        # ACUMULADO HISTÓRICO
-        #
-        # Las metas dependen de todo lo comprado históricamente,
-        # no de una configuración fija anterior.
+        # SINCRONIZAR CON LOS PEDIDOS REALES
         # --------------------------------------------------------------
+
+        saldo = (
+            _sincronizar_fidelidad_usuario(
+                request.user
+            )
+        )
 
         acumulado = Decimal(
             str(
                 saldo.total_historico
-                if saldo
-                else 0
+                or 0
             )
         )
 
         # --------------------------------------------------------------
-        # TODOS LOS CÓDIGOS PERSONALES DEL CLIENTE
+        # CÓDIGOS DE FIDELIDAD YA UTILIZADOS
         #
-        # IMPORTANTE:
-        # ahora incluimos porcentaje Y monto fijo.
+        # Un código será considerado utilizado si existe un registro
+        # CONFIRMADO en UsoCodigoDescuento para este usuario.
+        #
+        # Esto evita depender exclusivamente del campo "consumido"
+        # del CodigoDescuento.
+        # --------------------------------------------------------------
+
+        codigos_fidelidad_usados = set(
+            UsoCodigoDescuento.objects
+            .filter(
+                cliente_clave=cliente_clave,
+                estado=(
+                    UsoCodigoDescuento
+                    .Estado
+                    .CONFIRMADO
+                ),
+                codigo__tipo=(
+                    CodigoDescuento
+                    .Tipo
+                    .FIDELIDAD
+                ),
+                codigo__usuario_exclusivo=(
+                    request.user
+                ),
+            )
+            .values_list(
+                "codigo_id",
+                flat=True,
+            )
+        )
+
+        # --------------------------------------------------------------
+        # CÓDIGOS PERSONALES DISPONIBLES
+        #
+        # Primero obtenemos los códigos que potencialmente podrían
+        # utilizarse y después excluimos cualquier código que tenga
+        # un UsoCodigoDescuento CONFIRMADO.
+        #
+        # Solo mostramos los que:
+        #
+        # - pertenecen al usuario;
+        # - siguen activos;
+        # - todavía no fueron consumidos;
+        # - no tienen uso confirmado;
+        # - siguen vigentes.
         # --------------------------------------------------------------
 
         codigos_personales = list(
@@ -792,6 +1315,11 @@ def ofertas(request):
                 ),
                 activo=True,
                 consumido=False,
+            )
+            .exclude(
+                pk__in=(
+                    codigos_fidelidad_usados
+                )
             )
             .filter(
                 Q(
@@ -842,17 +1370,65 @@ def ofertas(request):
         )
 
         # --------------------------------------------------------------
-        # CÓDIGOS GENERADOS POR META
+        # TODOS LOS CÓDIGOS GENERADOS POR META
+        #
+        # IMPORTANTE:
+        #
+        # Aquí consultamos también:
+        #
+        # - códigos consumidos;
+        # - códigos desactivados;
+        # - códigos vencidos;
+        #
+        # Esto es necesario para saber si una meta ya entregó su
+        # premio anteriormente y mostrar correctamente su estado.
         # --------------------------------------------------------------
 
-        codigos_por_meta = {
-            codigo.meta_fidelidad_id: codigo
-            for codigo in codigos_personales
-            if codigo.meta_fidelidad_id
-        }
+        todos_codigos_meta = (
+            CodigoDescuento.objects
+            .filter(
+                tipo=(
+                    CodigoDescuento
+                    .Tipo
+                    .FIDELIDAD
+                ),
+                usuario_exclusivo=(
+                    request.user
+                ),
+                meta_fidelidad__isnull=False,
+            )
+            .select_related(
+                "meta_fidelidad"
+            )
+            .order_by(
+                "meta_fidelidad_id",
+                "-creado",
+                "-pk",
+            )
+        )
 
         # --------------------------------------------------------------
-        # PROGRESO EN CADA META
+        # CÓDIGO MÁS RECIENTE DE CADA META
+        #
+        # Como el queryset está ordenado por meta y luego por creación
+        # descendente, solamente guardamos el primer código encontrado
+        # para cada meta.
+        # --------------------------------------------------------------
+
+        codigos_por_meta = {}
+
+        for codigo in todos_codigos_meta:
+
+            if (
+                codigo.meta_fidelidad_id
+                not in codigos_por_meta
+            ):
+                codigos_por_meta[
+                    codigo.meta_fidelidad_id
+                ] = codigo
+
+        # --------------------------------------------------------------
+        # PROGRESO POR META
         # --------------------------------------------------------------
 
         for meta in metas_fidelidad:
@@ -893,13 +1469,93 @@ def ofertas(request):
             )
 
             meta.alcanzada_cliente = (
-                acumulado
-                >= objetivo
+                acumulado >= objetivo
+            )
+
+            codigo_meta = (
+                codigos_por_meta.get(
+                    meta.pk
+                )
             )
 
             meta.codigo_personal_cliente = (
-                codigos_por_meta.get(
-                    meta.pk
+                codigo_meta
+            )
+
+            # ----------------------------------------------------------
+            # DETERMINAR SI EL CÓDIGO YA FUE UTILIZADO
+            #
+            # Consideramos utilizado cuando:
+            #
+            # 1. CodigoDescuento.consumido == True
+            #
+            # O
+            #
+            # 2. Existe UsoCodigoDescuento CONFIRMADO.
+            #
+            # La segunda condición protege frente a posibles estados
+            # desincronizados del campo "consumido".
+            # ----------------------------------------------------------
+
+            codigo_utilizado = bool(
+                codigo_meta
+                and (
+                    codigo_meta.consumido
+                    or (
+                        codigo_meta.pk
+                        in codigos_fidelidad_usados
+                    )
+                )
+            )
+
+            # ----------------------------------------------------------
+            # CÓDIGO DISPONIBLE
+            # ----------------------------------------------------------
+
+            meta.codigo_disponible_cliente = (
+                bool(
+                    codigo_meta
+                    and codigo_meta.activo
+                    and not codigo_utilizado
+                    and codigo_meta.vigente
+                )
+            )
+
+            # ----------------------------------------------------------
+            # CÓDIGO YA UTILIZADO
+            # ----------------------------------------------------------
+
+            meta.codigo_consumido_cliente = (
+                codigo_utilizado
+            )
+
+            # ----------------------------------------------------------
+            # CÓDIGO DESACTIVADO
+            #
+            # Si ya fue utilizado, priorizamos el estado "utilizado"
+            # por sobre "desactivado".
+            # ----------------------------------------------------------
+
+            meta.codigo_desactivado_cliente = (
+                bool(
+                    codigo_meta
+                    and not codigo_meta.activo
+                    and not codigo_utilizado
+                )
+            )
+
+            # ----------------------------------------------------------
+            # CÓDIGO VENCIDO
+            #
+            # Estado adicional útil para el template.
+            # ----------------------------------------------------------
+
+            meta.codigo_vencido_cliente = (
+                bool(
+                    codigo_meta
+                    and codigo_meta.activo
+                    and not codigo_utilizado
+                    and not codigo_meta.vigente
                 )
             )
 
@@ -911,20 +1567,19 @@ def ofertas(request):
 
         for meta in metas_fidelidad:
 
-            if (
-                Decimal(
-                    str(
-                        meta.monto_objetivo
-                        or 0
-                    )
+            objetivo = Decimal(
+                str(
+                    meta.monto_objetivo
+                    or 0
                 )
-                > acumulado
-            ):
+            )
+
+            if objetivo > acumulado:
                 proxima_meta = meta
                 break
 
         # --------------------------------------------------------------
-        # CONTEXTO RESUMEN DE FIDELIDAD
+        # RESUMEN
         # --------------------------------------------------------------
 
         if proxima_meta:
@@ -955,8 +1610,6 @@ def ofertas(request):
 
                 "metas_cumplidas": (
                     saldo.metas_cumplidas
-                    if saldo
-                    else 0
                 ),
 
                 "todas_alcanzadas": (
@@ -971,26 +1624,18 @@ def ofertas(request):
                     acumulado
                 ),
 
-                "meta": (
-                    None
-                ),
+                "meta": None,
 
-                "monto_objetivo": (
-                    None
-                ),
+                "monto_objetivo": None,
 
                 "faltante": (
                     Decimal("0")
                 ),
 
-                "progreso": (
-                    100
-                ),
+                "progreso": 100,
 
                 "metas_cumplidas": (
                     saldo.metas_cumplidas
-                    if saldo
-                    else 0
                 ),
 
                 "todas_alcanzadas": (
@@ -1005,10 +1650,7 @@ def ofertas(request):
     # ==================================================================
 
     contexto = {
-        # --------------------------------------------------------------
         # PRODUCTOS
-        # --------------------------------------------------------------
-
         "productos_oferta": (
             productos_oferta
         ),
@@ -1025,10 +1667,7 @@ def ofertas(request):
             hero_producto
         ),
 
-        # --------------------------------------------------------------
         # CÓDIGOS GENERALES
-        # --------------------------------------------------------------
-
         "codigos_generales": (
             codigos_generales
         ),
@@ -1061,10 +1700,7 @@ def ofertas(request):
             campana_vence_en
         ),
 
-        # --------------------------------------------------------------
         # FIDELIDAD
-        # --------------------------------------------------------------
-
         "programa_fidelidad_activo": (
             programa_fidelidad_activo
         ),
@@ -1095,14 +1731,6 @@ def ofertas(request):
         "core/ofertas.html",
         contexto,
     )
-
-
-
-
-
-
-
-
 
 
 def nosotros(request):

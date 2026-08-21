@@ -16,7 +16,7 @@ Mis compras | Audex
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/mis_compras.css' %}?v=2"
+    href="{% static 'core/css/mis_compras.css' %}?v=4"
 >
 
 {% endblock %}
@@ -29,21 +29,23 @@ Mis compras | Audex
     <div class="contenedor">
 
         <!-- =====================================================
-             CABECERA
+             CABECERA PRINCIPAL
         ====================================================== -->
 
-        <header class="pedidos-cabecera">
+        <header class="mis-compras-hero">
 
-            <div>
+            <div class="mis-compras-hero__contenido">
 
                 <span class="etiqueta-seccion">
                     <i class="bi bi-bag-check"></i>
                     Mi cuenta
                 </span>
 
+
                 <h1>
                     Mis compras
                 </h1>
+
 
                 <p>
                     Revisa tus compras,
@@ -54,99 +56,166 @@ Mis compras | Audex
             </div>
 
 
-            <a
-                href="{% url 'core:seguimiento_pedido' %}"
-                class="boton boton--secundario"
-            >
-                <i class="bi bi-search"></i>
-                Buscar pedido
-            </a>
+            <div class="mis-compras-hero__acciones">
+
+                <a
+                    href="{% url 'core:seguimiento_pedido' %}"
+                    class="boton boton--secundario"
+                >
+                    <i class="bi bi-search"></i>
+
+                    Buscar pedido
+                </a>
+
+            </div>
 
         </header>
 
 
         <!-- =====================================================
-             RESUMEN
-        ====================================================== -->
-
-        <div class="mis-compras__seccion-cabecera">
-
-            <span class="mis-compras__contador">
-
-                {{ total_compras }}
-
-                compra{{ total_compras|pluralize }}
-
-            </span>
-
-        </div>
-
-
-        <!-- =====================================================
-             FILTROS
+             BARRA DE CONTROL
         ====================================================== -->
 
         {% if total_compras > 0 %}
 
-            <nav
-                class="pedidos-filtros"
-                aria-label="Filtrar compras por estado"
-            >
+            <div class="mis-compras-controles">
 
-                <a
-                    href="{% url 'core:mis_compras' %}"
-                    class="
-                        {% if not estado_actual %}
-                            activo
-                        {% endif %}
-                    "
+                <!-- =============================================
+                     RESUMEN
+                ============================================== -->
+
+                <div class="mis-compras-controles__superior">
+
+                    <div>
+
+                        <span class="mis-compras-controles__eyebrow">
+                            Historial
+                        </span>
+
+
+                        <h2>
+                            Tus pedidos confirmados
+                        </h2>
+
+
+                        <p>
+                            Filtra tus compras según el estado
+                            actual del pedido.
+                        </p>
+
+                    </div>
+
+
+                    <span class="mis-compras__contador">
+
+                        {{ total_compras }}
+
+                        compra{{ total_compras|pluralize }}
+
+                    </span>
+
+                </div>
+
+
+                <!-- =============================================
+                     FILTROS
+                ============================================== -->
+
+                <nav
+                    class="pedidos-filtros mis-compras-filtros"
+                    aria-label="Filtrar compras por estado"
                 >
-                    Todas
-                </a>
-
-
-                {% for valor, etiqueta in estados %}
 
                     <a
-                        href="?estado={{ valor|urlencode }}"
+                        href="{% url 'core:mis_compras' %}"
                         class="
-                            {% if estado_actual == valor %}
+                            {% if not estado_actual %}
                                 activo
                             {% endif %}
                         "
                     >
-                        {{ etiqueta }}
+                        Todas
                     </a>
 
-                {% endfor %}
 
-            </nav>
+                    {% for valor, etiqueta in estados %}
 
-        {% endif %}
+                        <a
+                            href="?estado={{ valor|urlencode }}"
+                            class="
+                                {% if estado_actual == valor %}
+                                    activo
+                                {% endif %}
+                            "
+                        >
+                            {{ etiqueta }}
+                        </a>
 
+                    {% endfor %}
 
-        <!-- =====================================================
-             INFORMACIÓN DEL FILTRO
-        ====================================================== -->
-
-        {% if estado_actual and total_compras > 0 %}
-
-            <div class="mis-compras__filtro-info">
-
-                <span>
-                    Mostrando:
-
-                    <strong>
-                        {{ etiqueta_estado_actual }}
-                    </strong>
-                </span>
+                </nav>
 
 
-                <span>
-                    {{ total_filtrados }}
+                <!-- =============================================
+                     INFORMACIÓN FILTRO ACTUAL
+                ============================================== -->
 
-                    resultado{{ total_filtrados|pluralize }}
-                </span>
+                {% if estado_actual %}
+
+                    <div class="mis-compras__filtro-info">
+
+                        <span>
+
+                            Mostrando:
+
+                            <strong>
+                                {{ etiqueta_estado_actual }}
+                            </strong>
+
+                        </span>
+
+
+                        <span>
+
+                            {{ total_filtrados }}
+
+                            resultado{{ total_filtrados|pluralize }}
+
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        {% else %}
+
+            <div class="mis-compras-controles mis-compras-controles--vacio">
+
+                <div class="mis-compras-controles__superior">
+
+                    <div>
+
+                        <span class="mis-compras-controles__eyebrow">
+                            Historial
+                        </span>
+
+
+                        <h2>
+                            Tus compras aparecerán aquí
+                        </h2>
+
+
+                        <p>
+                            Cuando realices una compra
+                            y su pago sea confirmado,
+                            podrás consultarla desde esta sección.
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -174,6 +243,7 @@ Mis compras | Audex
                             <span>
                                 Número de pedido
                             </span>
+
 
                             <h2>
                                 {{ pedido.numero }}
@@ -206,6 +276,7 @@ Mis compras | Audex
                                 Compra realizada
                             </span>
 
+
                             <strong>
                                 {{ pedido.creado|date:"d/m/Y" }}
                             </strong>
@@ -218,6 +289,7 @@ Mis compras | Audex
                             <span>
                                 Unidades
                             </span>
+
 
                             <strong>
                                 {{ pedido.total_unidades|default:0 }}
@@ -232,6 +304,7 @@ Mis compras | Audex
                                 Total
                             </span>
 
+
                             <strong>
                                 ${{ pedido.total|floatformat:0|intcomma }}
                             </strong>
@@ -244,6 +317,7 @@ Mis compras | Audex
                             <span>
                                 Pago
                             </span>
+
 
                             <strong class="pedido-historial__pago-aprobado">
 
@@ -266,39 +340,108 @@ Mis compras | Audex
 
                         {% for item in pedido.items.all|slice:":3" %}
 
-                            <span class="pedido-producto-chip">
+                            <div class="pedido-producto-chip">
 
-                                <span class="pedido-producto-chip__nombre">
-                                    {{ item.nombre_producto }}
-                                </span>
+                                <!-- =====================================
+                                     IMAGEN
+                                ====================================== -->
 
-                                <strong class="pedido-producto-chip__cantidad">
-                                    × {{ item.cantidad }}
-                                </strong>
+                                <div class="pedido-producto-chip__imagen">
 
-                            </span>
+                                    {% if item.producto and item.producto.imagen_mostrable %}
+
+                                        <img
+                                            src="{{ item.producto.imagen_mostrable }}"
+                                            alt="{{ item.nombre_producto }}"
+                                            loading="lazy"
+                                        >
+
+                                    {% elif item.producto and item.producto.imagen %}
+
+                                        <img
+                                            src="{{ item.producto.imagen.url }}"
+                                            alt="{{ item.nombre_producto }}"
+                                            loading="lazy"
+                                        >
+
+                                    {% else %}
+
+                                        <div class="pedido-producto-chip__sin-imagen">
+
+                                            <i class="bi bi-image"></i>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     INFORMACIÓN
+                                ====================================== -->
+
+                                <div class="pedido-producto-chip__info">
+
+                                    <span class="pedido-producto-chip__nombre">
+
+                                        {{ item.nombre_producto }}
+
+                                    </span>
+
+
+                                    <strong class="pedido-producto-chip__cantidad">
+
+                                        × {{ item.cantidad }}
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
 
                         {% endfor %}
 
 
+                        <!-- =============================================
+                             MÁS PRODUCTOS
+                        ============================================== -->
+
                         {% if pedido.items.count > 3 %}
 
-                            <span class="pedido-producto-chip">
+                            <div
+                                class="
+                                    pedido-producto-chip
+                                    pedido-producto-chip--mas
+                                "
+                            >
 
-                                <strong class="pedido-producto-chip__cantidad">
+                                <div class="pedido-producto-chip__mas-icono">
 
-                                    +{{ pedido.items.count|add:"-3" }}
+                                    <i class="bi bi-plus-lg"></i>
 
-                                </strong>
+                                </div>
 
-                                <span class="pedido-producto-chip__nombre">
 
-                                    producto{{ pedido.items.count|add:"-3"|pluralize }}
-                                    más
+                                <div class="pedido-producto-chip__info">
 
-                                </span>
+                                    <strong class="pedido-producto-chip__cantidad">
 
-                            </span>
+                                        +{{ pedido.items.count|add:"-3" }}
+
+                                    </strong>
+
+
+                                    <span class="pedido-producto-chip__nombre">
+
+                                        producto{{ pedido.items.count|add:"-3"|pluralize }}
+                                        más
+
+                                    </span>
+
+                                </div>
+
+                            </div>
 
                         {% endif %}
 
@@ -326,7 +469,7 @@ Mis compras | Audex
 
 
                         <!-- =============================================
-                             BOLETA BSALE
+                             BOLETA
                         ============================================== -->
 
                         {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
@@ -345,6 +488,7 @@ Mis compras | Audex
                                 <i class="bi bi-box-arrow-up-right"></i>
                             </a>
 
+
                         {% elif pedido.bsale_emitido and pedido.bsale_url_publica %}
 
                             <a
@@ -359,6 +503,7 @@ Mis compras | Audex
                                 Ver boleta
                             </a>
 
+
                         {% elif pedido.bsale_ultimo_error %}
 
                             <span
@@ -369,6 +514,7 @@ Mis compras | Audex
 
                                 Boleta en proceso
                             </span>
+
 
                         {% else %}
 
@@ -395,8 +541,10 @@ Mis compras | Audex
                             <i class="bi bi-file-earmark-check"></i>
 
                             <span>
+
                                 Boleta electrónica
                                 N.º {{ pedido.bsale_folio }}
+
                             </span>
 
                         </div>
@@ -416,9 +564,11 @@ Mis compras | Audex
 
                     <i class="bi {{ vacio.icono }}"></i>
 
+
                     <h2>
                         {{ vacio.titulo }}
                     </h2>
+
 
                     <p>
                         {{ vacio.mensaje }}
@@ -435,6 +585,7 @@ Mis compras | Audex
 
                             Ver todas mis compras
                         </a>
+
 
                     {% else %}
 
@@ -474,6 +625,7 @@ Mis compras | Audex
                             rel="prev"
                         >
                             <i class="bi bi-arrow-left"></i>
+
                             Anterior
                         </a>
 
@@ -484,6 +636,7 @@ Mis compras | Audex
                             rel="prev"
                         >
                             <i class="bi bi-arrow-left"></i>
+
                             Anterior
                         </a>
 
@@ -544,5 +697,16 @@ Mis compras | Audex
     </div>
 
 </section>
+
+
+
+{% block extra_js %}
+
+<script
+    src="{% static 'core/js/mis_compras.js' %}?v=1"
+    defer
+></script>
+
+{% endblock %}
 
 {% endblock %}

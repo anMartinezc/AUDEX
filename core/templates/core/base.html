@@ -35,7 +35,7 @@
     <link
         rel="icon"
         type="image/png"
-        href="{% static 'core/img/favicon.png' %}"
+        href="{% static 'core/img/LogoAudex10.png' %}"
     >
 
     <link
@@ -165,36 +165,7 @@
 
 <body>
 
-    <!-- =====================================================
-         BARRA PROMOCIONAL
-    ====================================================== -->
 
-    <div class="topbar">
-
-        <div class="contenedor topbar__contenido">
-
-            <p>
-                <i class="bi bi-truck"></i>
-                Despacho gratis por compras superiores a $50.000
-            </p>
-
-            <div class="topbar__links">
-
-                <a href="#">
-                    <i class="bi bi-shield-check"></i>
-                    Compra segura
-                </a>
-
-                <a href="#">
-                    <i class="bi bi-headset"></i>
-                    Soporte
-                </a>
-
-            </div>
-
-        </div>
-
-    </div>
 
 
     <!-- =====================================================
@@ -208,30 +179,21 @@
     <div class="contenedor header__contenido">
 
         <!-- =====================================================
-             LOGO
+             LOGO AUDEX
         ====================================================== -->
 
         <a
             href="{% url 'core:inicio' %}"
-            class="logo"
+            class="logo logo--imagen"
             aria-label="Ir al inicio de Audex"
         >
-            <div
-                class="logo__simbolo"
-                aria-hidden="true"
+            <img
+                src="{% static 'core/img/LogoAudex14.png' %}"
+                alt="Audex"
+                class="logo__imagen"
             >
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-
-            <div class="logo__texto">
-                <strong>Audex</strong>
-                <small>Contigo a todas</small>
-            </div>
         </a>
+
 
         {% with url_actual=request.resolver_match.url_name %}
 
@@ -243,6 +205,11 @@
                 class="nav-principal"
                 aria-label="Navegación principal"
             >
+
+                <!-- =============================================
+                     INICIO
+                ============================================== -->
+
                 <a
                     href="{% url 'core:inicio' %}"
                     class="
@@ -254,6 +221,11 @@
                 >
                     Inicio
                 </a>
+
+
+                <!-- =============================================
+                     PRODUCTOS
+                ============================================== -->
 
                 <a
                     href="{% url 'core:productos' %}"
@@ -267,6 +239,11 @@
                     Productos
                 </a>
 
+
+                <!-- =============================================
+                     CATEGORÍAS
+                ============================================== -->
+
                 <a
                     href="{% url 'core:categorias' %}"
                     class="
@@ -278,6 +255,11 @@
                 >
                     Categorías
                 </a>
+
+
+                <!-- =============================================
+                     OFERTAS
+                ============================================== -->
 
                 <a
                     href="{% url 'core:ofertas' %}"
@@ -291,6 +273,11 @@
                     Ofertas
                 </a>
 
+
+                <!-- =============================================
+                     NOSOTROS
+                ============================================== -->
+
                 <a
                     href="{% url 'core:nosotros' %}"
                     class="
@@ -303,17 +290,17 @@
                     Nosotros
                 </a>
 
-                <!-- =============================================
-                     CUENTA
-                ============================================== -->
 
-                {% if request.user.is_authenticated %}
+                <!-- =================================================
+                     USUARIO AUTENTICADO NORMAL
+                ================================================== -->
+
+                {% if request.user.is_authenticated and not request.user.is_staff %}
 
                     <a
                         href="{% url 'core:mis_compras' %}"
                         class="
                             nav-principal__link
-                            nav-principal__link--cuenta
                             {% if url_actual == 'mis_compras' %}
                                 activo
                             {% endif %}
@@ -322,330 +309,340 @@
                         Mis compras
                     </a>
 
-                    <a
-                        href="{% url 'core:mi_perfil' %}"
-                        class="
-                            nav-principal__link
-                            nav-principal__link--cuenta
-                            {% if url_actual == 'mi_perfil' %}
-                                activo
-                            {% endif %}
-                        "
-                    >
-                        Mi perfil
-                    </a>
-
-                {% else %}
-
-                    <a
-                        href="{% url 'core:seguimiento_pedido' %}"
-                        class="
-                            nav-principal__link
-                            nav-principal__link--cuenta
-                            {% if url_actual == 'seguimiento_pedido' or url_actual == 'seguimiento_pedido_numero' %}
-                                activo
-                            {% endif %}
-                        "
-                    >
-                        Seguir pedido
-                    </a>
-
                 {% endif %}
 
-                <!-- =============================================
-                     MENÚ DE GESTIÓN
-                ============================================== -->
+
+                <!-- =================================================
+                     GESTIÓN
+                     SOLO ADMINISTRADORES
+                ================================================== -->
 
                 {% if request.user.is_staff %}
-<div
-    id="navGestion"
-    class="
-        nav-gestion
-        {% if url_actual == 'panel_pedidos' or url_actual == 'panel_pedido_detalle' or url_actual == 'analisis_ventas' or url_actual == 'analisis_stock' or url_actual == 'gestion_descuentos' %}
-            nav-gestion--activo
-        {% endif %}
-    "
-    style="
-        position: relative;
-        z-index: 5100;
-    "
->
-    <button
-        type="button"
-        id="gestionMenuBoton"
-        class="
-            nav-principal__link
-            nav-gestion__boton
-        "
-        aria-haspopup="menu"
-        aria-expanded="false"
-        aria-controls="gestionMenu"
-    >
-        <span>Gestión</span>
 
-        <i
-            class="
-                bi
-                bi-chevron-down
-                nav-gestion__flecha
-            "
-            aria-hidden="true"
-        ></i>
-    </button>
+                    <div
+                        id="navGestion"
+                        class="
+                            nav-gestion
 
-    <div
-        id="gestionMenu"
-        class="nav-gestion__menu"
-        role="menu"
-        aria-labelledby="gestionMenuBoton"
-        aria-hidden="true"
-        style="
-            display: none;
-            position: absolute;
-            top: calc(100% + 18px);
-            right: 0;
-            z-index: 5200;
-            width: 340px;
-            max-width: calc(100vw - 32px);
-        "
-    >
-        <div class="nav-gestion__encabezado">
-            <span>
-                Panel administrativo
-            </span>
+                            {% if url_actual == 'panel_pedidos' or url_actual == 'panel_pedido_detalle' or url_actual == 'analisis_ventas' or url_actual == 'analisis_stock' or url_actual == 'gestion_descuentos' %}
+                                nav-gestion--activo
+                            {% endif %}
+                        "
+                        style="
+                            position: relative;
+                            z-index: 5100;
+                        "
+                    >
 
-            <strong>
-                Gestión Audex
-            </strong>
-        </div>
+                        <button
+                            type="button"
+                            id="gestionMenuBoton"
+                            class="
+                                nav-principal__link
+                                nav-gestion__boton
+                            "
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                            aria-controls="gestionMenu"
+                        >
 
-        <div class="nav-gestion__opciones">
+                            <span>
+                                Gestión
+                            </span>
 
-            <!-- =================================================
-                 PEDIDOS
-            ================================================== -->
+                            <i
+                                class="
+                                    bi
+                                    bi-chevron-down
+                                    nav-gestion__flecha
+                                "
+                                aria-hidden="true"
+                            ></i>
 
-            <a
-                href="{% url 'core:panel_pedidos' %}"
-                role="menuitem"
-                class="
-                    nav-gestion__opcion
-                    {% if url_actual == 'panel_pedidos' or url_actual == 'panel_pedido_detalle' %}
-                        activo
-                    {% endif %}
-                "
-            >
-                <span class="nav-gestion__icono">
-                    <i
-                        class="bi bi-bag-check"
-                        aria-hidden="true"
-                    ></i>
-                </span>
+                        </button>
 
-                <span class="nav-gestion__texto">
-                    <strong>
-                        Pedidos
-                    </strong>
 
-                    <small>
-                        Revisar compras y estados
-                    </small>
-                </span>
+                        <div
+                            id="gestionMenu"
+                            class="nav-gestion__menu"
+                            role="menu"
+                            aria-labelledby="gestionMenuBoton"
+                            aria-hidden="true"
+                            style="
+                                display: none;
+                                position: absolute;
+                                top: calc(100% + 18px);
+                                right: 0;
+                                z-index: 5200;
+                                width: 340px;
+                                max-width: calc(100vw - 32px);
+                            "
+                        >
 
-                <i
-                    class="
-                        bi
-                        bi-chevron-right
-                        nav-gestion__acceso
-                    "
-                    aria-hidden="true"
-                ></i>
-            </a>
+                            <!-- =====================================
+                                 ENCABEZADO
+                            ====================================== -->
 
-            <!-- =================================================
-                 ANÁLISIS DE VENTAS
-            ================================================== -->
+                            <div class="nav-gestion__encabezado">
 
-            <a
-                href="{% url 'core:analisis_ventas' %}"
-                role="menuitem"
-                class="
-                    nav-gestion__opcion
-                    {% if url_actual == 'analisis_ventas' %}
-                        activo
-                    {% endif %}
-                "
-            >
-                <span class="nav-gestion__icono">
-                    <i
-                        class="bi bi-graph-up-arrow"
-                        aria-hidden="true"
-                    ></i>
-                </span>
+                                <span>
+                                    Panel administrativo
+                                </span>
 
-                <span class="nav-gestion__texto">
-                    <strong>
-                        Análisis de ventas
-                    </strong>
+                                <strong>
+                                    Gestión Audex
+                                </strong>
 
-                    <small>
-                        Ingresos, productos y tendencias
-                    </small>
-                </span>
+                            </div>
 
-                <i
-                    class="
-                        bi
-                        bi-chevron-right
-                        nav-gestion__acceso
-                    "
-                    aria-hidden="true"
-                ></i>
-            </a>
 
-            <!-- =================================================
-                 ANÁLISIS DE STOCK
-            ================================================== -->
+                            <!-- =====================================
+                                 OPCIONES
+                            ====================================== -->
 
-            <a
-                href="{% url 'core:analisis_stock' %}"
-                role="menuitem"
-                class="
-                    nav-gestion__opcion
-                    {% if url_actual == 'analisis_stock' %}
-                        activo
-                    {% endif %}
-                "
-            >
-                <span class="nav-gestion__icono">
-                    <i
-                        class="bi bi-box-seam"
-                        aria-hidden="true"
-                    ></i>
-                </span>
+                            <div class="nav-gestion__opciones">
 
-                <span class="nav-gestion__texto">
-                    <strong>
-                        Análisis de stock
-                    </strong>
 
-                    <small>
-                        Existencias y reposición
-                    </small>
-                </span>
+                                <!-- =================================
+                                     PEDIDOS
+                                ================================== -->
 
-                <i
-                    class="
-                        bi
-                        bi-chevron-right
-                        nav-gestion__acceso
-                    "
-                    aria-hidden="true"
-                ></i>
-            </a>
+                                <a
+                                    href="{% url 'core:panel_pedidos' %}"
+                                    role="menuitem"
+                                    class="
+                                        nav-gestion__opcion
 
-            <!-- =================================================
-                 DESCUENTOS Y FIDELIDAD
-            ================================================== -->
+                                        {% if url_actual == 'panel_pedidos' or url_actual == 'panel_pedido_detalle' %}
+                                            activo
+                                        {% endif %}
+                                    "
+                                >
 
-            <a
-                href="{% url 'core:gestion_descuentos' %}"
-                role="menuitem"
-                class="
-                    nav-gestion__opcion
-                    {% if url_actual == 'gestion_descuentos' %}
-                        activo
-                    {% endif %}
-                "
-            >
-                <span class="nav-gestion__icono">
-                    <i
-                        class="bi bi-ticket-perforated"
-                        aria-hidden="true"
-                    ></i>
-                </span>
+                                    <span class="nav-gestion__icono">
+                                        <i
+                                            class="bi bi-bag-check"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </span>
 
-                <span class="nav-gestion__texto">
-                    <strong>
-                        Descuentos
-                    </strong>
+                                    <span class="nav-gestion__texto">
 
-                    <small>
-                        Códigos, campañas y fidelidad
-                    </small>
-                </span>
+                                        <strong>
+                                            Pedidos
+                                        </strong>
 
-                <i
-                    class="
-                        bi
-                        bi-chevron-right
-                        nav-gestion__acceso
-                    "
-                    aria-hidden="true"
-                ></i>
-            </a>
+                                        <small>
+                                            Revisar compras y estados
+                                        </small>
 
-        </div>
-    </div>
-</div>
+                                    </span>
+
+                                    <i
+                                        class="
+                                            bi
+                                            bi-chevron-right
+                                            nav-gestion__acceso
+                                        "
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </a>
+
+
+                                <!-- =================================
+                                     ANÁLISIS DE VENTAS
+                                ================================== -->
+
+                                <a
+                                    href="{% url 'core:analisis_ventas' %}"
+                                    role="menuitem"
+                                    class="
+                                        nav-gestion__opcion
+
+                                        {% if url_actual == 'analisis_ventas' %}
+                                            activo
+                                        {% endif %}
+                                    "
+                                >
+
+                                    <span class="nav-gestion__icono">
+
+                                        <i
+                                            class="bi bi-graph-up-arrow"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                    </span>
+
+                                    <span class="nav-gestion__texto">
+
+                                        <strong>
+                                            Análisis de ventas
+                                        </strong>
+
+                                        <small>
+                                            Ingresos, productos y tendencias
+                                        </small>
+
+                                    </span>
+
+                                    <i
+                                        class="
+                                            bi
+                                            bi-chevron-right
+                                            nav-gestion__acceso
+                                        "
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </a>
+
+
+                                <!-- =================================
+                                     ANÁLISIS DE STOCK
+                                ================================== -->
+
+                                <a
+                                    href="{% url 'core:analisis_stock' %}"
+                                    role="menuitem"
+                                    class="
+                                        nav-gestion__opcion
+
+                                        {% if url_actual == 'analisis_stock' %}
+                                            activo
+                                        {% endif %}
+                                    "
+                                >
+
+                                    <span class="nav-gestion__icono">
+
+                                        <i
+                                            class="bi bi-box-seam"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                    </span>
+
+                                    <span class="nav-gestion__texto">
+
+                                        <strong>
+                                            Análisis de stock
+                                        </strong>
+
+                                        <small>
+                                            Existencias y reposición
+                                        </small>
+
+                                    </span>
+
+                                    <i
+                                        class="
+                                            bi
+                                            bi-chevron-right
+                                            nav-gestion__acceso
+                                        "
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </a>
+
+
+                                <!-- =================================
+                                     DESCUENTOS
+                                ================================== -->
+
+                                <a
+                                    href="{% url 'core:gestion_descuentos' %}"
+                                    role="menuitem"
+                                    class="
+                                        nav-gestion__opcion
+
+                                        {% if url_actual == 'gestion_descuentos' %}
+                                            activo
+                                        {% endif %}
+                                    "
+                                >
+
+                                    <span class="nav-gestion__icono">
+
+                                        <i
+                                            class="bi bi-ticket-perforated"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                    </span>
+
+                                    <span class="nav-gestion__texto">
+
+                                        <strong>
+                                            Descuentos
+                                        </strong>
+
+                                        <small>
+                                            Códigos, campañas y fidelidad
+                                        </small>
+
+                                    </span>
+
+                                    <i
+                                        class="
+                                            bi
+                                            bi-chevron-right
+                                            nav-gestion__acceso
+                                        "
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 {% endif %}
 
             </nav>
 
+
             <!-- =================================================
-                 ACCIONES DEL HEADER
+                 ACCIONES DERECHA
             ================================================== -->
 
             <div class="header__acciones">
 
-                <!-- BUSCAR -->
 
-                <button
-                    type="button"
-                    class="
-                        boton-icono
-                        boton-buscar
-                    "
-                    id="abrirBusqueda"
-                    aria-label="Abrir búsqueda"
-                    title="Buscar"
-                >
-                    <i
-                        class="bi bi-search"
-                        aria-hidden="true"
-                    ></i>
-                </button>
+                <!-- =================================================
+                     ADMINISTRADOR
+                ================================================== -->
 
-                <!-- FAVORITOS -->
+                {% if request.user.is_authenticated and request.user.is_staff %}
 
-                <a
-                    href="{% url 'core:mis_favoritos' %}"
-                    class="
-                        boton-icono
-                        boton-favoritos
-                        {% if url_actual == 'mis_favoritos' %}
-                            activo
-                        {% endif %}
-                    "
-                    aria-label="Abrir mis favoritos"
-                    title="Mis favoritos"
-                >
-                    {% if url_actual == 'mis_favoritos' %}
+                    <!-- MI PERFIL -->
+
+                    <a
+                        href="{% url 'core:mi_perfil' %}"
+                        class="
+                            boton-icono
+                            boton-perfil
+
+                            {% if url_actual == 'mi_perfil' %}
+                                activo
+                            {% endif %}
+                        "
+                        aria-label="Ver mi perfil"
+                        title="Mi perfil"
+                    >
                         <i
-                            class="bi bi-heart-fill"
+                            class="bi bi-person-circle"
                             aria-hidden="true"
                         ></i>
-                    {% else %}
-                        <i
-                            class="bi bi-heart"
-                            aria-hidden="true"
-                        ></i>
-                    {% endif %}
-                </a>
+                    </a>
 
-                <!-- INICIAR O CERRAR SESIÓN -->
 
-                {% if request.user.is_authenticated %}
+                    <!-- CERRAR SESIÓN -->
 
                     <form
                         method="post"
@@ -655,69 +652,277 @@
                             js-logout-form
                         "
                     >
+
                         {% csrf_token %}
 
                         <button
                             type="submit"
                             class="
                                 boton-icono
-                                boton-cuenta
+                                boton-logout
                             "
                             aria-label="Cerrar sesión"
                             title="Cerrar sesión"
                         >
+
                             <i
                                 class="bi bi-box-arrow-right"
                                 aria-hidden="true"
                             ></i>
+
                         </button>
+
                     </form>
 
+
+                <!-- =================================================
+                     USUARIO AUTENTICADO NORMAL
+                ================================================== -->
+
+                {% elif request.user.is_authenticated %}
+
+
+                    <!-- MIS ME GUSTA -->
+
+                    <a
+                        href="{% url 'core:mis_favoritos' %}"
+                        class="
+                            boton-icono
+                            boton-favoritos
+
+                            {% if url_actual == 'mis_favoritos' %}
+                                activo
+                            {% endif %}
+                        "
+                        aria-label="Mis me gusta"
+                        title="Mis me gusta"
+                    >
+
+                        {% if url_actual == 'mis_favoritos' %}
+
+                            <i
+                                class="bi bi-heart-fill"
+                                aria-hidden="true"
+                            ></i>
+
+                        {% else %}
+
+                            <i
+                                class="bi bi-heart"
+                                aria-hidden="true"
+                            ></i>
+
+                        {% endif %}
+
+                    </a>
+
+
+                    <!-- MI PERFIL -->
+
+                    <a
+                        href="{% url 'core:mi_perfil' %}"
+                        class="
+                            boton-icono
+                            boton-perfil
+
+                            {% if url_actual == 'mi_perfil' %}
+                                activo
+                            {% endif %}
+                        "
+                        aria-label="Mi perfil"
+                        title="Mi perfil"
+                    >
+
+                        <i
+                            class="bi bi-person-circle"
+                            aria-hidden="true"
+                        ></i>
+
+                    </a>
+
+
+                    <!-- CERRAR SESIÓN -->
+
+                    <form
+                        method="post"
+                        action="{% url 'core:logout' %}"
+                        class="
+                            header__form-logout
+                            js-logout-form
+                        "
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="
+                                boton-icono
+                                boton-logout
+                            "
+                            aria-label="Cerrar sesión"
+                            title="Cerrar sesión"
+                        >
+
+                            <i
+                                class="bi bi-box-arrow-right"
+                                aria-hidden="true"
+                            ></i>
+
+                        </button>
+
+                    </form>
+
+
+                    <!-- CARRITO -->
+
+                    <button
+                        type="button"
+                        class="
+                            boton-icono
+                            boton-carrito
+                        "
+                        id="abrirCarrito"
+                        aria-label="Abrir carrito de compras"
+                        title="Carrito"
+                    >
+
+                        <i
+                            class="bi bi-bag"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span
+                            class="carrito-contador"
+                            id="carritoContador"
+                        >
+                            0
+                        </span>
+
+                    </button>
+
+
+                <!-- =================================================
+                     USUARIO SIN SESIÓN
+                ================================================== -->
+
                 {% else %}
+
+
+                    <!-- SEGUIR PEDIDO
+                         REEMPLAZA A LA ANTIGUA LUPA
+                    -->
+
+                    <a
+                        href="{% url 'core:seguimiento_pedido' %}"
+                        class="
+                            boton-icono
+                            boton-seguimiento
+
+                            {% if url_actual == 'seguimiento_pedido' or url_actual == 'seguimiento_pedido_numero' %}
+                                activo
+                            {% endif %}
+                        "
+                        aria-label="Seguir pedido"
+                        title="Seguir pedido"
+                    >
+
+                        <i
+                            class="bi bi-box-seam"
+                            aria-hidden="true"
+                        ></i>
+
+                    </a>
+
+
+                    <!-- MIS ME GUSTA -->
+
+                    <a
+                        href="{% url 'core:mis_favoritos' %}"
+                        class="
+                            boton-icono
+                            boton-favoritos
+
+                            {% if url_actual == 'mis_favoritos' %}
+                                activo
+                            {% endif %}
+                        "
+                        aria-label="Mis me gusta"
+                        title="Mis me gusta"
+                    >
+
+                        {% if url_actual == 'mis_favoritos' %}
+
+                            <i
+                                class="bi bi-heart-fill"
+                                aria-hidden="true"
+                            ></i>
+
+                        {% else %}
+
+                            <i
+                                class="bi bi-heart"
+                                aria-hidden="true"
+                            ></i>
+
+                        {% endif %}
+
+                    </a>
+
+
+                    <!-- INICIAR SESIÓN / PERFIL -->
 
                     <a
                         href="{% url 'core:login' %}"
                         class="
                             boton-icono
-                            boton-cuenta
+                            boton-perfil
                         "
                         aria-label="Iniciar sesión"
                         title="Iniciar sesión"
                     >
+
                         <i
                             class="bi bi-person"
                             aria-hidden="true"
                         ></i>
+
                     </a>
+
+
+                    <!-- CARRITO -->
+
+                    <button
+                        type="button"
+                        class="
+                            boton-icono
+                            boton-carrito
+                        "
+                        id="abrirCarrito"
+                        aria-label="Abrir carrito de compras"
+                        title="Carrito"
+                    >
+
+                        <i
+                            class="bi bi-bag"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span
+                            class="carrito-contador"
+                            id="carritoContador"
+                        >
+                            0
+                        </span>
+
+                    </button>
 
                 {% endif %}
 
-                <!-- CARRITO -->
 
-                <button
-                    type="button"
-                    class="
-                        boton-icono
-                        boton-carrito
-                    "
-                    id="abrirCarrito"
-                    aria-label="Abrir carrito de compras"
-                    title="Carrito"
-                >
-                    <i
-                        class="bi bi-bag"
-                        aria-hidden="true"
-                    ></i>
-
-                    <span
-                        class="carrito-contador"
-                        id="carritoContador"
-                    >
-                        0
-                    </span>
-                </button>
-
-                <!-- MENÚ MÓVIL -->
+                <!-- =================================================
+                     MENÚ MÓVIL
+                ================================================== -->
 
                 <button
                     type="button"
@@ -727,10 +932,12 @@
                     aria-expanded="false"
                     title="Abrir menú"
                 >
+
                     <i
                         class="bi bi-list"
                         aria-hidden="true"
                     ></i>
+
                 </button>
 
             </div>
@@ -739,7 +946,6 @@
 
     </div>
 </header>
-
 <!-- =========================================================
      CONTROL DIRECTO DEL MENÚ DE GESTIÓN
 ========================================================== -->
@@ -1143,86 +1349,6 @@
          BUSCADOR
     ====================================================== -->
 
-    <section
-        class="buscador-modal"
-        id="buscadorModal"
-        aria-hidden="true"
-    >
-
-        <div class="buscador-modal__contenido">
-
-            <button
-                type="button"
-                class="buscador-modal__cerrar"
-                id="cerrarBusqueda"
-                aria-label="Cerrar búsqueda"
-                title="Cerrar búsqueda"
-            >
-                <i class="bi bi-x-lg"></i>
-            </button>
-
-            <span class="etiqueta-seccion">
-                Encuentra tu sonido
-            </span>
-
-            <h2>
-                ¿Qué audífonos estás buscando?
-            </h2>
-
-            <form
-                action="{% url 'core:productos' %}"
-                method="get"
-                class="buscador-formulario"
-            >
-
-                <label
-                    for="busquedaProducto"
-                    class="sr-only"
-                >
-                    Buscar productos
-                </label>
-
-                <input
-                    type="search"
-                    id="busquedaProducto"
-                    name="q"
-                    placeholder="Ejemplo: EarFun Air Pro 4"
-                    autocomplete="off"
-                >
-
-                <button type="submit">
-                    Buscar
-                </button>
-
-            </form>
-
-            <div class="busquedas-populares">
-
-                <span>
-                    Más buscados:
-                </span>
-
-                <a href="{% url 'core:productos' %}?q=Air+Pro+4">
-                    Air Pro 4
-                </a>
-
-                <a href="{% url 'core:productos' %}?q=Free+Pro+3">
-                    Free Pro 3
-                </a>
-
-                <a href="{% url 'core:productos' %}?q=Wave+Pro">
-                    Wave Pro
-                </a>
-
-                <a href="{% url 'core:productos' %}?q=cancelación+de+ruido">
-                    Cancelación de ruido
-                </a>
-
-            </div>
-
-        </div>
-
-    </section>
 
 
     <main>

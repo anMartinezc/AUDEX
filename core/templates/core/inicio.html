@@ -2,193 +2,564 @@
 {% load static %}
 
 {% block title %}
-    Audex | Tecnología que se escucha
+    Audex | Descubre EarFun en Chile
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/inicio.css' %}"
+>
 {% endblock %}
 
 {% block content %}
 
-    <section class="hero">
-        <div class="contenedor hero__contenido">
+<!-- =====================================================
+     HERO PRINCIPAL
+===================================================== -->
+<section class="hero" id="inicio">
 
-            <div class="hero__texto">
-                <span class="hero__etiqueta">
-                    <i class="bi bi-stars"></i>
-                    Nueva colección EarFun
-                </span>
+    <div class="contenedor hero__contenido">
 
-                <h1>
-                    El sonido que te acompaña
-                    <span>en cada momento.</span>
-                </h1>
+        <!-- TEXTO -->
+        <div class="hero__texto">
 
-                <p>
-                    Descubre audífonos EarFun con sonido de alta calidad,
-                    cancelación de ruido y autonomía para todo el día.
-                </p>
+            <span class="hero__etiqueta">
+                <i class="bi bi-stars"></i>
+                Descubre EarFun
+            </span>
 
-                <div class="hero__botones">
-                    <a
-                        href="#productos"
-                        class="boton boton--primario"
-                    >
-                        Ver productos
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
+            <h1>
+                Una nueva forma
+                <span>de escuchar.</span>
+            </h1>
 
-                    <a
-                        href="#categorias"
-                        class="boton boton--secundario"
-                    >
-                        Explorar categorías
-                    </a>
-                </div>
+            <p>
+                Descubre EarFun en Audex: tecnología de audio inalámbrico
+                pensada para disfrutar tu música, aislarte del ruido,
+                comunicarte mejor y acompañarte en cada momento del día.
+            </p>
 
-                <div class="hero__datos">
-                    <div>
-                        <strong>45 h</strong>
-                        <span>de autonomía</span>
-                    </div>
+            <div class="hero__botones">
 
-                    <div>
-                        <strong>ANC</strong>
-                        <span>cancelación de ruido</span>
-                    </div>
+                <a
+                    href="#earfun"
+                    class="boton boton--primario"
+                >
+                    Conocer EarFun
+                    <i class="bi bi-arrow-right"></i>
+                </a>
 
-                    <div>
-                        <strong>Hi-Res</strong>
-                        <span>audio de alta resolución</span>
-                    </div>
-                </div>
+                <a
+                    href="#tipos-earfun"
+                    class="boton boton--secundario"
+                >
+                    Ver audífonos
+                </a>
+
             </div>
 
-            <div class="hero__visual">
-                <div class="hero__circulo"></div>
+            <div class="hero__datos">
 
-                <div class="hero__producto">
-                    <img
-                        src="{% static 'core/img/earfun-air-pro-4.png' %}"
-                        alt="Audífonos EarFun Air Pro 4"
-                    >
+                <div class="hero__dato">
+                    <strong>ANC</strong>
+                    <span>Aíslate del ruido exterior</span>
                 </div>
 
-                <div class="hero__tarjeta hero__tarjeta--superior">
+                <div class="hero__dato">
+                    <strong>Hi-Res</strong>
+                    <span>Más detalle en tu música</span>
+                </div>
+
+                <div class="hero__dato">
+                    <strong>Bluetooth</strong>
+                    <span>Libertad sin cables</span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRODUCTO -->
+        <div class="hero__visual">
+
+            <div
+                class="hero__circulo"
+                aria-hidden="true"
+            ></div>
+
+            <div class="hero__producto">
+
+                <img
+                    src="{% static 'core/img/Earfun1.png' %}"
+                    alt="Audífonos inalámbricos EarFun con estuche de carga"
+                    fetchpriority="high"
+                >
+
+            </div>
+
+
+            <div class="hero__tarjeta hero__tarjeta--superior">
+
+                <i class="bi bi-soundwave"></i>
+
+                <div>
+                    <strong>Sonido de alta calidad</strong>
+                    <span>Más detalle en cada canción</span>
+                </div>
+
+            </div>
+
+
+            <div class="hero__tarjeta hero__tarjeta--inferior">
+
+                <i class="bi bi-earbuds"></i>
+
+                <div>
+                    <strong>Listos para tu rutina</strong>
+                    <span>Música, llamadas y movimiento</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     BENEFICIOS AUDEX
+===================================================== -->
+<section
+    class="beneficios"
+    aria-label="Beneficios de comprar en Audex"
+>
+
+    <div class="contenedor beneficios__grid">
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-truck"></i>
+            </div>
+
+            <div class="beneficio__contenido">
+
+                <h3>Despacho rápido</h3>
+
+                <p>
+                    Recibe tus productos de forma rápida
+                    y segura dentro de Chile.
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-shield-check"></i>
+            </div>
+
+            <div class="beneficio__contenido">
+
+                <h3>Compra protegida</h3>
+
+                <p>
+                    Pagos seguros y protección durante
+                    todo el proceso de compra.
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+
+            <div class="beneficio__contenido">
+
+                <h3>Cambios simples</h3>
+
+                <p>
+                    Gestiona cambios y devoluciones
+                    de manera sencilla.
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <article class="beneficio">
+
+            <div class="beneficio__icono">
+                <i class="bi bi-headset"></i>
+            </div>
+
+            <div class="beneficio__contenido">
+
+                <h3>Asesoría especializada</h3>
+
+                <p>
+                    Te ayudamos a encontrar el modelo
+                    EarFun que mejor se adapte a ti.
+                </p>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     CONOCE EARFUN
+===================================================== -->
+<section
+    class="marca-earfun"
+    id="earfun"
+>
+
+    <div class="contenedor marca-earfun__contenido">
+
+        <!-- IMAGEN -->
+        <div class="marca-earfun__visual">
+
+            <div class="marca-earfun__imagen">
+
+                <img
+                    src="{% static 'core/img/earfun11.png' %}"
+                    alt="Audífonos EarFun de diseño abierto con estuche de carga"
+                    loading="lazy"
+                >
+
+            </div>
+
+            <span
+                class="marca-earfun__decoracion"
+                aria-hidden="true"
+            ></span>
+
+        </div>
+
+
+        <!-- TEXTO -->
+        <div class="marca-earfun__texto">
+
+            <span class="etiqueta-seccion">
+                Conoce EarFun
+            </span>
+
+            <h2>
+                Tecnología creada
+                <span>para disfrutar el sonido.</span>
+            </h2>
+
+            <p class="marca-earfun__intro">
+                EarFun desarrolla audífonos inalámbricos que combinan
+                diseño moderno, comodidad y tecnología pensada
+                para distintos estilos de uso.
+            </p>
+
+            <p>
+                Desde modelos para escuchar música durante todo el día,
+                hasta alternativas con cancelación activa de ruido,
+                resistencia para entrenamientos y funciones inteligentes,
+                hay un EarFun pensado para cada forma de escuchar.
+            </p>
+
+
+            <div class="marca-earfun__caracteristicas">
+
+                <article class="marca-caracteristica">
+
                     <i class="bi bi-soundwave"></i>
 
                     <div>
-                        <strong>Sonido premium</strong>
-                        <span>Audio definido y potente</span>
-                    </div>
-                </div>
+                        <strong>Sonido con mayor detalle</strong>
 
-                <div class="hero__tarjeta hero__tarjeta--inferior">
+                        <span>
+                            Diseñados para disfrutar música,
+                            videos y llamadas con claridad.
+                        </span>
+                    </div>
+
+                </article>
+
+
+                <article class="marca-caracteristica">
+
+                    <i class="bi bi-volume-mute"></i>
+
+                    <div>
+                        <strong>Aíslate cuando lo necesites</strong>
+
+                        <span>
+                            Modelos con tecnología ANC para
+                            reducir el ruido del entorno.
+                        </span>
+                    </div>
+
+                </article>
+
+
+                <article class="marca-caracteristica">
+
                     <i class="bi bi-battery-charging"></i>
 
                     <div>
-                        <strong>Mayor autonomía</strong>
-                        <span>Música durante todo el día</span>
+                        <strong>Autonomía para acompañarte</strong>
+
+                        <span>
+                            Pensados para seguir tu rutina
+                            durante horas de reproducción.
+                        </span>
                     </div>
-                </div>
+
+                </article>
+
             </div>
 
-        </div>
-    </section>
 
-        <!-- Beneficios -->
-    <section class="beneficios">
-        <div class="contenedor beneficios__grid">
-
-            <article class="beneficio">
-                <div class="beneficio__icono">
-                    <i class="bi bi-truck"></i>
-                </div>
-
-                <div>
-                    <h3>Despacho rápido</h3>
-                    <p>Recibe tu compra de forma rápida y segura.</p>
-                </div>
-            </article>
-
-            <article class="beneficio">
-                <div class="beneficio__icono">
-                    <i class="bi bi-shield-check"></i>
-                </div>
-
-                <div>
-                    <h3>Compra protegida</h3>
-                    <p>Pagos seguros y protección en cada compra.</p>
-                </div>
-            </article>
-
-            <article class="beneficio">
-                <div class="beneficio__icono">
-                    <i class="bi bi-arrow-repeat"></i>
-                </div>
-
-                <div>
-                    <h3>Cambios simples</h3>
-                    <p>Gestiona cambios y devoluciones fácilmente.</p>
-                </div>
-            </article>
-
-            <article class="beneficio">
-                <div class="beneficio__icono">
-                    <i class="bi bi-headset"></i>
-                </div>
-
-                <div>
-                    <h3>Asesoría especializada</h3>
-                    <p>Te ayudamos a escoger el modelo indicado.</p>
-                </div>
-            </article>
+            <a
+                href="{% url 'core:productos' %}"
+                class="boton boton--primario marca-earfun__boton"
+            >
+                Descubrir productos EarFun
+                <i class="bi bi-arrow-right"></i>
+            </a>
 
         </div>
-    </section>
+
+    </div>
+
+</section>
 
 
-        <!-- Newsletter -->
-    <section class="newsletter">
-        <div class="contenedor newsletter__contenido">
 
-            <div class="newsletter__texto">
+<!-- =====================================================
+     TIPOS DE AUDÍFONOS
+===================================================== -->
+<section
+    class="tipos-earfun"
+    id="tipos-earfun"
+>
+
+    <div class="contenedor">
+
+        <!-- ENCABEZADO -->
+        <header class="seccion-encabezado">
+
+            <div class="seccion-encabezado__titulo">
+
                 <span class="etiqueta-seccion">
-                    Comunidad Audex
+                    Encuentra tu EarFun
                 </span>
 
-                <h2>Escucha primero nuestras ofertas</h2>
+                <h2>
+                    Un audífono
+                    <span>para cada momento.</span>
+                </h2>
 
-                <p>
-                    Suscríbete y recibe novedades, descuentos exclusivos
-                    y nuevos lanzamientos EarFun.
-                </p>
             </div>
 
-            <form class="newsletter__formulario">
-                <label
-                    for="newsletterEmail"
-                    class="sr-only"
-                >
-                    Correo electrónico
-                </label>
+            <p>
+                Elige según cómo lo usarás: para viajar con menos ruido,
+                comunicarte durante el día o mantenerte activo.
+            </p>
 
-                <div class="newsletter__campo">
-                    <i class="bi bi-envelope"></i>
+        </header>
 
-                    <input
-                        type="email"
-                        id="newsletterEmail"
-                        name="email"
-                        placeholder="Ingresa tu correo"
-                        required
-                    >
+
+        <!-- CARDS -->
+        <div class="tipos-earfun__grid">
+
+
+            <!-- =================================================
+                 ANC
+            ================================================== -->
+            <article
+                class="
+                    tipo-earfun
+                    tipo-earfun--anc
+                "
+            >
+
+                <div class="tipo-earfun__media">
+
+                    <div class="tipo-earfun__imagen">
+
+                        <img
+                            src="{% static 'core/img/Earfun5.png' %}"
+                            alt="Persona usando audífonos EarFun junto a un tren con reducción de ruido de hasta 50 dB"
+                            loading="lazy"
+                        >
+
+                    </div>
+
                 </div>
 
-                <button type="submit" class="boton boton--primario">
-                    Suscribirme
-                    <i class="bi bi-arrow-right"></i>
-                </button>
-            </form>
+
+                <div class="tipo-earfun__contenido">
+
+                    <span class="tipo-earfun__etiqueta">
+                        ANC
+                    </span>
+
+                    <h3>
+                        Menos ruido, más de lo que quieres escuchar
+                    </h3>
+
+                    <p>
+                        Reduce el ruido del transporte y otros entornos
+                        intensos para disfrutar tu música, trabajar
+                        o viajar con mayor tranquilidad.
+                    </p>
+
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="tipo-earfun__enlace"
+                    >
+                        Ver modelos ANC
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =================================================
+                 EVERYDAY
+            ================================================== -->
+            <article
+                class="
+                    tipo-earfun
+                    tipo-earfun--everyday
+                "
+            >
+
+                <div class="tipo-earfun__media">
+
+                    <div class="tipo-earfun__imagen">
+
+                        <img
+                            src="{% static 'core/img/Earfun6.png' %}"
+                            alt="Personas utilizando audífonos EarFun con traducción en tiempo real entre español y francés"
+                            loading="lazy"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="tipo-earfun__contenido">
+
+                    <span class="tipo-earfun__etiqueta">
+                        Everyday
+                    </span>
+
+                    <h3>
+                        Comunícate sin que el idioma te detenga
+                    </h3>
+
+                    <p>
+                        Modelos preparados para tu rutina diaria
+                        con funciones inteligentes como traducción
+                        en tiempo real, llamadas y conexión inalámbrica.
+                    </p>
+
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="tipo-earfun__enlace"
+                    >
+                        Ver modelos Everyday
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- =================================================
+                 ACTIVE
+            ================================================== -->
+            <article
+                class="
+                    tipo-earfun
+                    tipo-earfun--active
+                "
+            >
+
+                <div class="tipo-earfun__media">
+
+                    <div class="tipo-earfun__imagen">
+
+                        <img
+                            src="{% static 'core/img/Earfun7.png' %}"
+                            alt="Deportista utilizando audífonos EarFun resistentes al sudor y lluvia ligera"
+                            loading="lazy"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="tipo-earfun__contenido">
+
+                    <span class="tipo-earfun__etiqueta">
+                        Active
+                    </span>
+
+                    <h3>
+                        Entrena sin preocuparte por el sudor
+                    </h3>
+
+                    <p>
+                        Diseños resistentes al sudor y a salpicaduras,
+                        pensados para acompañarte en entrenamientos,
+                        deporte y actividades al aire libre.
+                    </p>
+
+
+                    <a
+                        href="{% url 'core:productos' %}"
+                        class="tipo-earfun__enlace"
+                    >
+                        Ver modelos Active
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
 
         </div>
-    </section>
+
+    </div>
+
+</section>
 
 {% endblock %}

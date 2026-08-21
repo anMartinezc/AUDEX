@@ -1,0 +1,798 @@
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <meta name="x-apple-disable-message-reformatting" content="yes">
+    <meta name="theme-color" content="#202124">
+    <title>Nueva compra · {{ pedido.numero }}</title>
+
+    <style>
+        :root {
+            color-scheme: light dark !important;
+            supported-color-schemes: light dark !important;
+        }
+
+        html, body {
+            width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #202124 !important;
+            background: linear-gradient(#202124, #202124) !important;
+            background-image: linear-gradient(#202124, #202124) !important;
+        }
+
+        body {
+            color: #f7fbfd !important;
+            font-family: Arial, Helvetica, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        table { border-spacing: 0; border-collapse: separate; max-width: 100%; }
+        td { border-collapse: collapse; }
+        img { display: block; max-width: 100%; border: 0; outline: none; }
+        a { text-decoration: none; }
+
+        /* ===== GMAIL targeting hack (u + .body) ===== */
+        u + .body {
+            width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #202124 !important;
+        }
+
+        u + .body .email-wrapper,
+        u + .body .email-fondo {
+            width: 100% !important;
+            min-width: 100% !important;
+            background-color: #202124 !important;
+        }
+
+        /* ===== Blend-mode fix (solo Gmail, vía u + .body) ===== */
+        u + .body .gmail-screen {
+            background: #000000 !important;
+            mix-blend-mode: screen !important;
+        }
+
+        u + .body .gmail-difference {
+            background: #000000 !important;
+            mix-blend-mode: difference !important;
+        }
+
+        .email-wrapper {
+            width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #202124 !important;
+            background: linear-gradient(#202124, #202124) !important;
+            background-image: linear-gradient(#202124, #202124) !important;
+        }
+
+        .email-fondo {
+            width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #202124 !important;
+            background-image: linear-gradient(#202124, #202124) !important;
+        }
+
+        .email-tarjeta {
+            background-color: #0d1720 !important;
+            background-image: linear-gradient(#0d1720, #0d1720) !important;
+        }
+
+        .email-hero {
+            background-color: #102b3a !important;
+            background-image: linear-gradient(135deg, #123f5a, #0d1720) !important;
+        }
+
+        .email-panel {
+            background-color: #132a38 !important;
+            background-image: linear-gradient(#132a38, #132a38) !important;
+        }
+
+        .email-panel-destacado {
+            background-color: #102b38 !important;
+            background-image: linear-gradient(#102b38, #102b38) !important;
+        }
+
+        .email-aviso {
+            background-color: #102631 !important;
+            background-image: linear-gradient(#102631, #102631) !important;
+        }
+
+        .email-footer {
+            background-color: #05090d !important;
+            background-image: linear-gradient(#05090d, #05090d) !important;
+        }
+
+        .texto-blanco { color: #f7fbfd !important; -webkit-text-fill-color: #f7fbfd !important; }
+        .texto-claro { color: #e9f3f7 !important; -webkit-text-fill-color: #e9f3f7 !important; }
+        .texto-secundario { color: #c7d7df !important; -webkit-text-fill-color: #c7d7df !important; }
+        .texto-etiqueta { color: #afc4ce !important; -webkit-text-fill-color: #afc4ce !important; }
+        .texto-azul { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+
+        u + .body .texto-blanco { color: #f7fbfd !important; -webkit-text-fill-color: #f7fbfd !important; }
+        u + .body .texto-claro { color: #e9f3f7 !important; -webkit-text-fill-color: #e9f3f7 !important; }
+        u + .body .texto-secundario { color: #c7d7df !important; -webkit-text-fill-color: #c7d7df !important; }
+        u + .body .texto-etiqueta { color: #afc4ce !important; -webkit-text-fill-color: #afc4ce !important; }
+        u + .body .texto-azul { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+
+        /* ===== Outlook dark mode ===== */
+        [data-ogsc] .email-wrapper, [data-ogsc] .email-fondo { background-color: #202124 !important; }
+        [data-ogsc] .email-tarjeta { background-color: #0d1720 !important; }
+        [data-ogsc] .email-hero { background-color: #102b3a !important; }
+        [data-ogsc] .email-panel { background-color: #132a38 !important; }
+        [data-ogsc] .email-panel-destacado { background-color: #102b38 !important; }
+        [data-ogsc] .email-aviso { background-color: #102631 !important; }
+        [data-ogsc] .email-footer { background-color: #05090d !important; }
+        [data-ogsc] .texto-blanco { color: #f7fbfd !important; }
+        [data-ogsc] .texto-claro { color: #e9f3f7 !important; }
+        [data-ogsc] .texto-secundario { color: #c7d7df !important; }
+        [data-ogsc] .texto-etiqueta { color: #afc4ce !important; }
+        [data-ogsc] .texto-azul { color: #ffffff !important; }
+
+        /* ===== prefers-color-scheme: dark (Apple Mail, Outlook.com, algunos Android) ===== */
+        @media (prefers-color-scheme: dark) {
+            :root { color-scheme: dark !important; }
+
+            html, body, .email-wrapper, .email-fondo {
+                background-color: #202124 !important;
+                background: linear-gradient(#202124, #202124) !important;
+                background-image: linear-gradient(#202124, #202124) !important;
+            }
+
+            .email-tarjeta {
+                background-color: #0d1720 !important;
+                background-image: linear-gradient(#0d1720, #0d1720) !important;
+            }
+
+            .email-hero {
+                background-color: #102b3a !important;
+                background-image: linear-gradient(135deg, #123f5a, #0d1720) !important;
+            }
+
+            .email-panel {
+                background-color: #132a38 !important;
+                background-image: linear-gradient(#132a38, #132a38) !important;
+            }
+
+            .email-panel-destacado {
+                background-color: #102b38 !important;
+                background-image: linear-gradient(#102b38, #102b38) !important;
+            }
+
+            .email-aviso {
+                background-color: #102631 !important;
+                background-image: linear-gradient(#102631, #102631) !important;
+            }
+
+            .email-footer {
+                background-color: #05090d !important;
+                background-image: linear-gradient(#05090d, #05090d) !important;
+            }
+
+            .texto-blanco { color: #f7fbfd !important; -webkit-text-fill-color: #f7fbfd !important; }
+            .texto-claro { color: #e9f3f7 !important; -webkit-text-fill-color: #e9f3f7 !important; }
+            .texto-secundario { color: #c7d7df !important; -webkit-text-fill-color: #c7d7df !important; }
+            .texto-etiqueta { color: #afc4ce !important; -webkit-text-fill-color: #afc4ce !important; }
+            .texto-azul { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+        }
+
+        /* ===== Responsive ===== */
+        @media only screen and (max-width: 640px) {
+            html, body {
+                width: 100% !important;
+                min-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: #202124 !important;
+            }
+
+            .email-fondo {
+                width: 100% !important;
+                min-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: #202124 !important;
+                background-image: linear-gradient(#202124, #202124) !important;
+            }
+
+            .email-exterior {
+                padding: 0 0 24px !important;
+                background-color: #202124 !important;
+                background-image: linear-gradient(#202124, #202124) !important;
+            }
+
+            .email-tarjeta-principal {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-left: 0 !important;
+                border-right: 0 !important;
+                border-radius: 0 !important;
+            }
+
+            .email-cabecera { padding: 22px 20px 16px !important; }
+            .email-seccion { padding-left: 18px !important; padding-right: 18px !important; }
+            .email-hero-contenido { padding: 28px 22px !important; }
+            .email-titulo { font-size: 29px !important; line-height: 1.16 !important; }
+            .email-logo-nombre { font-size: 21px !important; }
+            .email-badge { padding: 7px 10px !important; font-size: 9px !important; letter-spacing: 0.4px !important; }
+            .email-panel-celda { padding: 18px 18px !important; }
+            .email-total { font-size: 22px !important; }
+            .email-producto-nombre { font-size: 15px !important; }
+            .email-boton { display: block !important; width: auto !important; padding: 15px 18px !important; text-align: center !important; }
+            .email-texto-exterior { margin: 14px 18px 0 !important; }
+        }
+
+        @media only screen and (max-width: 430px) {
+            .email-logo-subtitulo { letter-spacing: 1.2px !important; }
+            .email-badge { max-width: 95px !important; white-space: normal !important; text-align: center !important; }
+            .email-titulo { font-size: 27px !important; }
+        }
+    </style>
+</head>
+
+
+<body
+    class="body email-fondo"
+    bgcolor="#202124"
+    style="
+        width: 100%;
+        min-width: 100%;
+        margin: 0;
+        padding: 0;
+        color: #f7fbfd !important;
+        -webkit-text-fill-color: #f7fbfd;
+        background-color: #202124 !important;
+        background: linear-gradient(#202124, #202124) !important;
+        background-image: linear-gradient(#202124, #202124) !important;
+        font-family: Arial, Helvetica, sans-serif;
+    "
+>
+
+
+<div
+    class="email-wrapper"
+    style="
+        width: 100%;
+        min-width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #202124 !important;
+        background: linear-gradient(#202124, #202124) !important;
+        background-image: linear-gradient(#202124, #202124) !important;
+    "
+>
+
+
+    <!-- PREHEADER -->
+    <div style="display:none; visibility:hidden; opacity:0; width:0; height:0; max-width:0; max-height:0; overflow:hidden; color:transparent; font-size:1px; line-height:1px;">
+        Nueva compra confirmada en Audex: {{ pedido.numero }} por ${{ pedido.total|floatformat:0|intcomma }}.
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- FONDO GENERAL                                     -->
+    <!-- ================================================= -->
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#202124" class="email-fondo"
+        style="width:100%; min-width:100%; margin:0; padding:0; background-color:#202124 !important; background-image:linear-gradient(#202124,#202124) !important;">
+        <tr>
+            <td align="center" bgcolor="#202124" class="email-fondo email-exterior"
+                style="padding:28px 0 38px; background-color:#202124 !important; background-image:linear-gradient(#202124,#202124) !important;">
+
+
+                <!-- ================================================= -->
+                <!-- TARJETA PRINCIPAL                                  -->
+                <!-- ================================================= -->
+
+                <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" bgcolor="#0d1720" class="email-tarjeta email-tarjeta-principal"
+                    style="width:100%; max-width:620px; table-layout:fixed; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important; border:1px solid #29404d; border-radius:24px; overflow:hidden;">
+
+
+                    <!-- CABECERA -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-cabecera"
+                            style="padding:28px 28px 18px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; table-layout:fixed;">
+                                <tr>
+
+                                    <!-- LOGO -->
+                                    <td valign="middle" style="width:62%; padding-right:10px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+
+                                                <!--
+                                                    ================================================
+                                                    LOGO AUDEX (IMAGEN)
+                                                    ================================================
+                                                    Reemplaza el "src" de abajo por la URL pública de
+                                                    tu logo (idealmente PNG con fondo transparente,
+                                                    formato cuadrado, subido a 2x el tamaño mostrado
+                                                    para verse nítido en pantallas retina).
+
+                                                    width/height quedan fijos a propósito: así el
+                                                    espacio se reserva aunque el cliente de correo
+                                                    bloquee la carga de imágenes por defecto.
+                                                -->
+                                                <td valign="middle" style="padding-right:12px;">
+                                                    <img
+                                                        src="https://TU-DOMINIO.cl/static/img/logo-audex.png"
+                                                        alt="Audex"
+                                                        width="42"
+                                                        height="42"
+                                                        style="display:block; width:42px; height:42px; max-width:42px; border:0; outline:none; border-radius:10px;"
+                                                    >
+                                                </td>
+
+                                                <td valign="middle">
+                                                    <div class="email-logo-nombre texto-azul"
+                                                        style="color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-size:24px; line-height:1; font-weight:800; letter-spacing:-0.5px;"
+                                                    ><div class="gmail-screen"><div class="gmail-difference">
+                                                        Audex
+                                                    </div></div></div>
+
+                                                    <div class="email-logo-subtitulo texto-secundario"
+                                                        style="margin-top:6px; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:9px; line-height:1.3; letter-spacing:2.2px; text-transform:uppercase;"
+                                                    ><div class="gmail-screen"><div class="gmail-difference">
+                                                        Panel administrativo
+                                                    </div></div></div>
+                                                </td>
+
+                                            </tr>
+                                        </table>
+                                    </td>
+
+                                    <!-- BADGE -->
+                                    <td align="right" valign="middle" style="width:38%;">
+                                        <span class="email-badge texto-azul"
+                                            style="display:inline-block; max-width:125px; padding:9px 13px; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; background-color:#102b38 !important; background-image:linear-gradient(#102b38,#102b38) !important; border:1px solid #3e6273; border-radius:999px; font-size:10px; font-weight:800; line-height:1.3; letter-spacing:0.7px; text-align:center; text-transform:uppercase;"
+                                        ><span class="gmail-screen"><span class="gmail-difference">
+                                            Nueva venta
+                                        </span></span></span>
+                                    </td>
+
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- HERO -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:8px 28px 28px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td bgcolor="#102b3a" class="email-hero email-hero-contenido"
+                                        style="padding:34px 28px; background-color:#102b3a !important; background-image:linear-gradient(135deg,#123f5a,#0d1720) !important; border:1px solid #3a6174; border-radius:22px; overflow-wrap:anywhere;">
+
+                                        <!-- ICONO: fondo de un solo color repetido (protegido) -->
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td align="center" valign="middle" bgcolor="#83d8f3"
+                                                    style="width:60px; height:60px; color:#06141b !important; -webkit-text-fill-color:#06141b !important; background-color:#83d8f3 !important; background-image:linear-gradient(#83d8f3,#83d8f3) !important; border:7px solid #1b465a; border-radius:50%; font-size:29px; font-weight:800; line-height:60px;"
+                                                >$</td>
+                                            </tr>
+                                        </table>
+
+                                        <h1 class="email-titulo texto-blanco"
+                                            style="margin:22px 0 14px; color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:35px; line-height:1.16; font-weight:800; letter-spacing:-1px;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            ¡Nueva compra confirmada!
+                                        </div></div></h1>
+
+                                        <p class="texto-claro" style="margin:0; color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important; font-size:16px; line-height:1.72;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            Se confirmó correctamente una nueva venta en Audex. El pedido ya puede continuar con su proceso de preparación.
+                                        </div></div></p>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- TOTAL VENTA -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 16px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td align="center" bgcolor="#102b38" class="email-panel-destacado email-panel-celda"
+                                        style="padding:23px 21px; background-color:#102b38 !important; background-image:linear-gradient(#102b38,#102b38) !important; border:1px solid #477283; border-radius:18px;">
+
+                                        <div class="texto-etiqueta" style="margin-bottom:7px; color:#afc4ce !important; -webkit-text-fill-color:#afc4ce !important; font-size:11px; font-weight:800; line-height:1.3; letter-spacing:1.3px; text-transform:uppercase;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            Total de la venta
+                                        </div></div></div>
+
+                                        <div class="texto-azul email-total" style="color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-size:31px; font-weight:800; line-height:1.25; white-space:nowrap;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            ${{ pedido.total|floatformat:0|intcomma }}
+                                        </div></div></div>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- NÚMERO PEDIDO -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 12px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td bgcolor="#132a38" class="email-panel email-panel-celda"
+                                        style="padding:20px 21px; background-color:#132a38 !important; background-image:linear-gradient(#132a38,#132a38) !important; border:1px solid #3a5664; border-radius:17px;">
+
+                                        <div class="texto-etiqueta" style="margin-bottom:7px; color:#afc4ce !important; -webkit-text-fill-color:#afc4ce !important; font-size:11px; font-weight:800; line-height:1.3; letter-spacing:1.2px; text-transform:uppercase;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            Número de pedido
+                                        </div></div></div>
+
+                                        <div class="texto-azul" style="color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-size:22px; font-weight:800; line-height:1.3; overflow-wrap:anywhere;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            {{ pedido.numero }}
+                                        </div></div></div>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- CLIENTE -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 12px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td bgcolor="#132a38" class="email-panel email-panel-celda"
+                                        style="padding:20px 21px; background-color:#132a38 !important; background-image:linear-gradient(#132a38,#132a38) !important; border:1px solid #3a5664; border-radius:17px; overflow-wrap:anywhere;">
+
+                                        <div class="texto-etiqueta" style="margin-bottom:9px; color:#afc4ce !important; -webkit-text-fill-color:#afc4ce !important; font-size:11px; font-weight:800; line-height:1.3; letter-spacing:1.2px; text-transform:uppercase;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            Cliente
+                                        </div></div></div>
+
+                                        <div class="texto-blanco" style="color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:17px; font-weight:800; line-height:1.45;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            {{ pedido.nombre_completo }}
+                                        </div></div></div>
+
+                                        <div class="texto-secundario" style="margin-top:5px; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:14px; line-height:1.55; overflow-wrap:anywhere;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            {{ pedido.email }}
+                                        </div></div></div>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- PAGO -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 28px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td bgcolor="#132a38" class="email-panel email-panel-celda"
+                                        style="padding:20px 21px; background-color:#132a38 !important; background-image:linear-gradient(#132a38,#132a38) !important; border:1px solid #3a5664; border-radius:17px;">
+
+                                        <div class="texto-etiqueta" style="margin-bottom:7px; color:#afc4ce !important; -webkit-text-fill-color:#afc4ce !important; font-size:11px; font-weight:800; line-height:1.3; letter-spacing:1.2px; text-transform:uppercase;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            Método de pago
+                                        </div></div></div>
+
+                                        <div class="texto-blanco" style="padding-bottom:18px; color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:16px; font-weight:700; line-height:1.45;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            {{ pedido.get_metodo_pago_display }}
+                                        </div></div></div>
+
+                                        <div style="padding-top:17px; border-top:1px solid #38505d;">
+
+                                            <div class="texto-etiqueta" style="margin-bottom:7px; color:#afc4ce !important; -webkit-text-fill-color:#afc4ce !important; font-size:11px; font-weight:800; line-height:1.3; letter-spacing:1.2px; text-transform:uppercase;"
+                                            ><div class="gmail-screen"><div class="gmail-difference">
+                                                Fecha de pago
+                                            </div></div></div>
+
+                                            <div class="texto-claro" style="color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important; font-size:15px; font-weight:700; line-height:1.45;"
+                                            ><div class="gmail-screen"><div class="gmail-difference">
+                                                {% if pedido.fecha_pago %}
+                                                    {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+                                                {% else %}
+                                                    Confirmado
+                                                {% endif %}
+                                            </div></div></div>
+
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- PRODUCTOS -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 14px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <h2 class="texto-blanco" style="margin:0; color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:24px; line-height:1.3; font-weight:800; letter-spacing:-0.4px;"
+                            ><div class="gmail-screen"><div class="gmail-difference">
+                                Productos vendidos
+                            </div></div></h2>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 24px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td bgcolor="#132a38" class="email-panel email-panel-celda"
+                                        style="padding:4px 20px; background-color:#132a38 !important; background-image:linear-gradient(#132a38,#132a38) !important; border:1px solid #3a5664; border-radius:18px;">
+
+                                        {% for item in items %}
+                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                                style="width:100%; table-layout:fixed; {% if not forloop.last %}border-bottom:1px solid #38505d;{% endif %}">
+                                                <tr>
+                                                    <td valign="middle" style="width:68%; padding:18px 8px 18px 0; overflow-wrap:anywhere;">
+
+                                                        <div class="texto-blanco email-producto-nombre" style="color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:16px; font-weight:700; line-height:1.45;"
+                                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                                            {{ item.nombre_producto }}
+                                                        </div></div></div>
+
+                                                        <div class="texto-secundario" style="margin-top:7px; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:14px; line-height:1.5;"
+                                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                                            Cantidad: <strong class="texto-azul" style="color:#ffffff !important; -webkit-text-fill-color:#ffffff !important;">{{ item.cantidad }}</strong> · ${{ item.precio_unitario|floatformat:0|intcomma }} c/u
+                                                        </div></div></div>
+
+                                                    </td>
+                                                    <td align="right" valign="middle" style="width:32%; padding:18px 0 18px 8px; white-space:nowrap;">
+                                                        <strong class="texto-blanco" style="color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:16px; font-weight:800;"
+                                                        ><span class="gmail-screen"><span class="gmail-difference">
+                                                            ${{ item.total|floatformat:0|intcomma }}
+                                                        </span></span></strong>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        {% empty %}
+                                            <div class="texto-secundario" style="padding:20px 0; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:14px; line-height:1.6;"
+                                            ><div class="gmail-screen"><div class="gmail-difference">
+                                                No se encontraron productos asociados al pedido.
+                                            </div></div></div>
+                                        {% endfor %}
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- TOTALES -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 24px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td bgcolor="#132a38" class="email-panel email-panel-celda"
+                                        style="padding:21px; background-color:#132a38 !important; background-image:linear-gradient(#132a38,#132a38) !important; border:1px solid #3a5664; border-radius:18px;">
+
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+
+                                            <tr>
+                                                <td class="texto-secundario" style="width:58%; padding:7px 0; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:14px;"
+                                                ><div class="gmail-screen"><div class="gmail-difference">
+                                                    Subtotal
+                                                </div></div></td>
+                                                <td align="right" class="texto-claro" style="width:42%; padding:7px 0; color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important; font-size:14px;"
+                                                ><div class="gmail-screen"><div class="gmail-difference">
+                                                    ${{ pedido.subtotal|floatformat:0|intcomma }}
+                                                </div></div></td>
+                                            </tr>
+
+                                            {% if pedido.descuento > 0 %}
+                                                <tr>
+                                                    <td class="texto-secundario" style="padding:7px 0; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:14px;"
+                                                    ><div class="gmail-screen"><div class="gmail-difference">
+                                                        Descuento
+                                                    </div></div></td>
+                                                    <td align="right" class="texto-azul" style="padding:7px 0; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-size:14px; font-weight:700;"
+                                                    ><div class="gmail-screen"><div class="gmail-difference">
+                                                        -${{ pedido.descuento|floatformat:0|intcomma }}
+                                                    </div></div></td>
+                                                </tr>
+                                            {% endif %}
+
+                                            <tr>
+                                                <td class="texto-secundario" style="padding:7px 0 15px; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:14px;"
+                                                ><div class="gmail-screen"><div class="gmail-difference">
+                                                    Despacho
+                                                </div></div></td>
+                                                <td align="right" class="texto-claro" style="padding:7px 0 15px; color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important; font-size:14px;"
+                                                ><div class="gmail-screen"><div class="gmail-difference">
+                                                    {% if pedido.despacho > 0 %}
+                                                        ${{ pedido.despacho|floatformat:0|intcomma }}
+                                                    {% else %}
+                                                        Gratis
+                                                    {% endif %}
+                                                </div></div></td>
+                                            </tr>
+
+                                            <tr>
+                                                <td style="padding:17px 0 0; border-top:1px solid #496572;">
+                                                    <strong class="texto-blanco" style="color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:18px; font-weight:800;"
+                                                    ><span class="gmail-screen"><span class="gmail-difference">
+                                                        Total pagado
+                                                    </span></span></strong>
+                                                </td>
+                                                <td align="right" class="texto-azul email-total" style="padding:17px 0 0; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; border-top:1px solid #496572; font-size:24px; font-weight:800; white-space:nowrap;"
+                                                ><div class="gmail-screen"><div class="gmail-difference">
+                                                    ${{ pedido.total|floatformat:0|intcomma }}
+                                                </div></div></td>
+                                            </tr>
+
+                                        </table>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- DIRECCIÓN -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 24px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td bgcolor="#132a38" class="email-panel email-panel-celda"
+                                        style="padding:21px; background-color:#132a38 !important; background-image:linear-gradient(#132a38,#132a38) !important; border:1px solid #3a5664; border-radius:18px; overflow-wrap:anywhere;">
+
+                                        <div class="texto-blanco" style="margin-bottom:11px; color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:17px; font-weight:800; line-height:1.4;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            Dirección de despacho
+                                        </div></div></div>
+
+                                        <div class="texto-claro" style="color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important; font-size:14px; line-height:1.75; overflow-wrap:anywhere;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            <strong class="texto-blanco" style="color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important;">{{ pedido.nombre_completo }}</strong>
+                                            <br>
+                                            {{ pedido.direccion_completa }}
+                                        </div></div></div>
+
+                                        {% if pedido.referencia %}
+                                            <div class="texto-secundario" style="margin-top:11px; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:13px; line-height:1.65; overflow-wrap:anywhere;"
+                                            ><div class="gmail-screen"><div class="gmail-difference">
+                                                <strong>Referencia:</strong> {{ pedido.referencia }}
+                                            </div></div></div>
+                                        {% endif %}
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- BOTÓN -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:4px 28px 18px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important; text-align:center;">
+
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                                <tr>
+                                    <td align="center" bgcolor="#83d8f3"
+                                        style="background-color:#83d8f3 !important; background-image:linear-gradient(#83d8f3,#83d8f3) !important; border-radius:14px;">
+                                        <a href="{{ url_pedido }}" class="email-boton"
+                                            style="display:inline-block; padding:15px 27px; color:#07141b !important; -webkit-text-fill-color:#07141b !important; font-size:15px; font-weight:800; line-height:1.3; text-decoration:none; border-radius:14px;"
+                                        >Gestionar pedido →</a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- AVISO -->
+                    <tr>
+                        <td bgcolor="#0d1720" class="email-tarjeta email-seccion"
+                            style="padding:0 28px 32px; background-color:#0d1720 !important; background-image:linear-gradient(#0d1720,#0d1720) !important;">
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td align="center" bgcolor="#102631" class="email-aviso email-panel-celda"
+                                        style="padding:19px 20px; background-color:#102631 !important; background-image:linear-gradient(#102631,#102631) !important; border:1px solid #3b6477; border-radius:17px; font-size:14px; line-height:1.72; text-align:center;">
+
+                                        <div class="texto-claro" style="color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important;"
+                                        ><div class="gmail-screen"><div class="gmail-difference">
+                                            Este pedido ya tiene el pago confirmado y requiere continuar con el proceso de preparación y despacho.
+                                        </div></div></div>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td align="center" bgcolor="#05090d" class="email-footer"
+                            style="padding:25px 28px 28px; background-color:#05090d !important; background-image:linear-gradient(#05090d,#05090d) !important; border-top:1px solid #172630; text-align:center;">
+
+                            <strong class="texto-azul" style="display:block; margin-bottom:6px; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-size:19px; font-weight:800;"
+                            ><span class="gmail-screen"><span class="gmail-difference">
+                                Audex
+                            </span></span></strong>
+
+                            <span class="texto-secundario" style="color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:10px; line-height:1.6; letter-spacing:1.8px; text-transform:uppercase;"
+                            ><span class="gmail-screen"><span class="gmail-difference">
+                                Notificación administrativa
+                            </span></span></span>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+
+                <!-- TEXTO EXTERIOR -->
+                <p class="texto-etiqueta email-texto-exterior"
+                    style="max-width:590px; margin:16px auto 0; padding:0 18px; color:#afc4ce !important; -webkit-text-fill-color:#afc4ce !important; font-size:11px; line-height:1.6; text-align:center;"
+                ><div class="gmail-screen"><div class="gmail-difference">
+                    Este mensaje fue enviado automáticamente porque se confirmó una nueva compra asociada al pedido {{ pedido.numero }}.
+                </div></div></p>
+
+            </td>
+        </tr>
+    </table>
+
+
+</div>
+
+</body>
+</html> 

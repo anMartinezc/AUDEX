@@ -1,0 +1,2009 @@
+/* =========================================================
+   INICIO.CSS
+   Audex / EarFun
+========================================================= */
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+:root {
+    --inicio-bg: #071018;
+    --inicio-bg-soft: #0b1620;
+
+    --inicio-card: rgba(14, 27, 38, 0.88);
+    --inicio-card-soft: rgba(16, 33, 46, 0.72);
+
+    --inicio-celeste: #63d6ff;
+    --inicio-celeste-2: #36bfe9;
+    --inicio-celeste-soft: rgba(99, 214, 255, 0.12);
+
+    --inicio-texto: #f4f8fb;
+    --inicio-texto-soft: #b6c4cf;
+    --inicio-texto-muted: #8fa2b1;
+
+    --inicio-borde: rgba(255, 255, 255, 0.10);
+    --inicio-borde-celeste: rgba(99, 214, 255, 0.30);
+
+    --inicio-sombra:
+        0 24px 64px rgba(0, 0, 0, 0.32);
+
+    --inicio-radio: 26px;
+
+    --inicio-transicion: 0.28s ease;
+}
+
+
+/* =========================================================
+   BASE
+========================================================= */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background:
+        linear-gradient(
+            180deg,
+            #060d13 0%,
+            #08131c 52%,
+            #071018 100%
+        );
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+.contenedor {
+    width: min(1180px, calc(100% - 40px));
+    margin-inline: auto;
+}
+
+.etiqueta-seccion {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 16px;
+
+    color: var(--inicio-celeste);
+
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    min-height: 52px;
+    padding: 0 22px;
+
+    border: 1px solid transparent;
+    border-radius: 14px;
+
+    font-weight: 800;
+    text-decoration: none;
+
+    transition:
+        transform var(--inicio-transicion),
+        background-color var(--inicio-transicion),
+        border-color var(--inicio-transicion),
+        box-shadow var(--inicio-transicion);
+}
+
+.boton:hover {
+    transform: translateY(-2px);
+}
+
+.boton--primario {
+    color: #041019;
+
+    background:
+        linear-gradient(
+            135deg,
+            #75dcff 0%,
+            #3ebee7 100%
+        );
+
+    box-shadow:
+        0 14px 35px rgba(45, 183, 230, 0.22);
+}
+
+.boton--primario:hover {
+    box-shadow:
+        0 18px 42px rgba(45, 183, 230, 0.34);
+}
+
+.boton--secundario {
+    color: var(--inicio-texto);
+
+    border-color: var(--inicio-borde);
+
+    background:
+        rgba(255, 255, 255, 0.03);
+}
+
+.boton--secundario:hover {
+    border-color: var(--inicio-borde-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.06);
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+.hero {
+    position: relative;
+
+    overflow: hidden;
+
+    padding:
+        clamp(72px, 7vw, 108px)
+        0
+        clamp(82px, 8vw, 116px);
+
+    background:
+        radial-gradient(
+            circle at 78% 35%,
+            rgba(43, 158, 205, 0.18),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 94% 70%,
+            rgba(19, 103, 145, 0.15),
+            transparent 34%
+        );
+}
+
+.hero::before {
+    content: "";
+
+    position: absolute;
+
+    width: 520px;
+    height: 520px;
+
+    right: -250px;
+    top: -250px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(99, 214, 255, 0.09),
+            transparent 68%
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   HERO CONTENIDO
+========================================================= */
+.hero__contenido {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.03fr)
+        minmax(470px, 0.97fr);
+
+    align-items: center;
+
+    gap:
+        clamp(
+            62px,
+            7vw,
+            100px
+        );
+}
+
+.hero__texto {
+    max-width: 650px;
+}
+
+
+/* =========================================================
+   HERO ETIQUETA
+========================================================= */
+.hero__etiqueta {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 9px;
+
+    margin-bottom: 28px;
+
+    padding:
+        10px
+        16px;
+
+    border:
+        1px solid
+        var(--inicio-borde-celeste);
+
+    border-radius: 999px;
+
+    color:
+        var(--inicio-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.06);
+
+    font-size: 0.80rem;
+    font-weight: 800;
+
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   HERO TÍTULO
+========================================================= */
+.hero__texto h1 {
+    margin: 0;
+
+    max-width: 700px;
+
+    color:
+        var(--inicio-texto);
+
+    font-size:
+        clamp(
+            3rem,
+            5.5vw,
+            5.55rem
+        );
+
+    font-weight: 900;
+
+    line-height: 0.97;
+
+    letter-spacing: -0.055em;
+}
+
+.hero__texto h1 span {
+    display: block;
+
+    margin-top: 12px;
+
+    color:
+        var(--inicio-celeste);
+}
+
+
+/* =========================================================
+   HERO DESCRIPCIÓN
+========================================================= */
+.hero__texto > p {
+    max-width: 630px;
+
+    margin:
+        clamp(
+            24px,
+            3vw,
+            32px
+        )
+        0
+        0;
+
+    color:
+        var(--inicio-texto-soft);
+
+    font-size:
+        clamp(
+            1rem,
+            1.25vw,
+            1.14rem
+        );
+
+    line-height: 1.75;
+}
+
+
+/* =========================================================
+   HERO BOTONES
+========================================================= */
+.hero__botones {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 14px;
+
+    margin-top: 32px;
+}
+
+
+/* =========================================================
+   HERO DATOS
+========================================================= */
+.hero__datos {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 14px;
+
+    margin-top: 40px;
+
+    padding-top: 28px;
+
+    border-top:
+        1px solid
+        var(--inicio-borde);
+}
+
+.hero__dato,
+.hero__datos > div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    min-width: 0;
+}
+
+.hero__datos strong {
+    color:
+        var(--inicio-texto);
+
+    font-size: 1.08rem;
+    font-weight: 900;
+}
+
+.hero__datos span {
+    color:
+        var(--inicio-texto-muted);
+
+    font-size: 0.84rem;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   HERO VISUAL
+========================================================= */
+.hero__visual {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 610px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    isolation: isolate;
+}
+
+
+/* =========================================================
+   CÍRCULO HERO
+========================================================= */
+.hero__circulo {
+    position: absolute;
+    z-index: 0;
+
+    width:
+        min(
+            91%,
+            535px
+        );
+
+    aspect-ratio: 1;
+
+    border:
+        1px solid
+        rgba(99, 214, 255, 0.20);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(46, 166, 211, 0.12) 0%,
+            rgba(15, 63, 83, 0.08) 47%,
+            transparent 72%
+        );
+
+    box-shadow:
+        inset
+        0
+        0
+        100px
+        rgba(65, 183, 224, 0.05);
+}
+
+.hero__circulo::before,
+.hero__circulo::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 8%;
+
+    border-radius: inherit;
+
+    border:
+        1px dashed
+        rgba(99, 214, 255, 0.14);
+}
+
+.hero__circulo::after {
+    inset: 19%;
+}
+
+
+/* =========================================================
+   PRODUCTO HERO
+========================================================= */
+.hero__producto {
+    position: relative;
+    z-index: 2;
+
+    width:
+        min(
+            88%,
+            500px
+        );
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    filter:
+        drop-shadow(
+            0
+            34px
+            38px
+            rgba(0, 0, 0, 0.48)
+        );
+}
+
+.hero__producto img {
+    width: 100%;
+
+    max-height: none;
+
+    height: auto;
+
+    object-fit: contain;
+
+    transform-origin: center;
+
+    animation:
+        heroProductoFlotar
+        6s
+        ease-in-out
+        infinite;
+}
+
+
+/* =========================================================
+   TARJETAS HERO
+========================================================= */
+.hero__tarjeta {
+    position: absolute;
+
+    z-index: 5;
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    width: max-content;
+
+    min-width: 220px;
+    max-width: 255px;
+
+    padding:
+        14px
+        16px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.11);
+
+    border-radius: 16px;
+
+    background:
+        rgba(9, 23, 34, 0.95);
+
+    backdrop-filter:
+        blur(16px);
+
+    -webkit-backdrop-filter:
+        blur(16px);
+
+    box-shadow:
+        0
+        18px
+        46px
+        rgba(0, 0, 0, 0.34);
+
+    transition:
+        transform
+        0.3s
+        ease,
+        border-color
+        0.3s
+        ease,
+        background-color
+        0.3s
+        ease;
+}
+
+.hero__tarjeta:hover {
+    transform:
+        translateY(-3px);
+
+    border-color:
+        rgba(99, 214, 255, 0.27);
+
+    background:
+        rgba(11, 29, 42, 0.97);
+}
+
+.hero__tarjeta > i {
+    display: grid;
+    place-items: center;
+
+    flex:
+        0
+        0
+        43px;
+
+    width: 43px;
+    height: 43px;
+
+    border-radius: 13px;
+
+    color:
+        var(--inicio-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.10);
+
+    font-size: 1.12rem;
+}
+
+.hero__tarjeta div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.hero__tarjeta strong {
+    color:
+        var(--inicio-texto);
+
+    font-size: 0.9rem;
+
+    white-space: nowrap;
+}
+
+.hero__tarjeta span {
+    color:
+        var(--inicio-texto-muted);
+
+    font-size: 0.76rem;
+
+    line-height: 1.35;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   POSICIÓN TARJETAS HERO
+========================================================= */
+
+/*
+   Desktop grande:
+   quedan alrededor del círculo,
+   no encima del producto.
+*/
+.hero__tarjeta--superior {
+    top: 11%;
+    right: -12%;
+}
+
+.hero__tarjeta--inferior {
+    left: -12%;
+    bottom: 9%;
+}
+
+
+/* =========================================================
+   BENEFICIOS
+========================================================= */
+.beneficios {
+    position: relative;
+    z-index: 4;
+
+    padding:
+        18px
+        0
+        74px;
+}
+
+.beneficios__grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 16px;
+}
+
+.beneficio {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 14px;
+
+    min-height: 120px;
+
+    padding: 20px;
+
+    border:
+        1px solid
+        var(--inicio-borde);
+
+    border-radius: 18px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    transition:
+        transform var(--inicio-transicion),
+        border-color var(--inicio-transicion),
+        background-color var(--inicio-transicion),
+        box-shadow var(--inicio-transicion);
+}
+
+.beneficio:hover {
+    transform:
+        translateY(-5px);
+
+    border-color:
+        var(--inicio-borde-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.045);
+
+    box-shadow:
+        0
+        16px
+        34px
+        rgba(0, 0, 0, 0.16);
+}
+
+.beneficio__icono {
+    display: grid;
+    place-items: center;
+
+    flex:
+        0
+        0
+        46px;
+
+    width: 46px;
+    height: 46px;
+
+    border-radius: 14px;
+
+    color:
+        var(--inicio-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.10);
+
+    font-size: 1.2rem;
+}
+
+.beneficio h3 {
+    margin:
+        1px
+        0
+        6px;
+
+    color:
+        var(--inicio-texto);
+
+    font-size: 0.98rem;
+
+    line-height: 1.3;
+}
+
+.beneficio p {
+    margin: 0;
+
+    color:
+        var(--inicio-texto-muted);
+
+    font-size: 0.84rem;
+
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   CONOCE EARFUN
+========================================================= */
+.marca-earfun {
+    position: relative;
+
+    overflow: hidden;
+
+    padding:
+        clamp(
+            88px,
+            9vw,
+            132px
+        )
+        0;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(8, 19, 28, 0.30) 0%,
+            rgba(10, 24, 34, 0.96) 100%
+        );
+}
+
+.marca-earfun::after {
+    content: "";
+
+    position: absolute;
+
+    width: 470px;
+    height: 470px;
+
+    left: -260px;
+    bottom: -280px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(99, 214, 255, 0.14);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(99, 214, 255, 0.08),
+            transparent 67%
+        );
+
+    pointer-events: none;
+}
+
+.marca-earfun__contenido {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 0.98fr)
+        minmax(0, 1.02fr);
+
+    gap:
+        clamp(
+            60px,
+            7vw,
+            96px
+        );
+
+    align-items: center;
+}
+
+
+/* =========================================================
+   IMAGEN CONOCE EARFUN
+========================================================= */
+.marca-earfun__visual {
+    position: relative;
+}
+
+.marca-earfun__imagen {
+    position: relative;
+
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(99, 214, 255, 0.16);
+
+    border-radius:
+        clamp(
+            22px,
+            2.5vw,
+            32px
+        );
+
+    background:
+        #08131c;
+
+    box-shadow:
+        0
+        24px
+        60px
+        rgba(0, 0, 0, 0.28);
+}
+
+.marca-earfun__imagen img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    object-position:
+        center center;
+
+    transition:
+        transform
+        0.65s
+        cubic-bezier(
+            0.2,
+            0.7,
+            0.2,
+            1
+        );
+}
+
+.marca-earfun__imagen:hover img {
+    transform:
+        scale(1.025);
+}
+
+.marca-earfun__decoracion {
+    position: absolute;
+
+    z-index: -1;
+
+    width: 300px;
+    height: 300px;
+
+    left: -60px;
+    bottom: -110px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(99, 214, 255, 0.18);
+}
+
+
+/* =========================================================
+   TEXTO CONOCE EARFUN
+========================================================= */
+.marca-earfun__texto h2 {
+    margin: 0;
+
+    color:
+        var(--inicio-texto);
+
+    font-size:
+        clamp(
+            2.4rem,
+            4vw,
+            4.3rem
+        );
+
+    font-weight: 900;
+
+    line-height: 1.04;
+
+    letter-spacing: -0.045em;
+}
+
+.marca-earfun__texto h2 span {
+    color:
+        var(--inicio-celeste);
+}
+
+.marca-earfun__texto > p {
+    margin:
+        22px
+        0
+        0;
+
+    color:
+        var(--inicio-texto-soft);
+
+    font-size: 1rem;
+
+    line-height: 1.72;
+}
+
+.marca-earfun__intro {
+    font-size:
+        1.03rem !important;
+}
+
+
+/* =========================================================
+   CARACTERÍSTICAS EARFUN
+========================================================= */
+.marca-earfun__caracteristicas {
+    display: grid;
+
+    gap: 12px;
+
+    margin:
+        30px
+        0
+        34px;
+}
+
+.marca-caracteristica {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding:
+        16px
+        18px;
+
+    border:
+        1px solid
+        var(--inicio-borde);
+
+    border-radius: 16px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    transition:
+        transform var(--inicio-transicion),
+        border-color var(--inicio-transicion),
+        background-color var(--inicio-transicion);
+}
+
+.marca-caracteristica:hover {
+    transform:
+        translateX(4px);
+
+    border-color:
+        var(--inicio-borde-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.045);
+}
+
+.marca-caracteristica > i {
+    display: grid;
+    place-items: center;
+
+    flex:
+        0
+        0
+        44px;
+
+    width: 44px;
+    height: 44px;
+
+    border-radius: 13px;
+
+    color:
+        var(--inicio-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.10);
+
+    font-size: 1.15rem;
+}
+
+.marca-caracteristica div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.marca-caracteristica strong {
+    color:
+        var(--inicio-texto);
+
+    font-size: 0.96rem;
+}
+
+.marca-caracteristica span {
+    color:
+        var(--inicio-texto-muted);
+
+    font-size: 0.84rem;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   TIPOS EARFUN
+========================================================= */
+.tipos-earfun {
+    position: relative;
+
+    padding:
+        clamp(
+            92px,
+            9vw,
+            135px
+        )
+        0;
+
+    background:
+        #071018;
+}
+
+
+/* =========================================================
+   ENCABEZADO TIPOS
+========================================================= */
+.seccion-encabezado {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(320px, 0.65fr);
+
+    align-items: end;
+
+    gap: 50px;
+
+    margin-bottom: 48px;
+}
+
+.seccion-encabezado h2 {
+    margin: 0;
+
+    color:
+        var(--inicio-texto);
+
+    font-size:
+        clamp(
+            2.5rem,
+            4.5vw,
+            4.5rem
+        );
+
+    font-weight: 900;
+
+    line-height: 1.02;
+
+    letter-spacing: -0.045em;
+}
+
+.seccion-encabezado h2 span {
+    color:
+        var(--inicio-celeste);
+}
+
+.seccion-encabezado > p {
+    margin: 0;
+
+    max-width: 430px;
+
+    color:
+        var(--inicio-texto-soft);
+
+    font-size: 1rem;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   GRID TIPOS
+========================================================= */
+.tipos-earfun__grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    align-items: stretch;
+
+    gap: 20px;
+}
+
+
+/* =========================================================
+   CARD TIPO EARFUN
+========================================================= */
+.tipo-earfun {
+    position: relative;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(99, 214, 255, 0.15);
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0d1a24 0%,
+            #09151e 100%
+        );
+
+    box-shadow:
+        0
+        18px
+        42px
+        rgba(0, 0, 0, 0.15);
+
+    transition:
+        transform
+        0.35s
+        ease,
+        border-color
+        0.35s
+        ease,
+        box-shadow
+        0.35s
+        ease;
+}
+
+.tipo-earfun:hover {
+    transform:
+        translateY(-7px);
+
+    border-color:
+        rgba(99, 214, 255, 0.32);
+
+    box-shadow:
+        0
+        28px
+        64px
+        rgba(0, 0, 0, 0.30);
+}
+
+
+/* =========================================================
+   IMÁGENES CARDS
+========================================================= */
+.tipo-earfun__media {
+    width: 100%;
+
+    height: 330px;
+
+    padding:
+        10px
+        10px
+        0;
+
+    overflow: hidden;
+}
+
+.tipo-earfun__imagen {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border-radius:
+        15px
+        15px
+        0
+        0;
+
+    background:
+        #0b1720;
+}
+
+.tipo-earfun__imagen::after {
+    display: none;
+}
+
+.tipo-earfun__imagen img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    object-position: center;
+
+    background:
+        #0b1720;
+
+    filter: none;
+
+    transition:
+        transform
+        0.45s
+        ease;
+}
+
+.tipo-earfun:hover
+.tipo-earfun__imagen img {
+    transform:
+        scale(1.012);
+}
+
+
+/* =========================================================
+   CONTENIDO CARDS
+========================================================= */
+.tipo-earfun__contenido {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1;
+
+    padding:
+        22px
+        26px
+        27px;
+}
+
+.tipo-earfun__etiqueta {
+    align-self: flex-start;
+
+    margin-bottom: 13px;
+
+    padding:
+        7px
+        11px;
+
+    border-radius: 999px;
+
+    color:
+        var(--inicio-celeste);
+
+    background:
+        rgba(99, 214, 255, 0.10);
+
+    font-size: 0.73rem;
+    font-weight: 900;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+}
+
+.tipo-earfun h3 {
+    margin: 0;
+
+    min-height: 58px;
+
+    color:
+        var(--inicio-texto);
+
+    font-size: 1.38rem;
+    font-weight: 850;
+
+    line-height: 1.22;
+}
+
+.tipo-earfun p {
+    margin:
+        12px
+        0
+        24px;
+
+    color:
+        var(--inicio-texto-muted);
+
+    font-size: 0.9rem;
+
+    line-height: 1.62;
+}
+
+.tipo-earfun__enlace,
+.tipo-earfun a {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: auto;
+
+    color:
+        var(--inicio-celeste);
+
+    font-size: 0.9rem;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+.tipo-earfun__enlace i,
+.tipo-earfun a i {
+    transition:
+        transform
+        var(--inicio-transicion);
+}
+
+.tipo-earfun__enlace:hover i,
+.tipo-earfun a:hover i {
+    transform:
+        translateX(5px);
+}
+
+
+/* =========================================================
+   ANIMACIÓN HERO
+========================================================= */
+@keyframes heroProductoFlotar {
+    0%,
+    100% {
+        transform:
+            translateY(6px)
+            scale(1.02);
+    }
+
+    50% {
+        transform:
+            translateY(-7px)
+            scale(1.02);
+    }
+}
+
+
+/* =========================================================
+   ANIMACIÓN SCROLL
+========================================================= */
+@keyframes aparecerDesdeAbajo {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+@supports (
+    animation-timeline:
+        view()
+) {
+    .beneficio,
+    .marca-earfun__visual,
+    .marca-earfun__texto,
+    .seccion-encabezado,
+    .tipo-earfun {
+        opacity: 0;
+
+        animation-name:
+            aparecerDesdeAbajo;
+
+        animation-duration:
+            0.9s;
+
+        animation-fill-mode:
+            both;
+
+        animation-timing-function:
+            ease-out;
+
+        animation-timeline:
+            view();
+
+        animation-range:
+            entry 8%
+            cover 30%;
+    }
+
+    .tipo-earfun:nth-child(2) {
+        animation-range:
+            entry 12%
+            cover 33%;
+    }
+
+    .tipo-earfun:nth-child(3) {
+        animation-range:
+            entry 16%
+            cover 36%;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1350px
+========================================================= */
+@media (max-width: 1350px) {
+    .hero__tarjeta--superior {
+        right: -4%;
+    }
+
+    .hero__tarjeta--inferior {
+        left: -4%;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1200px
+========================================================= */
+@media (max-width: 1200px) {
+    .hero__producto {
+        width:
+            min(
+                84%,
+                470px
+            );
+    }
+
+    .hero__tarjeta--superior {
+        top: 9%;
+        right: 0;
+    }
+
+    .hero__tarjeta--inferior {
+        left: 0;
+        bottom: 7%;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1100px
+========================================================= */
+@media (max-width: 1100px) {
+    .hero__contenido {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(390px, 0.92fr);
+
+        gap: 46px;
+    }
+
+    .hero__visual {
+        min-height: 540px;
+    }
+
+    .hero__circulo {
+        width:
+            min(
+                82%,
+                475px
+            );
+    }
+
+    .hero__producto {
+        width:
+            min(
+                74%,
+                420px
+            );
+    }
+
+    .hero__tarjeta {
+        min-width: 195px;
+        max-width: 220px;
+    }
+
+    .hero__tarjeta--superior {
+        top: 5%;
+        right: 0;
+    }
+
+    .hero__tarjeta--inferior {
+        left: 0;
+        bottom: 4%;
+    }
+
+
+    .beneficios__grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+
+    .marca-earfun__contenido {
+        gap: 58px;
+    }
+
+
+    .tipos-earfun__grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .tipo-earfun:last-child {
+        grid-column:
+            1 / -1;
+
+        width: 100%;
+
+        max-width: 610px;
+
+        justify-self: center;
+    }
+}
+
+
+/* =========================================================
+   TABLET - 860px
+========================================================= */
+@media (max-width: 860px) {
+    .contenedor {
+        width:
+            min(
+                calc(100% - 30px),
+                720px
+            );
+    }
+
+
+    .hero {
+        padding-top: 58px;
+    }
+
+    .hero__contenido {
+        grid-template-columns: 1fr;
+
+        gap: 58px;
+    }
+
+    .hero__texto {
+        max-width: none;
+
+        text-align: center;
+    }
+
+    .hero__etiqueta {
+        margin-inline: auto;
+    }
+
+    .hero__texto > p {
+        margin-inline: auto;
+    }
+
+    .hero__botones {
+        justify-content: center;
+    }
+
+    .hero__datos {
+        max-width: 620px;
+
+        margin-inline: auto;
+
+        margin-top: 36px;
+    }
+
+
+    .hero__visual {
+        width: min(100%, 650px);
+
+        min-height: 560px;
+
+        margin-inline: auto;
+    }
+
+    .hero__circulo {
+        width:
+            min(
+                72%,
+                470px
+            );
+    }
+
+    .hero__producto {
+        width:
+            min(
+                65%,
+                420px
+            );
+    }
+
+    .hero__tarjeta--superior {
+        top: 7%;
+        right: 2%;
+    }
+
+    .hero__tarjeta--inferior {
+        left: 2%;
+        bottom: 5%;
+    }
+
+
+    .marca-earfun__contenido {
+        grid-template-columns: 1fr;
+    }
+
+    .marca-earfun__visual {
+        width: 100%;
+
+        max-width: 610px;
+
+        margin-inline: auto;
+    }
+
+
+    .seccion-encabezado {
+        grid-template-columns: 1fr;
+
+        gap: 20px;
+    }
+
+    .seccion-encabezado > p {
+        max-width: 620px;
+    }
+}
+
+
+/* =========================================================
+   MÓVIL - 620px
+========================================================= */
+@media (max-width: 620px) {
+    .contenedor {
+        width:
+            calc(
+                100% - 24px
+            );
+    }
+
+
+    .hero {
+        padding:
+            52px
+            0
+            68px;
+    }
+
+    .hero__texto h1 {
+        font-size:
+            clamp(
+                2.75rem,
+                13vw,
+                4rem
+            );
+    }
+
+    .hero__texto > p {
+        font-size: 0.96rem;
+    }
+
+    .hero__botones {
+        flex-direction: column;
+    }
+
+    .hero__botones .boton {
+        width: 100%;
+    }
+
+
+    .hero__datos {
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+
+        text-align: left;
+    }
+
+    .hero__datos > div {
+        padding:
+            14px
+            16px;
+
+        border:
+            1px solid
+            var(--inicio-borde);
+
+        border-radius: 13px;
+
+        background:
+            rgba(255, 255, 255, 0.025);
+    }
+
+
+    .hero__visual {
+        min-height: 470px;
+    }
+
+    .hero__circulo {
+        width: 90%;
+    }
+
+    .hero__producto {
+        width: 68%;
+    }
+
+
+    .hero__tarjeta {
+        min-width: 0;
+
+        width: 170px;
+
+        gap: 9px;
+
+        padding:
+            10px
+            11px;
+    }
+
+    .hero__tarjeta > i {
+        flex-basis: 35px;
+
+        width: 35px;
+        height: 35px;
+
+        font-size: 0.93rem;
+    }
+
+    .hero__tarjeta strong {
+        font-size: 0.74rem;
+    }
+
+    .hero__tarjeta span {
+        font-size: 0.64rem;
+    }
+
+    .hero__tarjeta--superior {
+        top: 1%;
+        right: 0;
+    }
+
+    .hero__tarjeta--inferior {
+        left: 0;
+        bottom: 1%;
+    }
+
+
+    .beneficios {
+        padding-bottom: 60px;
+    }
+
+    .beneficios__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .beneficio {
+        min-height: auto;
+    }
+
+
+    .marca-earfun {
+        padding:
+            74px
+            0;
+    }
+
+    .marca-earfun__texto h2 {
+        font-size:
+            clamp(
+                2.25rem,
+                11vw,
+                3.3rem
+            );
+    }
+
+    .marca-earfun__texto > p {
+        font-size: 0.94rem;
+    }
+
+    .marca-caracteristica {
+        padding: 14px;
+    }
+
+    .marca-earfun__texto > .boton {
+        width: 100%;
+    }
+
+
+    .tipos-earfun {
+        padding:
+            74px
+            0;
+    }
+
+    .seccion-encabezado {
+        margin-bottom: 34px;
+    }
+
+    .seccion-encabezado h2 {
+        font-size:
+            clamp(
+                2.25rem,
+                11vw,
+                3.3rem
+            );
+    }
+
+    .tipos-earfun__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tipo-earfun:last-child {
+        grid-column: auto;
+
+        max-width: none;
+    }
+
+    .tipo-earfun__media {
+        height: 285px;
+
+        padding:
+            8px
+            8px
+            0;
+    }
+
+    .tipo-earfun__contenido {
+        padding:
+            22px
+            22px
+            24px;
+    }
+
+    .tipo-earfun h3 {
+        min-height: 0;
+    }
+}
+
+
+/* =========================================================
+   MÓVIL PEQUEÑO - 480px
+========================================================= */
+@media (max-width: 480px) {
+    .hero__visual {
+        min-height: 410px;
+    }
+
+    .hero__circulo {
+        width: 94%;
+    }
+
+    .hero__producto {
+        width: 67%;
+    }
+
+    .hero__tarjeta {
+        width: 145px;
+
+        padding:
+            9px
+            10px;
+    }
+
+    .hero__tarjeta strong {
+        white-space: normal;
+
+        line-height: 1.2;
+    }
+
+    .hero__tarjeta span {
+        display: none;
+    }
+
+    .hero__tarjeta--superior {
+        top: 0;
+        right: 0;
+    }
+
+    .hero__tarjeta--inferior {
+        left: 0;
+        bottom: 0;
+    }
+
+
+    .tipo-earfun__media {
+        height: 250px;
+    }
+}
+
+
+/* =========================================================
+   MÓVIL MUY PEQUEÑO - 380px
+========================================================= */
+@media (max-width: 380px) {
+    .hero__visual {
+        min-height: 380px;
+    }
+
+    .hero__producto {
+        width: 64%;
+    }
+
+    .hero__tarjeta {
+        width: 132px;
+    }
+
+    .hero__tarjeta > i {
+        display: none;
+    }
+
+    .hero__tarjeta--superior {
+        top: 2%;
+    }
+
+    .hero__tarjeta--inferior {
+        bottom: 2%;
+    }
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+========================================================= */
+@media (
+    prefers-reduced-motion:
+    reduce
+) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration:
+            0.01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        transition-duration:
+            0.01ms !important;
+
+        scroll-behavior:
+            auto !important;
+    }
+}

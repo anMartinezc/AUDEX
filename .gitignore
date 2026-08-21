@@ -42,3 +42,13 @@ htmlcov/
 
 # Node
 node_modules/
+
+
+
+# Videos pesados
+core/static/core/videos/Earfun.mp4
+core/static/core/videos/EarfunCancelacion.mp4
+core/static/core/videos/Earfunsport.mp4
+core/static/core/videos/EarfunBoom.mp4
+core/static/core/videos/EarfunClip.mp4
+core/static/core/videos/EarfunChildren.mp4

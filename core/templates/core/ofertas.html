@@ -11,12 +11,12 @@ Ofertas | Audex
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/ofertas.css' %}?v=15"
+    href="{% static 'core/css/ofertas.css' %}?v=18"
 >
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/ofertas_cupones_clp.css' %}?v=5"
+    href="{% static 'core/css/ofertas_cupones_clp.css' %}?v=7"
 >
 
 {% endblock %}
@@ -227,7 +227,7 @@ Ofertas | Audex
                             <article>
 
                                 <span>
-                                    Premios desbloqueados
+                                    Premios disponibles
                                 </span>
 
                                 <strong>
@@ -419,6 +419,7 @@ Ofertas | Audex
                             <i class="bi bi-ticket-perforated"></i>
 
                             <strong>
+
                                 {{ cantidad_codigos_generales }}
 
                                 {% if cantidad_codigos_generales == 1 %}
@@ -426,6 +427,7 @@ Ofertas | Audex
                                 {% else %}
                                     códigos disponibles
                                 {% endif %}
+
                             </strong>
 
                             <span>
@@ -584,7 +586,7 @@ Ofertas | Audex
                                         <div class="cupon-clp__beneficio">
 
                                             <strong>
-                                                -${{ codigo.monto_descuento|floatformat:0|intcomma }}
+                                                -${{ codigo.monto_descuento|floatformat:0|intcomma }} CLP
                                             </strong>
 
                                             <span>
@@ -594,7 +596,7 @@ Ofertas | Audex
                                                     en compras desde
 
                                                     <b>
-                                                        ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                                        ${{ codigo.monto_minimo|floatformat:0|intcomma }} CLP
                                                     </b>
 
                                                 {% else %}
@@ -637,6 +639,8 @@ Ofertas | Audex
                                                 type="button"
                                                 class="cupon-clp__copiar"
                                                 disabled
+                                                aria-disabled="true"
+                                                title="Este código ya fue utilizado"
                                             >
                                                 <span>
                                                     Ya utilizado
@@ -774,7 +778,7 @@ Ofertas | Audex
                                                     {% if codigo.monto_minimo > 0 %}
 
                                                         Compra mínima:
-                                                        ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                                        ${{ codigo.monto_minimo|floatformat:0|intcomma }} CLP
 
                                                     {% else %}
 
@@ -792,7 +796,7 @@ Ofertas | Audex
                                                         <i class="bi bi-shield-check"></i>
 
                                                         Máximo:
-                                                        ${{ codigo.monto_maximo_descuento|floatformat:0|intcomma }}
+                                                        ${{ codigo.monto_maximo_descuento|floatformat:0|intcomma }} CLP
 
                                                     </li>
 
@@ -821,6 +825,8 @@ Ofertas | Audex
                                                     type="button"
                                                     class="ofertas-copiar"
                                                     disabled
+                                                    aria-disabled="true"
+                                                    title="Este código ya fue utilizado"
                                                 >
                                                     <span>
                                                         Ya utilizado
@@ -884,138 +890,6 @@ Ofertas | Audex
                     <div class="contenedor">
 
                         <!-- ==============================================
-                             CÓDIGOS YA DESBLOQUEADOS
-                        =============================================== -->
-
-                        {% if codigos_personales %}
-
-                            <section class="ofertas-premios-personales">
-
-                                <header class="ofertas-bloque-cabecera">
-
-                                    <span class="etiqueta-seccion">
-                                        Disponibles ahora
-                                    </span>
-
-                                    <h2>
-                                        Tus descuentos exclusivos
-                                    </h2>
-
-                                    <p>
-                                        Ya los ganaste.
-                                        Úsalos antes de que terminen.
-                                    </p>
-
-                                </header>
-
-
-                                <div class="ofertas-premios-personales__grid">
-
-                                    {% for codigo in codigos_personales %}
-
-                                        <article>
-
-                                            <i class="bi bi-award"></i>
-
-
-                                            {% if codigo.meta_fidelidad %}
-
-                                                <span>
-                                                    {{ codigo.meta_fidelidad.nombre }}
-                                                </span>
-
-                                            {% else %}
-
-                                                <span>
-                                                    Premio exclusivo
-                                                </span>
-
-                                            {% endif %}
-
-
-                                            <strong>
-                                                {{ codigo.codigo }}
-                                            </strong>
-
-
-                                            {% if codigo.modalidad == "monto_fijo" %}
-
-                                                <small>
-
-                                                    <strong>
-                                                        ${{ codigo.monto_descuento|floatformat:0|intcomma }}
-                                                    </strong>
-
-                                                    de descuento
-
-                                                </small>
-
-                                            {% else %}
-
-                                                <small>
-
-                                                    <strong>
-                                                        {{ codigo.porcentaje|floatformat:0 }}%
-                                                    </strong>
-
-                                                    de descuento
-
-                                                </small>
-
-                                            {% endif %}
-
-
-                                            {% if codigo.monto_minimo > 0 %}
-
-                                                <small>
-                                                    Compra mínima:
-                                                    ${{ codigo.monto_minimo|floatformat:0|intcomma }}
-                                                </small>
-
-                                            {% endif %}
-
-
-                                            {% if codigo.fecha_fin %}
-
-                                                <small>
-
-                                                    <i class="bi bi-clock-history"></i>
-
-                                                    Hasta
-                                                    {{ codigo.fecha_fin|date:"d/m/Y" }}
-
-                                                </small>
-
-                                            {% endif %}
-
-
-                                            <button
-                                                type="button"
-                                                class="
-                                                    ofertas-copiar
-                                                    js-copiar-codigo
-                                                "
-                                                data-codigo="{{ codigo.codigo }}"
-                                            >
-                                                <span>
-                                                    Copiar código
-                                                </span>
-
-                                                <i class="bi bi-copy"></i>
-                                            </button>
-
-                                        </article>
-
-                                    {% endfor %}
-
-                                </div>
-
-                            </section>
-
-                        {% endif %}
-
-
-                        <!-- ==============================================
                              PRÓXIMA RECOMPENSA
                         =============================================== -->
 
@@ -1037,7 +911,7 @@ Ofertas | Audex
                                             Estás a
 
                                             <strong>
-                                                ${{ fidelidad.faltante|floatformat:0|intcomma }}
+                                                ${{ fidelidad.faltante|floatformat:0|intcomma }} CLP
                                             </strong>
 
                                             de tu próxima recompensa
@@ -1053,7 +927,7 @@ Ofertas | Audex
                                             {% if fidelidad.meta.modalidad == "monto_fijo" %}
 
                                                 <strong>
-                                                    ${{ fidelidad.meta.monto_descuento|floatformat:0|intcomma }}
+                                                    ${{ fidelidad.meta.monto_descuento|floatformat:0|intcomma }} CLP
                                                     de descuento
                                                 </strong>
 
@@ -1091,7 +965,7 @@ Ofertas | Audex
                                                 </span>
 
                                                 <strong>
-                                                    ${{ fidelidad.saldo_actual|floatformat:0|intcomma }}
+                                                    ${{ fidelidad.saldo_actual|floatformat:0|intcomma }} CLP
                                                 </strong>
 
                                             </div>
@@ -1104,7 +978,7 @@ Ofertas | Audex
                                                 </span>
 
                                                 <strong>
-                                                    ${{ fidelidad.monto_objetivo|floatformat:0|intcomma }}
+                                                    ${{ fidelidad.monto_objetivo|floatformat:0|intcomma }} CLP
                                                 </strong>
 
                                             </div>
@@ -1175,7 +1049,7 @@ Ofertas | Audex
                                         {% if fidelidad.meta.modalidad == "monto_fijo" %}
 
                                             <strong>
-                                                ${{ fidelidad.meta.monto_descuento|floatformat:0|intcomma }}
+                                                ${{ fidelidad.meta.monto_descuento|floatformat:0|intcomma }} CLP
                                             </strong>
 
                                             <small>
@@ -1199,7 +1073,7 @@ Ofertas | Audex
 
                                             <small>
                                                 Compra mínima:
-                                                ${{ fidelidad.meta.monto_minimo_compra|floatformat:0|intcomma }}
+                                                ${{ fidelidad.meta.monto_minimo_compra|floatformat:0|intcomma }} CLP
                                             </small>
 
                                         {% endif %}
@@ -1271,6 +1145,18 @@ Ofertas | Audex
                                                 {% if meta.alcanzada_cliente %}
                                                     ofertas-meta-card--alcanzada
                                                 {% endif %}
+
+                                                {% if meta.codigo_consumido_cliente %}
+                                                    ofertas-meta-card--utilizada
+                                                {% endif %}
+
+                                                {% if meta.codigo_vencido_cliente %}
+                                                    ofertas-meta-card--vencida
+                                                {% endif %}
+
+                                                {% if meta.codigo_desactivado_cliente %}
+                                                    ofertas-meta-card--desactivada
+                                                {% endif %}
                                             "
                                         >
 
@@ -1298,7 +1184,7 @@ Ofertas | Audex
                                                             ofertas-meta-card__valor--clp
                                                         "
                                                     >
-                                                        ${{ meta.monto_descuento|floatformat:0|intcomma }}
+                                                        ${{ meta.monto_descuento|floatformat:0|intcomma }} CLP
                                                     </strong>
 
                                                 {% else %}
@@ -1337,15 +1223,64 @@ Ofertas | Audex
                                                     Meta:
 
                                                     <strong>
-                                                        ${{ meta.monto_objetivo|floatformat:0|intcomma }}
+                                                        ${{ meta.monto_objetivo|floatformat:0|intcomma }} CLP
                                                     </strong>
 
                                                 </h3>
 
 
-                                                {% if meta.codigo_personal_cliente %}
+                                                <!-- ======================
+                                                     PREMIO UTILIZADO
+                                                ======================= -->
 
-                                                    <div class="ofertas-meta-card__estado ofertas-meta-card__estado--listo">
+                                                {% if meta.codigo_consumido_cliente %}
+
+                                                    <div
+                                                        class="
+                                                            ofertas-meta-card__estado
+                                                            ofertas-meta-card__estado--utilizado
+                                                        "
+                                                    >
+
+                                                        <i class="bi bi-check2-circle"></i>
+
+                                                        Premio ya utilizado
+
+                                                    </div>
+
+
+                                                    <button
+                                                        type="button"
+                                                        class="
+                                                            ofertas-copiar
+                                                            ofertas-copiar--bloqueado
+                                                        "
+                                                        disabled
+                                                        aria-disabled="true"
+                                                        title="Este premio ya fue utilizado"
+                                                    >
+
+                                                        <span>
+                                                            Código utilizado
+                                                        </span>
+
+                                                        <i class="bi bi-lock-fill"></i>
+
+                                                    </button>
+
+
+                                                <!-- ======================
+                                                     PREMIO DISPONIBLE
+                                                ======================= -->
+
+                                                {% elif meta.codigo_disponible_cliente %}
+
+                                                    <div
+                                                        class="
+                                                            ofertas-meta-card__estado
+                                                            ofertas-meta-card__estado--listo
+                                                        "
+                                                    >
 
                                                         <i class="bi bi-check-circle-fill"></i>
 
@@ -1362,17 +1297,108 @@ Ofertas | Audex
                                                         "
                                                         data-codigo="{{ meta.codigo_personal_cliente.codigo }}"
                                                     >
+
                                                         <span>
                                                             Copiar código
                                                         </span>
 
                                                         <i class="bi bi-copy"></i>
+
                                                     </button>
 
 
+                                                <!-- ======================
+                                                     PREMIO VENCIDO
+                                                ======================= -->
+
+                                                {% elif meta.codigo_vencido_cliente %}
+
+                                                    <div
+                                                        class="
+                                                            ofertas-meta-card__estado
+                                                            ofertas-meta-card__estado--vencido
+                                                        "
+                                                    >
+
+                                                        <i class="bi bi-clock-history"></i>
+
+                                                        Premio vencido
+
+                                                    </div>
+
+
+                                                    <button
+                                                        type="button"
+                                                        class="
+                                                            ofertas-copiar
+                                                            ofertas-copiar--bloqueado
+                                                        "
+                                                        disabled
+                                                        aria-disabled="true"
+                                                        title="Este premio ya venció"
+                                                    >
+
+                                                        <span>
+                                                            Código vencido
+                                                        </span>
+
+                                                        <i class="bi bi-lock-fill"></i>
+
+                                                    </button>
+
+
+                                                <!-- ======================
+                                                     PREMIO DESACTIVADO
+                                                ======================= -->
+
+                                                {% elif meta.codigo_desactivado_cliente %}
+
+                                                    <div
+                                                        class="
+                                                            ofertas-meta-card__estado
+                                                            ofertas-meta-card__estado--desactivado
+                                                        "
+                                                    >
+
+                                                        <i class="bi bi-x-circle-fill"></i>
+
+                                                        Premio no disponible
+
+                                                    </div>
+
+
+                                                    <button
+                                                        type="button"
+                                                        class="
+                                                            ofertas-copiar
+                                                            ofertas-copiar--bloqueado
+                                                        "
+                                                        disabled
+                                                        aria-disabled="true"
+                                                        title="Este premio ya no está disponible"
+                                                    >
+
+                                                        <span>
+                                                            Código no disponible
+                                                        </span>
+
+                                                        <i class="bi bi-lock-fill"></i>
+
+                                                    </button>
+
+
+                                                <!-- ======================
+                                                     META ALCANZADA
+                                                ======================= -->
+
                                                 {% elif meta.alcanzada_cliente %}
 
-                                                    <div class="ofertas-meta-card__estado">
+                                                    <div
+                                                        class="
+                                                            ofertas-meta-card__estado
+                                                            ofertas-meta-card__estado--alcanzada
+                                                        "
+                                                    >
 
                                                         <i class="bi bi-hourglass-split"></i>
 
@@ -1380,6 +1406,29 @@ Ofertas | Audex
 
                                                     </div>
 
+
+                                                    <button
+                                                        type="button"
+                                                        class="
+                                                            ofertas-copiar
+                                                            ofertas-copiar--bloqueado
+                                                        "
+                                                        disabled
+                                                        aria-disabled="true"
+                                                    >
+
+                                                        <span>
+                                                            Preparando premio
+                                                        </span>
+
+                                                        <i class="bi bi-hourglass-split"></i>
+
+                                                    </button>
+
+
+                                                <!-- ======================
+                                                     META EN PROGRESO
+                                                ======================= -->
 
                                                 {% else %}
 
@@ -1390,9 +1439,11 @@ Ofertas | Audex
                                                         aria-valuemax="100"
                                                         aria-valuenow="{{ meta.progreso_cliente }}"
                                                     >
+
                                                         <span
                                                             style="width: {{ meta.progreso_cliente }}%;"
                                                         ></span>
+
                                                     </div>
 
 
@@ -1401,7 +1452,7 @@ Ofertas | Audex
                                                         Te faltan
 
                                                         <strong>
-                                                            ${{ meta.faltante_cliente|floatformat:0|intcomma }}
+                                                            ${{ meta.faltante_cliente|floatformat:0|intcomma }} CLP
                                                         </strong>
 
                                                         para desbloquearla.
@@ -1490,7 +1541,7 @@ Ofertas | Audex
                                             al acumular
 
                                             <strong>
-                                                ${{ primera_meta.monto_objetivo|floatformat:0|intcomma }}
+                                                ${{ primera_meta.monto_objetivo|floatformat:0|intcomma }} CLP
                                             </strong>.
 
                                         </p>
@@ -1504,9 +1555,11 @@ Ofertas | Audex
                                     href="{% url 'core:login' %}?next={% url 'core:ofertas' %}"
                                     class="boton boton--primario"
                                 >
+
                                     Iniciar sesión y comenzar
 
                                     <i class="bi bi-person-check"></i>
+
                                 </a>
 
                             </div>
@@ -1545,7 +1598,6 @@ Ofertas | Audex
              PRODUCTOS EN OFERTA
         =========================================================== -->
 
-
         {% if productos_oferta %}
 
             <section
@@ -1556,7 +1608,7 @@ Ofertas | Audex
                 <div class="contenedor">
 
                     <!-- ==================================================
-                        CABECERA
+                         CABECERA
                     =================================================== -->
 
                     <header class="ofertas-seccion__cabecera">
@@ -1596,7 +1648,7 @@ Ofertas | Audex
 
 
                     <!-- ==================================================
-                        GRID
+                         GRID
                     =================================================== -->
 
                     <div class="ofertas-productos-grid">
@@ -1610,16 +1662,18 @@ Ofertas | Audex
                                     {% if not producto.disponible %}
                                         oferta-producto-card--agotado
                                     {% endif %}
+
+                                    {% if request.user.is_staff or request.user.is_superuser %}
+                                        oferta-producto-card--admin
+                                    {% endif %}
                                 "
                             >
 
                                 <!-- ==========================================
-                                    IMAGEN
+                                     IMAGEN
                                 =========================================== -->
 
                                 <div class="oferta-producto-card__media">
-
-                                    <!-- DESCUENTO -->
 
                                     <span class="oferta-producto-card__descuento">
 
@@ -1633,8 +1687,6 @@ Ofertas | Audex
 
                                     </span>
 
-
-                                    <!-- IMAGEN -->
 
                                     <a
                                         href="{{ producto.get_absolute_url }}"
@@ -1666,14 +1718,10 @@ Ofertas | Audex
 
 
                                 <!-- ==========================================
-                                    CUERPO
+                                     CUERPO
                                 =========================================== -->
 
                                 <div class="oferta-producto-card__cuerpo">
-
-                                    <!-- ======================================
-                                        CABECERA PRODUCTO
-                                    ======================================= -->
 
                                     <div class="oferta-producto-card__encabezado">
 
@@ -1718,7 +1766,7 @@ Ofertas | Audex
 
 
                                     <!-- ======================================
-                                        NOMBRE
+                                         NOMBRE
                                     ======================================= -->
 
                                     <h3 class="oferta-producto-card__titulo">
@@ -1731,7 +1779,7 @@ Ofertas | Audex
 
 
                                     <!-- ======================================
-                                        DESCRIPCIÓN CORTA
+                                         DESCRIPCIÓN
                                     ======================================= -->
 
                                     {% if producto.descripcion_corta %}
@@ -1744,7 +1792,7 @@ Ofertas | Audex
 
 
                                     <!-- ======================================
-                                        INFORMACIÓN DEL PRODUCTO
+                                         INFORMACIÓN DEL PRODUCTO
                                     ======================================= -->
 
                                     <div class="oferta-producto-card__informacion">
@@ -1757,10 +1805,6 @@ Ofertas | Audex
 
                                         </span>
 
-
-                                        <!-- ==================================
-                                            CARACTERÍSTICAS PRINCIPALES
-                                        =================================== -->
 
                                         <ul class="oferta-producto-card__caracteristicas">
 
@@ -1810,10 +1854,6 @@ Ofertas | Audex
 
                                         </ul>
 
-
-                                        <!-- ==================================
-                                            DATOS TÉCNICOS
-                                        =================================== -->
 
                                         {% if producto.autonomia_horas or producto.bluetooth or producto.resistencia_agua or producto.cancelacion_ruido %}
 
@@ -1879,7 +1919,7 @@ Ofertas | Audex
 
 
                                     <!-- ======================================
-                                        PRECIO
+                                         PRECIO
                                     ======================================= -->
 
                                     <div class="oferta-producto-card__precio">
@@ -1887,11 +1927,11 @@ Ofertas | Audex
                                         <div class="oferta-producto-card__precio-principal">
 
                                             <del>
-                                                ${{ producto.precio|floatformat:0|intcomma }}
+                                                ${{ producto.precio|floatformat:0|intcomma }} CLP
                                             </del>
 
                                             <strong>
-                                                ${{ producto.precio_oferta|floatformat:0|intcomma }}
+                                                ${{ producto.precio_oferta|floatformat:0|intcomma }} CLP
                                             </strong>
 
                                         </div>
@@ -1906,7 +1946,7 @@ Ofertas | Audex
 
                                             <small>
                                                 Son
-                                                ${{ producto.ahorro_oferta|floatformat:0|intcomma }}
+                                                ${{ producto.ahorro_oferta|floatformat:0|intcomma }} CLP
                                                 menos
                                             </small>
 
@@ -1916,7 +1956,7 @@ Ofertas | Audex
 
 
                                     <!-- ======================================
-                                        BENEFICIOS DE COMPRA
+                                         BENEFICIOS DE COMPRA
                                     ======================================= -->
 
                                     <div class="oferta-producto-card__beneficios">
@@ -1951,7 +1991,7 @@ Ofertas | Audex
 
 
                                     <!-- ======================================
-                                        ACCIONES
+                                         ACCIONES
                                     ======================================= -->
 
                                     <div class="oferta-producto-card__acciones">
@@ -1970,46 +2010,86 @@ Ofertas | Audex
                                         </a>
 
 
-                                        <button
-                                            type="button"
-                                            class="
-                                                oferta-producto-card__comprar
-                                                comprar-oferta
-                                                js-agregar-oferta
-                                            "
-                                            data-producto-id="{{ producto.id }}"
-                                            data-producto="{{ producto.nombre|escape }}"
-                                            data-stock="{{ producto.stock_oferta }}"
+                                        <!-- ==================================
+                                             ADMINISTRADORES
+                                        =================================== -->
 
-                                            {% if not producto.disponible %}
+                                        {% if request.user.is_staff or request.user.is_superuser %}
 
+                                            <button
+                                                type="button"
+                                                class="
+                                                    oferta-producto-card__comprar
+                                                    oferta-producto-card__comprar--admin
+                                                "
                                                 disabled
                                                 aria-disabled="true"
+                                                title="Los administradores no pueden agregar productos al carrito"
+                                            >
 
-                                            {% else %}
+                                                <i class="bi bi-lock-fill"></i>
 
-                                                aria-disabled="false"
+                                                <span>
+                                                    No disponible para administradores
+                                                </span>
 
-                                            {% endif %}
-                                        >
+                                            </button>
 
-                                            <i class="bi bi-bag-plus"></i>
 
-                                            <span>
+                                        <!-- ==================================
+                                             PRODUCTO AGOTADO
+                                        =================================== -->
 
-                                                {% if producto.disponible %}
+                                        {% elif not producto.disponible %}
 
-                                                    Agregar al carrito
+                                            <button
+                                                type="button"
+                                                class="
+                                                    oferta-producto-card__comprar
+                                                    comprar-oferta
+                                                "
+                                                disabled
+                                                aria-disabled="true"
+                                                title="Producto agotado"
+                                            >
 
-                                                {% else %}
+                                                <i class="bi bi-x-circle"></i>
 
+                                                <span>
                                                     Producto agotado
+                                                </span>
 
-                                                {% endif %}
+                                            </button>
 
-                                            </span>
 
-                                        </button>
+                                        <!-- ==================================
+                                             USUARIO NORMAL
+                                        =================================== -->
+
+                                        {% else %}
+
+                                            <button
+                                                type="button"
+                                                class="
+                                                    oferta-producto-card__comprar
+                                                    comprar-oferta
+                                                    js-agregar-oferta
+                                                "
+                                                data-producto-id="{{ producto.id }}"
+                                                data-producto="{{ producto.nombre|escape }}"
+                                                data-stock="{{ producto.stock_oferta }}"
+                                                aria-disabled="false"
+                                            >
+
+                                                <i class="bi bi-bag-plus"></i>
+
+                                                <span>
+                                                    Agregar al carrito
+                                                </span>
+
+                                            </button>
+
+                                        {% endif %}
 
                                     </div>
 
@@ -2042,9 +2122,11 @@ Ofertas | Audex
         aria-atomic="true"
         aria-hidden="true"
     >
+
         <i class="bi bi-check-circle-fill"></i>
 
         <span id="ofertasToastTexto"></span>
+
     </div>
 
 </section>
@@ -2055,7 +2137,7 @@ Ofertas | Audex
 {% block extra_js %}
 
 <script
-    src="{% static 'core/js/ofertas.js' %}?v=15"
+    src="{% static 'core/js/ofertas.js' %}?v=18"
 ></script>
 
 {% endblock %}

@@ -1,16 +1,19 @@
+/* =========================================================
+   HERO
+========================================================= */
+
 .categorias-hero {
-    padding: 110px 0 90px;
-
+    padding: 88px 0 72px;
     text-align: center;
-
     border-bottom: 1px solid var(--borde);
 
     background:
         radial-gradient(
-            circle at center top,
+            circle at 50% 0%,
             rgba(54, 169, 214, 0.18),
-            transparent 38%
-        );
+            transparent 42%
+        ),
+        var(--color-fondo);
 }
 
 .categorias-hero__contenido {
@@ -19,48 +22,113 @@
     align-items: center;
 }
 
+.categorias-hero .etiqueta-seccion {
+    margin-bottom: 18px;
+}
+
 .categorias-hero h1 {
-    max-width: 900px;
+    max-width: 760px;
+    margin: 0;
 
     font-family: "Montserrat", sans-serif;
-    font-size: clamp(3rem, 7vw, 5.8rem);
-    line-height: 1;
-    letter-spacing: -0.06em;
+    font-size: clamp(3rem, 7vw, 5.3rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.055em;
+
+    color: var(--color-blanco);
 }
 
 .categorias-hero h1 span {
     display: block;
+    margin-top: 8px;
 
     color: var(--color-azul-claro);
 }
 
 .categorias-hero p {
-    max-width: 670px;
-    margin-top: 26px;
+    max-width: 520px;
+    margin: 22px auto 0;
 
     color: var(--color-gris-claro);
-    font-size: 1.05rem;
+
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
-.categorias-principales {
-    padding: 80px 0;
+.categorias-hero__cta {
+    margin-top: 28px;
+    padding: 11px 19px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    color: var(--color-azul-claro);
+
+    font-size: 0.88rem;
+    font-weight: 800;
+
+    border: 1px solid var(--borde-azul);
+    border-radius: 999px;
+
+    background: rgba(54, 169, 214, 0.08);
+
+    transition:
+        transform 0.3s ease,
+        background 0.3s ease,
+        border-color 0.3s ease;
 }
+
+.categorias-hero__cta:hover {
+    transform: translateY(-3px);
+    background: rgba(54, 169, 214, 0.15);
+}
+
+
+/* =========================================================
+   SECCIÓN PRINCIPAL
+========================================================= */
+
+.categorias-principales {
+    padding: 70px 0 82px;
+}
+
+
+/* =========================================================
+   GRID PRINCIPAL
+========================================================= */
 
 .categorias-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    grid-template-areas:
+        "anc      clip"
+        "anc      tecnologia"
+        "cert     cert"
+        "extra2   extra1"
+        "extra3   extra1";
+
     gap: 22px;
+
+    align-items: stretch;
 }
+
+
+/* =========================================================
+   CARD GENERAL
+========================================================= */
 
 .categoria-card {
     position: relative;
+
+    min-width: 0;
+
     overflow: hidden;
-
-    min-height: 420px;
-    padding: 34px;
-
-    display: flex;
-    align-items: flex-end;
 
     border: 1px solid var(--borde);
     border-radius: 26px;
@@ -68,268 +136,1496 @@
     background:
         linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.02),
-            rgba(7, 12, 17, 0.95)
+            rgba(255, 255, 255, 0.025),
+            rgba(5, 11, 16, 0.98)
         ),
         var(--color-fondo-secundario);
 
     transition:
-        transform 0.4s ease,
-        border-color 0.4s ease,
-        box-shadow 0.4s ease;
+        transform 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
 }
 
 .categoria-card:hover {
-    border-color: var(--borde-azul);
+    border-color: rgba(54, 169, 214, 0.42);
 
-    transform: translateY(-8px);
-    box-shadow: var(--sombra-azul);
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.3),
+        0 0 28px rgba(54, 169, 214, 0.07);
 }
+
+
+/* =========================================================
+   PRIMER MOSAICO
+========================================================= */
 
 .categoria-card--grande {
-    min-height: 570px;
-    grid-row: span 2;
+    grid-area: anc;
+    min-height: 1062px;
 }
 
-.categoria-card--horizontal {
-    min-height: 320px;
-    grid-column: 1 / -1;
+.categoria-card--clip {
+    grid-area: clip;
+    min-height: 520px;
 }
 
-.categoria-card img {
-    position: absolute;
-    z-index: 1;
-    top: 30px;
-    right: 20px;
-
-    width: 70%;
-    height: 62%;
-
-    object-fit: contain;
-    mix-blend-mode: screen;
-
-    transition: transform 0.5s ease;
+.categoria-card--tecnologia {
+    grid-area: tecnologia;
+    min-height: 520px;
 }
 
-.categoria-card:hover img {
-    transform: scale(1.08) rotate(-3deg);
-}
 
-.categoria-card--horizontal img {
-    width: 45%;
-    height: 90%;
-    top: 5%;
-}
+/* =========================================================
+   CARDS CON VIDEO
+========================================================= */
 
-.categoria-card__contenido {
-    position: relative;
-    z-index: 3;
-
-    max-width: 420px;
-}
-
-.categoria-card__contenido > span {
-    color: var(--color-azul-claro);
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
-.categoria-card h2 {
-    margin: 8px 0 12px;
-
-    font-family: "Montserrat", sans-serif;
-    font-size: clamp(2rem, 4vw, 3.4rem);
-}
-
-.categoria-card p {
-    max-width: 400px;
-    margin-bottom: 22px;
-
-    color: var(--color-gris-claro);
-}
-
-.categoria-card a {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-
-    color: var(--color-azul-claro);
-    font-weight: 700;
-}
-
-.categoria-card a i {
-    transition: transform 0.3s ease;
-}
-
-.categoria-card a:hover i {
-    transform: translateX(6px);
-}
-
-.selector-uso {
-    padding: 90px 0;
-
-    border-top: 1px solid var(--borde);
-    background: rgba(255, 255, 255, 0.015);
-}
-
-.selector-uso__encabezado {
-    max-width: 760px;
-    margin: 0 auto 40px;
-
-    text-align: center;
-}
-
-.selector-uso__encabezado .etiqueta-seccion {
-    margin-inline: auto;
-}
-
-.selector-uso h2 {
-    font-family: "Montserrat", sans-serif;
-    font-size: clamp(2rem, 5vw, 3.6rem);
-}
-
-.selector-uso__encabezado p {
-    margin-top: 14px;
-
-    color: var(--color-gris);
-}
-
-.selector-uso__botones {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-}
-
-.selector-uso__botones button {
-    min-height: 145px;
+.categoria-video {
+    min-height: 520px;
 
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-
-    color: var(--color-gris-claro);
-
-    border: 1px solid var(--borde);
-    border-radius: 18px;
-
-    background: rgba(255, 255, 255, 0.025);
-
-    transition: 0.3s ease;
 }
 
-.selector-uso__botones button i {
-    color: var(--color-azul-claro);
-    font-size: 2rem;
+
+/* =========================================================
+   ÁREA VISUAL
+========================================================= */
+
+.categoria-video__media {
+    position: relative;
+
+    width: 100%;
+    min-height: 330px;
+
+    flex: 1;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(54, 169, 214, 0.08),
+            transparent 62%
+        ),
+        #050c13;
 }
 
-.selector-uso__botones button:hover,
-.selector-uso__botones button.activo {
-    color: var(--color-blanco);
-
-    border-color: var(--borde-azul);
-    background: rgba(54, 169, 214, 0.1);
-
-    transform: translateY(-5px);
+.categoria-card--grande
+.categoria-video__media {
+    min-height: 700px;
 }
 
-.recomendacion {
-    max-width: 780px;
-    margin: 35px auto 0;
-    padding: 28px;
+
+/* =========================================================
+   POSTERS
+========================================================= */
+
+.categoria-video__poster {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+    object-position: center;
+
+    opacity: 1;
+
+    transform: scale(1);
+
+    transition:
+        opacity 0.4s ease,
+        transform 0.55s ease;
+}
+
+.categoria-card:hover
+.categoria-video__poster {
+    transform: scale(1.025);
+}
+
+.categoria-video__poster.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CANCELACIÓN DE RUIDO
+========================================================= */
+
+.categoria-card--anc
+.categoria-video__poster {
+    object-fit: cover;
+    object-position: center;
+}
+
+
+/* =========================================================
+   AUDEX CLIP
+========================================================= */
+
+.categoria-card--clip
+.categoria-video__poster {
+    object-fit: cover;
+    object-position: center;
+}
+
+
+/* =========================================================
+   MÁS QUE SONIDO
+========================================================= */
+
+.categoria-card--tecnologia
+.categoria-video__media {
+    background:
+        radial-gradient(
+            circle at 52% 40%,
+            rgba(24, 110, 213, 0.14),
+            transparent 62%
+        ),
+        #020812;
+}
+
+.categoria-card--tecnologia
+.categoria-video__poster {
+    object-fit: cover;
+    object-position: center;
+    padding: 0;
+}
+
+
+/* =========================================================
+   VIDEO
+========================================================= */
+
+.categoria-video__video {
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+    object-position: center;
+
+    opacity: 0;
+    visibility: hidden;
+
+    background: #000;
+
+    transition:
+        opacity 0.4s ease,
+        visibility 0.4s ease;
+}
+
+.categoria-video__video.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+/* =========================================================
+   OVERLAY VIDEO
+========================================================= */
+
+.categoria-video__overlay {
+    position: absolute;
+    inset: 0;
+
+    z-index: 3;
 
     display: flex;
     align-items: center;
-    gap: 20px;
-
-    border: 1px solid var(--borde-azul);
-    border-radius: 20px;
+    justify-content: center;
 
     background:
         linear-gradient(
-            120deg,
-            rgba(54, 169, 214, 0.12),
-            rgba(255, 255, 255, 0.02)
+            180deg,
+            rgba(3, 7, 10, 0.02),
+            rgba(3, 7, 10, 0.18)
         );
+
+    transition: opacity 0.3s ease;
 }
 
-.recomendacion__icono {
-    width: 70px;
-    height: 70px;
+.categoria-video__overlay.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
 
-    flex-shrink: 0;
+
+/* =========================================================
+   BOTÓN PLAY CENTRAL
+========================================================= */
+
+.categoria-video__boton-central {
+    width: 68px;
+    height: 68px;
+
+    padding: 0;
 
     display: grid;
     place-items: center;
 
+    color: var(--color-blanco);
+
+    font-size: 2rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 50%;
+
+    background: rgba(4, 9, 14, 0.66);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 14px 38px rgba(0, 0, 0, 0.35),
+        0 0 32px rgba(54, 169, 214, 0.12);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.3s ease,
+        background 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.categoria-video__boton-central:hover {
+    transform: scale(1.08);
+
+    border-color: var(--color-azul-claro);
+    background: rgba(54, 169, 214, 0.2);
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.categoria-card__contenido {
+    position: relative;
+
+    z-index: 5;
+
+    padding: 27px 30px 30px;
+
+    flex-shrink: 0;
+}
+
+.categoria-card__contenido > span {
+    display: block;
+
+    margin-bottom: 8px;
+
     color: var(--color-azul-claro);
-    font-size: 1.8rem;
+
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1.2;
+
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+}
+
+.categoria-card h2 {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+
+    font-size: clamp(
+        2rem,
+        4vw,
+        3.15rem
+    );
+
+    font-weight: 800;
+
+    line-height: 1.03;
+    letter-spacing: -0.045em;
+
+    color: var(--color-blanco);
+}
+
+.categoria-card p {
+    max-width: 430px;
+
+    margin: 12px 0 0;
+
+    color: var(--color-gris-claro);
+
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   ACCIONES
+========================================================= */
+
+.categoria-card__acciones {
+    margin-top: 18px;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 14px;
+}
+
+
+/* =========================================================
+   VER EXPERIENCIA
+========================================================= */
+
+.categoria-video__play {
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 9px;
+
+    color: var(--color-azul-claro);
+
+    font-family: inherit;
+
+    font-size: 0.88rem;
+    font-weight: 800;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    transition:
+        color 0.3s ease,
+        transform 0.3s ease,
+        opacity 0.3s ease;
+}
+
+.categoria-video__play i {
+    font-size: 1.15rem;
+}
+
+.categoria-video__play:hover {
+    color: var(--color-blanco);
+    transform: translateX(3px);
+}
+
+
+/* =========================================================
+   CTA PRODUCTOS
+========================================================= */
+
+.categoria-video__productos {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 9px;
+
+    color: var(--color-azul-claro);
+
+    font-size: 0.88rem;
+    font-weight: 800;
+
+    opacity: 0;
+
+    transform: translateY(6px);
+
+    transition:
+        opacity 0.35s ease,
+        transform 0.35s ease,
+        color 0.3s ease;
+}
+
+.categoria-video__productos.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.categoria-video__productos:hover {
+    color: var(--color-blanco);
+}
+
+.categoria-video__productos i {
+    transition: transform 0.3s ease;
+}
+
+.categoria-video__productos:hover i {
+    transform: translateX(5px);
+}
+
+
+/* =========================================================
+   VIDEO REPRODUCIÉNDOSE
+========================================================= */
+
+.categoria-video.video-reproduciendo
+.categoria-video__play {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CERTIFICACIONES
+========================================================= */
+
+.categoria-card--horizontal {
+    min-height: 400px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(320px, 0.65fr)
+        minmax(0, 1.15fr);
+
+    align-items: stretch;
+}
+
+.categoria-card--certificaciones {
+    grid-area: cert;
+
+    background:
+        radial-gradient(
+            circle at 76% 50%,
+            rgba(54, 169, 214, 0.07),
+            transparent 42%
+        ),
+        linear-gradient(
+            120deg,
+            rgba(255, 255, 255, 0.018),
+            rgba(5, 11, 16, 0.98)
+        ),
+        var(--color-fondo-secundario);
+}
+
+.categoria-card--horizontal
+.categoria-card__contenido {
+    padding: 44px 24px 44px 42px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.categoria-card--horizontal p {
+    max-width: 390px;
+
+    margin-top: 16px;
+
+    color: var(--color-gris-claro);
+}
+
+
+/* =========================================================
+   LISTA CERTIFICACIONES
+========================================================= */
+
+.certificaciones-lista {
+    margin-top: 21px;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+.certificaciones-lista span {
+    padding: 7px 11px;
+
+    color: var(--color-gris-claro);
+
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.025);
+}
+
+
+/* =========================================================
+   ENLACE CERTIFICACIONES
+========================================================= */
+
+.categoria-card__enlace {
+    margin-top: 23px;
+
+    width: fit-content;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 10px;
+
+    color: var(--color-azul-claro);
+
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.categoria-card__enlace i {
+    transition: transform 0.3s ease;
+}
+
+.categoria-card__enlace:hover i {
+    transform: translateX(5px);
+}
+
+
+/* =========================================================
+   VISUAL CERTIFICACIONES
+========================================================= */
+
+.categoria-destacada__visual {
+    position: relative;
+
+    min-height: 400px;
+
+    padding: 22px 24px 22px 5px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+.categoria-destacada__visual::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 10% 4%;
+
+    border-radius: 26px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(54, 169, 214, 0.11),
+            transparent 67%
+        );
+
+    filter: blur(18px);
+
+    pointer-events: none;
+}
+
+.categoria-destacada__imagen {
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+    height: auto;
+
+    max-width: none;
+
+    display: block;
+
+    object-fit: contain;
 
     border-radius: 18px;
-    background: rgba(54, 169, 214, 0.12);
+
+    transform: none !important;
+
+    filter:
+        drop-shadow(
+            0 15px 28px
+            rgba(0, 0, 0, 0.28)
+        );
 }
 
-.recomendacion span {
-    color: var(--color-azul-claro);
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
+
+/* =========================================================
+   SEGUNDO MOSAICO
+========================================================= */
+
+.categoria-card--uboom {
+    grid-area: extra1;
+
+    min-height: 1062px;
+
+    height: 100%;
+
+    align-self: stretch;
+
+    background:
+        radial-gradient(
+            circle at 50% 22%,
+            rgba(54, 169, 214, 0.07),
+            transparent 45%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(5, 11, 16, 0.98)
+        ),
+        var(--color-fondo-secundario);
 }
 
-.recomendacion h3 {
-    margin: 4px 0;
-
-    font-size: 1.4rem;
+.categoria-card--uboom
+.categoria-video__media {
+    min-height: 700px;
 }
 
-.recomendacion p {
+
+.categoria-card--sport {
+    grid-area: extra2;
+
+    min-height: 520px;
+
+    height: 100%;
+
+    align-self: stretch;
+
+    background:
+        radial-gradient(
+            circle at 75% 20%,
+            rgba(24, 110, 213, 0.08),
+            transparent 48%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(5, 11, 16, 0.98)
+        ),
+        var(--color-fondo-secundario);
+}
+
+
+.categoria-card--children {
+    grid-area: extra3;
+
+    min-height: 520px;
+
+    height: 100%;
+
+    align-self: stretch;
+
+    background:
+        radial-gradient(
+            circle at 25% 15%,
+            rgba(54, 169, 214, 0.07),
+            transparent 48%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(5, 11, 16, 0.98)
+        ),
+        var(--color-fondo-secundario);
+}
+
+
+/* =========================================================
+   VIDEOS EXTRA
+========================================================= */
+
+.categoria-card--video-extra {
+    display: flex;
+    flex-direction: column;
+}
+
+.categoria-card--video-extra
+.categoria-video__media {
+    min-height: 330px;
+}
+
+.categoria-card--video-extra
+.categoria-card__contenido {
+    padding: 27px 30px 30px;
+}
+
+.categoria-card--video-extra h2 {
+    font-size: clamp(
+        2rem,
+        4vw,
+        3.15rem
+    );
+}
+
+
+/* =========================================================
+   POSTERS DE PRODUCTOS NUEVOS
+========================================================= */
+
+.categoria-card--video-extra
+.categoria-video__poster--producto {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+    object-fit: cover;
+    object-position: center;
+
+    transform: none;
+
+    background: transparent;
+}
+
+
+.categoria-card--video-extra:hover
+.categoria-video__poster--producto {
+    transform: none;
+}
+
+
+/* =========================================================
+   UBOOM
+   POTENCIA QUE PUEDES LLEVAR
+========================================================= */
+
+.categoria-card--uboom
+.categoria-video__poster--producto {
+    object-fit: cover;
+
+    /*
+       La imagen es vertical.
+       Movemos levemente el encuadre hacia arriba para
+       mantener el parlante visible y eliminar márgenes.
+    */
+    object-position: center 43%;
+
+    padding: 0;
+}
+
+
+/* =========================================================
+   SPORT
+   SONIDO QUE SIGUE TU RITMO
+========================================================= */
+
+.categoria-card--sport
+.categoria-video__poster--producto {
+    object-fit: cover;
+
+    /*
+       La imagen es horizontal, por lo que cover llena
+       completamente la tarjeta sin franjas internas.
+    */
+    object-position: center 48%;
+
+    padding: 0;
+}
+
+
+/* =========================================================
+   CHILDREN
+   DIVERSIÓN HECHA PARA ELLOS
+========================================================= */
+
+.categoria-card--children
+.categoria-video__poster--producto {
+    object-fit: cover;
+
+    object-position: center 48%;
+
+    padding: 0;
+}
+
+
+/* =========================================================
+   VIDEOS DE PRODUCTOS EXTRA
+========================================================= */
+
+.categoria-card--video-extra
+.categoria-video__video {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    background: #02080e;
+}
+
+.categoria-card--uboom
+.categoria-video__video {
+    object-fit: cover;
+    object-position: center;
+}
+
+
+/* =========================================================
+   ASESORÍA
+========================================================= */
+
+.selector-uso {
+    padding: 64px 0 80px;
+
+    border-top: 1px solid var(--borde);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.012),
+            transparent
+        );
+}
+
+
+/* =========================================================
+   BLOQUE WHATSAPP
+========================================================= */
+
+.selector-uso__simple {
+    position: relative;
+
+    max-width: 1050px;
+
+    margin: 0 auto;
+
+    padding: 28px 30px;
+
+    display: grid;
+
+    grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 22px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(37, 211, 102, 0.2);
+    border-radius: 24px;
+
+    background:
+        radial-gradient(
+            circle at 0% 50%,
+            rgba(37, 211, 102, 0.08),
+            transparent 35%
+        ),
+        linear-gradient(
+            120deg,
+            rgba(37, 211, 102, 0.025),
+            rgba(255, 255, 255, 0.012)
+        );
+}
+
+.selector-uso__simple::after {
+    content: "";
+
+    position: absolute;
+
+    width: 220px;
+    height: 220px;
+
+    top: 50%;
+    right: -120px;
+
+    border-radius: 50%;
+
+    background: rgba(37, 211, 102, 0.05);
+
+    transform: translateY(-50%);
+
+    filter: blur(25px);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   ICONO WHATSAPP
+========================================================= */
+
+.selector-uso__simple-icono {
+    position: relative;
+
+    z-index: 2;
+
+    width: 62px;
+    height: 62px;
+
+    display: grid;
+    place-items: center;
+
+    color: #25d366;
+
+    font-size: 1.7rem;
+
+    border: 1px solid rgba(37, 211, 102, 0.18);
+    border-radius: 18px;
+
+    background: rgba(37, 211, 102, 0.09);
+}
+
+
+/* =========================================================
+   TEXTO ASESORÍA
+========================================================= */
+
+.selector-uso__simple-contenido {
+    position: relative;
+
+    z-index: 2;
+
+    min-width: 0;
+}
+
+.selector-uso__simple-contenido > span {
+    display: block;
+
+    margin-bottom: 4px;
+
     color: var(--color-gris);
+
+    font-size: 0.76rem;
 }
 
-@media (max-width: 850px) {
+.selector-uso__simple-contenido h2 {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+
+    font-size: clamp(
+        1.35rem,
+        3vw,
+        2rem
+    );
+
+    font-weight: 800;
+
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+
+    color: var(--color-blanco);
+}
+
+.selector-uso__simple-contenido p {
+    max-width: 550px;
+
+    margin: 7px 0 0;
+
+    color: var(--color-gris-claro);
+
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   BOTÓN WHATSAPP
+========================================================= */
+
+.selector-uso__simple-boton {
+    position: relative;
+
+    z-index: 2;
+
+    min-height: 48px;
+
+    padding: 0 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    white-space: nowrap;
+
+    color: #fff;
+
+    font-family: inherit;
+
+    font-size: 0.84rem;
+    font-weight: 800;
+
+    border: 0;
+    border-radius: 999px;
+
+    background: #25d366;
+
+    box-shadow:
+        0 10px 25px rgba(37, 211, 102, 0.13);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.3s ease,
+        filter 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.selector-uso__simple-boton:hover {
+    transform: translateY(-3px);
+
+    filter: brightness(1.05);
+
+    box-shadow:
+        0 13px 30px rgba(37, 211, 102, 0.2);
+}
+
+.selector-uso__simple-boton
+.bi-arrow-up-right {
+    font-size: 0.95rem;
+    transition: transform 0.3s ease;
+}
+
+.selector-uso__simple-boton:hover
+.bi-arrow-up-right {
+    transform: translate(2px, -2px);
+}
+
+
+/* =========================================================
+   TABLET GRANDE
+========================================================= */
+
+@media (max-width: 1050px) {
+
+    .categoria-card--horizontal {
+        grid-template-columns:
+            minmax(260px, 0.65fr)
+            minmax(0, 1fr);
+    }
+
+    .categoria-card--horizontal
+    .categoria-card__contenido {
+        padding: 36px 20px 36px 32px;
+    }
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
     .categorias-grid {
         grid-template-columns: 1fr;
+
+        grid-template-areas:
+            "anc"
+            "clip"
+            "tecnologia"
+            "cert"
+            "extra1"
+            "extra2"
+            "extra3";
     }
 
     .categoria-card--grande,
+    .categoria-card--clip,
+    .categoria-card--tecnologia,
+    .categoria-card--certificaciones,
+    .categoria-card--uboom,
+    .categoria-card--sport,
+    .categoria-card--children {
+        min-height: auto;
+        height: auto;
+    }
+
+    .categoria-video {
+        min-height: 680px;
+    }
+
+    .categoria-video__media,
+    .categoria-card--grande
+    .categoria-video__media,
+    .categoria-card--uboom
+    .categoria-video__media {
+        min-height: 490px;
+    }
+
+    .categoria-card--video-extra
+    .categoria-video__poster--producto {
+        padding: 0;
+    }
+
+    .categoria-card--uboom
+    .categoria-video__poster--producto {
+        object-position: center 46%;
+    }
+
+    .categoria-card--sport
+    .categoria-video__poster--producto,
+    .categoria-card--children
+    .categoria-video__poster--producto {
+        object-position: center;
+    }
+
+
+    /* CERTIFICACIONES */
+
     .categoria-card--horizontal {
-        min-height: 430px;
-        grid-column: auto;
-        grid-row: auto;
-    }
-
-    .categoria-card--horizontal img {
-        width: 70%;
-        height: 60%;
-    }
-
-    .selector-uso__botones {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 550px) {
-    .categoria-card {
-        min-height: 420px;
-        padding: 24px;
-    }
-
-    .categoria-card img,
-    .categoria-card--horizontal img {
-        width: 88%;
-        height: 57%;
-        top: 25px;
-        right: 6%;
-    }
-
-    .selector-uso__botones {
         grid-template-columns: 1fr;
     }
 
-    .recomendacion {
+    .categoria-card--horizontal
+    .categoria-card__contenido {
+        padding: 35px 32px 15px;
+    }
+
+    .categoria-card--horizontal h2,
+    .categoria-card--horizontal p {
+        max-width: 600px;
+    }
+
+    .categoria-destacada__visual {
+        min-height: auto;
+
+        padding: 18px 28px 30px;
+    }
+
+    .categoria-destacada__imagen {
+        width: 100%;
+        max-width: 850px;
+    }
+
+
+    /* ASESORÍA */
+
+    .selector-uso__simple {
+        grid-template-columns:
+            auto
+            minmax(0, 1fr);
+
+        gap: 18px;
+    }
+
+    .selector-uso__simple-boton {
+        grid-column: 2;
+
+        width: fit-content;
+    }
+}
+
+
+/* =========================================================
+   TABLET PEQUEÑO
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .categorias-hero {
+        padding: 70px 0 58px;
+    }
+
+    .categorias-principales {
+        padding: 52px 0 65px;
+    }
+
+    .categoria-card {
+        border-radius: 22px;
+    }
+
+    .categoria-video,
+    .categoria-card--grande,
+    .categoria-card--uboom {
+        min-height: auto;
+    }
+
+    .categoria-video__media,
+    .categoria-card--grande
+    .categoria-video__media,
+    .categoria-card--uboom
+    .categoria-video__media {
+        min-height: 460px;
+    }
+
+    .categoria-card__contenido {
+        padding: 23px 24px 26px;
+    }
+
+    .categoria-card--video-extra
+    .categoria-video__poster--producto {
+        padding: 0;
+    }
+
+
+    /* TECNOLOGÍA */
+
+    .categoria-card--tecnologia
+    .categoria-video__media {
+        min-height: 390px;
+    }
+
+
+    /* CERTIFICACIONES */
+
+    .categoria-card--horizontal
+    .categoria-card__contenido {
+        padding: 30px 24px 12px;
+    }
+
+    .categoria-card--horizontal h2 {
+        font-size: 2.5rem;
+    }
+
+    .categoria-destacada__visual {
+        padding: 16px 18px 24px;
+    }
+
+
+    /* ASESORÍA */
+
+    .selector-uso {
+        padding: 52px 0 68px;
+    }
+
+    .selector-uso__simple {
+        padding: 24px;
+
+        grid-template-columns:
+            auto
+            minmax(0, 1fr);
+
+        border-radius: 21px;
+    }
+}
+
+
+/* =========================================================
+   MÓVIL
+========================================================= */
+
+@media (max-width: 520px) {
+
+    .categorias-hero {
+        padding: 60px 0 50px;
+    }
+
+    .categorias-hero h1 {
+        font-size: clamp(
+            2.6rem,
+            14vw,
+            4rem
+        );
+    }
+
+    .categorias-hero p {
+        max-width: 330px;
+        font-size: 0.88rem;
+    }
+
+    .categorias-grid {
+        gap: 16px;
+    }
+
+    .categoria-card {
+        border-radius: 20px;
+    }
+
+    .categoria-video__media,
+    .categoria-card--grande
+    .categoria-video__media,
+    .categoria-card--uboom
+    .categoria-video__media {
+        min-height: 430px;
+    }
+
+    .categoria-card--video-extra
+    .categoria-video__poster--producto {
+        padding: 0;
+    }
+
+    .categoria-card--uboom
+    .categoria-video__poster--producto {
+        object-position: center 48%;
+    }
+
+
+    /* TECNOLOGÍA */
+
+    .categoria-card--tecnologia
+    .categoria-video__media {
+        min-height: 315px;
+    }
+
+
+    /* CONTENIDO */
+
+    .categoria-card__contenido,
+    .categoria-card--video-extra
+    .categoria-card__contenido {
+        padding: 21px 20px 24px;
+    }
+
+    .categoria-card h2,
+    .categoria-card--video-extra h2 {
+        font-size: 2.15rem;
+    }
+
+    .categoria-card p {
+        font-size: 0.84rem;
+    }
+
+    .categoria-card__acciones {
+        gap: 12px;
+    }
+
+
+    /* PLAY */
+
+    .categoria-video__boton-central {
+        width: 58px;
+        height: 58px;
+
+        font-size: 1.75rem;
+    }
+
+
+    /* CERTIFICACIONES */
+
+    .categoria-card--horizontal
+    .categoria-card__contenido {
+        padding: 26px 20px 10px;
+    }
+
+    .categoria-card--horizontal h2 {
+        font-size: 2.25rem;
+    }
+
+    .categoria-card--horizontal p {
+        font-size: 0.84rem;
+    }
+
+    .certificaciones-lista {
+        gap: 6px;
+    }
+
+    .certificaciones-lista span {
+        padding: 6px 9px;
+
+        font-size: 0.64rem;
+    }
+
+    .categoria-destacada__visual {
+        padding: 14px 14px 22px;
+    }
+
+    .categoria-destacada__imagen {
+        border-radius: 14px;
+    }
+
+
+    /* ASESORÍA */
+
+    .selector-uso {
+        padding: 44px 0 58px;
+    }
+
+    .selector-uso__simple {
+        padding: 22px 20px;
+
+        display: flex;
+        flex-direction: column;
         align-items: flex-start;
+
+        gap: 14px;
+    }
+
+    .selector-uso__simple-icono {
+        width: 54px;
+        height: 54px;
+
+        font-size: 1.5rem;
+
+        border-radius: 16px;
+    }
+
+    .selector-uso__simple-contenido h2 {
+        font-size: 1.55rem;
+    }
+
+    .selector-uso__simple-contenido p {
+        font-size: 0.82rem;
+    }
+
+    .selector-uso__simple-boton {
+        width: 100%;
+
+        min-height: 48px;
+
+        margin-top: 3px;
+    }
+}
+
+
+/* =========================================================
+   MÓVILES PEQUEÑOS
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .categoria-video__media,
+    .categoria-card--grande
+    .categoria-video__media,
+    .categoria-card--uboom
+    .categoria-video__media {
+        min-height: 390px;
+    }
+
+    .categoria-card--tecnologia
+    .categoria-video__media {
+        min-height: 275px;
+    }
+
+    .categoria-card h2,
+    .categoria-card--video-extra h2 {
+        font-size: 1.95rem;
+    }
+
+    .categoria-card--video-extra
+    .categoria-video__poster--producto {
+        padding: 0;
+    }
+}
+
+
+/* =========================================================
+   REDUCIR MOVIMIENTO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .categoria-card,
+    .categoria-video__poster,
+    .categoria-video__video,
+    .categoria-video__overlay,
+    .categoria-video__boton-central,
+    .categoria-video__play,
+    .categoria-video__productos,
+    .categoria-card__enlace i,
+    .selector-uso__simple-boton {
+        transition: none;
+    }
+
+    .categoria-card:hover,
+    .categoria-card:hover
+    .categoria-video__poster {
+        transform: none;
     }
 }

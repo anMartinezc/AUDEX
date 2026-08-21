@@ -752,11 +752,12 @@ def panel_pedidos(request):
     Pagos pendientes:
 
     - No forman parte del tablero operativo.
-    - Se muestran como una alerta administrativa.
-    - Se consideran "recientes" los actualizados
-      durante las últimas 24 horas.
-    - El administrador puede abrir la bandeja completa
-      para revisar todo el histórico.
+    - Solo se muestran durante las primeras 48 horas
+      desde su última actualización.
+    - Después de 48 horas dejan de mostrarse como alerta
+      y desaparecen de la bandeja administrativa.
+    - Los registros antiguos NO se eliminan de la base
+      de datos; simplemente dejan de mostrarse aquí.
 
     Bsale:
 
@@ -820,10 +821,8 @@ def panel_pedidos(request):
     # VENTAS CONFIRMADAS
     # =========================================================================
     #
-    # Este queryset es la base REAL del tablero operativo.
-    #
-    # Un intento de pago rechazado, cancelado o pendiente
-    # nunca debe mezclarse aquí.
+    # Solo los pedidos cuyo pago realmente fue aprobado
+    # forman parte de la operación logística.
     # =========================================================================
 
     ventas_confirmadas = pedidos.filter(
@@ -832,10 +831,16 @@ def panel_pedidos(request):
     )
 
     # =========================================================================
-    # PAGOS PENDIENTES
+    # TODOS LOS PAGOS PENDIENTES
+    # =========================================================================
+    #
+    # Este queryset puede contener intentos antiguos.
+    #
+    # Se conserva únicamente como referencia interna.
+    # NO se utiliza directamente para mostrar la bandeja.
     # =========================================================================
 
-    pendientes_pago = pedidos.filter(
+    pendientes_pago_todos = pedidos.filter(
         pagado=False,
         estado_pago__in=[
             Pedido.EstadoPago.PENDIENTE,
@@ -844,25 +849,58 @@ def panel_pedidos(request):
     )
 
     # =========================================================================
-    # PENDIENTES RECIENTES
+    # LÍMITE DE VISIBILIDAD DE PAGOS PENDIENTES
     # =========================================================================
     #
-    # Solo estos merecen atención destacada en el tablero.
-    # Los intentos antiguos continúan disponibles desde
-    # la bandeja completa.
+    # Un intento pendiente solo merece atención administrativa
+    # durante 48 horas desde su última actualización.
+    #
+    # Después de ese plazo:
+    #
+    # - No aparece como alerta.
+    # - No aparece en la bandeja de pagos pendientes.
+    # - No se incluye en el contador visible.
+    # - NO se elimina de la base de datos.
     # =========================================================================
 
-    limite_pendientes_recientes = (
+    limite_pendientes_visibles = (
         timezone.now()
         - timedelta(
-            hours=24
+            hours=48
         )
     )
 
-    pendientes_pago_recientes = (
-        pendientes_pago.filter(
+    # =========================================================================
+    # PAGOS PENDIENTES VISIBLES
+    # =========================================================================
+
+    pendientes_pago = (
+        pendientes_pago_todos
+        .filter(
             actualizado__gte=(
-                limite_pendientes_recientes
+                limite_pendientes_visibles
+            ),
+        )
+        .order_by(
+            "-actualizado",
+        )
+    )
+
+    # =========================================================================
+    # PAGOS PENDIENTES EXPIRADOS
+    # =========================================================================
+    #
+    # Solo se calcula por si posteriormente quieres
+    # utilizarlo para estadísticas o mantenimiento.
+    #
+    # No se muestra en el panel.
+    # =========================================================================
+
+    pendientes_pago_expirados = (
+        pendientes_pago_todos
+        .filter(
+            actualizado__lt=(
+                limite_pendientes_visibles
             ),
         )
     )
@@ -897,8 +935,8 @@ def panel_pedidos(request):
     # BSALE
     # =========================================================================
     #
-    # Venta pagada que todavía no registra una boleta emitida.
-    # Sirve como alerta administrativa.
+    # Venta pagada que todavía no registra
+    # una boleta electrónica emitida.
     # =========================================================================
 
     boletas_pendientes = ventas_confirmadas.filter(
@@ -908,6 +946,14 @@ def panel_pedidos(request):
     # =========================================================================
     # QUERYSETS DISPONIBLES
     # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # "pendientes" utiliza únicamente los intentos
+    # correspondientes a las últimas 48 horas.
+    #
+    # Nunca se entrega aquí el histórico completo.
+    # =========================================================================
 
     bandejas_querysets = {
         "nuevos": nuevos,
@@ -915,10 +961,8 @@ def panel_pedidos(request):
         "despacho": despacho,
         "finalizados": finalizados,
 
-        # Solo accesible como bandeja administrativa.
         "pendientes": pendientes_pago,
 
-        # Bandeja útil para revisar problemas Bsale.
         "boletas": boletas_pendientes,
     }
 
@@ -958,13 +1002,37 @@ def panel_pedidos(request):
         in bandejas_querysets.items()
     }
 
-    total_pendientes_recientes = (
-        pendientes_pago_recientes.count()
-    )
+    # =========================================================================
+    # PAGOS PENDIENTES
+    # =========================================================================
+    #
+    # Este es ahora el único contador que debería
+    # utilizarse para mostrar la alerta.
+    #
+    # Si es 0, la alerta debe desaparecer.
+    # =========================================================================
 
-    total_pendientes_historicos = (
+    total_pendientes_pago = (
         pendientes_pago.count()
     )
+
+    # =========================================================================
+    # HISTÓRICOS EXPIRADOS
+    # =========================================================================
+    #
+    # No se muestran.
+    #
+    # Se conserva la variable únicamente por si quieres
+    # usarla posteriormente en estadísticas o limpieza.
+    # =========================================================================
+
+    total_pendientes_expirados = (
+        pendientes_pago_expirados.count()
+    )
+
+    # =========================================================================
+    # BSALE
+    # =========================================================================
 
     total_boletas_pendientes = (
         boletas_pendientes.count()
@@ -989,6 +1057,7 @@ def panel_pedidos(request):
     )
 
     page_obj = None
+
     titulo_bandeja = ""
 
     if mostrar_bandeja:
@@ -1021,10 +1090,8 @@ def panel_pedidos(request):
     # TARJETAS DEL TABLERO
     # =========================================================================
     #
-    # No añadimos "pendientes" ni "boletas".
-    #
-    # El tablero Kanban representa operación logística,
-    # no incidencias de pago/documentos.
+    # Pagos pendientes y Bsale continúan siendo
+    # incidencias administrativas, no estados logísticos.
     # =========================================================================
 
     bandejas = []
@@ -1142,15 +1209,33 @@ def panel_pedidos(request):
             ),
 
             # =============================================================
-            # PAGOS
+            # PAGOS PENDIENTES
+            # =============================================================
+            #
+            # Ambos nombres se mantienen para que tu HTML
+            # actual siga funcionando aunque utilice uno
+            # u otro.
+            #
+            # Los dos representan SOLO las últimas 48 horas.
             # =============================================================
 
             "total_pendientes_pago": (
-                total_pendientes_historicos
+                total_pendientes_pago
             ),
 
             "total_pendientes_recientes": (
-                total_pendientes_recientes
+                total_pendientes_pago
+            ),
+
+            # =============================================================
+            # HISTÓRICO EXPIRADO
+            # =============================================================
+            #
+            # No debería mostrarse como alerta.
+            # =============================================================
+
+            "total_pendientes_expirados": (
+                total_pendientes_expirados
             ),
 
             # =============================================================
@@ -1182,6 +1267,7 @@ def panel_pedidos(request):
             ],
         },
     )
+
 
 # ==========================================================================
 # DETALLE Y ADMINISTRACIÓN DE UN PEDIDO

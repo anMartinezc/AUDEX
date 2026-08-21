@@ -6,10 +6,12 @@
 {% endblock %}
 
 {% block extra_css %}
+
     <link
         rel="stylesheet"
-        href="{% static 'core/css/seguimiento_pedido.css' %}?v=1"
+        href="{% static 'core/css/seguimiento_pedido.css' %}?v=2"
     >
+
 {% endblock %}
 
 {% block content %}
@@ -20,85 +22,130 @@
 
         {% if not pedido %}
 
+            <!-- =====================================================
+                 BUSCADOR DE PEDIDO
+            ====================================================== -->
+
             <div class="buscar-pedido">
 
                 <div class="buscar-pedido__icono">
+
                     <i class="bi bi-box-seam"></i>
+
                 </div>
+
 
                 <span class="etiqueta-seccion">
                     Seguimiento Audex
                 </span>
 
-                <h1>¿Dónde está tu pedido?</h1>
+
+                <h1>
+                    ¿Dónde está tu pedido?
+                </h1>
+
 
                 <p>
-                    Ingresa el número del pedido y el correo
-                    utilizado al realizar la compra.
+                    Ingresa el número de tu pedido
+                    para consultar su estado y seguimiento.
                 </p>
 
 
-                <form method="post" class="buscar-pedido__form">
+                <form
+                    method="post"
+                    class="buscar-pedido__form"
+                >
 
                     {% csrf_token %}
+
 
                     {% if form.non_field_errors %}
 
                         <div class="form-error">
+
                             {{ form.non_field_errors }}
+
                         </div>
 
                     {% endif %}
 
+
+                    <!-- =============================================
+                         NÚMERO DEL PEDIDO
+                    ============================================== -->
+
                     <div class="campo">
+
                         <label for="{{ form.numero.id_for_label }}">
+
                             {{ form.numero.label }}
+
                         </label>
+
 
                         {{ form.numero }}
 
+
                         {{ form.numero.errors }}
+
                     </div>
 
-                    <div class="campo">
-                        <label for="{{ form.email.id_for_label }}">
-                            {{ form.email.label }}
-                        </label>
 
-                        {{ form.email }}
-
-                        {{ form.email.errors }}
-                    </div>
+                    <!-- =============================================
+                         BOTÓN
+                    ============================================== -->
 
                     <button
                         type="submit"
-                        class="boton boton--primario boton--completo"
+                        class="
+                            boton
+                            boton--primario
+                            boton--completo
+                        "
                     >
+
                         Buscar pedido
+
                         <i class="bi bi-search"></i>
+
                     </button>
 
                 </form>
 
             </div>
 
+
         {% else %}
+
+            <!-- =====================================================
+                 CABECERA
+            ====================================================== -->
 
             <header class="seguimiento-cabecera">
 
                 <div>
+
                     <span class="etiqueta-seccion">
+
                         <i class="bi bi-box-seam"></i>
+
                         Seguimiento
+
                     </span>
 
-                    <h1>{{ pedido.numero }}</h1>
+
+                    <h1>
+                        {{ pedido.numero }}
+                    </h1>
+
 
                     <p>
                         Pedido realizado el
                         {{ pedido.creado|date:"d/m/Y H:i" }}.
                     </p>
+
                 </div>
+
 
                 <span
                     class="
@@ -106,17 +153,30 @@
                         pedido-estado--{{ pedido.estado }}
                     "
                 >
+
                     {{ pedido.get_estado_display }}
+
                 </span>
 
             </header>
 
 
+            <!-- =====================================================
+                 CONTENIDO PRINCIPAL
+            ====================================================== -->
+
             <div class="seguimiento-grid">
+
+                <!-- =================================================
+                     ESTADO DEL PEDIDO
+                ================================================== -->
 
                 <article class="seguimiento-tarjeta">
 
-                    <h2>Estado de tu pedido</h2>
+                    <h2>
+                        Estado de tu pedido
+                    </h2>
+
 
                     <div class="timeline-pedido">
 
@@ -125,29 +185,54 @@
                             <div
                                 class="
                                     timeline-paso
+
                                     {% if paso.completado %}
                                         timeline-paso--completado
                                     {% endif %}
+
                                     {% if paso.activo %}
                                         timeline-paso--activo
                                     {% endif %}
                                 "
                             >
 
+                                <!-- =================================
+                                     ICONO
+                                ================================== -->
+
                                 <div class="timeline-paso__icono">
+
                                     <i class="bi {{ paso.icono }}"></i>
+
                                 </div>
 
-                                <div>
-                                    <strong>{{ paso.titulo }}</strong>
 
-                                    <p>{{ paso.descripcion }}</p>
+                                <!-- =================================
+                                     INFORMACIÓN
+                                ================================== -->
+
+                                <div>
+
+                                    <strong>
+                                        {{ paso.titulo }}
+                                    </strong>
+
+
+                                    <p>
+                                        {{ paso.descripcion }}
+                                    </p>
+
 
                                     {% if paso.fecha %}
+
                                         <time>
+
                                             {{ paso.fecha|date:"d/m/Y H:i" }}
+
                                         </time>
+
                                     {% endif %}
+
                                 </div>
 
                             </div>
@@ -159,57 +244,171 @@
                 </article>
 
 
+                <!-- =================================================
+                     COLUMNA LATERAL
+                ================================================== -->
+
                 <aside class="seguimiento-lateral">
+
+                    <!-- =============================================
+                         RESUMEN DEL PEDIDO
+                    ============================================== -->
 
                     <article class="seguimiento-tarjeta">
 
-                        <h2>Resumen</h2>
+                        <h2>
+                            Resumen
+                        </h2>
 
-                        {% for item in pedido.items.all %}
 
-                            <div class="seguimiento-producto">
+                        <div class="seguimiento-productos">
 
-                                <span>
-                                    {{ item.nombre_producto }}
-                                    × {{ item.cantidad }}
-                                </span>
+                            {% for item in pedido.items.all %}
 
-                                <strong>
-                                    ${{ item.total|floatformat:0|intcomma }}
-                                </strong>
+                                <div class="seguimiento-producto">
 
-                            </div>
+                                    <!-- =================================
+                                         IMAGEN
+                                    ================================== -->
 
-                        {% endfor %}
+                                    <div class="seguimiento-producto__imagen">
+
+                                        {% if item.producto and item.producto.imagen_mostrable %}
+
+                                            <img
+                                                src="{{ item.producto.imagen_mostrable }}"
+                                                alt="{{ item.nombre_producto }}"
+                                                loading="lazy"
+                                            >
+
+                                        {% elif item.producto and item.producto.imagen %}
+
+                                            <img
+                                                src="{{ item.producto.imagen.url }}"
+                                                alt="{{ item.nombre_producto }}"
+                                                loading="lazy"
+                                            >
+
+                                        {% else %}
+
+                                            <div class="seguimiento-producto__sin-imagen">
+
+                                                <i class="bi bi-image"></i>
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- =================================
+                                         INFORMACIÓN
+                                    ================================== -->
+
+                                    <div class="seguimiento-producto__info">
+
+                                        <span class="seguimiento-producto__nombre">
+
+                                            {{ item.nombre_producto }}
+
+                                        </span>
+
+
+                                        <span class="seguimiento-producto__cantidad">
+
+                                            × {{ item.cantidad }}
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <!-- =================================
+                                         PRECIO
+                                    ================================== -->
+
+                                    <strong class="seguimiento-producto__precio">
+
+                                        ${{ item.total|floatformat:0|intcomma }}
+
+                                    </strong>
+
+                                </div>
+
+                            {% empty %}
+
+                                <p class="seguimiento-productos__vacio">
+
+                                    Este pedido no tiene productos registrados.
+
+                                </p>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        <!-- =============================================
+                             TOTAL
+                        ============================================== -->
 
                         <div class="seguimiento-total">
-                            <span>Total</span>
+
+                            <span>
+                                Total
+                            </span>
+
 
                             <strong>
+
                                 ${{ pedido.total|floatformat:0|intcomma }}
+
                             </strong>
+
                         </div>
 
                     </article>
 
 
+                    <!-- =============================================
+                         DIRECCIÓN
+                    ============================================== -->
+
                     <article class="seguimiento-tarjeta">
 
-                        <h2>Dirección de despacho</h2>
+                        <h2>
+                            Dirección de despacho
+                        </h2>
 
-                        <p>
-                            {{ pedido.direccion }}
-                            {{ pedido.numero_direccion }}
 
-                            {% if pedido.departamento %}
-                                , {{ pedido.departamento }}
-                            {% endif %}
+                        <div class="seguimiento-direccion">
 
-                            <br>
+                            <i class="bi bi-geo-alt"></i>
 
-                            {{ pedido.comuna }},
-                            {{ pedido.region }}
-                        </p>
+
+                            <p>
+
+                                {{ pedido.direccion }}
+                                {{ pedido.numero_direccion }}
+
+
+                                {% if pedido.departamento %}
+
+                                    , {{ pedido.departamento }}
+
+                                {% endif %}
+
+
+                                <br>
+
+
+                                {{ pedido.comuna }},
+                                {{ pedido.region }}
+
+                            </p>
+
+                        </div>
 
                     </article>
 

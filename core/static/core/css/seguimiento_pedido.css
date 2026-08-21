@@ -292,7 +292,9 @@
 }
 
 .form-error {
-    padding: 12px 14px;
+    padding:
+        12px
+        14px;
 
     border:
         1px solid
@@ -547,15 +549,15 @@
 
 
 /* =========================================================
-   GRID
+   GRID PRINCIPAL
 ========================================================= */
 
 .seguimiento-grid {
     display: grid;
 
     grid-template-columns:
-        minmax(0, 1.25fr)
-        minmax(320px, 0.75fr);
+        minmax(0, 1.28fr)
+        minmax(340px, 0.72fr);
 
     gap: 22px;
 
@@ -629,6 +631,8 @@
 
     font-size: 1.15rem;
     font-weight: 800;
+
+    line-height: 1.2;
 }
 
 .seguimiento-tarjeta > p {
@@ -752,7 +756,7 @@
 
 
 /* =========================================================
-   COMPLETADO
+   TIMELINE COMPLETADO
 ========================================================= */
 
 .timeline-paso--completado {
@@ -793,7 +797,7 @@
 
 
 /* =========================================================
-   ACTIVO
+   TIMELINE ACTIVO
 ========================================================= */
 
 .timeline-paso--activo {
@@ -836,55 +840,265 @@
 
 
 /* =========================================================
-   RESUMEN DE PRODUCTOS
+   CONTENEDOR DE PRODUCTOS
+========================================================= */
+
+.seguimiento-productos {
+    display: grid;
+
+    gap: 0;
+}
+
+
+/* =========================================================
+   PRODUCTO
 ========================================================= */
 
 .seguimiento-producto {
+    min-width: 0;
+
     padding:
         13px
         0;
 
-    display: flex;
+    display: grid;
+
+    /*
+     * Miniatura pequeña
+     * + información
+     * + precio
+     */
+    grid-template-columns:
+        64px
+        minmax(0, 1fr)
+        auto;
+
     align-items: center;
-    justify-content: space-between;
 
-    gap: 18px;
+    gap: 13px;
 
-    border-bottom:
-        1px solid
-        var(--borde);
+    /*
+     * NO agregamos border aquí.
+     * El único separador estará antes del total.
+     */
+    border: 0;
 }
 
-.seguimiento-producto:first-of-type {
+.seguimiento-producto:first-child {
     padding-top: 0;
 }
 
-.seguimiento-producto:last-of-type {
-    border-bottom: 0;
+.seguimiento-producto:last-child {
+    padding-bottom: 2px;
 }
 
-.seguimiento-producto > span {
+
+/* =========================================================
+   IMAGEN DEL PRODUCTO
+========================================================= */
+
+.seguimiento-producto__imagen {
+    width: 64px;
+    height: 64px;
+
+    min-width: 64px;
+    max-width: 64px;
+
+    min-height: 64px;
+    max-height: 64px;
+
+    overflow: hidden;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    border-radius: 12px;
+
+    background:
+        #ffffff;
+}
+
+
+/*
+ * Estas reglas llevan !important porque es posible
+ * que estilos globales de producto tengan width:100%.
+ * Aquí impedimos que la foto vuelva a crecer.
+ */
+
+.seguimiento-producto__imagen img {
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    max-width: 64px !important;
+    max-height: 64px !important;
+
+    display: block;
+
+    padding: 5px;
+
+    object-fit: contain !important;
+    object-position: center;
+
+    border: 0;
+
+    background:
+        #ffffff;
+}
+
+
+/* =========================================================
+   SIN IMAGEN
+========================================================= */
+
+.seguimiento-producto__sin-imagen {
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1rem;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.045
+        );
+}
+
+
+/* =========================================================
+   INFORMACIÓN PRODUCTO
+========================================================= */
+
+.seguimiento-producto__info {
     min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 6px;
+}
+
+
+/* =========================================================
+   NOMBRE PRODUCTO
+========================================================= */
+
+.seguimiento-producto__nombre {
+    max-width: 100%;
 
     color:
         var(--color-gris-claro);
 
-    font-size: 0.73rem;
+    font-size: 0.75rem;
+    font-weight: 700;
 
-    line-height: 1.45;
+    line-height: 1.35;
 
-    overflow-wrap:
-        anywhere;
+    overflow-wrap: anywhere;
 }
 
-.seguimiento-producto > strong {
-    flex-shrink: 0;
+
+/* =========================================================
+   CANTIDAD × 2
+========================================================= */
+
+.seguimiento-producto__cantidad {
+    width: fit-content;
+
+    min-height: 24px;
+
+    padding:
+        0
+        8px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.66rem;
+    font-weight: 900;
+
+    line-height: 1;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.20
+        );
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.075
+        );
+}
+
+
+/* =========================================================
+   PRECIO PRODUCTO
+========================================================= */
+
+.seguimiento-producto__precio {
+    min-width: max-content;
+
+    align-self: center;
 
     color:
         var(--color-blanco);
 
-    font-size: 0.76rem;
+    font-size: 0.77rem;
     font-weight: 900;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   PRODUCTOS VACÍOS
+========================================================= */
+
+.seguimiento-productos__vacio {
+    margin: 0;
+
+    padding:
+        14px
+        0;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.72rem;
 }
 
 
@@ -893,9 +1107,9 @@
 ========================================================= */
 
 .seguimiento-total {
-    margin-top: 17px;
+    margin-top: 16px;
 
-    padding-top: 18px;
+    padding-top: 20px;
 
     display: flex;
     align-items: center;
@@ -903,6 +1117,9 @@
 
     gap: 18px;
 
+    /*
+     * ÚNICO SEPARADOR ENTRE PRODUCTOS Y TOTAL.
+     */
     border-top:
         1px solid
         var(--borde);
@@ -922,6 +1139,89 @@
 
     font-size: 1.35rem;
     font-weight: 900;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   DIRECCIÓN DE DESPACHO
+========================================================= */
+
+.seguimiento-direccion {
+    display: grid;
+
+    /*
+     * El icono ocupa una columna pequeña y queda
+     * alineado con la primera línea del texto.
+     */
+    grid-template-columns:
+        26px
+        minmax(0, 1fr);
+
+    align-items: start;
+
+    gap: 11px;
+}
+
+
+/* =========================================================
+   ICONO UBICACIÓN
+========================================================= */
+
+.seguimiento-direccion > i {
+    width: 26px;
+    height: 26px;
+
+    margin-top: 1px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1rem;
+    line-height: 1;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.13
+        );
+
+    border-radius: 8px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.055
+        );
+}
+
+
+/* =========================================================
+   TEXTO DIRECCIÓN
+========================================================= */
+
+.seguimiento-direccion p {
+    min-width: 0;
+
+    margin: 0;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.75rem;
+
+    line-height: 1.65;
+
+    overflow-wrap: anywhere;
 }
 
 
@@ -965,6 +1265,9 @@
             65px;
     }
 
+
+    /* BUSCADOR */
+
     .buscar-pedido {
         margin-top: 15px;
 
@@ -980,12 +1283,13 @@
         font-size: 1.7rem;
     }
 
-    .seguimiento-cabecera {
-        align-items:
-            flex-start;
 
-        flex-direction:
-            column;
+    /* CABECERA */
+
+    .seguimiento-cabecera {
+        align-items: flex-start;
+
+        flex-direction: column;
 
         gap: 18px;
     }
@@ -999,10 +1303,41 @@
             );
     }
 
+
+    /* TARJETAS */
+
     .seguimiento-tarjeta {
         padding:
             22px
             19px;
+    }
+
+
+    /* PRODUCTO */
+
+    .seguimiento-producto {
+        grid-template-columns:
+            58px
+            minmax(0, 1fr)
+            auto;
+
+        gap: 11px;
+    }
+
+    .seguimiento-producto__imagen {
+        width: 58px;
+        height: 58px;
+
+        min-width: 58px;
+        max-width: 58px;
+
+        min-height: 58px;
+        max-height: 58px;
+    }
+
+    .seguimiento-producto__imagen img {
+        max-width: 58px !important;
+        max-height: 58px !important;
     }
 
 }
@@ -1015,6 +1350,8 @@
 @media (
     max-width: 480px
 ) {
+
+    /* BUSCADOR */
 
     .buscar-pedido {
         padding:
@@ -1030,6 +1367,9 @@
                 2.8rem
             );
     }
+
+
+    /* TIMELINE */
 
     .timeline-paso {
         grid-template-columns:
@@ -1049,13 +1389,93 @@
         left: 21px;
     }
 
+
+    /* PRODUCTO */
+
     .seguimiento-producto {
-        align-items:
-            flex-start;
+        grid-template-columns:
+            52px
+            minmax(0, 1fr)
+            auto;
+
+        align-items: center;
+
+        gap: 10px;
     }
 
-    .seguimiento-producto > strong {
-        margin-top: 1px;
+    .seguimiento-producto__imagen {
+        width: 52px;
+        height: 52px;
+
+        min-width: 52px;
+        max-width: 52px;
+
+        min-height: 52px;
+        max-height: 52px;
+
+        border-radius: 10px;
+    }
+
+    .seguimiento-producto__imagen img {
+        max-width: 52px !important;
+        max-height: 52px !important;
+
+        padding: 4px;
+    }
+
+    .seguimiento-producto__nombre {
+        font-size: 0.7rem;
+    }
+
+    .seguimiento-producto__cantidad {
+        min-height: 22px;
+
+        padding:
+            0
+            7px;
+
+        font-size: 0.62rem;
+    }
+
+    .seguimiento-producto__precio {
+        font-size: 0.7rem;
+    }
+
+
+    /* TOTAL */
+
+    .seguimiento-total {
+        margin-top: 13px;
+
+        padding-top: 17px;
+    }
+
+    .seguimiento-total strong {
+        font-size: 1.18rem;
+    }
+
+
+    /* DIRECCIÓN */
+
+    .seguimiento-direccion {
+        grid-template-columns:
+            24px
+            minmax(0, 1fr);
+
+        gap: 9px;
+    }
+
+    .seguimiento-direccion > i {
+        width: 24px;
+        height: 24px;
+
+        font-size: 0.9rem;
+
+        border-radius: 7px;
+    }
+
+    .seguimiento-direccion p {
+        font-size: 0.72rem;
     }
 
 }

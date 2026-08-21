@@ -572,3 +572,15 @@ SESSION_SAVE_EVERY_REQUEST = False
 
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
+
+
+
+# =============================================================================
+# DJANGO ALLAUTH: GESTIÓN DE CORREO
+# =============================================================================
+
+# Solo se permite un correo por cuenta.
+ACCOUNT_MAX_EMAIL_ADDRESSES = 1
+
+# No permitir cambiar el correo desde allauth.
+ACCOUNT_CHANGE_EMAIL = False
