@@ -442,7 +442,7 @@ DTE_PROVIDER_TOKEN = os.getenv(
 # Conserva el inicio de sesión personalizado de Audex.
 LOGIN_URL = "core:login"
 
-LOGIN_REDIRECT_URL = "core:mis_compras"
+LOGIN_REDIRECT_URL = "core:inicio"
 
 LOGOUT_REDIRECT_URL = "core:inicio"
 
@@ -584,3 +584,20 @@ ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 
 # No permitir cambiar el correo desde allauth.
 ACCOUNT_CHANGE_EMAIL = False
+
+
+LANGUAGE_CODE = "es-cl"
+
+USE_I18N = True
+
+USE_THOUSAND_SEPARATOR = True
+
+THOUSAND_SEPARATOR = "."
+DECIMAL_SEPARATOR = ","
+NUMBER_GROUPING = 3
+
+
+
+FORMAT_MODULE_PATH = [
+    "config.formats",
+]

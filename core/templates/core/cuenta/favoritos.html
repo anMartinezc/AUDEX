@@ -109,6 +109,7 @@
                 <i class="bi bi-info-circle"></i>
 
                 <div>
+
                     <strong>
                         Tus favoritos están guardados en este navegador.
                     </strong>
@@ -117,6 +118,7 @@
                         Inicia sesión para sincronizarlos con tu cuenta
                         y recuperarlos desde otros dispositivos.
                     </p>
+
                 </div>
 
                 <a href="{% url 'core:login' %}">
@@ -138,9 +140,21 @@
                 {% for producto in productos_favoritos %}
 
                     <article
-                        class="favorito-card"
+                        class="
+                            favorito-card
+                            {% if producto.en_oferta %}
+                                favorito-card--oferta
+                            {% endif %}
+                            {% if producto.destacado %}
+                                favorito-card--destacado
+                            {% endif %}
+                        "
                         data-favorito-item="{{ producto.id }}"
                     >
+
+                        <!-- ================================================= -->
+                        <!-- IMAGEN -->
+                        <!-- ================================================= -->
 
                         <div class="favorito-card__media">
 
@@ -160,10 +174,13 @@
                                 {% else %}
 
                                     <div class="favorito-card__sin-imagen">
+
                                         <i class="bi bi-earbuds"></i>
+
                                         <span>
                                             Imagen no disponible
                                         </span>
+
                                     </div>
 
                                 {% endif %}
@@ -171,14 +188,40 @@
                             </a>
 
 
+                            <!-- ================================================= -->
+                            <!-- OFERTA / DESTACADO -->
+                            <!-- ================================================= -->
+
                             {% if producto.en_oferta %}
 
                                 <span class="favorito-card__oferta">
-                                    -{{ producto.porcentaje_descuento }}%
+
+                                    <strong>
+                                        -{{ producto.porcentaje_descuento }}%
+                                    </strong>
+
+                                    <small>
+                                        Oferta
+                                    </small>
+
+                                </span>
+
+                            {% elif producto.destacado %}
+
+                                <span class="favorito-card__destacado">
+
+                                    <i class="bi bi-stars"></i>
+
+                                    Destacado
+
                                 </span>
 
                             {% endif %}
 
+
+                            <!-- ================================================= -->
+                            <!-- QUITAR FAVORITO -->
+                            <!-- ================================================= -->
 
                             <button
                                 type="button"
@@ -187,30 +230,70 @@
                                 aria-label="Eliminar {{ producto.nombre }} de favoritos"
                                 title="Eliminar de favoritos"
                             >
+
                                 <i class="bi bi-heart-fill"></i>
+
                             </button>
 
                         </div>
 
 
+                        <!-- ================================================= -->
+                        <!-- CONTENIDO -->
+                        <!-- ================================================= -->
+
                         <div class="favorito-card__contenido">
+
+
+                            <!-- ================================================= -->
+                            <!-- CATEGORÍA + DISPONIBILIDAD -->
+                            <!-- ================================================= -->
 
                             <div class="favorito-card__encabezado">
 
-                                <span>
-                                    {{ producto.categoria.nombre }}
+                                <span class="favorito-card__categoria">
+
+                                    {% if producto.categoria %}
+
+                                        {{ producto.categoria.nombre }}
+
+                                    {% else %}
+
+                                        Producto
+
+                                    {% endif %}
+
                                 </span>
+
 
                                 {% if producto.stock > 0 %}
 
-                                    <small class="favorito-card__stock favorito-card__stock--disponible">
+                                    <small
+                                        class="
+                                            favorito-card__stock
+                                            favorito-card__stock--disponible
+                                        "
+                                    >
+
+                                        <i class="bi bi-check-circle-fill"></i>
+
                                         Disponible
+
                                     </small>
 
                                 {% else %}
 
-                                    <small class="favorito-card__stock favorito-card__stock--agotado">
+                                    <small
+                                        class="
+                                            favorito-card__stock
+                                            favorito-card__stock--agotado
+                                        "
+                                    >
+
+                                        <i class="bi bi-x-circle-fill"></i>
+
                                         Agotado
+
                                     </small>
 
                                 {% endif %}
@@ -218,40 +301,158 @@
                             </div>
 
 
+                            <!-- ================================================= -->
+                            <!-- NOMBRE -->
+                            <!-- ================================================= -->
+
                             <h2>
+
                                 <a href="{{ producto.get_absolute_url }}">
+
                                     {{ producto.nombre }}
+
                                 </a>
+
                             </h2>
 
 
-                            <p class="favorito-card__descripcion">
-                                {{ producto.descripcion_corta }}
-                            </p>
+                            <!-- ================================================= -->
+                            <!-- CARACTERÍSTICAS PRINCIPALES -->
+                            <!-- ================================================= -->
 
+                            <div class="favorito-card__caracteristicas">
+
+                                {% if producto.caracteristica_1 %}
+
+                                    <div class="favorito-card__caracteristica">
+
+                                        <i class="bi bi-check-circle"></i>
+
+                                        <span>
+                                            {{ producto.caracteristica_1 }}
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if producto.caracteristica_2 %}
+
+                                    <div class="favorito-card__caracteristica">
+
+                                        <i class="bi bi-check-circle"></i>
+
+                                        <span>
+                                            {{ producto.caracteristica_2 }}
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if producto.caracteristica_3 %}
+
+                                    <div class="favorito-card__caracteristica">
+
+                                        <i class="bi bi-check-circle"></i>
+
+                                        <span>
+                                            {{ producto.caracteristica_3 }}
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if not producto.caracteristica_1 and not producto.caracteristica_2 and not producto.caracteristica_3 %}
+
+                                    <div class="favorito-card__caracteristica">
+
+                                        <i class="bi bi-check-circle"></i>
+
+                                        <span>
+                                            Conoce todos los detalles del producto
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- SEPARADOR / ESPACIO FLEXIBLE -->
+                            <!-- ================================================= -->
+
+                            <div class="favorito-card__separador"></div>
+
+
+                            <!-- ================================================= -->
+                            <!-- PRECIO -->
+                            <!-- ================================================= -->
 
                             <div class="favorito-card__precio">
 
                                 {% if producto.en_oferta %}
 
-                                    <span>
-                                        ${{ producto.precio|floatformat:0|intcomma }}
+                                    <!-- PRECIO ORIGINAL -->
+
+                                    <span class="favorito-card__precio-original">
+
+                                        ${{ producto.precio|floatformat:0|intcomma }} CLP
+
                                     </span>
 
-                                    <strong>
-                                        ${{ producto.precio_oferta|floatformat:0|intcomma }}
+
+                                    <!-- PRECIO OFERTA -->
+
+                                    <strong class="favorito-card__precio-actual">
+
+                                        ${{ producto.precio_oferta|floatformat:0|intcomma }} CLP
+
                                     </strong>
+
+
+                                    <!-- AHORRO -->
+
+                                    {% if producto.porcentaje_descuento %}
+
+                                        <small class="favorito-card__ahorro">
+
+                                            Ahorras
+                                            {{ producto.porcentaje_descuento }}%
+
+                                        </small>
+
+                                    {% endif %}
 
                                 {% else %}
 
-                                    <strong>
-                                        ${{ producto.precio|floatformat:0|intcomma }}
+                                    <small class="favorito-card__precio-etiqueta">
+
+                                        Precio
+
+                                    </small>
+
+
+                                    <strong class="favorito-card__precio-actual">
+
+                                        ${{ producto.precio|floatformat:0|intcomma }} CLP
+
                                     </strong>
 
                                 {% endif %}
 
                             </div>
 
+
+                            <!-- ================================================= -->
+                            <!-- ACCIONES -->
+                            <!-- ================================================= -->
 
                             <div class="favorito-card__acciones">
 
@@ -259,12 +460,22 @@
                                     href="{{ producto.get_absolute_url }}"
                                     class="favorito-card__detalle"
                                 >
-                                    Ver detalle
+
+                                    <span>
+                                        Ver detalle
+                                    </span>
+
+                                    <i class="bi bi-arrow-right"></i>
+
                                 </a>
+
 
                                 <button
                                     type="button"
-                                    class="agregar-carrito favorito-card__carrito"
+                                    class="
+                                        agregar-carrito
+                                        favorito-card__carrito
+                                    "
                                     data-producto-id="{{ producto.id }}"
                                     data-producto="{{ producto.nombre|escape }}"
                                     data-cantidad="1"
@@ -276,15 +487,23 @@
                                         aria-disabled="false"
                                     {% endif %}
                                 >
+
                                     <i class="bi bi-bag-plus"></i>
 
                                     <span>
+
                                         {% if producto.stock > 0 %}
+
                                             Agregar
+
                                         {% else %}
+
                                             Sin stock
+
                                         {% endif %}
+
                                     </span>
+
                                 </button>
 
                             </div>
@@ -300,6 +519,10 @@
         {% endif %}
 
 
+        <!-- ============================================================= -->
+        <!-- ESTADO VACÍO -->
+        <!-- ============================================================= -->
+
         <div
             class="favoritos-vacio"
             id="favoritosPaginaVacio"
@@ -309,24 +532,32 @@
         >
 
             <div class="favoritos-vacio__icono">
+
                 <i class="bi bi-heart"></i>
+
             </div>
+
 
             <h2>
                 Aún no tienes favoritos
             </h2>
+
 
             <p>
                 Explora el catálogo y presiona el corazón
                 de los productos que quieras guardar.
             </p>
 
+
             <a
                 href="{% url 'core:productos' %}"
                 class="boton boton--primario"
             >
+
                 Explorar productos
+
                 <i class="bi bi-arrow-right"></i>
+
             </a>
 
         </div>
@@ -343,5 +574,214 @@
 <script
     src="{% static 'core/js/favoritos_pagina.js' %}?v=1"
 ></script>
+
+
+<!-- ============================================================= -->
+<!-- NORMALIZAR PUNTO DE MILES -->
+<!-- ============================================================= -->
+
+<script>
+(function () {
+
+    "use strict";
+
+
+    /*
+     * Este script únicamente corrige
+     * el separador de miles.
+     *
+     * Ejemplos:
+     *
+     * $95000 CLP
+     * $95 000 CLP
+     * $95,000 CLP
+     *
+     * se convierten en:
+     *
+     * $95.000 CLP
+     *
+     * No agrega un segundo "CLP".
+     */
+
+
+    function formatearNumeroMiles(numero) {
+
+        const limpio = String(numero).replace(
+            /[^\d]/g,
+            ""
+        );
+
+
+        if (!limpio) {
+
+            return "";
+
+        }
+
+
+        return limpio.replace(
+            /\B(?=(\d{3})+(?!\d))/g,
+            "."
+        );
+
+    }
+
+
+    function normalizarPrecio(elemento) {
+
+        if (!elemento) {
+
+            return;
+
+        }
+
+
+        let texto = elemento.textContent.trim();
+
+
+        if (!texto.includes("$")) {
+
+            return;
+
+        }
+
+
+        /*
+         * Elimina cualquier CLP previo temporalmente
+         * para evitar duplicados.
+         */
+
+        texto = texto.replace(
+            /(?:\s+CLP\b)+/gi,
+            ""
+        );
+
+
+        /*
+         * Convierte el separador a punto.
+         */
+
+        texto = texto.replace(
+            /\$\s*([\d\s.,]+)/g,
+            function (coincidencia, numero) {
+
+                const formateado = formatearNumeroMiles(
+                    numero
+                );
+
+
+                if (!formateado) {
+
+                    return coincidencia;
+
+                }
+
+
+                return `$${formateado}`;
+
+            }
+        );
+
+
+        /*
+         * CLP queda exactamente una vez.
+         */
+
+        elemento.textContent =
+            `${texto.trim()} CLP`;
+
+    }
+
+
+    function aplicarFormatoPrecios() {
+
+        document
+            .querySelectorAll(
+                [
+                    ".favorito-card__precio-original",
+                    ".favorito-card__precio-actual"
+                ].join(",")
+            )
+            .forEach(
+                normalizarPrecio
+            );
+
+    }
+
+
+    /*
+     * APLICACIÓN INICIAL
+     */
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            aplicarFormatoPrecios
+        );
+
+    } else {
+
+        aplicarFormatoPrecios();
+
+    }
+
+
+    /*
+     * Si favoritos_pagina.js modifica
+     * dinámicamente las cards,
+     * vuelve a normalizar el precio.
+     */
+
+    const pagina = document.getElementById(
+        "favoritosPagina"
+    );
+
+
+    if (pagina) {
+
+        let pendiente = false;
+
+
+        const observer = new MutationObserver(
+            function () {
+
+                if (pendiente) {
+
+                    return;
+
+                }
+
+
+                pendiente = true;
+
+
+                requestAnimationFrame(
+                    function () {
+
+                        aplicarFormatoPrecios();
+
+                        pendiente = false;
+
+                    }
+                );
+
+            }
+        );
+
+
+        observer.observe(
+            pagina,
+            {
+                childList: true,
+                subtree: true,
+                characterData: true
+            }
+        );
+
+    }
+
+})();
+</script>
 
 {% endblock %}

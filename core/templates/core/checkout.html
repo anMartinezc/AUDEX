@@ -198,40 +198,55 @@ Finalizar compra | Audex
                     </div>
 
                     <div class="checkout-metodos">
+
                         {% for opcion in form.metodo_pago %}
-                            <label class="checkout-metodo">
-                                {{ opcion.tag }}
 
-                                <span class="checkout-metodo__icono">
-                                    {% if opcion.choice_value == "webpay" %}
-                                        <i class="bi bi-credit-card"></i>
-                                    {% elif opcion.choice_value == "mercadopago" %}
-                                        <i class="bi bi-wallet2"></i>
-                                    {% else %}
-                                        <i class="bi bi-bank"></i>
-                                    {% endif %}
-                                </span>
+                            {% if opcion.data.value != "transferencia" and opcion.data.value != "transferencia_bancaria" %}
 
-                                <span>
-                                    <strong>
-                                        {{ opcion.choice_label }}
-                                    </strong>
+                                <label class="checkout-metodo">
+                                    {{ opcion.tag }}
 
-                                    <small>
-                                        {% if opcion.choice_value == "webpay" %}
-                                            Pago con tarjetas mediante Webpay.
-                                        {% elif opcion.choice_value == "mercadopago" %}
-                                            Pago seguro mediante Mercado Pago.
-                                        {% else %}
-                                            Recibirás los datos bancarios
-                                            al confirmar el pedido.
+                                    <span class="checkout-metodo__icono">
+
+                                        {% if opcion.data.value == "webpay" %}
+
+                                            <i class="bi bi-credit-card"></i>
+
+                                        {% elif opcion.data.value == "mercadopago" %}
+
+                                            <i class="bi bi-wallet2"></i>
+
                                         {% endif %}
-                                    </small>
-                                </span>
 
-                                <i class="bi bi-check-circle-fill"></i>
-                            </label>
+                                    </span>
+
+                                    <span>
+                                        <strong>
+                                            {{ opcion.choice_label }}
+                                        </strong>
+
+                                        <small>
+
+                                            {% if opcion.data.value == "webpay" %}
+
+                                                Pago con tarjetas mediante Webpay.
+
+                                            {% elif opcion.data.value == "mercadopago" %}
+
+                                                Pago seguro mediante Mercado Pago.
+
+                                            {% endif %}
+
+                                        </small>
+                                    </span>
+
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </label>
+
+                            {% endif %}
+
                         {% endfor %}
+
                     </div>
                 </section>
 
@@ -355,11 +370,11 @@ Finalizar compra | Audex
                                     {% if item.en_oferta %}
 
                                         <span class="checkout-producto__precio-original">
-                                            {{ item.precio_original_formateado }}
+                                            {{ item.precio_original_formateado }} CLP
                                         </span>
 
                                         <strong class="checkout-producto__precio-oferta">
-                                            {{ item.precio_formateado }}
+                                            {{ item.precio_formateado }} CLP
                                         </strong>
 
 
@@ -377,7 +392,7 @@ Finalizar compra | Audex
                                             <small class="checkout-producto__ahorro-unitario">
 
                                                 Ahorras
-                                                {{ item.ahorro_unitario_formateado }}
+                                                {{ item.ahorro_unitario_formateado }} CLP
                                                 por unidad
 
                                             </small>
@@ -387,7 +402,7 @@ Finalizar compra | Audex
                                     {% else %}
 
                                         <strong class="checkout-producto__precio-normal">
-                                            {{ item.precio_formateado }}
+                                            {{ item.precio_formateado }} CLP
                                         </strong>
 
                                     {% endif %}
@@ -398,7 +413,7 @@ Finalizar compra | Audex
                                 {% if item.cantidad > 1 %}
 
                                     <small class="checkout-producto__precio-cada-uno">
-                                        {{ item.precio_formateado }}
+                                        {{ item.precio_formateado }} CLP
                                         c/u
                                     </small>
 
@@ -416,13 +431,13 @@ Finalizar compra | Audex
                                 {% if item.en_oferta %}
 
                                     <span class="checkout-producto__total-original">
-                                        {{ item.total_original_formateado }}
+                                        {{ item.total_original_formateado }} CLP
                                     </span>
 
                                 {% endif %}
 
                                 <strong>
-                                    {{ item.total_formateado }}
+                                    {{ item.total_formateado }} CLP
                                 </strong>
 
                             </div>
@@ -524,7 +539,7 @@ Finalizar compra | Audex
 
                             {% else %}
 
-                                ${{ resumen.descuento|floatformat:0|intcomma }}
+                                ${{ resumen.descuento|floatformat:0|intcomma }} CLP
                                 de descuento.
 
                             {% endif %}
@@ -604,7 +619,7 @@ Finalizar compra | Audex
                                             {% if codigo.monto_minimo > 0 %}
 
                                                 · compra mínima
-                                                ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                                ${{ codigo.monto_minimo|floatformat:0|intcomma }} CLP
 
                                             {% endif %}
 
@@ -658,11 +673,11 @@ Finalizar compra | Audex
 
                             {% if carrito.tiene_ofertas %}
 
-                                {{ carrito.subtotal_precio_lista_formateado }}
+                                {{ carrito.subtotal_precio_lista_formateado }} CLP
 
                             {% else %}
 
-                                {{ carrito.subtotal_formateado }}
+                                {{ carrito.subtotal_formateado }} CLP
 
                             {% endif %}
 
@@ -707,11 +722,11 @@ Finalizar compra | Audex
 
                             {% if carrito.tiene_ofertas %}
 
-                                -{{ carrito.ahorro_ofertas_formateado }}
+                                -{{ carrito.ahorro_ofertas_formateado }} CLP
 
                             {% else %}
 
-                                -$0
+                                -$0 CLP
 
                             {% endif %}
 
@@ -749,7 +764,7 @@ Finalizar compra | Audex
 
 
                         <strong id="checkoutSubtotal">
-                            {{ carrito.subtotal_formateado }}
+                            {{ carrito.subtotal_formateado }} CLP
                         </strong>
 
                     </div>
@@ -758,13 +773,6 @@ Finalizar compra | Audex
                     <!-- ========================================================= -->
                     <!-- DESCUENTO ADICIONAL POR CÓDIGO -->
                     <!-- ========================================================= -->
-                    <!--
-                    Permanece en el DOM para que checkout.js
-                    pueda mostrarlo dinámicamente.
-
-                    Mientras no exista descuento efectivo,
-                    queda oculto.
-                    -->
 
                     <div
                         class="
@@ -826,11 +834,11 @@ Finalizar compra | Audex
 
                             {% if resumen.tiene_descuento_aplicado %}
 
-                                -${{ resumen.descuento|floatformat:0|intcomma }}
+                                -${{ resumen.descuento|floatformat:0|intcomma }} CLP
 
                             {% else %}
 
-                                -$0
+                                -$0 CLP
 
                             {% endif %}
 
@@ -872,11 +880,11 @@ Finalizar compra | Audex
 
                             {% if resumen.tiene_descuento_aplicado %}
 
-                                ${{ resumen.subtotal_con_descuento|floatformat:0|intcomma }}
+                                ${{ resumen.subtotal_con_descuento|floatformat:0|intcomma }} CLP
 
                             {% else %}
 
-                                {{ carrito.subtotal_formateado }}
+                                {{ carrito.subtotal_formateado }} CLP
 
                             {% endif %}
 
@@ -913,7 +921,7 @@ Finalizar compra | Audex
 
                             {% if resumen.despacho > 0 %}
 
-                                ${{ resumen.despacho|floatformat:0|intcomma }}
+                                ${{ resumen.despacho|floatformat:0|intcomma }} CLP
 
                             {% else %}
 
@@ -948,7 +956,7 @@ Finalizar compra | Audex
 
 
                     <strong id="checkoutTotal">
-                        ${{ resumen.total|floatformat:0|intcomma }}
+                        ${{ resumen.total|floatformat:0|intcomma }} CLP
                     </strong>
 
                 </div>
@@ -1042,8 +1050,191 @@ Finalizar compra | Audex
 
 {% endblock %}
 
+
 {% block extra_js %}
+
 <script
     src="{% static 'core/js/checkout.js' %}?v=12"
 ></script>
+
+
+<!-- ===================================================================== -->
+<!-- FORMATO CHILENO + CLP PARA ACTUALIZACIONES DINÁMICAS -->
+<!-- ===================================================================== -->
+
+<script>
+(function () {
+    "use strict";
+
+    const selectoresMonetarios = [
+        ".checkout-producto__precio-original",
+        ".checkout-producto__precio-oferta",
+        ".checkout-producto__precio-normal",
+        ".checkout-producto__ahorro-unitario",
+        ".checkout-producto__precio-cada-uno",
+        ".checkout-producto__total-original",
+        ".checkout-producto__total > strong",
+
+        "#checkoutTotalProductosOriginal",
+        "#checkoutAhorroOfertas",
+        "#checkoutSubtotal",
+        "#checkoutDescuento",
+        "#checkoutSubtotalConDescuento",
+        "#checkoutDespacho",
+        "#checkoutTotal"
+    ];
+
+
+    function normalizarMilesChile(texto) {
+
+        if (!texto) {
+            return texto;
+        }
+
+        return texto.replace(
+            /(-?\$)\s*([\d.,]+)/g,
+            function (coincidencia, simbolo, numero) {
+
+                const soloDigitos = numero.replace(
+                    /[^\d]/g,
+                    ""
+                );
+
+                if (!soloDigitos) {
+                    return coincidencia;
+                }
+
+                const numeroEntero = parseInt(
+                    soloDigitos,
+                    10
+                );
+
+                if (Number.isNaN(numeroEntero)) {
+                    return coincidencia;
+                }
+
+                const formateado = new Intl.NumberFormat(
+                    "es-CL",
+                    {
+                        maximumFractionDigits: 0
+                    }
+                ).format(numeroEntero);
+
+                return `${simbolo}${formateado}`;
+            }
+        );
+
+    }
+
+
+    function contieneMonto(texto) {
+
+        return /-?\$\s*[\d.,]+/.test(texto);
+
+    }
+
+
+    function formatearElemento(elemento) {
+
+        if (!elemento) {
+            return;
+        }
+
+        let texto = elemento.textContent.trim();
+
+        if (!texto) {
+            return;
+        }
+
+        if (!contieneMonto(texto)) {
+            return;
+        }
+
+        texto = normalizarMilesChile(texto);
+
+        texto = texto.replace(
+            /\s+CLP\b/gi,
+            ""
+        );
+
+        elemento.textContent = `${texto} CLP`;
+
+    }
+
+
+    function aplicarFormatoMonetario() {
+
+        selectoresMonetarios.forEach(
+            function (selector) {
+
+                document
+                    .querySelectorAll(selector)
+                    .forEach(formatearElemento);
+
+            }
+        );
+
+    }
+
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            aplicarFormatoMonetario
+        );
+
+    } else {
+
+        aplicarFormatoMonetario();
+
+    }
+
+
+    const checkout = document.getElementById(
+        "checkout"
+    );
+
+
+    if (checkout) {
+
+        let pendiente = false;
+
+        const observer = new MutationObserver(
+            function () {
+
+                if (pendiente) {
+                    return;
+                }
+
+                pendiente = true;
+
+                requestAnimationFrame(
+                    function () {
+
+                        aplicarFormatoMonetario();
+
+                        pendiente = false;
+
+                    }
+                );
+
+            }
+        );
+
+
+        observer.observe(
+            checkout,
+            {
+                childList: true,
+                subtree: true,
+                characterData: true
+            }
+        );
+
+    }
+
+})();
+</script>
+
 {% endblock %}

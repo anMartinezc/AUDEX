@@ -256,11 +256,6 @@ main {
     text-decoration: none;
 }
 
-
-/*
-   LOGO CON IMAGEN
-*/
-
 .logo--imagen {
     width: 145px;
     height: 54px;
@@ -284,7 +279,6 @@ main {
     display: block;
 
     object-fit: contain;
-
     object-position: left center;
 
     transform: none;
@@ -299,11 +293,6 @@ main {
 
     filter: brightness(1.08);
 }
-
-
-/*
-   LOGO FOOTER
-*/
 
 .logo--footer {
     margin-bottom: 22px;
@@ -1616,11 +1605,6 @@ main {
         translateX(3px);
 }
 
-
-/*
-   CERRAR SESIÓN MÓVIL
-*/
-
 .menu-movil__cuenta-form
 .menu-movil__cuenta-boton {
     color: #ffc2c6;
@@ -2008,6 +1992,10 @@ main {
         background 0.3s ease;
 }
 
+.carrito-item--oferta {
+    position: relative;
+}
+
 .carrito-item__imagen {
     width: 92px;
     height: 104px;
@@ -2049,7 +2037,10 @@ main {
     width: 100%;
     height: 100%;
 
+    display: block;
+
     object-fit: contain;
+    object-position: center;
 }
 
 .carrito-item__sin-imagen {
@@ -2076,6 +2067,8 @@ main {
 }
 
 .carrito-item__superior > div {
+    min-width: 0;
+
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -2094,6 +2087,10 @@ main {
     font-size: 0.6rem;
     font-weight: 800;
 
+    letter-spacing: 0.03em;
+
+    line-height: 1.2;
+
     text-transform: uppercase;
 
     white-space: nowrap;
@@ -2102,12 +2099,20 @@ main {
 }
 
 .carrito-item__oferta {
-    padding: 3px 6px;
+    padding: 4px 8px;
+
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
     color: #041017;
 
     font-size: 0.54rem;
     font-weight: 900;
+
+    line-height: 1;
 
     text-transform: uppercase;
 
@@ -2137,7 +2142,8 @@ main {
 
     transition:
         color 0.25s ease,
-        background 0.25s ease;
+        background 0.25s ease,
+        transform 0.25s ease;
 }
 
 .carrito-item__eliminar:hover {
@@ -2150,6 +2156,9 @@ main {
             101,
             0.1
         );
+
+    transform:
+        scale(1.05);
 }
 
 .carrito-item__nombre {
@@ -2167,12 +2176,18 @@ main {
         sans-serif;
 
     font-size: 0.9rem;
+    font-weight: 700;
 
     line-height: 1.3;
 
     white-space: nowrap;
 
     text-overflow: ellipsis;
+
+    transition:
+        color
+        0.25s
+        ease;
 }
 
 .carrito-item__nombre:hover {
@@ -2180,16 +2195,103 @@ main {
         var(--color-azul-claro);
 }
 
+
+/* =========================================================
+   PRECIOS CARRITO
+========================================================= */
+
+.carrito-item__precios {
+    margin-top: 7px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 3px;
+}
+
 .carrito-item__precio {
     display: block;
 
-    margin-top: 4px;
+    margin: 0;
 
     color:
         var(--color-gris);
 
     font-size: 0.72rem;
+    font-weight: 500;
+
+    line-height: 1.25;
+
+    white-space: nowrap;
 }
+
+.carrito-item__precio-original {
+    display: inline-block;
+
+    margin: 0;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.7rem;
+    font-weight: 500;
+
+    line-height: 1.2;
+
+    white-space: nowrap;
+
+    text-decoration-line:
+        line-through;
+
+    text-decoration-thickness:
+        1px;
+
+    text-decoration-color:
+        rgba(
+            147,
+            166,
+            178,
+            0.95
+        );
+}
+
+.carrito-item__precio--oferta {
+    display: block;
+
+    margin: 0;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.94rem;
+    font-weight: 800;
+
+    line-height: 1.15;
+
+    white-space: nowrap;
+}
+
+.carrito-item__ahorro {
+    display: inline-flex;
+    align-items: center;
+
+    margin-top: 2px;
+
+    color: #74e5a1;
+
+    font-size: 0.68rem;
+    font-weight: 800;
+
+    line-height: 1.25;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   PARTE INFERIOR ITEM
+========================================================= */
 
 .carrito-item__inferior {
     margin-top: 14px;
@@ -2201,12 +2303,10 @@ main {
     gap: 12px;
 }
 
-.carrito-item__inferior > strong {
-    color:
-        var(--color-blanco);
 
-    font-size: 0.95rem;
-}
+/* =========================================================
+   CANTIDAD
+========================================================= */
 
 .carrito-item__cantidad {
     display: grid;
@@ -2217,6 +2317,8 @@ main {
         29px;
 
     align-items: center;
+
+    flex-shrink: 0;
 
     overflow: hidden;
 
@@ -2243,6 +2345,10 @@ main {
     border: 0;
 
     background: transparent;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
 }
 
 .carrito-item__cantidad button:hover:not(:disabled) {
@@ -2273,6 +2379,106 @@ main {
 
     font-size: 0.73rem;
     font-weight: 800;
+}
+
+
+/* =========================================================
+   TOTAL PRODUCTO
+========================================================= */
+
+.carrito-item__inferior > strong {
+    flex-shrink: 0;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.95rem;
+    font-weight: 800;
+
+    line-height: 1.15;
+
+    text-align: right;
+
+    white-space: nowrap;
+}
+
+.carrito-item__total {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+
+    gap: 3px;
+
+    text-align: right;
+}
+
+.carrito-item__total--oferta {
+    flex-shrink: 0;
+}
+
+.carrito-item__total-original {
+    display: inline-block;
+
+    margin: 0;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.68rem;
+    font-weight: 500;
+
+    line-height: 1.15;
+
+    white-space: nowrap;
+
+    text-decoration-line:
+        line-through;
+
+    text-decoration-thickness:
+        1px;
+
+    text-decoration-color:
+        rgba(
+            147,
+            166,
+            178,
+            0.95
+        );
+}
+
+.carrito-item__total-actual {
+    display: block;
+
+    margin: 0;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.95rem;
+    font-weight: 800;
+
+    line-height: 1.15;
+
+    white-space: nowrap;
+}
+
+.carrito-item--oferta
+.carrito-item__total-actual {
+    color:
+        var(--color-azul-claro);
+}
+
+.carrito-item--oferta
+.carrito-item__precios {
+    gap: 3px;
+}
+
+.carrito-item--oferta
+.carrito-item__nombre {
+    margin-top: 8px;
 }
 
 
@@ -4000,6 +4206,60 @@ main {
     .carrito-item__imagen {
         width: 82px;
         height: 94px;
+
+        padding: 9px;
+    }
+
+    .carrito-item__inferior {
+        gap: 9px;
+    }
+
+    .carrito-item__categoria {
+        max-width: 105px;
+
+        font-size: 0.56rem;
+    }
+
+    .carrito-item__oferta {
+        padding: 3px 6px;
+
+        font-size: 0.5rem;
+    }
+
+    .carrito-item__nombre {
+        font-size: 0.85rem;
+    }
+
+    .carrito-item__precio-original {
+        font-size: 0.64rem;
+    }
+
+    .carrito-item__precio--oferta {
+        font-size: 0.86rem;
+    }
+
+    .carrito-item__ahorro {
+        font-size: 0.62rem;
+    }
+
+    .carrito-item__cantidad {
+        grid-template-columns:
+            27px
+            31px
+            27px;
+    }
+
+    .carrito-item__cantidad button {
+        width: 27px;
+        height: 28px;
+    }
+
+    .carrito-item__total-original {
+        font-size: 0.62rem;
+    }
+
+    .carrito-item__total-actual {
+        font-size: 0.86rem;
     }
 
     .carrito-confirmacion {
@@ -4039,6 +4299,59 @@ main {
         min-height: 36px;
 
         font-size: 1rem;
+    }
+
+    .carrito-item {
+        grid-template-columns:
+            74px
+            minmax(0, 1fr);
+
+        gap: 11px;
+    }
+
+    .carrito-item__imagen {
+        width: 74px;
+        height: 86px;
+
+        padding: 8px;
+    }
+
+    .carrito-item__superior {
+        gap: 5px;
+    }
+
+    .carrito-item__categoria {
+        max-width: 88px;
+    }
+
+    .carrito-item__inferior {
+        align-items: flex-end;
+
+        gap: 6px;
+    }
+
+    .carrito-item__cantidad {
+        grid-template-columns:
+            25px
+            28px
+            25px;
+    }
+
+    .carrito-item__cantidad button {
+        width: 25px;
+        height: 27px;
+    }
+
+    .carrito-item__cantidad span {
+        font-size: 0.68rem;
+    }
+
+    .carrito-item__total-original {
+        font-size: 0.58rem;
+    }
+
+    .carrito-item__total-actual {
+        font-size: 0.8rem;
     }
 }
 

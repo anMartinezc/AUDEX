@@ -302,7 +302,6 @@ Tu carrito | Audex
 
                                         <div>
 
-                                            <!-- Etiquetas -->
                                             <div class="carrito-producto__etiquetas">
 
                                                 {% if item.categoria %}
@@ -330,7 +329,6 @@ Tu carrito | Audex
                                             </div>
 
 
-                                            <!-- Nombre -->
                                             <h3>
                                                 <a href="{{ item.url_detalle }}">
                                                     {{ item.nombre }}
@@ -338,17 +336,18 @@ Tu carrito | Audex
                                             </h3>
 
 
-                                            <!-- Precios -->
+                                            <!-- PRECIOS -->
+
                                             <div class="carrito-producto__precio-unitario">
 
                                                 {% if item.en_oferta %}
 
                                                     <span class="carrito-producto__precio-original">
-                                                        {{ item.precio_original_formateado }}
+                                                        {{ item.precio_original_formateado }} CLP
                                                     </span>
 
                                                     <strong class="carrito-producto__precio-oferta">
-                                                        {{ item.precio_formateado }}
+                                                        {{ item.precio_formateado }} CLP
                                                     </strong>
 
                                                 {% else %}
@@ -357,7 +356,7 @@ Tu carrito | Audex
                                                         Precio unitario:
 
                                                         <strong>
-                                                            {{ item.precio_formateado }}
+                                                            {{ item.precio_formateado }} CLP
                                                         </strong>
                                                     </span>
 
@@ -368,7 +367,6 @@ Tu carrito | Audex
                                         </div>
 
 
-                                        <!-- Eliminar -->
                                         <button
                                             type="button"
                                             class="carrito-producto__eliminar"
@@ -390,7 +388,6 @@ Tu carrito | Audex
 
                                     <div class="carrito-producto__inferior">
 
-                                        <!-- Cantidad -->
                                         <div class="carrito-producto__cantidad">
 
                                             <span>
@@ -438,7 +435,8 @@ Tu carrito | Audex
                                         </div>
 
 
-                                        <!-- Total -->
+                                        <!-- TOTAL -->
+
                                         <div class="carrito-producto__total">
 
                                             <span>
@@ -448,20 +446,20 @@ Tu carrito | Audex
                                             {% if item.en_oferta %}
 
                                                 <small class="carrito-producto__total-original">
-                                                    {{ item.total_original_formateado }}
+                                                    {{ item.total_original_formateado }} CLP
                                                 </small>
 
                                             {% endif %}
 
                                             <strong>
-                                                {{ item.total_formateado }}
+                                                {{ item.total_formateado }} CLP
                                             </strong>
 
                                             {% if item.en_oferta and item.ahorro_linea %}
 
                                                 <small class="carrito-producto__ahorro">
                                                     Ahorras
-                                                    {{ item.ahorro_linea_formateado }}
+                                                    {{ item.ahorro_linea_formateado }} CLP
                                                 </small>
 
                                             {% endif %}
@@ -561,10 +559,6 @@ Tu carrito | Audex
 
             <aside class="carrito-resumen">
 
-                <!-- ===================================================== -->
-                <!-- CABECERA -->
-                <!-- ===================================================== -->
-
                 <div class="carrito-resumen__titulo">
 
                     <div>
@@ -619,10 +613,6 @@ Tu carrito | Audex
                                     data-resumen-producto-id="{{ item.id }}"
                                 >
 
-                                    <!-- ================================= -->
-                                    <!-- NOMBRE + CANTIDAD -->
-                                    <!-- ================================= -->
-
                                     <div class="carrito-resumen-producto__principal">
 
                                         <a
@@ -647,9 +637,7 @@ Tu carrito | Audex
                                     </div>
 
 
-                                    <!-- ================================= -->
                                     <!-- PRECIOS -->
-                                    <!-- ================================= -->
 
                                     <div class="carrito-resumen-producto__detalle">
 
@@ -658,11 +646,11 @@ Tu carrito | Audex
                                             {% if item.en_oferta %}
 
                                                 <span class="carrito-resumen-producto__precio-original">
-                                                    {{ item.precio_original_formateado }}
+                                                    {{ item.precio_original_formateado }} CLP
                                                 </span>
 
                                                 <strong class="carrito-resumen-producto__precio-oferta">
-                                                    {{ item.precio_formateado }}
+                                                    {{ item.precio_formateado }} CLP
                                                 </strong>
 
                                                 {% if item.porcentaje_descuento %}
@@ -676,7 +664,7 @@ Tu carrito | Audex
                                             {% else %}
 
                                                 <strong class="carrito-resumen-producto__precio">
-                                                    {{ item.precio_formateado }}
+                                                    {{ item.precio_formateado }} CLP
                                                 </strong>
 
                                             {% endif %}
@@ -687,7 +675,7 @@ Tu carrito | Audex
                                         {% if item.cantidad > 1 %}
 
                                             <small class="carrito-resumen-producto__unitario">
-                                                {{ item.precio_formateado }}
+                                                {{ item.precio_formateado }} CLP
                                                 c/u
                                             </small>
 
@@ -696,22 +684,20 @@ Tu carrito | Audex
                                     </div>
 
 
-                                    <!-- ================================= -->
-                                    <!-- TOTAL DE LA LÍNEA -->
-                                    <!-- ================================= -->
+                                    <!-- TOTAL -->
 
                                     <div class="carrito-resumen-producto__total">
 
                                         {% if item.en_oferta %}
 
                                             <span class="carrito-resumen-producto__total-original">
-                                                {{ item.total_original_formateado }}
+                                                {{ item.total_original_formateado }} CLP
                                             </span>
 
                                         {% endif %}
 
                                         <strong>
-                                            {{ item.total_formateado }}
+                                            {{ item.total_formateado }} CLP
                                         </strong>
 
                                     </div>
@@ -730,15 +716,6 @@ Tu carrito | Audex
                 <!-- ===================================================== -->
                 <!-- COMPATIBILIDAD CON JS DE DESPACHO GRATIS -->
                 <!-- ===================================================== -->
-                <!--
-                La promoción está desactivada visualmente.
-
-                Estos elementos permanecen en el DOM porque el JS actual
-                todavía los consulta. Al mantenerlos ocultos evitamos el
-                error:
-
-                progresoEnvio.style -> null
-                -->
 
                 <div
                     class="carrito-resumen__envio"
@@ -759,39 +736,6 @@ Tu carrito | Audex
 
 
                 <!-- ===================================================== -->
-                <!-- DESPACHO GRATIS FUTURO -->
-                <!-- ===================================================== -->
-
-                <!--
-                FUTURA IMPLEMENTACIÓN:
-
-                <div class="carrito-resumen__envio">
-
-                    <p id="carritoPaginaMensajeEnvio">
-
-                        {% if carrito.subtotal >= 50000 %}
-
-                            <i class="bi bi-check-circle-fill"></i>
-                            ¡Tienes despacho gratis!
-
-                        {% else %}
-
-                            Agrega más productos para acceder
-                            a despacho gratis.
-
-                        {% endif %}
-
-                    </p>
-
-                    <div class="carrito-resumen__progreso">
-                        <span id="carritoPaginaProgreso"></span>
-                    </div>
-
-                </div>
-                -->
-
-
-                <!-- ===================================================== -->
                 <!-- RESUMEN ECONÓMICO -->
                 <!-- ===================================================== -->
 
@@ -800,9 +744,7 @@ Tu carrito | Audex
                     <div class="carrito-resumen__valores">
 
 
-                        <!-- ============================================= -->
-                        <!-- VALOR ORIGINAL DE PRODUCTOS -->
-                        <!-- ============================================= -->
+                        <!-- PRODUCTOS -->
 
                         <div class="carrito-resumen__fila">
 
@@ -813,9 +755,9 @@ Tu carrito | Audex
                             <strong id="carritoPaginaPrecioLista">
 
                                 {% if carrito.tiene_ofertas %}
-                                    {{ carrito.subtotal_precio_lista_formateado }}
+                                    {{ carrito.subtotal_precio_lista_formateado }} CLP
                                 {% else %}
-                                    {{ carrito.subtotal_formateado }}
+                                    {{ carrito.subtotal_formateado }} CLP
                                 {% endif %}
 
                             </strong>
@@ -823,9 +765,7 @@ Tu carrito | Audex
                         </div>
 
 
-                        <!-- ============================================= -->
                         <!-- DESCUENTOS -->
-                        <!-- ============================================= -->
 
                         <div
                             class="
@@ -854,9 +794,9 @@ Tu carrito | Audex
                             <strong id="carritoPaginaDescuento">
 
                                 {% if carrito.tiene_ofertas %}
-                                    -{{ carrito.ahorro_ofertas_formateado }}
+                                    -{{ carrito.ahorro_ofertas_formateado }} CLP
                                 {% else %}
-                                    -$0
+                                    -$0 CLP
                                 {% endif %}
 
                             </strong>
@@ -864,9 +804,7 @@ Tu carrito | Audex
                         </div>
 
 
-                        <!-- ============================================= -->
                         <!-- SUBTOTAL -->
-                        <!-- ============================================= -->
 
                         <div class="carrito-resumen__fila">
 
@@ -875,15 +813,13 @@ Tu carrito | Audex
                             </span>
 
                             <strong id="carritoPaginaSubtotal">
-                                {{ carrito.subtotal_formateado }}
+                                {{ carrito.subtotal_formateado }} CLP
                             </strong>
 
                         </div>
 
 
-                        <!-- ============================================= -->
                         <!-- DESPACHO -->
-                        <!-- ============================================= -->
 
                         <div
                             class="
@@ -935,7 +871,7 @@ Tu carrito | Audex
                         </div>
 
                         <strong id="carritoPaginaTotal">
-                            {{ carrito.subtotal_formateado }}
+                            {{ carrito.subtotal_formateado }} CLP
                         </strong>
 
                     </div>
@@ -1115,5 +1051,160 @@ Tu carrito | Audex
 <script
     src="{% static 'core/js/carrito_completo.js' %}"
 ></script>
+
+
+<!-- ===================================================================== -->
+<!-- MANTENER FORMATO CLP DESPUÉS DE ACTUALIZACIONES AJAX -->
+<!-- ===================================================================== -->
+
+<script>
+(function () {
+    "use strict";
+
+    const selectoresMonetarios = [
+        ".carrito-producto__precio-original",
+        ".carrito-producto__precio-oferta",
+        ".carrito-producto__unitario strong",
+        ".carrito-producto__total-original",
+        ".carrito-producto__total > strong",
+        ".carrito-producto__ahorro",
+
+        ".carrito-resumen-producto__precio-original",
+        ".carrito-resumen-producto__precio-oferta",
+        ".carrito-resumen-producto__precio",
+        ".carrito-resumen-producto__unitario",
+        ".carrito-resumen-producto__total-original",
+        ".carrito-resumen-producto__total > strong",
+
+        "#carritoPaginaPrecioLista",
+        "#carritoPaginaDescuento",
+        "#carritoPaginaSubtotal",
+        "#carritoPaginaTotal"
+    ];
+
+
+    function tieneValorMonetario(texto) {
+        return /\$\s*-?[\d.,]+|-?\$\s*[\d.,]+/.test(texto);
+    }
+
+
+    function agregarCLP(elemento) {
+
+        if (!elemento) {
+            return;
+        }
+
+        const texto = elemento.textContent.trim();
+
+        if (!texto) {
+            return;
+        }
+
+        if (!tieneValorMonetario(texto)) {
+            return;
+        }
+
+        if (/\bCLP\b/i.test(texto)) {
+            return;
+        }
+
+        /*
+         * Caso especial:
+         *
+         * "Ahorras $10.000"
+         * pasa a:
+         *
+         * "Ahorras $10.000 CLP"
+         */
+
+        elemento.textContent = `${texto} CLP`;
+    }
+
+
+    function aplicarFormatoCLP() {
+
+        selectoresMonetarios.forEach((selector) => {
+
+            document
+                .querySelectorAll(selector)
+                .forEach(agregarCLP);
+
+        });
+
+    }
+
+
+    /*
+     * Aplicar una vez al cargar la página.
+     */
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            aplicarFormatoCLP
+        );
+
+    } else {
+
+        aplicarFormatoCLP();
+
+    }
+
+
+    /*
+     * El carrito se modifica mediante AJAX.
+     *
+     * carrito_completo.js puede reemplazar textContent o reconstruir
+     * partes completas del DOM, eliminando el texto "CLP" escrito
+     * originalmente en Django.
+     *
+     * MutationObserver detecta esas modificaciones y vuelve a agregar
+     * CLP automáticamente.
+     */
+
+    const carritoPagina = document.getElementById(
+        "carritoPagina"
+    );
+
+
+    if (carritoPagina) {
+
+        let actualizacionPendiente = false;
+
+
+        const observer = new MutationObserver(() => {
+
+            if (actualizacionPendiente) {
+                return;
+            }
+
+            actualizacionPendiente = true;
+
+
+            requestAnimationFrame(() => {
+
+                aplicarFormatoCLP();
+
+                actualizacionPendiente = false;
+
+            });
+
+        });
+
+
+        observer.observe(
+            carritoPagina,
+            {
+                childList: true,
+                subtree: true,
+                characterData: true
+            }
+        );
+
+    }
+
+})();
+</script>
 
 {% endblock %}

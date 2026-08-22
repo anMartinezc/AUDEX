@@ -277,7 +277,7 @@
 
     <!-- PREHEADER -->
     <div style="display:none; visibility:hidden; opacity:0; width:0; height:0; max-width:0; max-height:0; overflow:hidden; color:transparent; font-size:1px; line-height:1px;">
-        Nueva compra confirmada en Audex: {{ pedido.numero }} por ${{ pedido.total|floatformat:0|intcomma }}.
+        Nueva compra confirmada en Audex: {{ pedido.numero }} por ${{ pedido.total|floatformat:0|intcomma }} CLP.
     </div>
 
 
@@ -425,7 +425,7 @@
 
                                         <div class="texto-azul email-total" style="color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-size:31px; font-weight:800; line-height:1.25; white-space:nowrap;"
                                         ><div class="gmail-screen"><div class="gmail-difference">
-                                            ${{ pedido.total|floatformat:0|intcomma }}
+                                            ${{ pedido.total|floatformat:0|intcomma }} CLP
                                         </div></div></div>
 
                                     </td>
@@ -578,14 +578,14 @@
 
                                                         <div class="texto-secundario" style="margin-top:7px; color:#c7d7df !important; -webkit-text-fill-color:#c7d7df !important; font-size:14px; line-height:1.5;"
                                                         ><div class="gmail-screen"><div class="gmail-difference">
-                                                            Cantidad: <strong class="texto-azul" style="color:#ffffff !important; -webkit-text-fill-color:#ffffff !important;">{{ item.cantidad }}</strong> · ${{ item.precio_unitario|floatformat:0|intcomma }} c/u
+                                                            Cantidad: <strong class="texto-azul" style="color:#ffffff !important; -webkit-text-fill-color:#ffffff !important;">{{ item.cantidad }}</strong> · ${{ item.precio_unitario|floatformat:0|intcomma }} CLP c/u
                                                         </div></div></div>
 
                                                     </td>
                                                     <td align="right" valign="middle" style="width:32%; padding:18px 0 18px 8px; white-space:nowrap;">
                                                         <strong class="texto-blanco" style="color:#f7fbfd !important; -webkit-text-fill-color:#f7fbfd !important; font-size:16px; font-weight:800;"
                                                         ><span class="gmail-screen"><span class="gmail-difference">
-                                                            ${{ item.total|floatformat:0|intcomma }}
+                                                            ${{ item.total|floatformat:0|intcomma }} CLP
                                                         </span></span></strong>
                                                     </td>
                                                 </tr>
@@ -624,7 +624,7 @@
                                                 </div></div></td>
                                                 <td align="right" class="texto-claro" style="width:42%; padding:7px 0; color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important; font-size:14px;"
                                                 ><div class="gmail-screen"><div class="gmail-difference">
-                                                    ${{ pedido.subtotal|floatformat:0|intcomma }}
+                                                    ${{ pedido.subtotal|floatformat:0|intcomma }} CLP
                                                 </div></div></td>
                                             </tr>
 
@@ -636,7 +636,7 @@
                                                     </div></div></td>
                                                     <td align="right" class="texto-azul" style="padding:7px 0; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-size:14px; font-weight:700;"
                                                     ><div class="gmail-screen"><div class="gmail-difference">
-                                                        -${{ pedido.descuento|floatformat:0|intcomma }}
+                                                        -${{ pedido.descuento|floatformat:0|intcomma }} CLP
                                                     </div></div></td>
                                                 </tr>
                                             {% endif %}
@@ -649,7 +649,7 @@
                                                 <td align="right" class="texto-claro" style="padding:7px 0 15px; color:#e9f3f7 !important; -webkit-text-fill-color:#e9f3f7 !important; font-size:14px;"
                                                 ><div class="gmail-screen"><div class="gmail-difference">
                                                     {% if pedido.despacho > 0 %}
-                                                        ${{ pedido.despacho|floatformat:0|intcomma }}
+                                                        ${{ pedido.despacho|floatformat:0|intcomma }} CLP
                                                     {% else %}
                                                         Gratis
                                                     {% endif %}
@@ -665,7 +665,7 @@
                                                 </td>
                                                 <td align="right" class="texto-azul email-total" style="padding:17px 0 0; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; border-top:1px solid #496572; font-size:24px; font-weight:800; white-space:nowrap;"
                                                 ><div class="gmail-screen"><div class="gmail-difference">
-                                                    ${{ pedido.total|floatformat:0|intcomma }}
+                                                    ${{ pedido.total|floatformat:0|intcomma }} CLP
                                                 </div></div></td>
                                             </tr>
 

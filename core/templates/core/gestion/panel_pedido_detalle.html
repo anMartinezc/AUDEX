@@ -12,8 +12,6 @@
         href="{% static 'core/css/pedidos.css' %}?v=8"
     >
 
-
-
 {% endblock %}
 
 
@@ -238,7 +236,7 @@
 
                                 <strong class="seguimiento-producto__precio">
 
-                                    ${{ item.total|floatformat:0|intcomma }}
+                                    ${{ item.total|floatformat:0|intcomma }} CLP
 
                                 </strong>
 
@@ -266,7 +264,7 @@
                         </span>
 
                         <strong>
-                            ${{ pedido.total|floatformat:0|intcomma }}
+                            ${{ pedido.total|floatformat:0|intcomma }} CLP
                         </strong>
 
                     </div>

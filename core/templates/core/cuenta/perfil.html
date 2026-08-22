@@ -255,23 +255,27 @@
                     </a>
 
 
-                    <a href="{% url 'account_change_password' %}">
+                    {% if not es_usuario_google %}
 
-                        <i class="bi bi-shield-lock"></i>
+                        <a href="{% url 'account_change_password' %}">
 
-                        <span>
-                            <strong>
-                                Cambiar contraseña
-                            </strong>
+                            <i class="bi bi-shield-lock"></i>
 
-                            <small>
-                                Seguridad de la cuenta
-                            </small>
-                        </span>
+                            <span>
+                                <strong>
+                                    Cambiar contraseña
+                                </strong>
 
-                        <i class="bi bi-arrow-right"></i>
+                                <small>
+                                    Seguridad de la cuenta
+                                </small>
+                            </span>
 
-                    </a>
+                            <i class="bi bi-arrow-right"></i>
+
+                        </a>
+
+                    {% endif %}
 
                 </div>
 

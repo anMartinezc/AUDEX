@@ -150,7 +150,7 @@ Análisis de ventas | Audex
                 <span>Ventas de productos</span>
 
                 <strong>
-                    ${{ ingresos|floatformat:0|intcomma }}
+                    ${{ ingresos|floatformat:0|intcomma }} CLP
                 </strong>
 
                 <small>
@@ -198,7 +198,7 @@ Análisis de ventas | Audex
                 <span>Venta promedio</span>
 
                 <strong>
-                    ${{ ticket_promedio|floatformat:0|intcomma }}
+                    ${{ ticket_promedio|floatformat:0|intcomma }} CLP
                 </strong>
 
                 <small>
@@ -229,7 +229,7 @@ Análisis de ventas | Audex
                 </div>
 
                 <div class="analitica-destacado__monto">
-                    ${{ producto_lider.ingresos|intcomma }}
+                    ${{ producto_lider.ingresos|intcomma }} CLP
                 </div>
             </article>
         {% endif %}
@@ -339,7 +339,7 @@ Análisis de ventas | Audex
 
                                 <td>
                                     <strong class="analitica-tabla__monto">
-                                        ${{ producto.ingresos|intcomma }}
+                                        ${{ producto.ingresos|intcomma }} CLP
                                     </strong>
                                 </td>
                             </tr>
@@ -398,7 +398,7 @@ Análisis de ventas | Audex
 
                                 <td>
                                     <strong class="analitica-tabla__monto">
-                                        ${{ pedido.total|floatformat:0|intcomma }}
+                                        ${{ pedido.total|floatformat:0|intcomma }} CLP
                                     </strong>
                                 </td>
                             </tr>

@@ -762,7 +762,7 @@ Descuentos y fidelidad | Audex
                                     {% if codigo.modalidad == "monto_fijo" %}
 
                                         <strong>
-                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     {% else %}
@@ -776,7 +776,7 @@ Descuentos y fidelidad | Audex
 
                                             <small>
                                                 Máximo:
-                                                ${{ codigo.monto_maximo_descuento|floatformat:0|intcomma }}
+                                                ${{ codigo.monto_maximo_descuento|floatformat:0|intcomma }} CLP
                                             </small>
 
                                         {% endif %}
@@ -795,7 +795,7 @@ Descuentos y fidelidad | Audex
                                     {% if codigo.monto_minimo > 0 %}
 
                                         <strong>
-                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     {% else %}
@@ -1304,7 +1304,7 @@ Descuentos y fidelidad | Audex
                                         {% if codigo.modalidad == "monto_fijo" %}
 
                                             <strong>
-                                                -${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+                                                -${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }} CLP
                                             </strong>
 
                                         {% else %}
@@ -1323,7 +1323,7 @@ Descuentos y fidelidad | Audex
                                         {% if codigo.monto_minimo > 0 %}
 
                                             <strong>
-                                                ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                                ${{ codigo.monto_minimo|floatformat:0|intcomma }} CLP
                                             </strong>
 
                                         {% else %}
@@ -1646,7 +1646,7 @@ Descuentos y fidelidad | Audex
                                 <td>
 
                                     <strong>
-                                        ${{ meta.monto_objetivo|floatformat:0|intcomma }}
+                                        ${{ meta.monto_objetivo|floatformat:0|intcomma }} CLP
                                     </strong>
 
                                     <small>
@@ -1670,7 +1670,7 @@ Descuentos y fidelidad | Audex
                                         </span>
 
                                         <strong>
-                                            ${{ meta.monto_descuento|default:0|floatformat:0|intcomma }}
+                                            ${{ meta.monto_descuento|default:0|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     {% else %}
@@ -1693,7 +1693,7 @@ Descuentos y fidelidad | Audex
 
                                             <small>
                                                 Máximo:
-                                                ${{ meta.monto_maximo_descuento|floatformat:0|intcomma }}
+                                                ${{ meta.monto_maximo_descuento|floatformat:0|intcomma }} CLP
                                             </small>
 
                                         {% endif %}
@@ -1708,7 +1708,7 @@ Descuentos y fidelidad | Audex
                                     {% if meta.monto_minimo_compra > 0 %}
 
                                         <strong>
-                                            ${{ meta.monto_minimo_compra|floatformat:0|intcomma }}
+                                            ${{ meta.monto_minimo_compra|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     {% else %}
@@ -2064,7 +2064,7 @@ Descuentos y fidelidad | Audex
                                     <td>
 
                                         <strong>
-                                            ${{ meta.monto_objetivo|floatformat:0|intcomma }}
+                                            ${{ meta.monto_objetivo|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     </td>
@@ -2075,7 +2075,7 @@ Descuentos y fidelidad | Audex
                                         {% if meta.modalidad == "monto_fijo" %}
 
                                             <strong>
-                                                ${{ meta.monto_descuento|default:0|floatformat:0|intcomma }}
+                                                ${{ meta.monto_descuento|default:0|floatformat:0|intcomma }} CLP
                                             </strong>
 
                                         {% else %}
@@ -2093,7 +2093,7 @@ Descuentos y fidelidad | Audex
 
                                         {% if meta.monto_minimo_compra > 0 %}
 
-                                            ${{ meta.monto_minimo_compra|floatformat:0|intcomma }}
+                                            ${{ meta.monto_minimo_compra|floatformat:0|intcomma }} CLP
 
                                         {% else %}
 
@@ -2416,7 +2416,7 @@ Descuentos y fidelidad | Audex
                                         </strong>
 
                                         <small>
-                                            ${{ codigo.meta_fidelidad.monto_objetivo|floatformat:0|intcomma }}
+                                            ${{ codigo.meta_fidelidad.monto_objetivo|floatformat:0|intcomma }} CLP
                                         </small>
 
                                     {% else %}
@@ -2446,7 +2446,7 @@ Descuentos y fidelidad | Audex
                                         </span>
 
                                         <strong>
-                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     {% else %}
@@ -2478,7 +2478,7 @@ Descuentos y fidelidad | Audex
                                     {% if codigo.monto_minimo > 0 %}
 
                                         <strong>
-                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }}
+                                            ${{ codigo.monto_minimo|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     {% else %}
@@ -2942,7 +2942,7 @@ Descuentos y fidelidad | Audex
 
                                         {% if codigo.modalidad == "monto_fijo" %}
 
-                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }}
+                                            ${{ codigo.monto_descuento|default:0|floatformat:0|intcomma }} CLP
 
                                         {% else %}
 
@@ -3192,7 +3192,7 @@ Descuentos y fidelidad | Audex
                                 <td>
 
                                     <strong>
-                                        ${{ saldo.total_historico|default:0|floatformat:0|intcomma }}
+                                        ${{ saldo.total_historico|default:0|floatformat:0|intcomma }} CLP
                                     </strong>
 
                                 </td>
@@ -3208,7 +3208,7 @@ Descuentos y fidelidad | Audex
 
                                         <small>
                                             Objetivo:
-                                            ${{ saldo.proxima_meta.monto_objetivo|floatformat:0|intcomma }}
+                                            ${{ saldo.proxima_meta.monto_objetivo|floatformat:0|intcomma }} CLP
                                         </small>
 
                                     {% else %}
@@ -3227,13 +3227,13 @@ Descuentos y fidelidad | Audex
                                     {% if saldo.proxima_meta %}
 
                                         <strong>
-                                            ${{ saldo.faltante|default:0|floatformat:0|intcomma }}
+                                            ${{ saldo.faltante|default:0|floatformat:0|intcomma }} CLP
                                         </strong>
 
                                     {% else %}
 
                                         <strong>
-                                            $0
+                                            $0 CLP
                                         </strong>
 
                                     {% endif %}
@@ -3399,7 +3399,7 @@ Descuentos y fidelidad | Audex
 
 
                                 <strong>
-                                    -${{ uso.descuento_aplicado|default:0|floatformat:0|intcomma }}
+                                    -${{ uso.descuento_aplicado|default:0|floatformat:0|intcomma }} CLP
                                 </strong>
 
                             </div>
@@ -3414,7 +3414,7 @@ Descuentos y fidelidad | Audex
                                 Subtotal
 
                                 <strong>
-                                    ${{ uso.subtotal_original|default:0|floatformat:0|intcomma }}
+                                    ${{ uso.subtotal_original|default:0|floatformat:0|intcomma }} CLP
                                 </strong>
 
                             </span>
@@ -3425,7 +3425,7 @@ Descuentos y fidelidad | Audex
                                 Descuento
 
                                 <strong>
-                                    -${{ uso.descuento_aplicado|default:0|floatformat:0|intcomma }}
+                                    -${{ uso.descuento_aplicado|default:0|floatformat:0|intcomma }} CLP
                                 </strong>
 
                             </span>
@@ -3436,7 +3436,7 @@ Descuentos y fidelidad | Audex
                                 Total final
 
                                 <strong>
-                                    ${{ uso.total_final|default:0|floatformat:0|intcomma }}
+                                    ${{ uso.total_final|default:0|floatformat:0|intcomma }} CLP
                                 </strong>
 
                             </span>
@@ -3509,23 +3509,23 @@ Descuentos y fidelidad | Audex
                                             </td>
 
                                             <td>
-                                                ${{ item.precio_lista_unitario|default:0|floatformat:0|intcomma }}
+                                                ${{ item.precio_lista_unitario|default:0|floatformat:0|intcomma }} CLP
                                             </td>
 
                                             <td>
-                                                ${{ item.precio_unitario|default:0|floatformat:0|intcomma }}
+                                                ${{ item.precio_unitario|default:0|floatformat:0|intcomma }} CLP
                                             </td>
 
                                             <td>
-                                                -${{ item.descuento_producto_unitario|default:0|floatformat:0|intcomma }}
+                                                -${{ item.descuento_producto_unitario|default:0|floatformat:0|intcomma }} CLP
                                             </td>
 
                                             <td>
-                                                -${{ item.descuento_codigo|default:0|floatformat:0|intcomma }}
+                                                -${{ item.descuento_codigo|default:0|floatformat:0|intcomma }} CLP
                                             </td>
 
                                             <td>
-                                                ${{ item.total_final|default:0|floatformat:0|intcomma }}
+                                                ${{ item.total_final|default:0|floatformat:0|intcomma }} CLP
                                             </td>
 
                                         </tr>

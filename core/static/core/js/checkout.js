@@ -459,33 +459,25 @@ document.addEventListener("DOMContentLoaded", () => {
         ).trim();
     }
 
+    /*
+     * MODIFICADO:
+     *
+     * El despacho ahora puede cotizarse apenas
+     * exista una región y una comuna.
+     *
+     * La dirección y el número siguen siendo
+     * obligatorios para finalizar el checkout,
+     * pero ya no son necesarios para mostrar
+     * el costo de despacho.
+     */
     function despachoListoParaCotizar() {
         const region = obtenerRegionActual();
         const comuna = obtenerComunaActual();
-        const direccion = obtenerDireccionActual();
-        const numero = obtenerNumeroDireccionActual();
 
         return (
             Boolean(region)
             && Boolean(comuna)
-            && direccion.length >= 5
-            && numero.length >= 1
         );
-    }
-
-    function cancelarCotizacionPendiente() {
-        if (temporizadorCotizacionEnvio) {
-            clearTimeout(
-                temporizadorCotizacionEnvio
-            );
-
-            temporizadorCotizacionEnvio = null;
-        }
-
-        if (solicitudEnvioActual) {
-            solicitudEnvioActual.abort();
-            solicitudEnvioActual = null;
-        }
     }
 
     function mostrarEnvioPendiente() {
@@ -502,13 +494,13 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    function mostrarEnvioCalculando() {
+    function mostrarEnvioCotizando() {
         if (!despachoElemento) {
             return;
         }
 
         despachoElemento.textContent = (
-            "Cotizando..."
+            "Calculando..."
         );
 
         despachoElemento.setAttribute(
@@ -517,38 +509,39 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    function mostrarEnvioError() {
-        if (!despachoElemento) {
-            return;
+    function cancelarCotizacionPendiente() {
+        if (temporizadorCotizacionEnvio) {
+            window.clearTimeout(
+                temporizadorCotizacionEnvio
+            );
+
+            temporizadorCotizacionEnvio = null;
         }
 
-        despachoElemento.textContent = (
-            "No disponible"
-        );
-
-        despachoElemento.removeAttribute(
-            "aria-busy"
-        );
+        if (solicitudEnvioActual) {
+            solicitudEnvioActual.abort();
+            solicitudEnvioActual = null;
+        }
     }
 
-    function crearCuerpoResumen() {
+    function construirDatosResumen() {
         const cuerpo = new URLSearchParams();
 
-        cuerpo.set(
-            "codigo_descuento",
-            normalizarCodigo(
-                inputCupon?.value
-                || ""
-            )
-        );
+        if (csrfInput) {
+            cuerpo.set(
+                "csrfmiddlewaretoken",
+                csrfInput.value
+            );
+        }
 
-        cuerpo.set(
-            "rut",
-            limpiarRut(
-                campoRut?.value
-                || ""
-            )
-        );
+        if (inputCupon) {
+            cuerpo.set(
+                "codigo_descuento",
+                normalizarCodigo(
+                    inputCupon.value
+                )
+            );
+        }
 
         cuerpo.set(
             "region",
@@ -574,9 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function solicitarResumenCheckout(
-        {
-            signal = undefined,
-        } = {}
+        signal = undefined
     ) {
         if (!resumenUrl) {
             throw new Error(
@@ -587,62 +578,24 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
-        if (!csrfInput) {
-            throw new Error(
-                (
-                    "No se encontró el token "
-                    + "CSRF del formulario."
-                )
-            );
-        }
-
-        const cuerpo = crearCuerpoResumen();
-
         const respuesta = await fetch(
             resumenUrl,
             {
                 method: "POST",
-
-                credentials: "same-origin",
-
-                signal,
-
                 headers: {
-                    "Accept": (
-                        "application/json"
-                    ),
-
                     "Content-Type": (
-                        "application/"
-                        + "x-www-form-urlencoded; "
-                        + "charset=UTF-8"
+                        "application/x-www-form-urlencoded"
                     ),
-
-                    "X-CSRFToken": (
-                        csrfInput.value
-                    ),
-
                     "X-Requested-With": (
                         "XMLHttpRequest"
                     ),
                 },
-
-                body: cuerpo.toString(),
+                body: construirDatosResumen(),
+                signal,
             }
         );
 
-        let datos = {};
-
-        try {
-            datos = await respuesta.json();
-        } catch (error) {
-            throw new Error(
-                (
-                    "El servidor no devolvió "
-                    + "una respuesta JSON válida."
-                )
-            );
-        }
+        const datos = await respuesta.json();
 
         return {
             respuesta,
@@ -650,22 +603,13 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    async function cotizarEnvioBlueExpress() {
+    async function cotizarEnvio() {
         if (!despachoListoParaCotizar()) {
             mostrarEnvioPendiente();
             return;
         }
 
-        if (!resumenUrl || !csrfInput) {
-            console.error(
-                (
-                    "No existe configuración "
-                    + "para cotizar el despacho."
-                )
-            );
-
-            mostrarEnvioError();
-
+        if (!resumenUrl) {
             return;
         }
 
@@ -673,35 +617,37 @@ document.addEventListener("DOMContentLoaded", () => {
             solicitudEnvioActual.abort();
         }
 
-        const controlador = (
+        solicitudEnvioActual = (
             new AbortController()
         );
 
-        solicitudEnvioActual = controlador;
-
-        mostrarEnvioCalculando();
+        mostrarEnvioCotizando();
 
         try {
             const {
                 respuesta,
                 datos,
             } = await solicitarResumenCheckout(
-                {
-                    signal: controlador.signal,
-                }
+                solicitudEnvioActual.signal
             );
 
             if (
                 !respuesta.ok
                 || datos.ok === false
             ) {
-                throw new Error(
-                    datos.mensaje
-                    || (
-                        "No fue posible calcular "
-                        + "el despacho."
-                    )
-                );
+                if (despachoElemento) {
+                    despachoElemento.textContent = (
+                        datos.mensaje_despacho
+                        || datos.mensaje
+                        || "No disponible"
+                    );
+
+                    despachoElemento.removeAttribute(
+                        "aria-busy"
+                    );
+                }
+
+                return;
             }
 
             actualizarResumen(
@@ -709,40 +655,35 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
         } catch (error) {
-            if (
-                error.name
-                === "AbortError"
-            ) {
+            if (error.name === "AbortError") {
                 return;
             }
 
             console.error(
-                (
-                    "Error calculando "
-                    + "Blue Express:"
-                ),
+                "Error cotizando despacho:",
                 error
             );
 
-            mostrarEnvioError();
+            if (despachoElemento) {
+                despachoElemento.textContent = (
+                    "No disponible"
+                );
+
+                despachoElemento.removeAttribute(
+                    "aria-busy"
+                );
+            }
 
         } finally {
-            if (
-                solicitudEnvioActual
-                === controlador
-            ) {
-                solicitudEnvioActual = null;
-            }
+            solicitudEnvioActual = null;
         }
     }
 
     function programarCotizacionEnvio() {
         if (temporizadorCotizacionEnvio) {
-            clearTimeout(
+            window.clearTimeout(
                 temporizadorCotizacionEnvio
             );
-
-            temporizadorCotizacionEnvio = null;
         }
 
         if (!despachoListoParaCotizar()) {
@@ -750,14 +691,14 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        mostrarEnvioCalculando();
+        mostrarEnvioCotizando();
 
         temporizadorCotizacionEnvio = (
-            setTimeout(
+            window.setTimeout(
                 () => {
                     temporizadorCotizacionEnvio = null;
 
-                    cotizarEnvioBlueExpress();
+                    cotizarEnvio();
                 },
                 RETARDO_COTIZACION_ENVIO
             )
@@ -765,7 +706,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // EVENTOS REGIÓN / COMUNA / DIRECCIÓN
+    // REGIÓN Y COMUNA
     // =========================================================================
 
     if (
@@ -802,13 +743,23 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
+    /*
+     * MODIFICADO:
+     *
+     * Al seleccionar una comuna se inicia
+     * inmediatamente la cotización.
+     */
     if (comunaSelect) {
         comunaSelect.addEventListener(
             "change",
             () => {
                 cancelarCotizacionPendiente();
 
-                mostrarEnvioPendiente();
+                if (comunaSelect.value) {
+                    programarCotizacionEnvio();
+                } else {
+                    mostrarEnvioPendiente();
+                }
 
                 if (
                     comunaSelect.value
@@ -816,38 +767,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 ) {
                     direccionInput.focus();
                 }
-            }
-        );
-    }
-
-    if (direccionInput) {
-        direccionInput.addEventListener(
-            "input",
-            () => {
-                programarCotizacionEnvio();
-            }
-        );
-
-        direccionInput.addEventListener(
-            "blur",
-            () => {
-                programarCotizacionEnvio();
-            }
-        );
-    }
-
-    if (numeroDireccionInput) {
-        numeroDireccionInput.addEventListener(
-            "input",
-            () => {
-                programarCotizacionEnvio();
-            }
-        );
-
-        numeroDireccionInput.addEventListener(
-            "blur",
-            () => {
-                programarCotizacionEnvio();
             }
         );
     }
@@ -1159,6 +1078,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            /*
+             * La dirección continúa siendo obligatoria
+             * para confirmar el pedido.
+             */
             if (
                 direccionInput
                 && !String(
@@ -1173,6 +1096,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            /*
+             * El número continúa siendo obligatorio
+             * para confirmar el pedido.
+             */
             if (
                 numeroDireccionInput
                 && !String(

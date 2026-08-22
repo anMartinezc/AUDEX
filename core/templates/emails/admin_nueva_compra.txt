@@ -17,7 +17,7 @@ Número de pedido:
 {{ pedido.numero }}
 
 Total de la venta:
-${{ pedido.total|floatformat:0|intcomma }}
+${{ pedido.total|floatformat:0|intcomma }} CLP
 
 
 CLIENTE
@@ -46,8 +46,8 @@ PRODUCTOS VENDIDOS
 {% for item in items %}
 {{ item.nombre_producto }}
 Cantidad: {{ item.cantidad }}
-Precio unitario: ${{ item.precio_unitario|floatformat:0|intcomma }}
-Total: ${{ item.total|floatformat:0|intcomma }}
+Precio unitario: ${{ item.precio_unitario|floatformat:0|intcomma }} CLP
+Total: ${{ item.total|floatformat:0|intcomma }} CLP
 
 {% empty %}
 No se encontraron productos asociados al pedido.
@@ -59,18 +59,18 @@ TOTALES
 -------
 
 Subtotal:
-${{ pedido.subtotal|floatformat:0|intcomma }}
+${{ pedido.subtotal|floatformat:0|intcomma }} CLP
 
 {% if pedido.descuento > 0 %}
 Descuento:
--${{ pedido.descuento|floatformat:0|intcomma }}
+-${{ pedido.descuento|floatformat:0|intcomma }} CLP
 
 {% endif %}
 Despacho:
-{% if pedido.despacho > 0 %}${{ pedido.despacho|floatformat:0|intcomma }}{% else %}Gratis{% endif %}
+{% if pedido.despacho > 0 %}${{ pedido.despacho|floatformat:0|intcomma }} CLP{% else %}Gratis{% endif %}
 
 TOTAL PAGADO:
-${{ pedido.total|floatformat:0|intcomma }}
+${{ pedido.total|floatformat:0|intcomma }} CLP
 
 
 DIRECCIÓN DE DESPACHO

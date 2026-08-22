@@ -11,24 +11,24 @@ RESUMEN DEL PEDIDO
 
 {% for item in items %}
 {{ item.nombre_producto }}
-{{ item.cantidad }} × ${{ item.precio_unitario|floatformat:0|intcomma }}
-Total: ${{ item.total|floatformat:0|intcomma }}
+{{ item.cantidad }} × ${{ item.precio_unitario|floatformat:0|intcomma }} CLP
+Total: ${{ item.total|floatformat:0|intcomma }} CLP
 
 {% endfor %}
 
-Subtotal: ${{ pedido.subtotal|floatformat:0|intcomma }}
+Subtotal: ${{ pedido.subtotal|floatformat:0|intcomma }} CLP
 
 {% if pedido.descuento > 0 %}
-Descuento: -${{ pedido.descuento|floatformat:0|intcomma }}
+Descuento: -${{ pedido.descuento|floatformat:0|intcomma }} CLP
 {% endif %}
 
 {% if pedido.despacho > 0 %}
-Despacho: ${{ pedido.despacho|floatformat:0|intcomma }}
+Despacho: ${{ pedido.despacho|floatformat:0|intcomma }} CLP
 {% else %}
 Despacho: Gratis
 {% endif %}
 
-TOTAL PAGADO: ${{ pedido.total|floatformat:0|intcomma }}
+TOTAL PAGADO: ${{ pedido.total|floatformat:0|intcomma }} CLP
 
 Método de pago: {{ pedido.get_metodo_pago_display }}
 

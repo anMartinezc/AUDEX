@@ -4320,9 +4320,6 @@ def checkout(request):
 
 
 
-
-
-
 @require_POST
 def checkout_resumen_descuento(
     request,
@@ -4343,6 +4340,9 @@ def checkout_resumen_descuento(
 
     Un código solamente se considera visualmente aplicado
     cuando genera un descuento REAL mayor que $0.
+
+    El despacho puede cotizarse desde que el usuario
+    selecciona región y comuna.
     """
 
     # =========================================================================
@@ -4383,7 +4383,7 @@ def checkout_resumen_descuento(
                 "despacho": 0,
 
                 "despacho_formateado": (
-                    "Completa los datos de envío"
+                    "Selecciona región y comuna"
                 ),
 
                 "total": 0,
@@ -4432,7 +4432,7 @@ def checkout_resumen_descuento(
                 "despacho": 0,
 
                 "despacho_formateado": (
-                    "Completa los datos de envío"
+                    "Selecciona región y comuna"
                 ),
 
                 "total": 0,
@@ -4495,15 +4495,24 @@ def checkout_resumen_descuento(
     ).strip()
 
     # =========================================================================
-    # DIRECCIÓN COMPLETA
+    # DATOS NECESARIOS PARA COTIZAR DESPACHO
+    # =========================================================================
+    #
+    # Para mostrar el costo de despacho dinámicamente
+    # solamente exigimos:
+    #
+    # - región;
+    # - comuna.
+    #
+    # Dirección y número siguen siendo recibidos y pueden
+    # continuar siendo obligatorios al confirmar el pedido,
+    # pero ya no bloquean la cotización del despacho.
     # =========================================================================
 
     datos_envio_completos = all(
         [
             region,
             comuna,
-            direccion,
-            numero_direccion,
         ]
     )
 
@@ -4743,7 +4752,7 @@ def checkout_resumen_descuento(
 
     if not datos_envio_completos:
         despacho_formateado = (
-            "Completa los datos de envío"
+            "Selecciona región y comuna"
         )
 
     elif error_despacho:
@@ -4873,9 +4882,6 @@ def checkout_resumen_descuento(
             ),
         }
     )
-
-
-
 
 def calcular_resumen_checkout(
     *,
@@ -8946,13 +8952,20 @@ def mis_favoritos(request):
         contexto,
     )
 
-
 @login_required(
     login_url="core:login"
 )
 def mi_perfil(request):
+
+    es_usuario_google = (
+        request.user.socialaccount_set
+        .filter(provider="google")
+        .exists()
+    )
+
     contexto = {
         "usuario_perfil": request.user,
+        "es_usuario_google": es_usuario_google,
     }
 
     return render(
