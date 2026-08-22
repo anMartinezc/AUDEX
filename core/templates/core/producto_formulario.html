@@ -20,9 +20,14 @@ Nuevo producto
 {% block content %}
 
 <section class="administracion">
+
     <div class="contenedor administracion__contenedor">
 
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
         <div class="administracion__encabezado">
+
             <a
                 href="{% url 'core:productos' %}"
                 class="administracion__volver"
@@ -47,130 +52,880 @@ Nuevo producto
                 Completa la información que se mostrará
                 en el catálogo de Audex.
             </p>
+
         </div>
 
+
+        <!-- =====================================================
+             FORMULARIO
+        ====================================================== -->
         <form
             method="post"
             enctype="multipart/form-data"
             class="formulario-administracion"
             novalidate
         >
+
             {% csrf_token %}
 
+
+            <!-- =================================================
+                 ERRORES GENERALES
+            ================================================== -->
             {% if form.non_field_errors %}
+
                 <div class="errores-formulario">
                     {{ form.non_field_errors }}
                 </div>
+
             {% endif %}
 
+
+            <!-- =================================================
+                 MANAGEMENT FORM DE IMÁGENES
+            ================================================== -->
+            {{ imagenes_formset.management_form }}
+
+            {% if imagenes_formset.non_form_errors %}
+
+                <div class="errores-formulario">
+                    {{ imagenes_formset.non_form_errors }}
+                </div>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 INFORMACIÓN PRINCIPAL
+            ================================================== -->
             <section class="grupo-formulario">
+
                 <div class="grupo-formulario__titulo">
+
                     <i class="bi bi-info-circle"></i>
 
                     <div>
-                        <h2>Información principal</h2>
-                        <p>Nombre, categoría y descripción.</p>
+
+                        <h2>
+                            Información principal
+                        </h2>
+
+                        <p>
+                            Nombre, categoría y descripción.
+                        </p>
+
                     </div>
+
                 </div>
+
 
                 <div class="formulario-grid">
+
                     {% include "core/includes/campo_formulario.html" with campo=form.categoria %}
+
                     {% include "core/includes/campo_formulario.html" with campo=form.nombre %}
+
                 </div>
 
+
                 {% include "core/includes/campo_formulario.html" with campo=form.descripcion_corta %}
+
                 {% include "core/includes/campo_formulario.html" with campo=form.descripcion %}
+
             </section>
 
-            <section class="grupo-formulario">
+
+            <!-- =================================================
+                 IMAGEN PRINCIPAL
+            ================================================== -->
+            <section
+                class="
+                    grupo-formulario
+                    grupo-formulario--imagen-principal
+                "
+            >
+
                 <div class="grupo-formulario__titulo">
+
                     <i class="bi bi-image"></i>
 
                     <div>
-                        <h2>Imagen</h2>
+
+                        <h2>
+                            Imagen principal
+                        </h2>
+
                         <p>
-                            Puedes subir una imagen o usar una URL externa.
+                            Esta será la imagen utilizada como portada
+                            en el catálogo, carrito y detalle del producto.
                         </p>
+
                     </div>
+
                 </div>
 
-                <div class="formulario-grid">
-                    {% include "core/includes/campo_formulario.html" with campo=form.imagen %}
-                    {% include "core/includes/campo_formulario.html" with campo=form.imagen_url %}
+
+                <div class="imagen-principal-editor">
+
+
+                    <!-- =========================================
+                         PREVISUALIZACIÓN
+                    ========================================== -->
+                    <div class="imagen-principal-editor__preview">
+
+                        <div class="imagen-principal-editor__preview-titulo">
+
+                            <span>
+                                Vista previa
+                            </span>
+
+                            {% if object and object.imagen %}
+
+                                <span
+                                    class="
+                                        imagen-principal-editor__estado
+                                        imagen-principal-editor__estado--local
+                                    "
+                                >
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Imagen local
+                                </span>
+
+                            {% elif object and object.imagen_url %}
+
+                                <span
+                                    class="
+                                        imagen-principal-editor__estado
+                                        imagen-principal-editor__estado--url
+                                    "
+                                >
+                                    <i class="bi bi-link-45deg"></i>
+                                    URL externa
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="imagen-principal-editor__imagen-contenedor">
+
+                            {% if object and object.imagen_mostrable %}
+
+                                <img
+                                    src="{{ object.imagen_mostrable }}"
+                                    alt="{{ object.nombre }}"
+                                    class="imagen-principal-editor__imagen"
+                                >
+
+                            {% else %}
+
+                                <div class="imagen-principal-editor__sin-imagen">
+
+                                    <i class="bi bi-image"></i>
+
+                                    <strong>
+                                        Sin imagen principal
+                                    </strong>
+
+                                    <span>
+                                        Selecciona un archivo o utiliza
+                                        una URL externa.
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        {% if object and object.imagen %}
+
+                            <div class="imagen-principal-editor__archivo">
+
+                                <i class="bi bi-file-earmark-image"></i>
+
+                                <span>
+                                    {{ object.imagen.name }}
+                                </span>
+
+                            </div>
+
+                        {% elif object and object.imagen_url %}
+
+                            <div class="imagen-principal-editor__archivo">
+
+                                <i class="bi bi-link-45deg"></i>
+
+                                <span>
+                                    Imagen obtenida desde URL externa
+                                </span>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- =========================================
+                         CONTROLES
+                    ========================================== -->
+                    <div class="imagen-principal-editor__controles">
+
+
+                        <!-- =====================================
+                             ARCHIVO LOCAL
+                        ====================================== -->
+                        <div class="imagen-principal-campo">
+
+                            <div class="imagen-principal-campo__encabezado">
+
+                                <div>
+
+                                    <span class="imagen-principal-campo__icono">
+                                        <i class="bi bi-upload"></i>
+                                    </span>
+
+                                    <div>
+
+                                        <label
+                                            for="{{ form.imagen.id_for_label }}"
+                                        >
+                                            Imagen local
+                                        </label>
+
+                                        <small>
+                                            Sube una imagen desde tu dispositivo.
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+
+                                {% if object and object.imagen %}
+
+                                    <span class="imagen-principal-campo__actual">
+                                        Actual
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!--
+                                Renderizado manual del input para evitar
+                                el bloque desordenado "Actualmente / Limpiar /
+                                Modificar" que genera ClearableFileInput.
+                            -->
+                            <div class="imagen-principal-file">
+
+                                <input
+                                    type="file"
+                                    name="{{ form.imagen.html_name }}"
+                                    id="{{ form.imagen.id_for_label }}"
+                                    accept="image/*"
+                                    class="imagen-principal-file__input"
+                                >
+
+                            </div>
+
+
+                            {% if form.imagen.errors %}
+
+                                <div class="campo-formulario__errores">
+                                    {{ form.imagen.errors }}
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if object and object.imagen %}
+
+                                <div class="imagen-principal-limpiar">
+
+                                    <label
+                                        for="id_{{ form.imagen.html_name }}-clear"
+                                    >
+
+                                        <input
+                                            type="checkbox"
+                                            name="{{ form.imagen.html_name }}-clear"
+                                            id="id_{{ form.imagen.html_name }}-clear"
+                                        >
+
+                                        <span class="imagen-principal-limpiar__check">
+                                            <i class="bi bi-check-lg"></i>
+                                        </span>
+
+                                        <span class="imagen-principal-limpiar__texto">
+
+                                            <strong>
+                                                Eliminar imagen local actual
+                                            </strong>
+
+                                            <small>
+                                                La URL externa será utilizada
+                                                si existe una configurada.
+                                            </small>
+
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- =====================================
+                             SEPARADOR
+                        ====================================== -->
+                        <div class="imagen-principal-editor__separador">
+
+                            <span>
+                                o
+                            </span>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             URL EXTERNA
+                        ====================================== -->
+                        <div class="imagen-principal-campo">
+
+                            <div class="imagen-principal-campo__encabezado">
+
+                                <div>
+
+                                    <span class="imagen-principal-campo__icono">
+                                        <i class="bi bi-link-45deg"></i>
+                                    </span>
+
+                                    <div>
+
+                                        <label
+                                            for="{{ form.imagen_url.id_for_label }}"
+                                        >
+                                            URL externa
+                                        </label>
+
+                                        <small>
+                                            Alternativa cuando no quieras
+                                            almacenar la imagen localmente.
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="imagen-principal-url">
+
+                                {{ form.imagen_url }}
+
+                            </div>
+
+
+                            {% if form.imagen_url.errors %}
+
+                                <div class="campo-formulario__errores">
+                                    {{ form.imagen_url.errors }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- =====================================
+                             INFORMACIÓN DE PRIORIDAD
+                        ====================================== -->
+                        <div class="imagen-principal-prioridad">
+
+                            <div class="imagen-principal-prioridad__icono">
+                                <i class="bi bi-info-circle"></i>
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Prioridad de imagen
+                                </strong>
+
+                                <p>
+                                    Si existe una imagen local y una URL externa,
+                                    Audex mostrará siempre primero la
+                                    <strong>imagen local</strong>.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
+
             </section>
 
-            <section class="grupo-formulario">
+
+            <!-- =================================================
+                 GALERÍA DE IMÁGENES
+            ================================================== -->
+            <section
+                class="
+                    grupo-formulario
+                    grupo-formulario--galeria
+                "
+            >
+
                 <div class="grupo-formulario__titulo">
+
+                    <i class="bi bi-images"></i>
+
+                    <div>
+
+                        <h2>
+                            Galería del producto
+                        </h2>
+
+                        <p>
+                            Agrega imágenes adicionales para mostrar
+                            diferentes ángulos y detalles del producto.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="galeria-producto-formulario">
+
+                    {% for imagen_form in imagenes_formset %}
+
+                        <article
+                            class="
+                                galeria-producto-formulario__item
+
+                                {% if imagen_form.instance.pk %}
+                                    galeria-producto-formulario__item--existente
+                                {% endif %}
+                            "
+                        >
+
+                            {{ imagen_form.id }}
+
+
+                            <!-- =================================
+                                 ENCABEZADO
+                            ================================== -->
+                            <div class="galeria-producto-formulario__encabezado">
+
+                                <div class="galeria-producto-formulario__numero">
+
+                                    <i class="bi bi-image"></i>
+
+                                    <span>
+                                        {% if imagen_form.instance.pk %}
+                                            Imagen adicional
+                                        {% else %}
+                                            Nueva imagen
+                                        {% endif %}
+                                    </span>
+
+                                </div>
+
+
+                                {% if imagen_form.instance.pk %}
+
+                                    <span class="galeria-producto-formulario__estado">
+                                        Guardada
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- =================================
+                                 PREVISUALIZACIÓN
+                            ================================== -->
+                            {% if imagen_form.instance.pk and imagen_form.instance.imagen %}
+
+                                <div class="galeria-producto-formulario__preview">
+
+                                    <img
+                                        src="{{ imagen_form.instance.imagen.url }}"
+                                        alt="{% if imagen_form.instance.texto_alt %}{{ imagen_form.instance.texto_alt }}{% else %}{{ object.nombre }}{% endif %}"
+                                        class="galeria-producto-formulario__imagen"
+                                    >
+
+                                </div>
+
+                            {% else %}
+
+                                <div
+                                    class="
+                                        galeria-producto-formulario__preview
+                                        galeria-producto-formulario__preview--vacio
+                                    "
+                                >
+
+                                    <i class="bi bi-image"></i>
+
+                                    <span>
+                                        Sin imagen seleccionada
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- =================================
+                                 ERRORES
+                            ================================== -->
+                            {% if imagen_form.non_field_errors %}
+
+                                <div class="errores-formulario">
+                                    {{ imagen_form.non_field_errors }}
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- =================================
+                                 IMAGEN
+                            ================================== -->
+                            <div class="campo-formulario">
+
+                                <label
+                                    for="{{ imagen_form.imagen.id_for_label }}"
+                                    class="campo-formulario__label"
+                                >
+                                    Imagen
+                                </label>
+
+                                {{ imagen_form.imagen }}
+
+                                {% if imagen_form.imagen.help_text %}
+
+                                    <small class="campo-formulario__ayuda">
+                                        {{ imagen_form.imagen.help_text }}
+                                    </small>
+
+                                {% endif %}
+
+                                {% if imagen_form.imagen.errors %}
+
+                                    <div class="campo-formulario__errores">
+                                        {{ imagen_form.imagen.errors }}
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- =================================
+                                 TEXTO ALT + ORDEN
+                            ================================== -->
+                            <div class="formulario-grid">
+
+                                <div class="campo-formulario">
+
+                                    <label
+                                        for="{{ imagen_form.texto_alt.id_for_label }}"
+                                        class="campo-formulario__label"
+                                    >
+                                        Texto alternativo
+                                    </label>
+
+                                    {{ imagen_form.texto_alt }}
+
+                                    {% if imagen_form.texto_alt.help_text %}
+
+                                        <small class="campo-formulario__ayuda">
+                                            {{ imagen_form.texto_alt.help_text }}
+                                        </small>
+
+                                    {% endif %}
+
+                                    {% if imagen_form.texto_alt.errors %}
+
+                                        <div class="campo-formulario__errores">
+                                            {{ imagen_form.texto_alt.errors }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="campo-formulario">
+
+                                    <label
+                                        for="{{ imagen_form.orden.id_for_label }}"
+                                        class="campo-formulario__label"
+                                    >
+                                        Orden
+                                    </label>
+
+                                    {{ imagen_form.orden }}
+
+                                    {% if imagen_form.orden.help_text %}
+
+                                        <small class="campo-formulario__ayuda">
+                                            {{ imagen_form.orden.help_text }}
+                                        </small>
+
+                                    {% endif %}
+
+                                    {% if imagen_form.orden.errors %}
+
+                                        <div class="campo-formulario__errores">
+                                            {{ imagen_form.orden.errors }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =================================
+                                 ELIMINAR
+                            ================================== -->
+                            {% if imagen_form.instance.pk and imagen_form.DELETE %}
+
+                                <div class="galeria-producto-formulario__eliminar">
+
+                                    <label
+                                        for="{{ imagen_form.DELETE.id_for_label }}"
+                                        class="galeria-producto-formulario__eliminar-label"
+                                    >
+
+                                        {{ imagen_form.DELETE }}
+
+                                        <span>
+                                            <i class="bi bi-trash3"></i>
+                                            Eliminar esta imagen
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+                            {% endif %}
+
+                        </article>
+
+
+                    {% empty %}
+
+                        <div class="galeria-producto-formulario__vacia">
+
+                            <i class="bi bi-images"></i>
+
+                            <p>
+                                No hay campos disponibles para
+                                agregar imágenes adicionales.
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-lightbulb"></i>
+
+                    <p>
+                        Utiliza el campo
+                        <strong>Orden</strong>
+                        para controlar cómo aparecerán las imágenes.
+                        El número más bajo se mostrará primero.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 PRECIO Y DISPONIBILIDAD
+            ================================================== -->
+            <section class="grupo-formulario">
+
+                <div class="grupo-formulario__titulo">
+
                     <i class="bi bi-currency-dollar"></i>
 
                     <div>
-                        <h2>Precio y disponibilidad</h2>
+
+                        <h2>
+                            Precio y disponibilidad
+                        </h2>
+
                         <p>
-                            Deja el precio oferta vacío cuando no exista descuento.
+                            Deja el precio oferta vacío
+                            cuando no exista descuento.
                         </p>
+
                     </div>
+
                 </div>
 
-                <div class="formulario-grid formulario-grid--tres">
+
+                <div
+                    class="
+                        formulario-grid
+                        formulario-grid--tres
+                    "
+                >
+
                     {% include "core/includes/campo_formulario.html" with campo=form.precio %}
+
                     {% include "core/includes/campo_formulario.html" with campo=form.precio_oferta %}
+
                     {% include "core/includes/campo_formulario.html" with campo=form.stock %}
+
                 </div>
+
             </section>
 
+
+            <!-- =================================================
+                 CARACTERÍSTICAS
+            ================================================== -->
             <section class="grupo-formulario">
+
                 <div class="grupo-formulario__titulo">
+
                     <i class="bi bi-list-check"></i>
 
                     <div>
-                        <h2>Características</h2>
+
+                        <h2>
+                            Características
+                        </h2>
+
                         <p>
-                            Estas características aparecerán en la tarjeta.
+                            Estas características aparecerán
+                            en la tarjeta.
                         </p>
+
                     </div>
+
                 </div>
+
 
                 {% include "core/includes/campo_formulario.html" with campo=form.caracteristica_1 %}
+
                 {% include "core/includes/campo_formulario.html" with campo=form.caracteristica_2 %}
+
                 {% include "core/includes/campo_formulario.html" with campo=form.caracteristica_3 %}
 
-                <div class="formulario-grid formulario-grid--tres">
+
+                <div
+                    class="
+                        formulario-grid
+                        formulario-grid--tres
+                    "
+                >
+
                     {% include "core/includes/campo_formulario.html" with campo=form.autonomia_horas %}
+
                     {% include "core/includes/campo_formulario.html" with campo=form.bluetooth %}
+
                     {% include "core/includes/campo_formulario.html" with campo=form.resistencia_agua %}
+
                 </div>
+
             </section>
 
+
+            <!-- =================================================
+                 CONFIGURACIÓN
+            ================================================== -->
             <section class="grupo-formulario">
+
                 <div class="grupo-formulario__titulo">
+
                     <i class="bi bi-sliders"></i>
 
                     <div>
-                        <h2>Configuración</h2>
-                        <p>Visibilidad y condiciones especiales.</p>
+
+                        <h2>
+                            Configuración
+                        </h2>
+
+                        <p>
+                            Visibilidad y condiciones especiales.
+                        </p>
+
                     </div>
+
                 </div>
+
 
                 <div class="opciones-formulario">
+
                     <label>
+
                         {{ form.cancelacion_ruido }}
-                        <span>Cancelación de ruido</span>
+
+                        <span>
+                            Cancelación de ruido
+                        </span>
+
                     </label>
 
+
                     <label>
+
                         {{ form.destacado }}
-                        <span>Producto destacado</span>
+
+                        <span>
+                            Producto destacado
+                        </span>
+
                     </label>
 
+
                     <label>
+
                         {{ form.activo }}
-                        <span>Producto visible</span>
+
+                        <span>
+                            Producto visible
+                        </span>
+
                     </label>
+
                 </div>
+
             </section>
 
+
+            <!-- =================================================
+                 ACCIONES
+            ================================================== -->
             <div class="formulario-acciones">
+
                 <a
                     href="{% url 'core:productos' %}"
                     class="boton boton--secundario"
@@ -178,10 +933,12 @@ Nuevo producto
                     Cancelar
                 </a>
 
+
                 <button
                     type="submit"
                     class="boton boton--primario"
                 >
+
                     <i class="bi bi-check-lg"></i>
 
                     {% if object %}
@@ -189,11 +946,15 @@ Nuevo producto
                     {% else %}
                         Crear producto
                     {% endif %}
+
                 </button>
+
             </div>
+
         </form>
 
     </div>
+
 </section>
 
 {% endblock %}

@@ -95,7 +95,6 @@ class Categoria(models.Model):
             **kwargs,
         )
 
-
 class Producto(models.Model):
     categoria = models.ForeignKey(
         Categoria,
@@ -125,8 +124,11 @@ class Producto(models.Model):
         verbose_name="Descripción completa",
     )
 
+    # =========================================================
+    # IMAGEN PRINCIPAL
+    # =========================================================
     imagen = models.ImageField(
-        upload_to="productos/",
+        upload_to="productos/principales/",
         blank=True,
         null=True,
         verbose_name="Imagen principal",
@@ -134,13 +136,16 @@ class Producto(models.Model):
 
     imagen_url = models.URLField(
         blank=True,
-        verbose_name="URL externa de imagen",
+        verbose_name="URL externa de imagen principal",
         help_text=(
             "Opcional. Se utiliza cuando no se "
-            "carga una imagen local."
+            "carga una imagen principal local."
         ),
     )
 
+    # =========================================================
+    # PRECIO
+    # =========================================================
     precio = models.DecimalField(
         max_digits=12,
         decimal_places=0,
@@ -155,18 +160,22 @@ class Producto(models.Model):
         verbose_name="Precio oferta",
     )
 
+    # =========================================================
+    # STOCK
+    # =========================================================
     stock = models.PositiveIntegerField(
         default=0,
         verbose_name="Stock",
     )
 
-    stock_reservado = (
-        models.PositiveIntegerField(
-            default=0,
-            verbose_name="Stock reservado",
-        )
+    stock_reservado = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Stock reservado",
     )
 
+    # =========================================================
+    # CARACTERÍSTICAS
+    # =========================================================
     caracteristica_1 = models.CharField(
         max_length=120,
         verbose_name="Característica 1",
@@ -184,12 +193,10 @@ class Producto(models.Model):
         verbose_name="Característica 3",
     )
 
-    autonomia_horas = (
-        models.PositiveIntegerField(
-            blank=True,
-            null=True,
-            verbose_name="Autonomía en horas",
-        )
+    autonomia_horas = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Autonomía en horas",
     )
 
     bluetooth = models.CharField(
@@ -204,13 +211,14 @@ class Producto(models.Model):
         verbose_name="Resistencia al agua",
     )
 
-    cancelacion_ruido = (
-        models.BooleanField(
-            default=False,
-            verbose_name="Cancelación de ruido",
-        )
+    cancelacion_ruido = models.BooleanField(
+        default=False,
+        verbose_name="Cancelación de ruido",
     )
 
+    # =========================================================
+    # ESTADO
+    # =========================================================
     destacado = models.BooleanField(
         default=False,
         verbose_name="Producto destacado",
@@ -241,29 +249,32 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
+    # =========================================================
+    # VALIDACIONES
+    # =========================================================
     def clean(self):
         super().clean()
 
         errores = {}
 
-        if self.precio <= Decimal("0"):
+        if (
+            self.precio is not None
+            and self.precio <= Decimal("0")
+        ):
             errores["precio"] = (
                 "El precio debe ser mayor que cero."
             )
 
         if self.precio_oferta is not None:
-            if (
-                self.precio_oferta
-                <= Decimal("0")
-            ):
+            if self.precio_oferta <= Decimal("0"):
                 errores["precio_oferta"] = (
                     "El precio de oferta debe ser "
                     "mayor que cero."
                 )
 
             elif (
-                self.precio_oferta
-                >= self.precio
+                self.precio is not None
+                and self.precio_oferta >= self.precio
             ):
                 errores["precio_oferta"] = (
                     "El precio de oferta debe ser "
@@ -275,7 +286,7 @@ class Producto(models.Model):
             and not self.imagen_url
         ):
             errores["imagen"] = (
-                "Carga una imagen o ingresa "
+                "Carga una imagen principal o ingresa "
                 "una URL externa."
             )
 
@@ -293,6 +304,9 @@ class Producto(models.Model):
                 errores
             )
 
+    # =========================================================
+    # GUARDADO
+    # =========================================================
     def save(self, *args, **kwargs):
         if not self.slug:
             slug_base = slugify(
@@ -327,6 +341,9 @@ class Producto(models.Model):
             **kwargs,
         )
 
+    # =========================================================
+    # PRECIOS
+    # =========================================================
     @property
     def en_oferta(self):
         return (
@@ -361,13 +378,55 @@ class Producto(models.Model):
             descuento
         )
 
+    # =========================================================
+    # IMÁGENES
+    # =========================================================
     @property
     def imagen_mostrable(self):
+        """
+        Devuelve la imagen principal del producto.
+
+        Prioridad:
+        1. Imagen cargada localmente.
+        2. URL externa.
+        """
         if self.imagen:
-            return self.imagen.url
+            try:
+                return self.imagen.url
+            except ValueError:
+                pass
 
         return self.imagen_url
 
+    @property
+    def tiene_galeria(self):
+        """
+        Indica si el producto tiene imágenes adicionales.
+        """
+        if not self.pk:
+            return False
+
+        return self.imagenes.exists()
+
+    @property
+    def cantidad_imagenes(self):
+        """
+        Cantidad total considerando imagen principal
+        más imágenes adicionales.
+        """
+        cantidad = 0
+
+        if self.imagen_mostrable:
+            cantidad += 1
+
+        if self.pk:
+            cantidad += self.imagenes.count()
+
+        return cantidad
+
+    # =========================================================
+    # STOCK
+    # =========================================================
     @property
     def stock_disponible(self):
         return max(
@@ -383,6 +442,9 @@ class Producto(models.Model):
             and self.stock_disponible > 0
         )
 
+    # =========================================================
+    # URL
+    # =========================================================
     def get_absolute_url(self):
         return reverse(
             "core:producto_detalle",
@@ -390,6 +452,84 @@ class Producto(models.Model):
                 "slug": self.slug,
             },
         )
+
+
+# =============================================================
+# GALERÍA DE IMÁGENES DEL PRODUCTO
+# =============================================================
+class ProductoImagen(models.Model):
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        related_name="imagenes",
+        verbose_name="Producto",
+    )
+
+    imagen = models.ImageField(
+        upload_to="productos/galeria/",
+        verbose_name="Imagen",
+    )
+
+    texto_alt = models.CharField(
+        max_length=180,
+        blank=True,
+        verbose_name="Texto alternativo",
+        help_text=(
+            "Descripción breve de la imagen. "
+            "Ayuda con accesibilidad y SEO."
+        ),
+    )
+
+    orden = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Orden",
+        help_text=(
+            "Define el orden de aparición. "
+            "0 se muestra primero."
+        ),
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    actualizado = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Imagen de producto"
+        verbose_name_plural = "Imágenes de productos"
+
+        ordering = [
+            "orden",
+            "id",
+        ]
+
+    def __str__(self):
+        return (
+            f"Imagen de {self.producto.nombre} "
+            f"({self.orden})"
+        )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+
+        super().save(
+            *args,
+            **kwargs,
+        )
+
+    @property
+    def url(self):
+        if self.imagen:
+            try:
+                return self.imagen.url
+            except ValueError:
+                return ""
+
+        return ""
+
 
 class Pedido(models.Model):
     # -------------------------------------------------------------------------

@@ -58,8 +58,13 @@
                     </div>
 
                     <div>
-                        <span>Administración</span>
-                        <strong>Gestión del producto</strong>
+                        <span>
+                            Administración
+                        </span>
+
+                        <strong>
+                            Gestión del producto
+                        </strong>
                     </div>
 
                 </div>
@@ -74,6 +79,7 @@
                         "
                     >
                         <i class="bi bi-pencil"></i>
+
                         Editar producto
                     </a>
 
@@ -85,6 +91,7 @@
                         "
                     >
                         <i class="bi bi-trash3"></i>
+
                         Eliminar
                     </a>
 
@@ -111,6 +118,9 @@
 
                 {% with galeria=producto.imagenes.all %}
 
+                    <!-- =========================================
+                         IMAGEN GRANDE
+                    ========================================== -->
                     <div
                         class="
                             detalle-galeria__principal
@@ -122,7 +132,9 @@
                         id="contenedorImagenProducto"
                     >
 
-                        <!-- BADGE OFERTA / DESTACADO -->
+                        <!-- =====================================
+                             BADGE OFERTA / DESTACADO
+                        ====================================== -->
                         {% if producto.en_oferta %}
 
                             <div class="detalle-oferta-badge">
@@ -150,30 +162,52 @@
                         {% endif %}
 
 
-                        <!-- IMAGEN PRINCIPAL -->
-                        {% if galeria %}
+                        <!-- =====================================
+                             IMAGEN PRINCIPAL DEL PRODUCTO
 
-                            {% with primera=galeria.0 %}
+                             Prioridad:
+                             1. Producto.imagen
+                             2. Producto.imagen_url
+                             3. Primera imagen adicional
+                        ====================================== -->
 
-                                {% firstof primera.imagen.url primera.imagen_mostrable primera.url producto.imagen_mostrable as imagen_principal %}
-
-                                <img
-                                    src="{{ imagen_principal }}"
-                                    alt="{{ producto.nombre }}"
-                                    id="imagenProductoPrincipal"
-                                    data-indice="0"
-                                >
-
-                            {% endwith %}
-
-                        {% elif producto.imagen_mostrable %}
+                        {% if producto.imagen_mostrable %}
 
                             <img
                                 src="{{ producto.imagen_mostrable }}"
-                                alt="{{ producto.nombre }}"
+                                alt="Vista principal de {{ producto.nombre }}"
                                 id="imagenProductoPrincipal"
                                 data-indice="0"
                             >
+
+                        {% elif galeria %}
+
+                            {% with primera=galeria.0 %}
+
+                                {% if primera.imagen %}
+
+                                    <img
+                                        src="{{ primera.imagen.url }}"
+                                        alt="{{ primera.texto_alt|default:producto.nombre }}"
+                                        id="imagenProductoPrincipal"
+                                        data-indice="0"
+                                    >
+
+                                {% else %}
+
+                                    <div class="detalle-sin-imagen">
+
+                                        <i class="bi bi-earbuds"></i>
+
+                                        <span>
+                                            Imagen no disponible
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+                            {% endwith %}
 
                         {% else %}
 
@@ -190,8 +224,10 @@
                         {% endif %}
 
 
-                        <!-- BOTÓN ZOOM -->
-                        {% if galeria or producto.imagen_mostrable %}
+                        <!-- =====================================
+                             BOTÓN ZOOM
+                        ====================================== -->
+                        {% if producto.imagen_mostrable or galeria %}
 
                             <button
                                 type="button"
@@ -209,8 +245,10 @@
                     </div>
 
 
-                    <!-- MINIATURAS -->
-                    {% if galeria or producto.imagen_mostrable %}
+                    <!-- =========================================
+                         MINIATURAS
+                    ========================================== -->
+                    {% if producto.imagen_mostrable or galeria %}
 
                         <div class="detalle-galeria__inferior">
 
@@ -221,40 +259,13 @@
                                 aria-label="Imágenes de {{ producto.nombre }}"
                             >
 
-                                {% if galeria %}
 
-                                    {% for foto in galeria %}
+                                <!-- =================================
+                                     IMAGEN PRINCIPAL
 
-                                        {% firstof foto.imagen.url foto.imagen_mostrable foto.url as foto_url %}
-
-                                        <button
-                                            type="button"
-                                            class="
-                                                detalle-miniatura
-
-                                                {% if forloop.first %}
-                                                    detalle-miniatura--activa
-                                                {% endif %}
-                                            "
-                                            data-imagen-url="{{ foto_url }}"
-                                            data-imagen-alt="{{ foto.alt|default:producto.nombre }}"
-                                            data-indice="{{ forloop.counter0 }}"
-                                            aria-label="Mostrar imagen {{ forloop.counter }} de {{ producto.nombre }}"
-                                            aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
-                                            role="listitem"
-                                        >
-
-                                            <img
-                                                src="{{ foto_url }}"
-                                                alt="{{ foto.alt|default:producto.nombre }}"
-                                                loading="lazy"
-                                            >
-
-                                        </button>
-
-                                    {% endfor %}
-
-                                {% else %}
+                                     Siempre aparece primero si existe.
+                                ================================== -->
+                                {% if producto.imagen_mostrable %}
 
                                     <button
                                         type="button"
@@ -263,7 +274,7 @@
                                             detalle-miniatura--activa
                                         "
                                         data-imagen-url="{{ producto.imagen_mostrable }}"
-                                        data-imagen-alt="{{ producto.nombre }}"
+                                        data-imagen-alt="Vista principal de {{ producto.nombre }}"
                                         data-indice="0"
                                         aria-label="Mostrar imagen principal de {{ producto.nombre }}"
                                         aria-pressed="true"
@@ -279,6 +290,43 @@
 
                                 {% endif %}
 
+
+                                <!-- =================================
+                                     IMÁGENES ADICIONALES
+                                ================================== -->
+                                {% for foto in galeria %}
+
+                                    {% if foto.imagen %}
+
+                                        <button
+                                            type="button"
+                                            class="
+                                                detalle-miniatura
+
+                                                {% if not producto.imagen_mostrable and forloop.first %}
+                                                    detalle-miniatura--activa
+                                                {% endif %}
+                                            "
+                                            data-imagen-url="{{ foto.imagen.url }}"
+                                            data-imagen-alt="{{ foto.texto_alt|default:producto.nombre }}"
+                                            data-indice="{% if producto.imagen_mostrable %}{{ forloop.counter }}{% else %}{{ forloop.counter0 }}{% endif %}"
+                                            aria-label="Mostrar imagen adicional {{ forloop.counter }} de {{ producto.nombre }}"
+                                            aria-pressed="{% if not producto.imagen_mostrable and forloop.first %}true{% else %}false{% endif %}"
+                                            role="listitem"
+                                        >
+
+                                            <img
+                                                src="{{ foto.imagen.url }}"
+                                                alt="{{ foto.texto_alt|default:producto.nombre }}"
+                                                loading="lazy"
+                                            >
+
+                                        </button>
+
+                                    {% endif %}
+
+                                {% endfor %}
+
                             </div>
 
 
@@ -287,7 +335,8 @@
                                 <i class="bi bi-mouse"></i>
 
                                 <span>
-                                    Selecciona una imagen o usa el botón para ampliarla.
+                                    Selecciona una imagen o usa el botón
+                                    para ampliarla.
                                 </span>
 
                             </div>
@@ -478,7 +527,10 @@
                                     <i class="bi bi-battery-charging"></i>
 
                                     <span>
-                                        <strong>Autonomía:</strong>
+                                        <strong>
+                                            Autonomía:
+                                        </strong>
+
                                         hasta {{ producto.autonomia_horas }} horas
                                     </span>
 
@@ -494,7 +546,10 @@
                                     <i class="bi bi-bluetooth"></i>
 
                                     <span>
-                                        <strong>Bluetooth:</strong>
+                                        <strong>
+                                            Bluetooth:
+                                        </strong>
+
                                         {{ producto.bluetooth }}
                                     </span>
 
@@ -510,7 +565,10 @@
                                     <i class="bi bi-droplet"></i>
 
                                     <span>
-                                        <strong>Resistencia:</strong>
+                                        <strong>
+                                            Resistencia:
+                                        </strong>
+
                                         {{ producto.resistencia_agua }}
                                     </span>
 

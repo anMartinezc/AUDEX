@@ -213,57 +213,99 @@
     align-self: start;
 }
 
+
+/* =========================================================
+   IMAGEN PRINCIPAL
+========================================================= */
+
 .detalle-galeria__principal {
     position: relative;
 
     overflow: hidden;
 
+    width: 100%;
     min-height: 610px;
-    padding: 60px;
+
+    padding: 18px;
 
     display: grid;
     place-items: center;
 
-    border: 1px solid var(--borde);
+    box-sizing: border-box;
+
+    isolation: isolate;
+
+    border:
+        1px solid rgba(131, 216, 243, 0.26);
+
     border-radius: 28px;
 
     background:
         radial-gradient(
-            circle at center,
-            rgba(54, 169, 214, 0.11),
-            transparent 58%
-        ),
-        linear-gradient(
-            145deg,
-            #f5f8f9,
-            #dce5e9
+            circle at 50% 45%,
+            rgba(255, 255, 255, 1) 0%,
+            rgba(248, 250, 251, 1) 55%,
+            rgba(235, 241, 244, 1) 100%
         );
 
     box-shadow:
-        0 28px 70px rgba(0, 0, 0, 0.24);
+        0 28px 70px rgba(0, 0, 0, 0.24),
+        inset 0 0 55px rgba(183, 203, 211, 0.16);
+}
+
+.detalle-galeria__principal::after {
+    content: "";
+
+    position: absolute;
+    z-index: 2;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    border-radius: inherit;
+
+    box-shadow:
+        inset 0 0 38px rgba(164, 190, 201, 0.12);
 }
 
 .detalle-galeria__principal--oferta {
-    border-color: rgba(131, 216, 243, 0.45);
+    border-color: rgba(131, 216, 243, 0.48);
 
     box-shadow:
         0 28px 70px rgba(0, 0, 0, 0.24),
-        0 20px 55px rgba(54, 169, 214, 0.12);
+        0 20px 55px rgba(54, 169, 214, 0.12),
+        inset 0 0 55px rgba(183, 203, 211, 0.16);
 }
 
-.detalle-galeria__principal img {
+
+/* =========================================================
+   IMAGEN GRANDE
+
+   El fondo claro del contenedor ayuda a disimular
+   los márgenes blancos que vienen dentro de algunas fotos.
+========================================================= */
+
+.detalle-galeria__principal > img {
+    position: relative;
+    z-index: 1;
+
     width: 100%;
     height: 100%;
 
     max-width: 100%;
-    max-height: 500px;
+    max-height: 574px;
+
+    display: block;
 
     object-fit: contain;
     object-position: center;
 
+    border-radius: 20px;
+
     filter:
         drop-shadow(
-            0 26px 28px rgba(0, 0, 0, 0.22)
+            0 18px 24px rgba(0, 0, 0, 0.12)
         );
 
     transition:
@@ -271,12 +313,12 @@
         filter 0.45s ease;
 }
 
-.detalle-galeria__principal:hover img {
-    transform: scale(1.035);
+.detalle-galeria__principal:hover > img {
+    transform: scale(1.012);
 
     filter:
         drop-shadow(
-            0 32px 34px rgba(0, 0, 0, 0.28)
+            0 22px 28px rgba(0, 0, 0, 0.16)
         );
 }
 
@@ -314,7 +356,7 @@
 
 .detalle-oferta-badge {
     position: absolute;
-    z-index: 4;
+    z-index: 5;
 
     top: 24px;
     left: 24px;
@@ -370,7 +412,7 @@
 
 .detalle-destacado {
     position: absolute;
-    z-index: 4;
+    z-index: 5;
 
     top: 24px;
     left: 24px;
@@ -400,7 +442,7 @@
 
 .detalle-zoom-boton {
     position: absolute;
-    z-index: 4;
+    z-index: 5;
 
     right: 22px;
     bottom: 22px;
@@ -442,32 +484,96 @@
 
 
 /* =========================================================
-   MINIATURAS
+   ZONA INFERIOR DE GALERÍA
 ========================================================= */
 
 .detalle-galeria__inferior {
+    width: 100%;
     margin-top: 14px;
 
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
 
-    gap: 20px;
+    gap: 10px;
+
+    min-width: 0;
 }
+
+
+/* =========================================================
+   MINIATURAS
+
+   Siempre una sola fila.
+   Cuando existen muchas imágenes se desplaza horizontalmente.
+========================================================= */
 
 .detalle-galeria__miniaturas {
+    width: 100%;
+    max-width: 100%;
+
+    padding: 1px 2px 8px;
+
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+
+    flex-wrap: nowrap;
 
     gap: 9px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(131, 216, 243, 0.35)
+        transparent;
+
+    scroll-behavior: smooth;
+
+    overscroll-behavior-inline: contain;
+
+    scroll-snap-type: x proximity;
+
+    -webkit-overflow-scrolling: touch;
 }
+
+.detalle-galeria__miniaturas::-webkit-scrollbar {
+    height: 5px;
+}
+
+.detalle-galeria__miniaturas::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.detalle-galeria__miniaturas::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        rgba(131, 216, 243, 0.3);
+}
+
+.detalle-galeria__miniaturas::-webkit-scrollbar-thumb:hover {
+    background:
+        rgba(131, 216, 243, 0.5);
+}
+
+
+/* =========================================================
+   MINIATURA
+========================================================= */
 
 .detalle-miniatura {
     width: 82px;
     height: 82px;
 
-    padding: 9px;
+    min-width: 82px;
+    min-height: 82px;
+
+    flex:
+        0 0 82px;
+
+    padding: 7px;
 
     display: grid;
     place-items: center;
@@ -476,39 +582,75 @@
 
     cursor: pointer;
 
-    border: 1px solid var(--borde);
+    scroll-snap-align: start;
+
+    border:
+        1px solid rgba(131, 216, 243, 0.16);
+
     border-radius: 15px;
 
-    background: #eef2f4;
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #e9eff2
+        );
+
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.12);
 
     transition:
         border-color 0.25s ease,
         box-shadow 0.25s ease,
-        transform 0.25s ease;
+        transform 0.25s ease,
+        background 0.25s ease;
 }
 
 .detalle-miniatura:hover {
     border-color:
-        rgba(131, 216, 243, 0.55);
+        rgba(131, 216, 243, 0.65);
 
     transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.16);
 }
 
 .detalle-miniatura--activa {
     border-color: var(--color-azul-claro);
 
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #edfaff
+        );
+
     box-shadow:
-        0 0 0 3px rgba(54, 169, 214, 0.09);
+        0 0 0 3px rgba(54, 169, 214, 0.11),
+        0 8px 22px rgba(0, 0, 0, 0.14);
 }
 
 .detalle-miniatura img {
     width: 100%;
     height: 100%;
 
+    display: block;
+
     object-fit: contain;
+    object-position: center;
+
+    border-radius: 9px;
 }
 
+
+/* =========================================================
+   MENSAJE GALERÍA
+========================================================= */
+
 .detalle-galeria__mensaje {
+    width: 100%;
+
     display: flex;
     align-items: center;
 
@@ -517,6 +659,14 @@
     color: var(--color-gris);
 
     font-size: 0.72rem;
+
+    line-height: 1.45;
+}
+
+.detalle-galeria__mensaje i {
+    flex-shrink: 0;
+
+    color: var(--color-azul-claro);
 }
 
 
@@ -1538,7 +1688,11 @@
     .detalle-galeria__principal {
         min-height: 560px;
 
-        padding: 50px;
+        padding: 16px;
+    }
+
+    .detalle-galeria__principal > img {
+        max-height: 528px;
     }
 
     .detalle-informacion h1 {
@@ -1587,6 +1741,10 @@
         min-height: 600px;
     }
 
+    .detalle-galeria__principal > img {
+        max-height: 566px;
+    }
+
     .detalle-resumen-caracteristicas__lista {
         grid-template-columns:
             1fr 1fr;
@@ -1626,13 +1784,13 @@
     .detalle-galeria__principal {
         min-height: 500px;
 
-        padding: 44px 34px;
+        padding: 14px;
     }
 
-    .detalle-galeria__inferior {
-        align-items: flex-start;
+    .detalle-galeria__principal > img {
+        max-height: 470px;
 
-        flex-direction: column;
+        border-radius: 17px;
     }
 
     .detalle-informacion h1 {
@@ -1673,12 +1831,18 @@
     .detalle-galeria__principal {
         min-height: 420px;
 
-        padding: 40px 26px;
+        padding: 11px;
 
         border-radius: 22px;
     }
 
-    .detalle-galeria__principal:hover img {
+    .detalle-galeria__principal > img {
+        max-height: 396px;
+
+        border-radius: 15px;
+    }
+
+    .detalle-galeria__principal:hover > img {
         transform: none;
     }
 
@@ -1745,10 +1909,15 @@
     .detalle-galeria__principal {
         min-height: 350px;
 
-        padding:
-            35px 20px;
+        padding: 9px;
 
         border-radius: 19px;
+    }
+
+    .detalle-galeria__principal > img {
+        max-height: 330px;
+
+        border-radius: 13px;
     }
 
     .detalle-oferta-badge {
@@ -1780,7 +1949,13 @@
         width: 68px;
         height: 68px;
 
-        padding: 7px;
+        min-width: 68px;
+        min-height: 68px;
+
+        flex:
+            0 0 68px;
+
+        padding: 6px;
     }
 
     .detalle-galeria__mensaje {

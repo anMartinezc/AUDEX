@@ -2,7 +2,8 @@ import re
 
 from django import forms
 from django.core.exceptions import ValidationError
-
+from .models import *
+from django.forms import inlineformset_factory
 from core.services.flujo_pedidos import (
     estados_permitidos,
 )
@@ -1379,3 +1380,26 @@ class ActualizarEstadoPedidoForm(forms.Form):
             )
             for estado in permitidos
         ]
+
+
+
+
+
+class ProductoImagenForm(forms.ModelForm):
+    class Meta:
+        model = ProductoImagen
+
+        fields = [
+            "imagen",
+            "texto_alt",
+            "orden",
+        ]
+
+
+ProductoImagenFormSet = inlineformset_factory(
+    Producto,
+    ProductoImagen,
+    form=ProductoImagenForm,
+    extra=4,
+    can_delete=True,
+)

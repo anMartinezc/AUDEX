@@ -52,6 +52,9 @@ from core.services.descuentos import (
 from core.services.checkout import *
 
 
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView
 
 from core.services.pagos import *
 from core.services.favoritos import *
@@ -202,19 +205,28 @@ def productos(request):
 @ensure_csrf_cookie
 def producto_detalle(request, slug):
     producto = get_object_or_404(
-        Producto.objects.select_related("categoria"),
+        Producto.objects
+        .select_related("categoria")
+        .prefetch_related("imagenes"),
         slug=slug,
     )
 
-    if not producto.activo and not es_administrador_productos(
-        request.user
+    if (
+        not producto.activo
+        and not es_administrador_productos(
+            request.user
+        )
     ):
-        return redirect("core:productos")
+        return redirect(
+            "core:productos"
+        )
 
     contexto = {
         "producto": producto,
-        "puede_administrar": es_administrador_productos(
-            request.user
+        "puede_administrar": (
+            es_administrador_productos(
+                request.user
+            )
         ),
     }
 
@@ -223,7 +235,6 @@ def producto_detalle(request, slug):
         "core/producto_detalle.html",
         contexto,
     )
-
 
 class ProductoCrearView(
     AdministradorProductosMixin,
@@ -234,13 +245,43 @@ class ProductoCrearView(
     template_name = "core/producto_formulario.html"
     success_url = reverse_lazy("core:productos")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.method == "POST":
+            context["imagenes_formset"] = ProductoImagenFormSet(
+                self.request.POST,
+                self.request.FILES,
+            )
+        else:
+            context["imagenes_formset"] = ProductoImagenFormSet()
+
+        return context
+
+    @transaction.atomic
     def form_valid(self, form):
+        context = self.get_context_data()
+
+        imagenes_formset = context[
+            "imagenes_formset"
+        ]
+
+        if not imagenes_formset.is_valid():
+            return self.form_invalid(form)
+
+        self.object = form.save()
+
+        imagenes_formset.instance = self.object
+        imagenes_formset.save()
+
         messages.success(
             self.request,
             "Producto creado correctamente.",
         )
 
-        return super().form_valid(form)
+        return HttpResponseRedirect(
+            self.get_success_url()
+        )
 
 
 class ProductoEditarView(
@@ -252,15 +293,51 @@ class ProductoEditarView(
     template_name = "core/producto_formulario.html"
     success_url = reverse_lazy("core:productos")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.method == "POST":
+            context["imagenes_formset"] = ProductoImagenFormSet(
+                self.request.POST,
+                self.request.FILES,
+                instance=self.object,
+            )
+        else:
+            context["imagenes_formset"] = ProductoImagenFormSet(
+                instance=self.object,
+            )
+
+        return context
+
+    @transaction.atomic
     def form_valid(self, form):
+        context = self.get_context_data()
+
+        imagenes_formset = context[
+            "imagenes_formset"
+        ]
+
+        if not imagenes_formset.is_valid():
+            return self.form_invalid(form)
+
+        self.object = form.save()
+
+        imagenes_formset.instance = self.object
+        imagenes_formset.save()
+
         messages.success(
             self.request,
             "Producto actualizado correctamente.",
         )
 
-        return super().form_valid(form)
+        return HttpResponseRedirect(
+            self.get_success_url()
+        )
 
 
+
+
+    
 class ProductoEliminarView(
     AdministradorProductosMixin,
     DeleteView,
