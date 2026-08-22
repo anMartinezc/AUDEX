@@ -211,12 +211,27 @@
 ========================================================= */
 
 .carrito-listado {
+    position: sticky;
+    top: 110px;
+
     min-width: 0;
+    max-height: calc(100vh - 130px);
+
+    display: flex;
+    flex-direction: column;
+
+    align-self: start;
+
+    overflow: hidden;
+
+    border-radius: 18px;
 }
 
 .carrito-listado__encabezado {
     min-height: 72px;
     padding: 0 22px;
+
+    flex: 0 0 auto;
 
     display: flex;
     align-items: center;
@@ -270,13 +285,41 @@
 }
 
 .carrito-listado__productos {
-    min-height: 1px;
+    min-height: 0;
     padding: 0 22px;
+
+    flex: 1 1 auto;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
 
     border-right: 1px solid var(--borde);
     border-left: 1px solid var(--borde);
 
     background: rgba(255, 255, 255, 0.012);
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(131, 216, 243, 0.42)
+        rgba(255, 255, 255, 0.04);
+}
+
+.carrito-listado__productos::-webkit-scrollbar {
+    width: 7px;
+}
+
+.carrito-listado__productos::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.carrito-listado__productos::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background: rgba(131, 216, 243, 0.42);
+}
+
+.carrito-listado__productos::-webkit-scrollbar-thumb:hover {
+    background: rgba(131, 216, 243, 0.62);
 }
 
 
@@ -647,6 +690,8 @@
 
 .carrito-listado__beneficios {
     padding: 19px 20px;
+
+    flex: 0 0 auto;
 
     display: grid;
     grid-template-columns:
@@ -1488,6 +1533,29 @@
 
     .carrito-pagina__grid {
         grid-template-columns: 1fr;
+    }
+
+    /*
+       En tablet desactivamos el sticky del listado.
+       Esto evita dos paneles fijos uno debajo del otro.
+    */
+
+    .carrito-listado {
+        position: static;
+
+        max-height: none;
+
+        display: block;
+
+        overflow: visible;
+
+        border-radius: 0;
+    }
+
+    .carrito-listado__productos {
+        min-height: 1px;
+
+        overflow: visible;
     }
 
     .carrito-resumen {
