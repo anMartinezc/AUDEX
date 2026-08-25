@@ -469,13 +469,13 @@ Mis compras | Audex
 
 
                         <!-- =============================================
-                             BOLETA
+                             BOLETA NUBOX
                         ============================================== -->
 
-                        {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
+                        {% if pedido.nubox_emitido and pedido.nubox_url_pdf %}
 
                             <a
-                                href="{{ pedido.bsale_url_pdf }}"
+                                href="{{ pedido.nubox_url_pdf }}"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="boton boton--secundario"
@@ -484,27 +484,58 @@ Mis compras | Audex
                                 <i class="bi bi-receipt"></i>
 
                                 Ver boleta
+
+                                {% if pedido.nubox_folio %}
+
+                                    N.º {{ pedido.nubox_folio }}
+
+                                {% endif %}
 
                                 <i class="bi bi-box-arrow-up-right"></i>
                             </a>
 
 
-                        {% elif pedido.bsale_emitido and pedido.bsale_url_publica %}
+                        {% elif pedido.nubox_emitido %}
 
-                            <a
-                                href="{{ pedido.bsale_url_publica }}"
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <span
                                 class="boton boton--secundario"
-                                title="Ver boleta electrónica"
+                                title="Boleta electrónica emitida"
                             >
                                 <i class="bi bi-receipt"></i>
 
-                                Ver boleta
-                            </a>
+                                Boleta emitida
+
+                                {% if pedido.nubox_folio %}
+
+                                    N.º {{ pedido.nubox_folio }}
+
+                                {% endif %}
+                            </span>
 
 
-                        {% elif pedido.bsale_ultimo_error %}
+                        {% elif pedido.nubox_document_id %}
+
+                            <span
+                                class="pedido-boleta-pendiente"
+                                title="La boleta está siendo procesada"
+                            >
+
+                                <i class="bi bi-hourglass-split"></i>
+
+                                {% if pedido.nubox_estado %}
+
+                                    {{ pedido.nubox_estado }}
+
+                                {% else %}
+
+                                    Boleta en proceso
+
+                                {% endif %}
+
+                            </span>
+
+
+                        {% elif pedido.nubox_ultimo_error %}
 
                             <span
                                 class="pedido-boleta-pendiente"
@@ -531,10 +562,10 @@ Mis compras | Audex
 
 
                     <!-- =================================================
-                         INFORMACIÓN BSALE
+                         INFORMACIÓN NUBOX
                     ================================================== -->
 
-                    {% if pedido.bsale_emitido and pedido.bsale_folio %}
+                    {% if pedido.nubox_emitido and pedido.nubox_folio %}
 
                         <div class="pedido-historial__boleta-info">
 
@@ -543,7 +574,7 @@ Mis compras | Audex
                             <span>
 
                                 Boleta electrónica
-                                N.º {{ pedido.bsale_folio }}
+                                N.º {{ pedido.nubox_folio }}
 
                             </span>
 

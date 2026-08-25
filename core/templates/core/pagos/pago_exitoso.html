@@ -356,10 +356,6 @@ Compra confirmada | Audex
 
                     <div class="pago-seguimiento">
 
-                        <!-- =========================================
-                             CONFIRMADO
-                        ========================================== -->
-
                         <div
                             class="
                                 pago-seguimiento__item
@@ -389,10 +385,6 @@ Compra confirmada | Audex
                         <div class="pago-seguimiento__linea"></div>
 
 
-                        <!-- =========================================
-                             PREPARACIÓN
-                        ========================================== -->
-
                         <div class="pago-seguimiento__item">
 
                             <div class="pago-seguimiento__punto">
@@ -416,10 +408,6 @@ Compra confirmada | Audex
 
                         <div class="pago-seguimiento__linea"></div>
 
-
-                        <!-- =========================================
-                             DESPACHO
-                        ========================================== -->
 
                         <div class="pago-seguimiento__item">
 
@@ -504,10 +492,6 @@ Compra confirmada | Audex
 
                     <div class="pago-datos">
 
-                        <!-- =========================================
-                             ESTADO
-                        ========================================== -->
-
                         <div class="pago-datos__fila">
 
                             <span>
@@ -521,10 +505,6 @@ Compra confirmada | Audex
 
                         </div>
 
-
-                        <!-- =========================================
-                             FECHA
-                        ========================================== -->
 
                         {% if pedido.fecha_pago %}
 
@@ -542,10 +522,6 @@ Compra confirmada | Audex
 
                         {% endif %}
 
-
-                        <!-- =========================================
-                             MERCADO PAGO
-                        ========================================== -->
 
                         {% if pedido.metodo_pago == "mercadopago" %}
 
@@ -602,10 +578,6 @@ Compra confirmada | Audex
                         {% endif %}
 
 
-                        <!-- =========================================
-                             WEBPAY
-                        ========================================== -->
-
                         {% if pedido.metodo_pago == "webpay" %}
 
                             <div class="pago-datos__fila">
@@ -652,10 +624,6 @@ Compra confirmada | Audex
 
                         {% endif %}
 
-
-                        <!-- =========================================
-                             TRANSFERENCIA
-                        ========================================== -->
 
                         {% if pedido.metodo_pago == "transferencia" %}
 
@@ -741,10 +709,6 @@ Compra confirmada | Audex
             "
         >
 
-            <!-- =================================================
-                 ENCABEZADO
-            ================================================== -->
-
             <div
                 style="
                     padding: 28px 30px 20px;
@@ -780,26 +744,18 @@ Compra confirmada | Audex
 
 
             <!-- =================================================
-                 BOLETA ELECTRÓNICA BSALE
+                 BOLETA ELECTRÓNICA NUBOX
             ================================================== -->
 
-            {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
+            {% if pedido.nubox_emitido %}
 
-                <a
-                    href="{{ pedido.bsale_url_pdf }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <div
                     style="
                         display: flex;
                         align-items: center;
                         justify-content: space-between;
                         gap: 22px;
                         padding: 24px 30px;
-                        text-decoration: none;
-                        color: inherit;
-                        transition:
-                            background .2s ease,
-                            transform .2s ease;
                     "
                 >
 
@@ -843,7 +799,7 @@ Compra confirmada | Audex
                                     font-size: 1.05rem;
                                 "
                             >
-                                Descargar boleta electrónica
+                                Boleta electrónica emitida
                             </strong>
 
                             <span
@@ -854,10 +810,10 @@ Compra confirmada | Audex
                                 "
                             >
 
-                                {% if pedido.bsale_folio %}
+                                {% if pedido.nubox_folio %}
 
                                     Boleta N.º
-                                    {{ pedido.bsale_folio }}
+                                    {{ pedido.nubox_folio }}
 
                                 {% else %}
 
@@ -866,6 +822,22 @@ Compra confirmada | Audex
                                 {% endif %}
 
                             </span>
+
+
+                            {% if pedido.nubox_document_id %}
+
+                                <small
+                                    style="
+                                        display: block;
+                                        margin-top: 5px;
+                                        color: var(--color-gris-claro);
+                                    "
+                                >
+                                    ID Nubox:
+                                    {{ pedido.nubox_document_id }}
+                                </small>
+
+                            {% endif %}
 
                         </div>
 
@@ -885,59 +857,16 @@ Compra confirmada | Audex
                             font-size: 1.25rem;
                         "
                     >
-                        <i class="bi bi-download"></i>
+                        <i class="bi bi-check-lg"></i>
                     </div>
 
-                </a>
+                </div>
 
 
-                {% if pedido.bsale_url_publica %}
-
-                    <div
-                        style="
-                            border-top: 1px solid rgba(255, 255, 255, 0.07);
-                        "
-                    >
-
-                        <a
-                            href="{{ pedido.bsale_url_publica }}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style="
-                                display: flex;
-                                align-items: center;
-                                justify-content: space-between;
-                                gap: 20px;
-                                padding: 20px 30px;
-                                color: var(--color-gris-claro);
-                                text-decoration: none;
-                            "
-                        >
-
-                            <span>
-                                <i
-                                    class="bi bi-box-arrow-up-right"
-                                    style="
-                                        margin-right: 8px;
-                                    "
-                                ></i>
-
-                                Ver boleta electrónica en línea
-                            </span>
-
-                            <i class="bi bi-chevron-right"></i>
-
-                        </a>
-
-                    </div>
-
-                {% endif %}
-
-
-            {% elif pedido.bsale_emitido %}
+            {% elif pedido.nubox_ultimo_error %}
 
                 <!-- =================================================
-                     BSALE EMITIDO PERO SIN PDF
+                     ERROR DE EMISIÓN NUBOX
                 ================================================== -->
 
                 <div
@@ -962,7 +891,7 @@ Compra confirmada | Audex
                             font-size: 1.3rem;
                         "
                     >
-                        <i class="bi bi-hourglass-split"></i>
+                        <i class="bi bi-exclamation-triangle"></i>
                     </div>
 
                     <div>
@@ -973,7 +902,7 @@ Compra confirmada | Audex
                                 margin-bottom: 5px;
                             "
                         >
-                            Boleta emitida
+                            Boleta temporalmente no disponible
                         </strong>
 
                         <span
@@ -981,10 +910,98 @@ Compra confirmada | Audex
                                 color: var(--color-gris-claro);
                             "
                         >
-                            Estamos preparando el enlace de descarga.
+                            Estamos procesando el documento electrónico
+                            de tu compra.
                         </span>
 
                     </div>
+
+                </div>
+
+
+            {% elif pedido.nubox_document_id %}
+
+                <!-- =================================================
+                     NUBOX RECIBIÓ EL DOCUMENTO
+                ================================================== -->
+
+                <div
+                    style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 22px;
+                        padding: 24px 30px;
+                    "
+                >
+
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 18px;
+                        "
+                    >
+
+                        <div
+                            style="
+                                width: 52px;
+                                height: 52px;
+                                flex: 0 0 52px;
+                                display: grid;
+                                place-items: center;
+                                border-radius: 14px;
+                                background: rgba(244, 201, 93, 0.10);
+                                color: #f4c95d;
+                                font-size: 1.3rem;
+                            "
+                        >
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+
+                        <div>
+
+                            <strong
+                                style="
+                                    display: block;
+                                    margin-bottom: 5px;
+                                "
+                            >
+                                Boleta electrónica en procesamiento
+                            </strong>
+
+                            <span
+                                style="
+                                    color: var(--color-gris-claro);
+                                "
+                            >
+
+                                {% if pedido.nubox_estado %}
+
+                                    Estado:
+                                    {{ pedido.nubox_estado }}
+
+                                {% else %}
+
+                                    Nubox recibió el documento y
+                                    está procesando su emisión.
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <a
+                        href="{% url 'core:pedido_confirmacion' numero=pedido.numero %}"
+                        class="boton boton--secundario"
+                    >
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Actualizar
+                    </a>
 
                 </div>
 

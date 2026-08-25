@@ -10,9 +10,10 @@ from ..models import *
 from .correos import enviar_confirmacion_pago
 from core.services.descuentos import *
 
-from core.services.bsale import (
-    emitir_boleta_bsale_por_pedido,
+from core.services.nubox import (
+    emitir_boleta_nubox_por_pedido,
 )
+
 
 # =============================================================================
 # EXCEPCIONES
@@ -611,6 +612,7 @@ def confirmar_codigo_descuento_pedido(
 # MARCAR PEDIDO COMO PAGADO
 # =============================================================================
 
+
 def marcar_pedido_como_pagado(
     *,
     pedido_id,
@@ -636,14 +638,26 @@ def marcar_pedido_como_pagado(
     - confirmar el código de descuento;
     - marcar el pedido como pagado;
     - programar el correo después del commit;
-    - programar la boleta Bsale después del commit.
+    - programar la boleta Nubox después del commit.
 
     IMPORTANTE:
 
-    Bsale jamás debe ejecutarse antes de que el pago
+    Nubox jamás debe ejecutarse antes de que el pago
     esté confirmado y persistido.
 
-    Si Bsale falla, el pago continúa aprobado.
+    Nubox funciona de forma asíncrona:
+
+        pago confirmado
+            ↓
+        solicitud enviada a Nubox
+            ↓
+        Nubox entrega document_id
+            ↓
+        documento queda pendiente/procesando
+            ↓
+        posteriormente se consulta estado
+
+    Si Nubox falla, el pago continúa aprobado.
     """
 
     # =========================================================================
@@ -843,32 +857,35 @@ def marcar_pedido_como_pagado(
                     )
 
             # -----------------------------------------------------------------
-            # REINTENTAR BSALE SI ES NECESARIO
+            # REINTENTAR NUBOX SI ES NECESARIO
             # -----------------------------------------------------------------
             #
-            # Esto es importante porque puede ocurrir:
+            # Puede ocurrir:
             #
             # Pago aprobado
             #     ↓
-            # Bsale caído
+            # Nubox no disponible
             #     ↓
-            # webhook repetido
+            # webhook repetido / retorno repetido
             #     ↓
-            # reintentar Bsale
+            # reintentar Nubox
             #
-            # emitir_boleta_bsale_por_pedido()
-            # comprobará si ya existe una boleta.
+            # emitir_boleta_nubox_por_pedido()
+            # verifica si ya existe nubox_document_id
+            # antes de volver a emitir.
             # -----------------------------------------------------------------
 
-            if not getattr(
+            nubox_document_id = getattr(
                 pedido,
-                "bsale_emitido",
-                False,
-            ):
+                "nubox_document_id",
+                None,
+            )
+
+            if not nubox_document_id:
 
                 transaction.on_commit(
                     partial(
-                        emitir_boleta_bsale_por_pedido,
+                        emitir_boleta_nubox_por_pedido,
                         pedido_id=pedido.pk,
                     ),
                     robust=True,
@@ -878,12 +895,17 @@ def marcar_pedido_como_pagado(
                 (
                     "Pedido %s ya estaba pagado. "
                     "No se repetirá stock ni descuento. "
-                    "Bsale_emitido=%s."
+                    "Nubox_document_id=%s "
+                    "Nubox_emitido=%s."
                 ),
                 pedido.numero,
+                (
+                    nubox_document_id
+                    or "sin-documento"
+                ),
                 getattr(
                     pedido,
-                    "bsale_emitido",
+                    "nubox_emitido",
                     False,
                 ),
             )
@@ -1269,30 +1291,37 @@ def marcar_pedido_como_pagado(
             )
 
         # =====================================================================
-        # BOLETA BSALE
+        # BOLETA NUBOX
         # =====================================================================
         #
-        # La boleta también se genera después
-        # del commit.
+        # La solicitud de emisión también se ejecuta
+        # después del commit de la transacción.
         #
         # IMPORTANTE:
         #
-        # El correo de Bsale es independiente
-        # del correo de confirmación de Audex.
+        # Nubox funciona de forma asíncrona.
         #
-        # Bsale enviará la boleta porque
-        # BSALE_SEND_EMAIL=1.
+        # En este punto AUDEX solicita la emisión.
+        # Nubox puede dejar el documento temporalmente
+        # en estado pendiente/procesando.
+        #
+        # nubox_document_id evita solicitudes duplicadas.
+        #
+        # El estado definitivo de la boleta se consulta
+        # posteriormente mediante la API de Nubox.
         # =====================================================================
 
-        if not getattr(
+        nubox_document_id = getattr(
             pedido,
-            "bsale_emitido",
-            False,
-        ):
+            "nubox_document_id",
+            None,
+        )
+
+        if not nubox_document_id:
 
             transaction.on_commit(
                 partial(
-                    emitir_boleta_bsale_por_pedido,
+                    emitir_boleta_nubox_por_pedido,
                     pedido_id=pedido.pk,
                 ),
                 robust=True,
@@ -1305,7 +1334,7 @@ def marcar_pedido_como_pagado(
         logger.info(
             (
                 "Postventa programada para pedido %s. "
-                "Correo_Audex=%s Bsale=%s."
+                "Correo_Audex=%s Nubox=%s."
             ),
             pedido.numero,
             (
@@ -1313,10 +1342,8 @@ def marcar_pedido_como_pagado(
                 .correo_confirmacion_enviado
             ),
             (
-                not getattr(
-                    pedido,
-                    "bsale_emitido",
-                    False,
+                not bool(
+                    nubox_document_id
                 )
             ),
         )

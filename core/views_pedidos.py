@@ -1,24 +1,32 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.admin.views.decorators import (
     staff_member_required,
 )
+from django.http import HttpResponse
+
+
+from core.services.nubox import (
+    NuboxError,
+    obtener_pdf_nubox,
+)
+
 from django.contrib.auth.decorators import (
     login_required,
 )
-from datetime import timedelta
-from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import (
     get_object_or_404,
     redirect,
     render,
 )
+from django.utils import timezone
 from django.views.decorators.http import (
     require_http_methods,
 )
-from django.db.models import Sum
 
 from core.forms import (
     ActualizarEstadoPedidoForm,
@@ -50,6 +58,7 @@ def _queryset_pedidos():
     Queryset optimizado para cargar pedidos con sus relaciones.
 
     Evita consultas adicionales al mostrar:
+
     - Usuario asociado.
     - Productos del pedido.
     - Historial de estados.
@@ -98,7 +107,10 @@ def _pedidos_autorizados_sesion(
         [],
     )
 
-    if not isinstance(autorizados, list):
+    if not isinstance(
+        autorizados,
+        list,
+    ):
         return []
 
     return [
@@ -130,7 +142,9 @@ def _autorizar_pedido_en_sesion(
     )
 
     if numero not in autorizados:
-        autorizados.append(numero)
+        autorizados.append(
+            numero
+        )
 
     request.session[
         "pedidos_consultados"
@@ -149,6 +163,7 @@ def _usuario_puede_ver(
     Determina si la persona puede visualizar el pedido.
 
     Puede verlo cuando:
+
     - Es personal administrativo.
     - El pedido pertenece a su cuenta.
     - Buscó previamente el número desde el formulario público.
@@ -217,7 +232,9 @@ def mis_compras(request):
         .filter(
             usuario=request.user,
             pagado=True,
-            estado_pago=Pedido.EstadoPago.APROBADO,
+            estado_pago=(
+                Pedido.EstadoPago.APROBADO
+            ),
         )
         .annotate(
             total_unidades=Sum(
@@ -466,10 +483,13 @@ def mis_compras(request):
 
             "vacio": vacio,
         },
-    )   
+    )
+
+
 # ==========================================================================
 # SEGUIMIENTO PÚBLICO POR NÚMERO DE PEDIDO
 # ==========================================================================
+
 
 @require_http_methods([
     "GET",
@@ -583,11 +603,6 @@ def seguimiento_pedido(
 
     # =========================================================================
     # SIN NÚMERO EN URL
-    # =========================================================================
-    #
-    # /seguimiento/
-    #
-    # Se utiliza únicamente para buscar manualmente.
     # =========================================================================
 
     else:
@@ -724,9 +739,12 @@ def seguimiento_pedido(
         },
     )
 
+
 # ==========================================================================
 # PANEL ADMINISTRATIVO DE PEDIDOS
 # ==========================================================================
+
+
 @staff_member_required
 def panel_pedidos(request):
     """
@@ -759,14 +777,18 @@ def panel_pedidos(request):
     - Los registros antiguos NO se eliminan de la base
       de datos; simplemente dejan de mostrarse aquí.
 
-    Bsale:
+    Nubox:
 
     - Se contabilizan boletas pendientes de emisión.
+    - Nubox funciona de forma asíncrona.
+    - Un documento puede tener nubox_document_id y seguir
+      temporalmente con nubox_emitido=False.
     - El template puede acceder directamente a:
-        pedido.bsale_url_pdf
-        pedido.bsale_url_publica
-        pedido.bsale_folio
-        pedido.bsale_emitido
+        pedido.nubox_document_id
+        pedido.nubox_folio
+        pedido.nubox_estado
+        pedido.nubox_emitido
+        pedido.nubox_ultimo_error
     """
 
     # =========================================================================
@@ -820,24 +842,16 @@ def panel_pedidos(request):
     # =========================================================================
     # VENTAS CONFIRMADAS
     # =========================================================================
-    #
-    # Solo los pedidos cuyo pago realmente fue aprobado
-    # forman parte de la operación logística.
-    # =========================================================================
 
     ventas_confirmadas = pedidos.filter(
         pagado=True,
-        estado_pago=Pedido.EstadoPago.APROBADO,
+        estado_pago=(
+            Pedido.EstadoPago.APROBADO
+        ),
     )
 
     # =========================================================================
     # TODOS LOS PAGOS PENDIENTES
-    # =========================================================================
-    #
-    # Este queryset puede contener intentos antiguos.
-    #
-    # Se conserva únicamente como referencia interna.
-    # NO se utiliza directamente para mostrar la bandeja.
     # =========================================================================
 
     pendientes_pago_todos = pedidos.filter(
@@ -850,17 +864,6 @@ def panel_pedidos(request):
 
     # =========================================================================
     # LÍMITE DE VISIBILIDAD DE PAGOS PENDIENTES
-    # =========================================================================
-    #
-    # Un intento pendiente solo merece atención administrativa
-    # durante 48 horas desde su última actualización.
-    #
-    # Después de ese plazo:
-    #
-    # - No aparece como alerta.
-    # - No aparece en la bandeja de pagos pendientes.
-    # - No se incluye en el contador visible.
-    # - NO se elimina de la base de datos.
     # =========================================================================
 
     limite_pendientes_visibles = (
@@ -889,12 +892,6 @@ def panel_pedidos(request):
     # =========================================================================
     # PAGOS PENDIENTES EXPIRADOS
     # =========================================================================
-    #
-    # Solo se calcula por si posteriormente quieres
-    # utilizarlo para estadísticas o mantenimiento.
-    #
-    # No se muestra en el panel.
-    # =========================================================================
 
     pendientes_pago_expirados = (
         pendientes_pago_todos
@@ -910,7 +907,9 @@ def panel_pedidos(request):
     # =========================================================================
 
     nuevos = ventas_confirmadas.filter(
-        estado=Pedido.EstadoPedido.CONFIRMADO,
+        estado=(
+            Pedido.EstadoPedido.CONFIRMADO
+        ),
     )
 
     operacion = ventas_confirmadas.filter(
@@ -921,7 +920,9 @@ def panel_pedidos(request):
     )
 
     despacho = ventas_confirmadas.filter(
-        estado=Pedido.EstadoPedido.ENVIADO,
+        estado=(
+            Pedido.EstadoPedido.ENVIADO
+        ),
     )
 
     finalizados = ventas_confirmadas.filter(
@@ -932,27 +933,37 @@ def panel_pedidos(request):
     )
 
     # =========================================================================
-    # BSALE
+    # NUBOX
     # =========================================================================
     #
     # Venta pagada que todavía no registra
     # una boleta electrónica emitida.
+    #
+    # IMPORTANTE:
+    #
+    # Nubox es asíncrono.
+    #
+    # Por eso aquí incluimos tanto:
+    #
+    # - solicitudes todavía no enviadas;
+    # - documentos recibidos por Nubox pero pendientes.
+    #
+    # nubox_emitido=True significa que el documento
+    # ya fue confirmado como emitido.
     # =========================================================================
 
-    boletas_pendientes = ventas_confirmadas.filter(
-        bsale_emitido=False,
+    boletas_pendientes = (
+        ventas_confirmadas
+        .filter(
+            nubox_emitido=False,
+        )
+        .order_by(
+            "-actualizado",
+        )
     )
 
     # =========================================================================
     # QUERYSETS DISPONIBLES
-    # =========================================================================
-    #
-    # IMPORTANTE:
-    #
-    # "pendientes" utiliza únicamente los intentos
-    # correspondientes a las últimas 48 horas.
-    #
-    # Nunca se entrega aquí el histórico completo.
     # =========================================================================
 
     bandejas_querysets = {
@@ -1005,12 +1016,6 @@ def panel_pedidos(request):
     # =========================================================================
     # PAGOS PENDIENTES
     # =========================================================================
-    #
-    # Este es ahora el único contador que debería
-    # utilizarse para mostrar la alerta.
-    #
-    # Si es 0, la alerta debe desaparecer.
-    # =========================================================================
 
     total_pendientes_pago = (
         pendientes_pago.count()
@@ -1019,19 +1024,13 @@ def panel_pedidos(request):
     # =========================================================================
     # HISTÓRICOS EXPIRADOS
     # =========================================================================
-    #
-    # No se muestran.
-    #
-    # Se conserva la variable únicamente por si quieres
-    # usarla posteriormente en estadísticas o limpieza.
-    # =========================================================================
 
     total_pendientes_expirados = (
         pendientes_pago_expirados.count()
     )
 
     # =========================================================================
-    # BSALE
+    # NUBOX
     # =========================================================================
 
     total_boletas_pendientes = (
@@ -1057,7 +1056,6 @@ def panel_pedidos(request):
     )
 
     page_obj = None
-
     titulo_bandeja = ""
 
     if mostrar_bandeja:
@@ -1090,8 +1088,8 @@ def panel_pedidos(request):
     # TARJETAS DEL TABLERO
     # =========================================================================
     #
-    # Pagos pendientes y Bsale continúan siendo
-    # incidencias administrativas, no estados logísticos.
+    # Pagos pendientes y Nubox son incidencias
+    # administrativas, no estados logísticos.
     # =========================================================================
 
     bandejas = []
@@ -1211,13 +1209,6 @@ def panel_pedidos(request):
             # =============================================================
             # PAGOS PENDIENTES
             # =============================================================
-            #
-            # Ambos nombres se mantienen para que tu HTML
-            # actual siga funcionando aunque utilice uno
-            # u otro.
-            #
-            # Los dos representan SOLO las últimas 48 horas.
-            # =============================================================
 
             "total_pendientes_pago": (
                 total_pendientes_pago
@@ -1230,16 +1221,13 @@ def panel_pedidos(request):
             # =============================================================
             # HISTÓRICO EXPIRADO
             # =============================================================
-            #
-            # No debería mostrarse como alerta.
-            # =============================================================
 
             "total_pendientes_expirados": (
                 total_pendientes_expirados
             ),
 
             # =============================================================
-            # BSALE
+            # NUBOX
             # =============================================================
 
             "total_boletas_pendientes": (
@@ -1272,6 +1260,8 @@ def panel_pedidos(request):
 # ==========================================================================
 # DETALLE Y ADMINISTRACIÓN DE UN PEDIDO
 # ==========================================================================
+
+
 @staff_member_required
 @require_http_methods([
     "GET",
@@ -1289,7 +1279,9 @@ def panel_pedido_detalle(
     - revisar productos;
     - consultar cliente y despacho;
     - revisar información del pago;
-    - consultar/descargar la boleta Bsale;
+    - consultar el estado de la boleta Nubox;
+    - consultar el folio Nubox;
+    - revisar errores de emisión;
     - revisar historial;
     - avanzar el estado operativo.
     """
@@ -1418,3 +1410,110 @@ def panel_pedido_detalle(
             "historial": historial,
         },
     )
+
+
+
+
+@require_http_methods(["GET"])
+def descargar_boleta_nubox(
+    request,
+    numero,
+):
+    """
+    Obtiene la boleta electrónica directamente
+    desde Nubox y la entrega al navegador.
+
+    Las credenciales de Nubox permanecen
+    exclusivamente en el backend.
+    """
+
+    # =========================================================================
+    # NORMALIZAR PEDIDO
+    # =========================================================================
+
+    numero = _normalizar_numero_pedido(
+        numero
+    )
+
+    # =========================================================================
+    # OBTENER PEDIDO
+    # =========================================================================
+
+    pedido = get_object_or_404(
+        _queryset_pedidos(),
+        numero__iexact=numero,
+    )
+
+    # =========================================================================
+    # AUTORIZACIÓN
+    # =========================================================================
+
+    if not _usuario_puede_ver(
+        request,
+        pedido,
+    ):
+        return HttpResponse(
+            "No tienes permiso para acceder a esta boleta.",
+            status=403,
+        )
+
+    # =========================================================================
+    # VALIDAR PAGO
+    # =========================================================================
+
+    if not pedido.pago_aprobado:
+        return HttpResponse(
+            "La boleta no está disponible.",
+            status=404,
+        )
+
+    # =========================================================================
+    # VALIDAR DOCUMENTO NUBOX
+    # =========================================================================
+
+    if not pedido.nubox_document_id:
+        return HttpResponse(
+            "La boleta todavía no ha sido generada.",
+            status=404,
+        )
+
+    # =========================================================================
+    # OBTENER PDF DESDE NUBOX
+    # =========================================================================
+
+    try:
+        pdf = obtener_pdf_nubox(
+            pedido.nubox_document_id,
+            formato="A4",
+        )
+
+    except NuboxError as error:
+
+        return HttpResponse(
+            (
+                "No fue posible obtener "
+                f"la boleta: {error}"
+            ),
+            status=502,
+        )
+
+    # =========================================================================
+    # RESPUESTA
+    # =========================================================================
+
+    response = HttpResponse(
+        pdf,
+        content_type="application/pdf",
+    )
+
+    nombre_archivo = (
+        f"boleta-{pedido.numero}.pdf"
+    )
+
+    response[
+        "Content-Disposition"
+    ] = (
+        f'inline; filename="{nombre_archivo}"'
+    )
+
+    return response

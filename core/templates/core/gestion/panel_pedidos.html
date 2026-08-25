@@ -311,7 +311,7 @@ Gestión de pedidos | Audex
 
 
             <!-- =================================================
-                 BSALE PENDIENTE
+                 NUBOX PENDIENTE
             ================================================== -->
 
             {% if total_boletas_pendientes > 0 %}
@@ -635,45 +635,68 @@ Gestión de pedidos | Audex
 
                                 <div class="pedido-admin-item__documentos">
 
-                                    {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
+                                    {% if pedido.nubox_emitido and pedido.nubox_url_pdf %}
 
                                         <a
-                                            href="{{ pedido.bsale_url_pdf }}"
+                                            href="{{ pedido.nubox_url_pdf }}"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             class="boton boton--secundario"
+                                            title="Descargar boleta electrónica"
                                         >
 
                                             <i class="bi bi-download"></i>
 
                                             Descargar boleta
 
-                                            {% if pedido.bsale_folio %}
+                                            {% if pedido.nubox_folio %}
 
-                                                N.º {{ pedido.bsale_folio }}
+                                                N.º {{ pedido.nubox_folio }}
 
                                             {% endif %}
 
                                         </a>
 
 
-                                    {% elif pedido.bsale_emitido and pedido.bsale_url_publica %}
+                                    {% elif pedido.nubox_emitido %}
 
-                                        <a
-                                            href="{{ pedido.bsale_url_publica }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <span
                                             class="boton boton--secundario"
                                         >
 
                                             <i class="bi bi-receipt"></i>
 
-                                            Ver boleta
+                                            Boleta emitida
 
-                                        </a>
+                                            {% if pedido.nubox_folio %}
+
+                                                N.º {{ pedido.nubox_folio }}
+
+                                            {% endif %}
+
+                                        </span>
 
 
-                                    {% elif pedido.bsale_ultimo_error %}
+                                    {% elif pedido.nubox_document_id %}
+
+                                        <span class="pedido-admin-boleta">
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            {% if pedido.nubox_estado %}
+
+                                                {{ pedido.nubox_estado }}
+
+                                            {% else %}
+
+                                                Boleta procesando
+
+                                            {% endif %}
+
+                                        </span>
+
+
+                                    {% elif pedido.nubox_ultimo_error %}
 
                                         <span
                                             class="
@@ -684,7 +707,7 @@ Gestión de pedidos | Audex
 
                                             <i class="bi bi-exclamation-triangle"></i>
 
-                                            Error de emisión Bsale
+                                            Error de emisión Nubox
 
                                         </span>
 
@@ -1002,10 +1025,10 @@ Gestión de pedidos | Audex
                                          BOLETA RÁPIDA
                                     ====================================== -->
 
-                                    {% if pedido.bsale_emitido and pedido.bsale_url_pdf %}
+                                    {% if pedido.nubox_emitido and pedido.nubox_url_pdf %}
 
                                         <a
-                                            href="{{ pedido.bsale_url_pdf }}"
+                                            href="{{ pedido.nubox_url_pdf }}"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             class="tarjeta-pedido-admin__boleta"
@@ -1016,25 +1039,56 @@ Gestión de pedidos | Audex
 
                                             Boleta
 
+                                            {% if pedido.nubox_folio %}
+
+                                                N.º {{ pedido.nubox_folio }}
+
+                                            {% endif %}
+
                                             <i class="bi bi-download"></i>
 
                                         </a>
 
 
-                                    {% elif pedido.bsale_emitido and pedido.bsale_url_publica %}
+                                    {% elif pedido.nubox_emitido %}
 
-                                        <a
-                                            href="{{ pedido.bsale_url_publica }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <span
                                             class="tarjeta-pedido-admin__boleta"
+                                            title="Boleta electrónica emitida"
                                         >
 
                                             <i class="bi bi-receipt"></i>
 
-                                            Ver boleta
+                                            Boleta
 
-                                        </a>
+                                            {% if pedido.nubox_folio %}
+
+                                                N.º {{ pedido.nubox_folio }}
+
+                                            {% endif %}
+
+                                        </span>
+
+
+                                    {% elif pedido.nubox_document_id %}
+
+                                        <span
+                                            class="tarjeta-pedido-admin__boleta"
+                                        >
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            {% if pedido.nubox_estado %}
+
+                                                {{ pedido.nubox_estado }}
+
+                                            {% else %}
+
+                                                Procesando
+
+                                            {% endif %}
+
+                                        </span>
 
                                     {% endif %}
 

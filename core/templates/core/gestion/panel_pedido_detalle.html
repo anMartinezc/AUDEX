@@ -293,7 +293,7 @@
                         </div>
 
 
-                        {% if pedido.bsale_emitido %}
+                        {% if pedido.nubox_emitido %}
 
                             <span class="detalle-admin__documento-estado detalle-admin__documento-estado--ok">
 
@@ -303,13 +303,31 @@
 
                             </span>
 
-                        {% elif pedido.bsale_ultimo_error %}
+                        {% elif pedido.nubox_ultimo_error %}
 
                             <span class="detalle-admin__documento-estado detalle-admin__documento-estado--error">
 
                                 <i class="bi bi-exclamation-triangle-fill"></i>
 
                                 Error
+
+                            </span>
+
+                        {% elif pedido.nubox_document_id %}
+
+                            <span class="detalle-admin__documento-estado">
+
+                                <i class="bi bi-hourglass-split"></i>
+
+                                {% if pedido.nubox_estado %}
+
+                                    {{ pedido.nubox_estado }}
+
+                                {% else %}
+
+                                    Procesando
+
+                                {% endif %}
 
                             </span>
 
@@ -330,7 +348,7 @@
 
                     {% if pedido.pagado %}
 
-                        {% if pedido.bsale_emitido %}
+                        {% if pedido.nubox_emitido %}
 
                             <div class="detalle-admin__boleta">
 
@@ -349,10 +367,10 @@
 
                                     <strong>
 
-                                        {% if pedido.bsale_folio %}
+                                        {% if pedido.nubox_folio %}
 
                                             Boleta N.º
-                                            {{ pedido.bsale_folio }}
+                                            {{ pedido.nubox_folio }}
 
                                         {% else %}
 
@@ -363,11 +381,21 @@
                                     </strong>
 
 
-                                    {% if pedido.bsale_document_id %}
+                                    {% if pedido.nubox_document_id %}
 
                                         <small>
-                                            ID Bsale:
-                                            {{ pedido.bsale_document_id }}
+                                            ID Nubox:
+                                            {{ pedido.nubox_document_id }}
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.nubox_estado %}
+
+                                        <small>
+                                            Estado:
+                                            {{ pedido.nubox_estado }}
                                         </small>
 
                                     {% endif %}
@@ -377,13 +405,14 @@
 
                                 <div class="detalle-admin__boleta-acciones">
 
-                                    {% if pedido.bsale_url_pdf %}
+                                    {% if pedido.nubox_url_pdf %}
 
                                         <a
-                                            href="{{ pedido.bsale_url_pdf }}"
+                                            href="{{ pedido.nubox_url_pdf }}"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             class="boton boton--primario"
+                                            title="Descargar boleta electrónica"
                                         >
 
                                             <i class="bi bi-download"></i>
@@ -392,23 +421,17 @@
 
                                         </a>
 
-                                    {% endif %}
+                                    {% else %}
 
-
-                                    {% if pedido.bsale_url_publica %}
-
-                                        <a
-                                            href="{{ pedido.bsale_url_publica }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <span
                                             class="boton boton--secundario"
                                         >
 
-                                            <i class="bi bi-box-arrow-up-right"></i>
+                                            <i class="bi bi-check-circle"></i>
 
-                                            Ver en línea
+                                            Boleta emitida
 
-                                        </a>
+                                        </span>
 
                                     {% endif %}
 
@@ -417,7 +440,7 @@
                             </div>
 
 
-                        {% elif pedido.bsale_ultimo_error %}
+                        {% elif pedido.nubox_ultimo_error %}
 
                             <div class="detalle-admin__boleta-error">
 
@@ -435,7 +458,7 @@
                                     </strong>
 
                                     <p>
-                                        Bsale registró un problema durante
+                                        Nubox registró un problema durante
                                         la emisión de este documento.
                                     </p>
 
@@ -446,9 +469,45 @@
                                             Ver detalle técnico
                                         </summary>
 
-                                        <pre>{{ pedido.bsale_ultimo_error }}</pre>
+                                        <pre>{{ pedido.nubox_ultimo_error }}</pre>
 
                                     </details>
+
+                                </div>
+
+                            </div>
+
+
+                        {% elif pedido.nubox_document_id %}
+
+                            <div class="detalle-admin__boleta-pendiente">
+
+                                <div class="detalle-admin__boleta-icono">
+
+                                    <i class="bi bi-hourglass-split"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+                                        Boleta en procesamiento
+                                    </strong>
+
+                                    <p>
+
+                                        Nubox recibió la solicitud de emisión
+                                        y el documento se encuentra procesando.
+
+                                        {% if pedido.nubox_estado %}
+
+                                            Estado actual:
+                                            {{ pedido.nubox_estado }}.
+
+                                        {% endif %}
+
+                                    </p>
 
                                 </div>
 
@@ -475,7 +534,7 @@
                                     <p>
                                         El pedido está pagado, pero todavía
                                         no registra una boleta electrónica
-                                        en Bsale.
+                                        en Nubox.
                                     </p>
 
                                 </div>

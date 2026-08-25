@@ -6,7 +6,11 @@ from pathlib import Path
 import os
 
 from dotenv import load_dotenv
+import environ
 
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
 # =============================================================================
 # RUTAS DEL PROYECTO
@@ -101,31 +105,48 @@ TRANSBANK_API_KEY = os.getenv(
 
 
 
+# ============================================================================
+# NUBOX
+# ============================================================================
 
-BSALE_ACCESS_TOKEN = os.getenv("BSALE_ACCESS_TOKEN")
-
-BSALE_API_URL = os.getenv(
-    "BSALE_API_URL",
-    "https://api.bsale.io/v1",
+NUBOX_API_URL = env(
+    "NUBOX_API_URL",
+    default="",
 )
 
-BSALE_CODE_SII = int(
-    os.getenv("BSALE_CODE_SII", "39")
+NUBOX_PARTNER_TOKEN = env(
+    "NUBOX_PARTNER_TOKEN",
+    default="",
 )
 
-BSALE_OFFICE_ID = int(
-    os.getenv("BSALE_OFFICE_ID", "1")
+NUBOX_COMPANY_API_KEY = env(
+    "NUBOX_COMPANY_API_KEY",
+    default="",
 )
 
-BSALE_DECLARE_SII = int(
-    os.getenv("BSALE_DECLARE_SII", "0")
+# Boleta electrónica afecta.
+NUBOX_BOLETA_LEGAL_CODE = env(
+    "NUBOX_BOLETA_LEGAL_CODE",
+    default="39",
 )
 
-BSALE_SEND_EMAIL = int(
-    os.getenv("BSALE_SEND_EMAIL", "1")
+# Venta normal.
+NUBOX_SALE_TYPE_ID = 1
+
+# Contado.
+NUBOX_PAYMENT_FORM_ID = 1
+
+# Actividad usada para consumidor final.
+NUBOX_CLIENT_MAIN_ACTIVITY = (
+    "Consumidor final"
 )
 
-
+# Podemos completar esto posteriormente
+# con las comunas utilizadas por tu checkout.
+NUBOX_COMUNA_CODES = {
+    # "Santiago": "13101",
+    # "Providencia": "13123",
+}
 
 
 

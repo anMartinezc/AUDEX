@@ -152,10 +152,12 @@ urlpatterns = [
         views.mercadopago_webhook,
         name="mercadopago_webhook",
     ),
+
+
     path(
-        "mercadopago/webhook/",
-        views.webhook_mercado_pago,
-        name="webhook_mercado_pago",
+    "pedidos/<str:numero>/boleta/",
+    views_pedidos.descargar_boleta_nubox,
+    name="descargar_boleta_nubox",
     ),
 
     path(
