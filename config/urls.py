@@ -93,29 +93,7 @@ urlpatterns = [
  
 
 
-    # =========================================================================
-    # APPLE TOUCH ICON
-    # =========================================================================
 
-    path(
-        "apple-touch-icon.png",
-        RedirectView.as_view(
-            url=static_url(
-                "core/img/apple-touch-icon.png"
-            ),
-            permanent=False,
-        ),
-    ),
-
-    path(
-        "apple-touch-icon-precomposed.png",
-        RedirectView.as_view(
-            url=static_url(
-                "core/img/apple-touch-icon.png"
-            ),
-            permanent=False,
-        ),
-    ),
 
 
     # =========================================================================
