@@ -31,8 +31,11 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # En desarrollo carga .env.
-# Railway entrega las variables directamente mediante el entorno.
-load_dotenv(BASE_DIR / ".env")
+# En Railway las variables del servicio tienen prioridad.
+load_dotenv(
+    BASE_DIR / ".env",
+    override=False,
+)
 
 
 # =============================================================================
@@ -49,7 +52,7 @@ def env_bool(
     valor_por_defecto: bool = False,
 ) -> bool:
     """
-    Convierte valores como:
+    Convierte:
     true, 1, yes, on
     en True.
     """
@@ -222,8 +225,8 @@ MIDDLEWARE = [
 
     "django.middleware.security.SecurityMiddleware",
 
-    # WhiteNoise debe ir inmediatamente después
-    # de SecurityMiddleware.
+    # WhiteNoise debe estar inmediatamente
+    # después de SecurityMiddleware.
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -320,15 +323,15 @@ TEMPLATES = [
 # BASE DE DATOS
 # =============================================================================
 #
-# PRODUCCIÓN / RAILWAY
+# PRODUCCIÓN / RAILWAY:
 #
 # DATABASE_URL=${{Postgres.DATABASE_URL}}
 #
-# DESARROLLO
+# DESARROLLO:
 #
-# 1. DATABASE_URL -> PostgreSQL
-# 2. Variables MYSQL -> MySQL
-# 3. DEBUG=True sin lo anterior -> SQLite
+# 1. DATABASE_URL -> PostgreSQL.
+# 2. Variables MYSQL -> MySQL.
+# 3. DEBUG=True sin las anteriores -> SQLite.
 #
 # En producción NO se permite caer silenciosamente a SQLite.
 #
@@ -429,7 +432,7 @@ else:
             (
                 "No existe una base de datos configurada. "
                 "En producción debes configurar DATABASE_URL "
-                "con la referencia al PostgreSQL de Railway."
+                "con PostgreSQL de Railway."
             )
         )
 
@@ -523,11 +526,11 @@ FORMAT_MODULE_PATH = [
 
 STATIC_URL = "/static/"
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = (
+    BASE_DIR / "staticfiles"
+)
 
 
-# Si existe una carpeta /static a nivel raíz,
-# Django también buscará archivos allí.
 STATICFILES_DIRS = (
     [
         BASE_DIR / "static",
@@ -543,13 +546,12 @@ STATICFILES_DIRS = (
 #
 # IMPORTANTE:
 #
-# Se utiliza CompressedStaticFilesStorage en lugar de
-# CompressedManifestStaticFilesStorage.
+# Se utiliza CompressedStaticFilesStorage.
 #
-# Esto evita que un archivo faltante en el manifest provoque
-# un error 500 durante el arranque.
+# collectstatic sigue siendo obligatorio en Railway.
 #
-# collectstatic SIGUE siendo necesario en producción.
+# Durante esta etapa de despliegue se desactiva la caché larga
+# para evitar que CSS/JS antiguos permanezcan en el navegador.
 #
 # =============================================================================
 
@@ -571,18 +573,28 @@ STORAGES = {
 }
 
 
-# WhiteNoise.
+# En desarrollo WhiteNoise puede buscar directamente
+# los archivos estáticos.
 WHITENOISE_AUTOREFRESH = DEBUG
 
 WHITENOISE_USE_FINDERS = DEBUG
 
 
-# Caché largo para assets en producción.
-WHITENOISE_MAX_AGE = (
-    0
-    if DEBUG
-    else 31536000
-)
+# -------------------------------------------------------------------------
+# CACHE DE ARCHIVOS ESTÁTICOS
+# -------------------------------------------------------------------------
+#
+# TEMPORALMENTE EN 0.
+#
+# Evita que Chrome/Safari mantengan CSS/JS antiguos
+# mientras estabilizamos la versión de producción.
+#
+# Posteriormente podemos volver a habilitar una estrategia
+# de caché larga con archivos versionados/hash.
+#
+# -------------------------------------------------------------------------
+
+WHITENOISE_MAX_AGE = 0
 
 
 # =============================================================================
@@ -592,12 +604,14 @@ WHITENOISE_MAX_AGE = (
 # IMPORTANTE:
 #
 # MEDIA_ROOT dentro del contenedor de Railway NO es persistente.
-# Para archivos cargados por usuarios conviene posteriormente usar:
+#
+# Para imágenes cargadas desde administración deberás usar
+# posteriormente almacenamiento persistente:
 #
 # - Railway Volume
 # - Cloudinary
 # - S3
-# - almacenamiento equivalente
+# - equivalente.
 #
 # =============================================================================
 
@@ -718,18 +732,14 @@ NUBOX_COMPANY_API_KEY = env(
 )
 
 
-# Boleta electrónica afecta.
 NUBOX_BOLETA_LEGAL_CODE = env(
     "NUBOX_BOLETA_LEGAL_CODE",
     default="39",
 )
 
 
-# Venta normal.
 NUBOX_SALE_TYPE_ID = 1
 
-
-# Contado.
 NUBOX_PAYMENT_FORM_ID = 1
 
 
@@ -764,6 +774,16 @@ NUBOX_COMUNA_CODES = {
 #
 # no-reply@audex.cl
 #     Recuperación de contraseña y notificaciones automáticas.
+#
+# NOTA:
+#
+# Esta configuración es correcta para SMTP, pero en el plan actual
+# de Railway la conexión SMTP saliente está bloqueada.
+#
+# Posteriormente:
+#
+# - Railway Pro -> mantener SMTP.
+# - Resend -> cambiar capa de envío a API HTTPS.
 #
 # =============================================================================
 
@@ -1029,7 +1049,6 @@ SESSION_ENGINE = (
 )
 
 
-# 30 días.
 SESSION_COOKIE_AGE = (
     60 * 60 * 24 * 30
 )
@@ -1037,12 +1056,9 @@ SESSION_COOKIE_AGE = (
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
-
 SESSION_SAVE_EVERY_REQUEST = False
 
-
 SESSION_COOKIE_HTTPONLY = True
-
 
 SESSION_COOKIE_SAMESITE = "Lax"
 
