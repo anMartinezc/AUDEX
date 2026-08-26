@@ -12,7 +12,9 @@ Configuración preparada para:
 - Webpay / Transbank.
 - Nubox.
 - Google Allauth.
-- Google Workspace SMTP.
+- Resend API para correos transaccionales.
+- Anymail + Resend para correos internos de Django / Allauth.
+- Google Workspace para recepción de correo corporativo.
 - WhiteNoise para archivos estáticos.
 """
 
@@ -29,6 +31,7 @@ import dj_database_url
 # =============================================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 # En desarrollo carga .env.
 # En Railway las variables del servicio tienen prioridad.
@@ -108,6 +111,7 @@ DJANGO_SECRET_KEY = os.getenv(
     "",
 ).strip()
 
+
 if not DJANGO_SECRET_KEY:
 
     if DEBUG:
@@ -122,6 +126,7 @@ if not DJANGO_SECRET_KEY:
             "DJANGO_SECRET_KEY no está configurada."
         )
 
+
 SECRET_KEY = DJANGO_SECRET_KEY
 
 
@@ -133,6 +138,7 @@ RAILWAY_PUBLIC_DOMAIN = os.getenv(
     "RAILWAY_PUBLIC_DOMAIN",
     "",
 ).strip()
+
 
 SITE_URL = os.getenv(
     "SITE_URL",
@@ -148,6 +154,7 @@ ALLOWED_HOSTS = env_list(
     "ALLOWED_HOSTS",
     "127.0.0.1,localhost",
 )
+
 
 if RAILWAY_PUBLIC_DOMAIN:
 
@@ -166,6 +173,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     "",
 )
+
 
 if SITE_URL.startswith("https://"):
 
@@ -203,6 +211,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+
+    # Anymail
+    #
+    # Permite que Django / django-allauth utilicen
+    # Resend mediante el backend estándar de correo.
+    "anymail",
 
     # Proyecto
     "core.apps.CoreConfig",
@@ -274,6 +288,7 @@ SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
 )
+
 
 USE_X_FORWARDED_HOST = True
 
@@ -348,20 +363,24 @@ MYSQLHOST = os.getenv(
     "",
 ).strip()
 
+
 MYSQLPORT = os.getenv(
     "MYSQLPORT",
     "3306",
 ).strip()
+
 
 MYSQLDATABASE = os.getenv(
     "MYSQLDATABASE",
     "",
 ).strip()
 
+
 MYSQLUSER = os.getenv(
     "MYSQLUSER",
     "",
 ).strip()
+
 
 MYSQLPASSWORD = os.getenv(
     "MYSQLPASSWORD",
@@ -526,6 +545,7 @@ FORMAT_MODULE_PATH = [
 
 STATIC_URL = "/static/"
 
+
 STATIC_ROOT = (
     BASE_DIR / "staticfiles"
 )
@@ -542,17 +562,6 @@ STATICFILES_DIRS = (
 
 # =============================================================================
 # WHITENOISE
-# =============================================================================
-#
-# IMPORTANTE:
-#
-# Se utiliza CompressedStaticFilesStorage.
-#
-# collectstatic sigue siendo obligatorio en Railway.
-#
-# Durante esta etapa de despliegue se desactiva la caché larga
-# para evitar que CSS/JS antiguos permanezcan en el navegador.
-#
 # =============================================================================
 
 STORAGES = {
@@ -580,38 +589,22 @@ WHITENOISE_AUTOREFRESH = DEBUG
 WHITENOISE_USE_FINDERS = DEBUG
 
 
-# -------------------------------------------------------------------------
-# CACHE DE ARCHIVOS ESTÁTICOS
-# -------------------------------------------------------------------------
-#
-# TEMPORALMENTE EN 0.
-#
-# Evita que Chrome/Safari mantengan CSS/JS antiguos
-# mientras estabilizamos la versión de producción.
-#
-# Posteriormente podemos volver a habilitar una estrategia
-# de caché larga con archivos versionados/hash.
-#
-# -------------------------------------------------------------------------
-
+# Durante la estabilización de producción
+# evitamos caché larga de CSS / JS.
 WHITENOISE_MAX_AGE = 0
 
 
 # =============================================================================
-# ARCHIVOS SUBIDOS
+# ARCHIVOS SUBIDOS / MEDIA
 # =============================================================================
 #
-# IMPORTANTE:
+# En Railway debe existir un Volume montado en:
 #
-# MEDIA_ROOT dentro del contenedor de Railway NO es persistente.
+# /app/media
 #
-# Para imágenes cargadas desde administración deberás usar
-# posteriormente almacenamiento persistente:
+# Como BASE_DIR en Railway es /app:
 #
-# - Railway Volume
-# - Cloudinary
-# - S3
-# - equivalente.
+# MEDIA_ROOT = /app/media
 #
 # =============================================================================
 
@@ -750,7 +743,8 @@ NUBOX_CLIENT_MAIN_ACTIVITY = (
 
 NUBOX_COMUNA_CODES = {
 
-    # Configurar códigos reales utilizados por Nubox/SII.
+    # Configurar códigos reales utilizados
+    # por Nubox / SII.
     #
     # Ejemplo:
     #
@@ -760,116 +754,63 @@ NUBOX_COMUNA_CODES = {
 
 
 # =============================================================================
-# CORREO - GOOGLE WORKSPACE
+# CORREO - RESEND
 # =============================================================================
 #
-# contacto@audex.cl
-#     Cuenta principal que autentica mediante SMTP.
+# ARQUITECTURA DE CORREO:
 #
-# ventas@audex.cl
-#     Compras, pedidos y pagos.
+# 1. SERVICES PROPIOS DE AUDEX
 #
-# soporte@audex.cl
-#     Garantías, devoluciones y postventa.
+# core/services/resend_email.py
+#          ↓
+# Resend API HTTPS
 #
-# no-reply@audex.cl
-#     Recuperación de contraseña y notificaciones automáticas.
 #
-# NOTA:
+# 2. DJANGO / DJANGO-ALLAUTH
 #
-# Esta configuración es correcta para SMTP, pero en el plan actual
-# de Railway la conexión SMTP saliente está bloqueada.
+# Django Email Backend
+#          ↓
+# Anymail
+#          ↓
+# Resend API HTTPS
 #
-# Posteriormente:
 #
-# - Railway Pro -> mantener SMTP.
-# - Resend -> cambiar capa de envío a API HTTPS.
+# Google Workspace continúa funcionando independientemente
+# para RECIBIR y RESPONDER correos humanos.
+#
+# No se utiliza SMTP desde Railway.
 #
 # =============================================================================
 
 
 # -----------------------------------------------------------------------------
-# BACKEND
+# API KEY RESEND
 # -----------------------------------------------------------------------------
 
-if DEBUG:
-
-    EMAIL_BACKEND = os.getenv(
-        "EMAIL_BACKEND",
-        (
-            "django.core.mail.backends."
-            "console.EmailBackend"
-        ),
-    )
-
-else:
-
-    EMAIL_BACKEND = os.getenv(
-        "EMAIL_BACKEND",
-        (
-            "django.core.mail.backends."
-            "smtp.EmailBackend"
-        ),
-    )
-
-
-# -----------------------------------------------------------------------------
-# GOOGLE SMTP
-# -----------------------------------------------------------------------------
-
-EMAIL_HOST = os.getenv(
-    "EMAIL_HOST",
-    "smtp.gmail.com",
-).strip()
-
-
-EMAIL_PORT = int(
-    os.getenv(
-        "EMAIL_PORT",
-        "587",
-    )
-)
-
-
-EMAIL_USE_TLS = env_bool(
-    "EMAIL_USE_TLS",
-    True,
-)
-
-
-EMAIL_USE_SSL = env_bool(
-    "EMAIL_USE_SSL",
-    False,
-)
-
-
-EMAIL_TIMEOUT = int(
-    os.getenv(
-        "EMAIL_TIMEOUT",
-        "30",
-    )
-)
-
-
-# -----------------------------------------------------------------------------
-# AUTENTICACIÓN SMTP
-# -----------------------------------------------------------------------------
-
-EMAIL_HOST_USER = os.getenv(
-    "EMAIL_HOST_USER",
-    "contacto@audex.cl",
-).strip()
-
-
-EMAIL_HOST_PASSWORD = os.getenv(
-    "EMAIL_HOST_PASSWORD",
+RESEND_API_KEY = os.getenv(
+    "RESEND_API_KEY",
     "",
 ).strip()
 
 
-# -----------------------------------------------------------------------------
+# En producción Resend es obligatorio.
+if (
+    not DEBUG
+    and not RESEND_API_KEY
+):
+
+    raise RuntimeError(
+        (
+            "RESEND_API_KEY no está configurada. "
+            "En producción es necesaria para "
+            "el envío de correos."
+        )
+    )
+
+
+# =============================================================================
 # DIRECCIONES AUDEX
-# -----------------------------------------------------------------------------
+# =============================================================================
 
 EMAIL_CONTACTO = os.getenv(
     "EMAIL_CONTACTO",
@@ -895,19 +836,101 @@ EMAIL_NO_REPLY = os.getenv(
 ).strip()
 
 
-# -----------------------------------------------------------------------------
+# =============================================================================
+# REMITENTES RESEND
+# =============================================================================
+
+RESEND_FROM_VENTAS = os.getenv(
+    "RESEND_FROM_VENTAS",
+    f"Audex Ventas <{EMAIL_VENTAS}>",
+).strip()
+
+
+RESEND_FROM_SOPORTE = os.getenv(
+    "RESEND_FROM_SOPORTE",
+    f"Audex Soporte <{EMAIL_SOPORTE}>",
+).strip()
+
+
+RESEND_FROM_NO_REPLY = os.getenv(
+    "RESEND_FROM_NO_REPLY",
+    f"Audex <{EMAIL_NO_REPLY}>",
+).strip()
+
+
+RESEND_FROM_CONTACTO = os.getenv(
+    "RESEND_FROM_CONTACTO",
+    f"Audex <{EMAIL_CONTACTO}>",
+).strip()
+
+
+# =============================================================================
+# ANYMAIL + RESEND
+# =============================================================================
+#
+# Utilizado principalmente por:
+#
+# - django-allauth
+# - recuperación de contraseña
+# - verificación de correo
+# - correos internos de Django
+#
+# =============================================================================
+
+ANYMAIL = {
+    "RESEND_API_KEY": RESEND_API_KEY,
+}
+
+
+# =============================================================================
+# EMAIL BACKEND
+# =============================================================================
+#
+# LOCAL:
+#
+# DEBUG=True
+# Django / Allauth -> consola.
+#
+#
+# PRODUCCIÓN:
+#
+# DEBUG=False
+# Django / Allauth -> Anymail -> Resend API.
+#
+#
+# Los services propios que utilizan enviar_correo_resend()
+# NO dependen de EMAIL_BACKEND.
+#
+# =============================================================================
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    (
+        "django.core.mail.backends.console.EmailBackend"
+        if DEBUG
+        else "anymail.backends.resend.EmailBackend"
+    ),
+).strip()
+
+
+# =============================================================================
 # REMITENTE POR DEFECTO
-# -----------------------------------------------------------------------------
+# =============================================================================
+#
+# Django y django-allauth utilizarán no-reply@audex.cl
+# cuando no se indique otro remitente.
+#
+# =============================================================================
 
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
-    f"Audex <{EMAIL_NO_REPLY}>",
+    RESEND_FROM_NO_REPLY,
 ).strip()
 
 
 SERVER_EMAIL = os.getenv(
     "SERVER_EMAIL",
-    f"Audex <{EMAIL_NO_REPLY}>",
+    RESEND_FROM_NO_REPLY,
 ).strip()
 
 

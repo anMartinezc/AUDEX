@@ -4,13 +4,15 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 
 from core.models import CorreoPedido, Pedido
+from core.services.resend_email import (
+    enviar_correo_resend,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -20,11 +22,15 @@ logger = logging.getLogger(__name__)
 # TIPOS DE CORREO
 # =============================================================================
 
-TIPO_CONFIRMACION_PAGO = CorreoPedido.TIPO_CONFIRMACION_PAGO
+TIPO_CONFIRMACION_PAGO = (
+    CorreoPedido.TIPO_CONFIRMACION_PAGO
+)
 
-# Lo dejamos independiente del correo del cliente para evitar que una dirección
-# que coincida con la de un administrador bloquee el segundo correo.
-TIPO_ADMIN_NUEVA_COMPRA = "admin_nueva_compra"
+# Se mantiene independiente del correo del cliente para evitar que una
+# dirección que coincida con la de un administrador bloquee el segundo correo.
+TIPO_ADMIN_NUEVA_COMPRA = (
+    "admin_nueva_compra"
+)
 
 
 # =============================================================================
@@ -85,8 +91,11 @@ def obtener_emails_administradores():
     emails_vistos = set()
 
     for email in emails:
+
         email_normalizado = (
-            Pedido.normalizar_email(email)
+            Pedido.normalizar_email(
+                email
+            )
         )
 
         if not email_normalizado:
@@ -116,10 +125,11 @@ def reservar_envio(
     tipo=TIPO_CONFIRMACION_PAGO,
 ):
     """
-    Reserva el envío de un correo antes de contactar al servidor SMTP.
+    Reserva el envío de un correo antes de contactar
+    la API de Resend.
 
-    Evita enviar dos veces el mismo tipo de correo a la misma
-    dirección para un pedido determinado.
+    Evita enviar dos veces el mismo tipo de correo
+    a la misma dirección para un pedido determinado.
 
     Devuelve:
         ID del registro si se puede enviar.
@@ -134,6 +144,7 @@ def reservar_envio(
         return None
 
     try:
+
         with transaction.atomic():
 
             registro, creado = (
@@ -151,11 +162,19 @@ def reservar_envio(
                 )
             )
 
+            # -------------------------------------------------------------
+            # YA ENVIADO / EN PROCESO
+            # -------------------------------------------------------------
+
             if registro.estado in {
                 CorreoPedido.ESTADO_ENVIADO,
                 CorreoPedido.ESTADO_ENVIANDO,
             }:
                 return None
+
+            # -------------------------------------------------------------
+            # RESERVAR
+            # -------------------------------------------------------------
 
             registro.estado = (
                 CorreoPedido.ESTADO_ENVIANDO
@@ -174,6 +193,7 @@ def reservar_envio(
             return registro.pk
 
     except IntegrityError:
+
         logger.info(
             (
                 "El correo %s del pedido %s "
@@ -203,7 +223,9 @@ def marcar_correo_error(
     CorreoPedido.objects.filter(
         pk=registro_id,
     ).update(
-        estado=CorreoPedido.ESTADO_ERROR,
+        estado=(
+            CorreoPedido.ESTADO_ERROR
+        ),
         ultimo_error=str(error),
         actualizado_en=timezone.now(),
     )
@@ -213,7 +235,8 @@ def marcar_correo_enviado(
     registro_id,
 ):
     """
-    Marca un registro de correo como enviado.
+    Marca un registro de correo como enviado
+    correctamente a la API de Resend.
     """
 
     ahora = timezone.now()
@@ -221,7 +244,9 @@ def marcar_correo_enviado(
     CorreoPedido.objects.filter(
         pk=registro_id,
     ).update(
-        estado=CorreoPedido.ESTADO_ENVIADO,
+        estado=(
+            CorreoPedido.ESTADO_ENVIADO
+        ),
         enviado_en=ahora,
         ultimo_error="",
         actualizado_en=ahora,
@@ -237,8 +262,9 @@ def enviar_notificacion_administradores(
     items,
 ):
     """
-    Envía una notificación individual a cada administrador activo
-    cuando una compra ha sido confirmada.
+    Envía mediante Resend una notificación individual
+    a cada administrador activo cuando una compra
+    ha sido confirmada.
 
     Usa:
         emails/admin_nueva_compra.html
@@ -250,19 +276,21 @@ def enviar_notificacion_administradores(
     )
 
     if not destinatarios_admin:
+
         logger.warning(
             (
-                "El pedido %s fue confirmado, pero no "
-                "hay administradores activos con correo."
+                "El pedido %s fue confirmado, "
+                "pero no hay administradores "
+                "activos con correo."
             ),
             pedido.numero,
         )
 
         return True
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # URL PANEL DE PEDIDOS
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     site_url = getattr(
         settings,
@@ -274,9 +302,9 @@ def enviar_notificacion_administradores(
         f"{site_url}/gestion/pedidos/"
     )
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # CONTEXTO
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     contexto = {
         "pedido": pedido,
@@ -289,27 +317,33 @@ def enviar_notificacion_administradores(
         f"Pedido {pedido.numero}"
     )
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # RENDERIZAR TEMPLATES ADMIN
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     try:
-        contenido_texto = render_to_string(
-            "emails/admin_nueva_compra.txt",
-            contexto,
+
+        contenido_texto = (
+            render_to_string(
+                "emails/admin_nueva_compra.txt",
+                contexto,
+            )
         )
 
-        contenido_html = render_to_string(
-            "emails/admin_nueva_compra.html",
-            contexto,
+        contenido_html = (
+            render_to_string(
+                "emails/admin_nueva_compra.html",
+                contexto,
+            )
         )
 
     except Exception as error:
+
         logger.exception(
             (
-                "No se pudieron renderizar las "
-                "plantillas administrativas del "
-                "pedido %s: %s"
+                "No se pudieron renderizar "
+                "las plantillas administrativas "
+                "del pedido %s: %s"
             ),
             pedido.numero,
             error,
@@ -317,9 +351,9 @@ def enviar_notificacion_administradores(
 
         return False
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # ENVIAR A CADA ADMINISTRADOR
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     enviados = 0
 
@@ -331,15 +365,20 @@ def enviar_notificacion_administradores(
             tipo=TIPO_ADMIN_NUEVA_COMPRA,
         )
 
+        # ---------------------------------------------------------------------
+        # YA RESERVADO / ENVIADO
+        # ---------------------------------------------------------------------
+
         if registro_id is None:
 
-            # Puede significar que ya se envió anteriormente.
             ya_enviado = (
                 CorreoPedido.objects
                 .filter(
                     pedido=pedido,
                     email=email,
-                    tipo=TIPO_ADMIN_NUEVA_COMPRA,
+                    tipo=(
+                        TIPO_ADMIN_NUEVA_COMPRA
+                    ),
                     estado=(
                         CorreoPedido
                         .ESTADO_ENVIADO
@@ -353,30 +392,28 @@ def enviar_notificacion_administradores(
 
             continue
 
+        # ---------------------------------------------------------------------
+        # RESEND
+        # ---------------------------------------------------------------------
+
         try:
-            mensaje = EmailMultiAlternatives(
-                subject=asunto,
-                body=contenido_texto,
-                from_email=(
-                    settings.DEFAULT_FROM_EMAIL
+
+            respuesta = enviar_correo_resend(
+                destinatarios=email,
+                asunto=asunto,
+                html=contenido_html,
+                texto=contenido_texto,
+                remitente=(
+                    settings
+                    .RESEND_FROM_VENTAS
                 ),
-                to=[email],
             )
 
-            mensaje.attach_alternative(
-                contenido_html,
-                "text/html",
-            )
-
-            cantidad_enviada = mensaje.send(
-                fail_silently=False,
-            )
-
-            if cantidad_enviada != 1:
+            if not respuesta:
                 raise RuntimeError(
                     (
-                        "El backend SMTP no confirmó "
-                        "el envío al administrador."
+                        "Resend no devolvió una "
+                        "respuesta válida."
                     )
                 )
 
@@ -390,8 +427,8 @@ def enviar_notificacion_administradores(
             logger.exception(
                 (
                     "Error enviando notificación "
-                    "administrativa del pedido "
-                    "%s a %s: %s"
+                    "administrativa mediante Resend "
+                    "del pedido %s a %s: %s"
                 ),
                 pedido.numero,
                 email,
@@ -409,15 +446,16 @@ def enviar_notificacion_administradores(
             logger.info(
                 (
                     "Notificación administrativa "
-                    "del pedido %s enviada a %s."
+                    "del pedido %s enviada mediante "
+                    "Resend a %s."
                 ),
                 pedido.numero,
                 email,
             )
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # RESULTADO
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     todos_enviados = (
         enviados
@@ -425,10 +463,12 @@ def enviar_notificacion_administradores(
     )
 
     if todos_enviados:
+
         logger.info(
             (
                 "La nueva compra %s fue notificada "
-                "correctamente a %s administrador(es)."
+                "correctamente mediante Resend "
+                "a %s administrador(es)."
             ),
             pedido.numero,
             len(destinatarios_admin),
@@ -438,8 +478,9 @@ def enviar_notificacion_administradores(
 
     logger.warning(
         (
-            "No todos los administradores recibieron "
-            "la notificación del pedido %s. "
+            "No todos los administradores "
+            "recibieron la notificación "
+            "del pedido %s. "
             "Enviados: %s de %s."
         ),
         pedido.numero,
@@ -454,18 +495,27 @@ def enviar_notificacion_administradores(
 # ENVÍO CONFIRMACIÓN CLIENTE
 # =============================================================================
 
-def enviar_confirmacion_pago(pedido_id):
+def enviar_confirmacion_pago(
+    pedido_id,
+):
     """
-    Envía:
+    Envía mediante Resend:
 
     1. Confirmación de pago al cliente.
-    2. Notificación de nueva compra a todos los administradores.
+    2. Notificación de nueva compra a todos
+       los administradores.
 
-    El correo del cliente y el administrativo se gestionan como
-    tipos distintos para impedir duplicados.
+    El correo del cliente y el administrativo
+    se gestionan como tipos distintos para
+    impedir duplicados.
     """
 
+    # =========================================================================
+    # OBTENER PEDIDO
+    # =========================================================================
+
     try:
+
         pedido = (
             Pedido.objects
             .select_related(
@@ -480,18 +530,23 @@ def enviar_confirmacion_pago(pedido_id):
         )
 
     except Pedido.DoesNotExist:
+
         logger.error(
-            "No existe el pedido con ID %s.",
+            (
+                "No existe el pedido "
+                "con ID %s."
+            ),
             pedido_id,
         )
 
         return False
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # VALIDAR PAGO
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     if not pedido.pago_aprobado:
+
         logger.warning(
             (
                 "No se envió la confirmación "
@@ -503,9 +558,9 @@ def enviar_confirmacion_pago(pedido_id):
 
         return False
 
-    # -------------------------------------------------------------------------
+    # =========================================================================
     # ITEMS
-    # -------------------------------------------------------------------------
+    # =========================================================================
 
     items = list(
         pedido.items.all()
@@ -523,17 +578,26 @@ def enviar_confirmacion_pago(pedido_id):
 
     cliente_correcto = False
 
+    # -------------------------------------------------------------------------
+    # SIN DESTINATARIOS
+    # -------------------------------------------------------------------------
+
     if not destinatarios:
+
         logger.error(
             (
-                "No se pudo enviar la confirmación "
-                "del pedido %s: "
+                "No se pudo enviar la "
+                "confirmación del pedido %s: "
                 "no tiene correos destinatarios."
             ),
             pedido.numero,
         )
 
     else:
+
+        # =====================================================================
+        # CONTEXTO CLIENTE
+        # =====================================================================
 
         contexto_cliente = {
             "pedido": pedido,
@@ -545,18 +609,28 @@ def enviar_confirmacion_pago(pedido_id):
             f"Pedido {pedido.numero}"
         )
 
+        # =====================================================================
+        # RENDERIZAR TEMPLATES
+        # =====================================================================
+
         try:
-            contenido_texto = render_to_string(
-                "emails/pago_confirmado.txt",
-                contexto_cliente,
+
+            contenido_texto = (
+                render_to_string(
+                    "emails/pago_confirmado.txt",
+                    contexto_cliente,
+                )
             )
 
-            contenido_html = render_to_string(
-                "emails/pago_confirmado.html",
-                contexto_cliente,
+            contenido_html = (
+                render_to_string(
+                    "emails/pago_confirmado.html",
+                    contexto_cliente,
+                )
             )
 
         except Exception as error:
+
             logger.exception(
                 (
                     "No se pudieron renderizar "
@@ -569,44 +643,53 @@ def enviar_confirmacion_pago(pedido_id):
 
         else:
 
+            # =================================================================
+            # ENVIAR A CADA DESTINATARIO
+            # =================================================================
+
             for email in destinatarios:
 
                 registro_id = reservar_envio(
                     pedido=pedido,
                     email=email,
-                    tipo=TIPO_CONFIRMACION_PAGO,
+                    tipo=(
+                        TIPO_CONFIRMACION_PAGO
+                    ),
                 )
 
                 if registro_id is None:
                     continue
 
+                # -------------------------------------------------------------
+                # RESEND
+                # -------------------------------------------------------------
+
                 try:
-                    mensaje = EmailMultiAlternatives(
-                        subject=asunto_cliente,
-                        body=contenido_texto,
-                        from_email=(
-                            settings
-                            .DEFAULT_FROM_EMAIL
-                        ),
-                        to=[email],
-                    )
 
-                    mensaje.attach_alternative(
-                        contenido_html,
-                        "text/html",
-                    )
-
-                    cantidad_enviada = (
-                        mensaje.send(
-                            fail_silently=False,
+                    respuesta = (
+                        enviar_correo_resend(
+                            destinatarios=email,
+                            asunto=(
+                                asunto_cliente
+                            ),
+                            html=(
+                                contenido_html
+                            ),
+                            texto=(
+                                contenido_texto
+                            ),
+                            remitente=(
+                                settings
+                                .RESEND_FROM_VENTAS
+                            ),
                         )
                     )
 
-                    if cantidad_enviada != 1:
+                    if not respuesta:
                         raise RuntimeError(
                             (
-                                "El backend SMTP "
-                                "no confirmó el envío."
+                                "Resend no devolvió "
+                                "una respuesta válida."
                             )
                         )
 
@@ -619,8 +702,10 @@ def enviar_confirmacion_pago(pedido_id):
 
                     logger.exception(
                         (
-                            "Error enviando confirmación "
-                            "del pedido %s a %s: %s"
+                            "Error enviando "
+                            "confirmación mediante "
+                            "Resend del pedido "
+                            "%s a %s: %s"
                         ),
                         pedido.numero,
                         email,
@@ -636,21 +721,24 @@ def enviar_confirmacion_pago(pedido_id):
                     logger.info(
                         (
                             "Confirmación del pedido "
-                            "%s enviada a %s."
+                            "%s enviada mediante "
+                            "Resend a %s."
                         ),
                         pedido.numero,
                         email,
                     )
 
-            # -----------------------------------------------------------------
+            # =================================================================
             # COMPROBAR CLIENTE
-            # -----------------------------------------------------------------
+            # =================================================================
 
             cantidad_enviados = (
                 CorreoPedido.objects
                 .filter(
                     pedido=pedido,
-                    tipo=TIPO_CONFIRMACION_PAGO,
+                    tipo=(
+                        TIPO_CONFIRMACION_PAGO
+                    ),
                     email__in=destinatarios,
                     estado=(
                         CorreoPedido
@@ -665,6 +753,10 @@ def enviar_confirmacion_pago(pedido_id):
                 == len(destinatarios)
             )
 
+            # -----------------------------------------------------------------
+            # TODOS LOS CORREOS DEL CLIENTE OK
+            # -----------------------------------------------------------------
+
             if cliente_correcto:
 
                 ahora = timezone.now()
@@ -674,26 +766,31 @@ def enviar_confirmacion_pago(pedido_id):
                 ).update(
                     correo_confirmacion_enviado=True,
                     fecha_correo_confirmacion=(
-                        pedido.fecha_correo_confirmacion
+                        pedido
+                        .fecha_correo_confirmacion
                         or ahora
                     ),
                 )
 
                 logger.info(
                     (
-                        "Todos los correos del cliente "
-                        "del pedido %s fueron enviados "
-                        "correctamente."
+                        "Todos los correos del "
+                        "cliente del pedido %s "
+                        "fueron enviados "
+                        "correctamente mediante "
+                        "Resend."
                     ),
                     pedido.numero,
                 )
 
             else:
+
                 logger.warning(
                     (
-                        "El pedido %s tiene correos "
-                        "del cliente pendientes o "
-                        "con error. Enviados: %s de %s."
+                        "El pedido %s tiene "
+                        "correos del cliente "
+                        "pendientes o con error. "
+                        "Enviados: %s de %s."
                     ),
                     pedido.numero,
                     cantidad_enviados,
@@ -719,11 +816,12 @@ def enviar_confirmacion_pago(pedido_id):
         cliente_correcto
         and admin_correcto
     ):
+
         logger.info(
             (
                 "Proceso completo de correos "
                 "del pedido %s finalizado "
-                "correctamente."
+                "correctamente mediante Resend."
             ),
             pedido.numero,
         )
