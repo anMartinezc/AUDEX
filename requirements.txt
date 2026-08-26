@@ -40,4 +40,5 @@ Werkzeug==3.1.8
 wheel==0.47.0
 whitenoise==6.11.0
 dj-database-url ==2.3.0
-resend
+resend==1.0.0
+django-anymail==9.4
