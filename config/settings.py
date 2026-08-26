@@ -30,6 +30,8 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# En desarrollo carga .env.
+# Railway entrega las variables directamente mediante el entorno.
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -46,6 +48,11 @@ def env_bool(
     nombre: str,
     valor_por_defecto: bool = False,
 ) -> bool:
+    """
+    Convierte valores como:
+    true, 1, yes, on
+    en True.
+    """
 
     valor = os.getenv(nombre)
 
@@ -64,6 +71,10 @@ def env_list(
     nombre: str,
     valor_por_defecto: str = "",
 ) -> list[str]:
+    """
+    Convierte una variable separada por comas
+    en una lista de strings.
+    """
 
     return [
         elemento.strip()
@@ -97,11 +108,13 @@ DJANGO_SECRET_KEY = os.getenv(
 if not DJANGO_SECRET_KEY:
 
     if DEBUG:
+
         DJANGO_SECRET_KEY = (
             "django-insecure-clave-temporal-solo-desarrollo"
         )
 
     else:
+
         raise RuntimeError(
             "DJANGO_SECRET_KEY no está configurada."
         )
@@ -124,9 +137,9 @@ SITE_URL = os.getenv(
 ).strip().rstrip("/")
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # ALLOWED HOSTS
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 ALLOWED_HOSTS = env_list(
     "ALLOWED_HOSTS",
@@ -134,15 +147,17 @@ ALLOWED_HOSTS = env_list(
 )
 
 if RAILWAY_PUBLIC_DOMAIN:
+
     if RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+
         ALLOWED_HOSTS.append(
             RAILWAY_PUBLIC_DOMAIN
         )
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # CSRF TRUSTED ORIGINS
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
@@ -150,10 +165,13 @@ CSRF_TRUSTED_ORIGINS = env_list(
 )
 
 if SITE_URL.startswith("https://"):
+
     if SITE_URL not in CSRF_TRUSTED_ORIGINS:
+
         CSRF_TRUSTED_ORIGINS.append(
             SITE_URL
         )
+
 
 if RAILWAY_PUBLIC_DOMAIN:
 
@@ -162,6 +180,7 @@ if RAILWAY_PUBLIC_DOMAIN:
     )
 
     if railway_origin not in CSRF_TRUSTED_ORIGINS:
+
         CSRF_TRUSTED_ORIGINS.append(
             railway_origin
         )
@@ -190,7 +209,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
 
-    # Google
+    # Google OAuth
     "allauth.socialaccount.providers.google",
 ]
 
@@ -203,6 +222,8 @@ MIDDLEWARE = [
 
     "django.middleware.security.SecurityMiddleware",
 
+    # WhiteNoise debe ir inmediatamente después
+    # de SecurityMiddleware.
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -272,6 +293,7 @@ TEMPLATES = [
         "APP_DIRS": True,
 
         "OPTIONS": {
+
             "context_processors": [
 
                 (
@@ -298,17 +320,17 @@ TEMPLATES = [
 # BASE DE DATOS
 # =============================================================================
 #
-# RAILWAY / PRODUCCIÓN
+# PRODUCCIÓN / RAILWAY
 #
-# Utiliza DATABASE_URL referenciada directamente desde
-# el servicio PostgreSQL de Railway.
+# DATABASE_URL=${{Postgres.DATABASE_URL}}
 #
 # DESARROLLO
 #
-# Si no existe DATABASE_URL:
+# 1. DATABASE_URL -> PostgreSQL
+# 2. Variables MYSQL -> MySQL
+# 3. DEBUG=True sin lo anterior -> SQLite
 #
-# 1. Intenta utilizar MySQL si existen sus variables.
-# 2. Si DEBUG=True y tampoco existe MySQL, utiliza SQLite.
+# En producción NO se permite caer silenciosamente a SQLite.
 #
 # =============================================================================
 
@@ -344,9 +366,9 @@ MYSQLPASSWORD = os.getenv(
 )
 
 
-# -------------------------------------------------------------------------
-# POSTGRESQL - RAILWAY
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# POSTGRESQL / RAILWAY
+# -----------------------------------------------------------------------------
 
 if DATABASE_URL:
 
@@ -359,9 +381,9 @@ if DATABASE_URL:
     }
 
 
-# -------------------------------------------------------------------------
-# MYSQL - OPCIONAL PARA DESARROLLO
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# MYSQL / DESARROLLO OPCIONAL
+# -----------------------------------------------------------------------------
 
 elif (
     MYSQLHOST
@@ -395,17 +417,19 @@ elif (
     }
 
 
-# -------------------------------------------------------------------------
-# SQLITE - DESARROLLO
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# SQLITE / SOLO DESARROLLO
+# -----------------------------------------------------------------------------
 
 else:
 
     if not DEBUG:
+
         raise RuntimeError(
             (
                 "No existe una base de datos configurada. "
-                "En producción configura DATABASE_URL."
+                "En producción debes configurar DATABASE_URL "
+                "con la referencia al PostgreSQL de Railway."
             )
         )
 
@@ -499,10 +523,11 @@ FORMAT_MODULE_PATH = [
 
 STATIC_URL = "/static/"
 
-STATIC_ROOT = (
-    BASE_DIR / "staticfiles"
-)
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
+
+# Si existe una carpeta /static a nivel raíz,
+# Django también buscará archivos allí.
 STATICFILES_DIRS = (
     [
         BASE_DIR / "static",
@@ -514,6 +539,18 @@ STATICFILES_DIRS = (
 
 # =============================================================================
 # WHITENOISE
+# =============================================================================
+#
+# IMPORTANTE:
+#
+# Se utiliza CompressedStaticFilesStorage en lugar de
+# CompressedManifestStaticFilesStorage.
+#
+# Esto evita que un archivo faltante en el manifest provoque
+# un error 500 durante el arranque.
+#
+# collectstatic SIGUE siendo necesario en producción.
+#
 # =============================================================================
 
 STORAGES = {
@@ -528,14 +565,40 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": (
             "whitenoise.storage."
-            "CompressedManifestStaticFilesStorage"
+            "CompressedStaticFilesStorage"
         ),
     },
 }
 
 
+# WhiteNoise.
+WHITENOISE_AUTOREFRESH = DEBUG
+
+WHITENOISE_USE_FINDERS = DEBUG
+
+
+# Caché largo para assets en producción.
+WHITENOISE_MAX_AGE = (
+    0
+    if DEBUG
+    else 31536000
+)
+
+
 # =============================================================================
 # ARCHIVOS SUBIDOS
+# =============================================================================
+#
+# IMPORTANTE:
+#
+# MEDIA_ROOT dentro del contenedor de Railway NO es persistente.
+# Para archivos cargados por usuarios conviene posteriormente usar:
+#
+# - Railway Volume
+# - Cloudinary
+# - S3
+# - almacenamiento equivalente
+#
 # =============================================================================
 
 MEDIA_URL = "/media/"
@@ -556,10 +619,12 @@ TRANSBANK_ENVIRONMENT = os.getenv(
     ),
 ).strip().lower()
 
+
 TRANSBANK_COMMERCE_CODE = os.getenv(
     "TRANSBANK_COMMERCE_CODE",
     "",
 ).strip()
+
 
 TRANSBANK_API_KEY = os.getenv(
     "TRANSBANK_API_KEY",
@@ -576,10 +641,12 @@ MERCADOPAGO_ACCESS_TOKEN = os.getenv(
     "",
 ).strip()
 
+
 MERCADOPAGO_PUBLIC_KEY = os.getenv(
     "MERCADOPAGO_PUBLIC_KEY",
     "",
 ).strip()
+
 
 MERCADOPAGO_WEBHOOK_SECRET = os.getenv(
     "MERCADOPAGO_WEBHOOK_SECRET",
@@ -610,7 +677,7 @@ SITE_URL = SITE_URL.rstrip("/")
 
 
 # =============================================================================
-# WEBHOOK MERCADO PAGO
+# MERCADO PAGO - WEBHOOK
 # =============================================================================
 
 MERCADOPAGO_NOTIFICATION_URL = os.getenv(
@@ -638,10 +705,12 @@ NUBOX_API_URL = env(
     default="",
 )
 
+
 NUBOX_PARTNER_TOKEN = env(
     "NUBOX_PARTNER_TOKEN",
     default="",
 )
+
 
 NUBOX_COMPANY_API_KEY = env(
     "NUBOX_COMPANY_API_KEY",
@@ -649,14 +718,18 @@ NUBOX_COMPANY_API_KEY = env(
 )
 
 
+# Boleta electrónica afecta.
 NUBOX_BOLETA_LEGAL_CODE = env(
     "NUBOX_BOLETA_LEGAL_CODE",
     default="39",
 )
 
 
+# Venta normal.
 NUBOX_SALE_TYPE_ID = 1
 
+
+# Contado.
 NUBOX_PAYMENT_FORM_ID = 1
 
 
@@ -667,12 +740,12 @@ NUBOX_CLIENT_MAIN_ACTIVITY = (
 
 NUBOX_COMUNA_CODES = {
 
+    # Configurar códigos reales utilizados por Nubox/SII.
+    #
     # Ejemplo:
     #
     # "Santiago": "13101",
     # "Providencia": "13123",
-    # "Buin": "13402",
-
 }
 
 
@@ -680,24 +753,24 @@ NUBOX_COMUNA_CODES = {
 # CORREO - GOOGLE WORKSPACE
 # =============================================================================
 #
-# CUENTA SMTP PRINCIPAL:
-#
 # contacto@audex.cl
-#
-# Esta cuenta autentica contra Google.
-#
-# Los demás correos son alias:
+#     Cuenta principal que autentica mediante SMTP.
 #
 # ventas@audex.cl
+#     Compras, pedidos y pagos.
+#
 # soporte@audex.cl
+#     Garantías, devoluciones y postventa.
+#
 # no-reply@audex.cl
+#     Recuperación de contraseña y notificaciones automáticas.
 #
 # =============================================================================
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # BACKEND
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 if DEBUG:
 
@@ -720,9 +793,9 @@ else:
     )
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # GOOGLE SMTP
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 EMAIL_HOST = os.getenv(
     "EMAIL_HOST",
@@ -758,9 +831,9 @@ EMAIL_TIMEOUT = int(
 )
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # AUTENTICACIÓN SMTP
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 EMAIL_HOST_USER = os.getenv(
     "EMAIL_HOST_USER",
@@ -774,9 +847,9 @@ EMAIL_HOST_PASSWORD = os.getenv(
 ).strip()
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # DIRECCIONES AUDEX
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 EMAIL_CONTACTO = os.getenv(
     "EMAIL_CONTACTO",
@@ -802,9 +875,9 @@ EMAIL_NO_REPLY = os.getenv(
 ).strip()
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # REMITENTE POR DEFECTO
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
@@ -827,10 +900,12 @@ DTE_MODE = os.getenv(
     "provider",
 )
 
+
 DTE_PROVIDER_URL = os.getenv(
     "DTE_PROVIDER_URL",
     "",
 ).rstrip("/")
+
 
 DTE_PROVIDER_TOKEN = os.getenv(
     "DTE_PROVIDER_TOKEN",
@@ -904,6 +979,7 @@ GOOGLE_CLIENT_ID = os.getenv(
     "",
 ).strip()
 
+
 GOOGLE_CLIENT_SECRET = os.getenv(
     "GOOGLE_CLIENT_SECRET",
     "",
@@ -953,6 +1029,7 @@ SESSION_ENGINE = (
 )
 
 
+# 30 días.
 SESSION_COOKIE_AGE = (
     60 * 60 * 24 * 30
 )
@@ -976,14 +1053,28 @@ SESSION_COOKIE_SAMESITE = "Lax"
 
 if not DEBUG:
 
+    # -------------------------------------------------------------------------
+    # HTTPS
+    # -------------------------------------------------------------------------
+
     SECURE_SSL_REDIRECT = env_bool(
         "SECURE_SSL_REDIRECT",
         True,
     )
 
+
+    # -------------------------------------------------------------------------
+    # COOKIES
+    # -------------------------------------------------------------------------
+
     SESSION_COOKIE_SECURE = True
 
     CSRF_COOKIE_SECURE = True
+
+
+    # -------------------------------------------------------------------------
+    # HSTS
+    # -------------------------------------------------------------------------
 
     SECURE_HSTS_SECONDS = int(
         os.getenv(
@@ -992,6 +1083,7 @@ if not DEBUG:
         )
     )
 
+
     SECURE_HSTS_INCLUDE_SUBDOMAINS = (
         env_bool(
             "SECURE_HSTS_INCLUDE_SUBDOMAINS",
@@ -999,13 +1091,21 @@ if not DEBUG:
         )
     )
 
+
     SECURE_HSTS_PRELOAD = False
 
+
+    # -------------------------------------------------------------------------
+    # HEADERS
+    # -------------------------------------------------------------------------
+
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
 
     SECURE_REFERRER_POLICY = (
         "strict-origin-when-cross-origin"
     )
+
 
     X_FRAME_OPTIONS = "DENY"
 
