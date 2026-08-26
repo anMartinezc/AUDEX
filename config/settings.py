@@ -6,11 +6,13 @@ Configuración preparada para:
 - Desarrollo local.
 - Railway.
 - Producción con HTTPS.
-- MySQL.
+- PostgreSQL en Railway.
+- SQLite / MySQL opcional en desarrollo.
 - Mercado Pago.
 - Webpay / Transbank.
 - Nubox.
 - Google Allauth.
+- Google Workspace SMTP.
 - WhiteNoise para archivos estáticos.
 """
 
@@ -19,6 +21,7 @@ import os
 
 from dotenv import load_dotenv
 import environ
+import dj_database_url
 
 
 # =============================================================================
@@ -27,9 +30,6 @@ import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# En desarrollo permite seguir utilizando .env.
-# En Railway las variables se obtienen directamente
-# desde el entorno del servicio.
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -46,11 +46,6 @@ def env_bool(
     nombre: str,
     valor_por_defecto: bool = False,
 ) -> bool:
-    """
-    Convierte:
-    true, 1, yes, on
-    en True.
-    """
 
     valor = os.getenv(nombre)
 
@@ -69,10 +64,6 @@ def env_list(
     nombre: str,
     valor_por_defecto: str = "",
 ) -> list[str]:
-    """
-    Convierte una variable separada por comas
-    en una lista.
-    """
 
     return [
         elemento.strip()
@@ -212,8 +203,6 @@ MIDDLEWARE = [
 
     "django.middleware.security.SecurityMiddleware",
 
-    # WhiteNoise debe ir inmediatamente
-    # después de SecurityMiddleware.
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -309,28 +298,25 @@ TEMPLATES = [
 # BASE DE DATOS
 # =============================================================================
 #
-# PRODUCCIÓN:
+# RAILWAY / PRODUCCIÓN
 #
-# Railway puede entregar DATABASE_URL.
+# Utiliza DATABASE_URL referenciada directamente desde
+# el servicio PostgreSQL de Railway.
 #
-# También soportamos directamente las variables:
+# DESARROLLO
 #
-# MYSQLHOST
-# MYSQLPORT
-# MYSQLDATABASE
-# MYSQLUSER
-# MYSQLPASSWORD
+# Si no existe DATABASE_URL:
 #
-# DESARROLLO:
+# 1. Intenta utilizar MySQL si existen sus variables.
+# 2. Si DEBUG=True y tampoco existe MySQL, utiliza SQLite.
 #
-# Si no existe ninguna configuración MySQL,
-# utilizamos SQLite.
 # =============================================================================
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "",
 ).strip()
+
 
 MYSQLHOST = os.getenv(
     "MYSQLHOST",
@@ -358,15 +344,24 @@ MYSQLPASSWORD = os.getenv(
 )
 
 
+# -------------------------------------------------------------------------
+# POSTGRESQL - RAILWAY
+# -------------------------------------------------------------------------
+
 if DATABASE_URL:
 
     DATABASES = {
-        "default": env.db_url(
-            "DATABASE_URL",
+        "default": dj_database_url.parse(
+            DATABASE_URL,
             conn_max_age=600,
+            conn_health_checks=True,
         )
     }
 
+
+# -------------------------------------------------------------------------
+# MYSQL - OPCIONAL PARA DESARROLLO
+# -------------------------------------------------------------------------
 
 elif (
     MYSQLHOST
@@ -376,6 +371,7 @@ elif (
 
     DATABASES = {
         "default": {
+
             "ENGINE": (
                 "django.db.backends.mysql"
             ),
@@ -399,15 +395,17 @@ elif (
     }
 
 
+# -------------------------------------------------------------------------
+# SQLITE - DESARROLLO
+# -------------------------------------------------------------------------
+
 else:
 
     if not DEBUG:
         raise RuntimeError(
             (
                 "No existe una base de datos configurada. "
-                "Configura DATABASE_URL o las variables "
-                "MYSQLHOST, MYSQLDATABASE, MYSQLUSER y "
-                "MYSQLPASSWORD."
+                "En producción configura DATABASE_URL."
             )
         )
 
@@ -517,10 +515,6 @@ STATICFILES_DIRS = (
 # =============================================================================
 # WHITENOISE
 # =============================================================================
-#
-# Permite que Gunicorn/Django sirvan correctamente
-# CSS, JS e imágenes estáticas en Railway.
-# =============================================================================
 
 STORAGES = {
 
@@ -542,20 +536,6 @@ STORAGES = {
 
 # =============================================================================
 # ARCHIVOS SUBIDOS
-# =============================================================================
-#
-# IMPORTANTE:
-#
-# El disco normal de Railway es efímero.
-#
-# Para imágenes subidas desde el panel de administración
-# deberás posteriormente utilizar:
-#
-# - Railway Volume;
-# - Cloudinary;
-# - S3;
-# - otro almacenamiento persistente.
-#
 # =============================================================================
 
 MEDIA_URL = "/media/"
@@ -607,9 +587,9 @@ MERCADOPAGO_WEBHOOK_SECRET = os.getenv(
 ).strip()
 
 
-# -------------------------------------------------------------------------
+# =============================================================================
 # URL PÚBLICA
-# -------------------------------------------------------------------------
+# =============================================================================
 
 if not SITE_URL:
 
@@ -629,17 +609,9 @@ if not SITE_URL:
 SITE_URL = SITE_URL.rstrip("/")
 
 
-# -------------------------------------------------------------------------
+# =============================================================================
 # WEBHOOK MERCADO PAGO
-# -------------------------------------------------------------------------
-#
-# ESTE ES EL WEBHOOK ACTUAL:
-#
-# /webhooks/mercadopago/
-#
-# El webhook antiguo /mercadopago/webhook/
-# ya fue eliminado.
-# -------------------------------------------------------------------------
+# =============================================================================
 
 MERCADOPAGO_NOTIFICATION_URL = os.getenv(
     "MERCADOPAGO_NOTIFICATION_URL",
@@ -677,18 +649,14 @@ NUBOX_COMPANY_API_KEY = env(
 )
 
 
-# Boleta electrónica afecta.
 NUBOX_BOLETA_LEGAL_CODE = env(
     "NUBOX_BOLETA_LEGAL_CODE",
     default="39",
 )
 
 
-# Venta normal.
 NUBOX_SALE_TYPE_ID = 1
 
-
-# Contado.
 NUBOX_PAYMENT_FORM_ID = 1
 
 
@@ -703,12 +671,33 @@ NUBOX_COMUNA_CODES = {
     #
     # "Santiago": "13101",
     # "Providencia": "13123",
+    # "Buin": "13402",
+
 }
 
 
 # =============================================================================
-# CORREO
+# CORREO - GOOGLE WORKSPACE
 # =============================================================================
+#
+# CUENTA SMTP PRINCIPAL:
+#
+# contacto@audex.cl
+#
+# Esta cuenta autentica contra Google.
+#
+# Los demás correos son alias:
+#
+# ventas@audex.cl
+# soporte@audex.cl
+# no-reply@audex.cl
+#
+# =============================================================================
+
+
+# -------------------------------------------------------------------------
+# BACKEND
+# -------------------------------------------------------------------------
 
 if DEBUG:
 
@@ -731,10 +720,15 @@ else:
     )
 
 
+# -------------------------------------------------------------------------
+# GOOGLE SMTP
+# -------------------------------------------------------------------------
+
 EMAIL_HOST = os.getenv(
     "EMAIL_HOST",
-    "",
+    "smtp.gmail.com",
 ).strip()
+
 
 EMAIL_PORT = int(
     os.getenv(
@@ -743,21 +737,12 @@ EMAIL_PORT = int(
     )
 )
 
-EMAIL_HOST_USER = os.getenv(
-    "EMAIL_HOST_USER",
-    "",
-).strip()
-
-EMAIL_HOST_PASSWORD = os.getenv(
-    "EMAIL_HOST_PASSWORD",
-    "",
-).strip()
-
 
 EMAIL_USE_TLS = env_bool(
     "EMAIL_USE_TLS",
     True,
 )
+
 
 EMAIL_USE_SSL = env_bool(
     "EMAIL_USE_SSL",
@@ -768,24 +753,69 @@ EMAIL_USE_SSL = env_bool(
 EMAIL_TIMEOUT = int(
     os.getenv(
         "EMAIL_TIMEOUT",
-        "20",
+        "30",
     )
 )
 
 
-DEFAULT_FROM_EMAIL = (
-    os.getenv(
-        "DEFAULT_FROM_EMAIL",
-        "",
-    ).strip()
-    or EMAIL_HOST_USER
-)
+# -------------------------------------------------------------------------
+# AUTENTICACIÓN SMTP
+# -------------------------------------------------------------------------
+
+EMAIL_HOST_USER = os.getenv(
+    "EMAIL_HOST_USER",
+    "contacto@audex.cl",
+).strip()
+
+
+EMAIL_HOST_PASSWORD = os.getenv(
+    "EMAIL_HOST_PASSWORD",
+    "",
+).strip()
+
+
+# -------------------------------------------------------------------------
+# DIRECCIONES AUDEX
+# -------------------------------------------------------------------------
+
+EMAIL_CONTACTO = os.getenv(
+    "EMAIL_CONTACTO",
+    "contacto@audex.cl",
+).strip()
+
+
+EMAIL_VENTAS = os.getenv(
+    "EMAIL_VENTAS",
+    "ventas@audex.cl",
+).strip()
+
+
+EMAIL_SOPORTE = os.getenv(
+    "EMAIL_SOPORTE",
+    "soporte@audex.cl",
+).strip()
+
+
+EMAIL_NO_REPLY = os.getenv(
+    "EMAIL_NO_REPLY",
+    "no-reply@audex.cl",
+).strip()
+
+
+# -------------------------------------------------------------------------
+# REMITENTE POR DEFECTO
+# -------------------------------------------------------------------------
+
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    f"Audex <{EMAIL_NO_REPLY}>",
+).strip()
 
 
 SERVER_EMAIL = os.getenv(
     "SERVER_EMAIL",
-    DEFAULT_FROM_EMAIL,
-)
+    f"Audex <{EMAIL_NO_REPLY}>",
+).strip()
 
 
 # =============================================================================
@@ -923,7 +953,6 @@ SESSION_ENGINE = (
 )
 
 
-# 30 días.
 SESSION_COOKIE_AGE = (
     60 * 60 * 24 * 30
 )
@@ -947,28 +976,14 @@ SESSION_COOKIE_SAMESITE = "Lax"
 
 if not DEBUG:
 
-    # ---------------------------------------------------------------------
-    # HTTPS
-    # ---------------------------------------------------------------------
-
     SECURE_SSL_REDIRECT = env_bool(
         "SECURE_SSL_REDIRECT",
         True,
     )
 
-
-    # ---------------------------------------------------------------------
-    # COOKIES
-    # ---------------------------------------------------------------------
-
     SESSION_COOKIE_SECURE = True
 
     CSRF_COOKIE_SECURE = True
-
-
-    # ---------------------------------------------------------------------
-    # HSTS
-    # ---------------------------------------------------------------------
 
     SECURE_HSTS_SECONDS = int(
         os.getenv(
@@ -980,16 +995,11 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = (
         env_bool(
             "SECURE_HSTS_INCLUDE_SUBDOMAINS",
-            False,
+            True,
         )
     )
 
     SECURE_HSTS_PRELOAD = False
-
-
-    # ---------------------------------------------------------------------
-    # SECURITY HEADERS
-    # ---------------------------------------------------------------------
 
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -1018,20 +1028,3 @@ else:
 DEFAULT_AUTO_FIELD = (
     "django.db.models.BigAutoField"
 )
-
-# ============================================================
-# SEGURIDAD
-# ============================================================
-
-SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-    SECURE_HSTS_SECONDS = 3600
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
-    SECURE_CONTENT_TYPE_NOSNIFF = True
