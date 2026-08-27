@@ -972,7 +972,7 @@ def ofertas(request):
             or 0
         )
 
-        if porcentaje <= 15:
+        if porcentaje <= 30:
             continue
 
         producto.porcentaje_oferta = (
