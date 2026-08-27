@@ -1,3 +1,5 @@
+import logging
+
 from dataclasses import dataclass
 from decimal import Decimal
 from functools import partial
@@ -13,6 +15,9 @@ from core.services.descuentos import *
 from core.services.nubox import (
     emitir_boleta_nubox_por_pedido,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -345,9 +350,6 @@ def descontar_stock_pedido(
 
     items = (
         pedido.items
-        .select_related(
-            "producto"
-        )
         .select_for_update()
         .all()
     )
@@ -358,11 +360,22 @@ def descontar_stock_pedido(
 
     for item in items:
 
-        producto = (
-            item.producto
+        # ---------------------------------------------------------------------
+        # Usamos producto_id directamente.
+        #
+        # No hacemos select_related("producto") junto con select_for_update(),
+        # porque si la relación fuera nullable PostgreSQL podría intentar
+        # aplicar FOR UPDATE sobre el lado nullable de un OUTER JOIN.
+        # El producto se bloquea explícitamente más abajo.
+        # ---------------------------------------------------------------------
+
+        producto_id = getattr(
+            item,
+            "producto_id",
+            None,
         )
 
-        if producto is None:
+        if not producto_id:
             continue
 
         cantidad = int(
@@ -381,7 +394,7 @@ def descontar_stock_pedido(
             Producto.objects
             .select_for_update()
             .get(
-                pk=producto.pk
+                pk=producto_id
             )
         )
 
@@ -473,9 +486,6 @@ def confirmar_codigo_descuento_pedido(
         uso = (
             UsoCodigoDescuento.objects
             .select_for_update()
-            .select_related(
-                "codigo"
-            )
             .get(
                 pedido=pedido
             )
@@ -568,9 +578,22 @@ def confirmar_codigo_descuento_pedido(
     # CÓDIGO PERSONAL / FIDELIDAD
     # =========================================================================
 
-    codigo = (
-        uso.codigo
+    codigo_id = getattr(
+        uso,
+        "codigo_id",
+        None,
     )
+
+    codigo = None
+
+    if codigo_id:
+        codigo = (
+            CodigoDescuento.objects
+            .select_for_update()
+            .get(
+                pk=codigo_id
+            )
+        )
 
     if (
         codigo
@@ -683,9 +706,6 @@ def marcar_pedido_como_pagado(
             pedido = (
                 Pedido.objects
                 .select_for_update()
-                .select_related(
-                    "usuario",
-                )
                 .get(
                     pk=pedido_id,
                 )
