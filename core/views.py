@@ -118,6 +118,8 @@ class AdministradorProductosMixin(UserPassesTestMixin):
 def inicio(request):
     return render(request, "core/inicio.html")
 
+
+
 @ensure_csrf_cookie
 def productos(request):
     productos_queryset = (
@@ -129,15 +131,32 @@ def productos(request):
         .select_related("categoria")
     )
 
-    categorias = Categoria.objects.filter(
-        activa=True,
-        productos__activo=True,
-    ).distinct()
+    categorias = (
+        Categoria.objects
+        .filter(
+            activa=True,
+            productos__activo=True,
+        )
+        .distinct()
+        .order_by(
+            "orden",
+            "nombre",
+        )
+    )
 
     busqueda = request.GET.get("q", "").strip()
-    categoria_slug = request.GET.get("categoria", "").strip()
-    orden = request.GET.get("orden", "destacados")
+    categoria_slug = request.GET.get(
+        "categoria",
+        "",
+    ).strip()
+    orden = request.GET.get(
+        "orden",
+        "destacados",
+    )
 
+    # =========================================================
+    # BÚSQUEDA
+    # =========================================================
     if busqueda:
         productos_queryset = productos_queryset.filter(
             Q(nombre__icontains=busqueda)
@@ -148,42 +167,81 @@ def productos(request):
             | Q(caracteristica_3__icontains=busqueda)
         )
 
+    # =========================================================
+    # FILTRO POR CATEGORÍA
+    # =========================================================
     if categoria_slug:
-        productos_queryset = productos_queryset.filter(
-            categoria__slug=categoria_slug
+        productos_queryset = (
+            productos_queryset.filter(
+                categoria__slug=categoria_slug
+            )
         )
 
-    productos_queryset = productos_queryset.annotate(
-        precio_orden=Case(
-            When(
-                precio_oferta__isnull=False,
-                precio_oferta__lt=F("precio"),
-                then=F("precio_oferta"),
-            ),
-            default=F("precio"),
-            output_field=DecimalField(
-                max_digits=12,
-                decimal_places=0,
-            ),
+    # =========================================================
+    # PRECIO REAL PARA ORDENAMIENTO
+    # =========================================================
+    productos_queryset = (
+        productos_queryset.annotate(
+            precio_orden=Case(
+                When(
+                    precio_oferta__isnull=False,
+                    precio_oferta__lt=F("precio"),
+                    then=F("precio_oferta"),
+                ),
+                default=F("precio"),
+                output_field=DecimalField(
+                    max_digits=12,
+                    decimal_places=0,
+                ),
+            )
         )
     )
 
+    # =========================================================
+    # ORDENAMIENTO
+    # =========================================================
     if orden == "menor":
-        productos_queryset = productos_queryset.order_by(
-            "precio_orden"
-        )
-    elif orden == "mayor":
-        productos_queryset = productos_queryset.order_by(
-            "-precio_orden"
-        )
-    elif orden == "nombre":
-        productos_queryset = productos_queryset.order_by("nombre")
-    else:
-        productos_queryset = productos_queryset.order_by(
-            "-destacado",
-            "-creado",
+        productos_queryset = (
+            productos_queryset.order_by(
+                "categoria__orden",
+                "categoria__nombre",
+                "precio_orden",
+                "nombre",
+            )
         )
 
+    elif orden == "mayor":
+        productos_queryset = (
+            productos_queryset.order_by(
+                "categoria__orden",
+                "categoria__nombre",
+                "-precio_orden",
+                "nombre",
+            )
+        )
+
+    elif orden == "nombre":
+        productos_queryset = (
+            productos_queryset.order_by(
+                "categoria__orden",
+                "categoria__nombre",
+                "nombre",
+            )
+        )
+
+    else:
+        productos_queryset = (
+            productos_queryset.order_by(
+                "categoria__orden",
+                "categoria__nombre",
+                "-destacado",
+                "-creado",
+            )
+        )
+
+    # =========================================================
+    # CONTEXTO
+    # =========================================================
     contexto = {
         "productos": productos_queryset,
         "categorias": categorias,
@@ -191,8 +249,10 @@ def productos(request):
         "busqueda": busqueda,
         "categoria_actual": categoria_slug,
         "orden_actual": orden,
-        "puede_administrar": es_administrador_productos(
-            request.user
+        "puede_administrar": (
+            es_administrador_productos(
+                request.user
+            )
         ),
     }
 
@@ -201,6 +261,7 @@ def productos(request):
         "core/productos.html",
         contexto,
     )
+
 
 @ensure_csrf_cookie
 def producto_detalle(request, slug):
