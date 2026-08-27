@@ -7884,11 +7884,11 @@ def mercadopago_webhook(
     # =====================================================================
 
     resource_id = str(
-        payload_data.get(
-            "id"
-        )
-        or request.GET.get(
+        request.GET.get(
             "data.id"
+        )
+        or payload_data.get(
+            "id"
         )
         or request.GET.get(
             "id"
@@ -8025,14 +8025,11 @@ def mercadopago_webhook(
     # =====================================================================
 
     try:
-
         firma_valida = (
             validar_firma_mercado_pago(
-                request,
-                resource_id,
+                request
             )
         )
-
     except Exception as error:
 
         logger.exception(
