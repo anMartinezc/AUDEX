@@ -7772,41 +7772,79 @@ def descontar_stock_pedido(
 
 
 
-
 @csrf_exempt
 @require_POST
 def mercadopago_webhook(
     request,
 ):
     """
-    Webhook principal y único de Mercado Pago.
+    Webhook principal de Mercado Pago.
 
-    Seguridad:
+    Flujo:
 
-    1. Solo acepta POST.
-    2. Lee y valida el JSON recibido.
-    3. Solo procesa notificaciones payment.
-    4. Ignora merchant_order para evitar duplicados.
-    5. Exige resource_id.
-    6. Valida la firma enviada por Mercado Pago.
-    7. NO confía en el contenido económico del webhook.
-    8. Consulta el pago directamente en Mercado Pago.
-    9. Solo procesa pagos realmente approved.
-    10. confirmar_pago_mercadopago() vuelve a validar:
-        - payment_id;
-        - external_reference;
-        - monto;
-        - moneda;
-        - idempotencia;
-        - stock;
-        - estado del pedido.
+    1. Recibe la notificación.
+    2. Identifica el tipo de evento.
+    3. Ignora merchant_order.
+    4. Para payment exige data.id desde query params.
+    5. Valida la firma oficial de Mercado Pago.
+    6. Consulta el pago directamente mediante la API.
+    7. Nunca confía en monto/status recibidos en el webhook.
+    8. Solo confirma pagos cuyo estado real sea approved.
+    9. confirmar_pago_mercadopago() vuelve a validar
+       referencia, monto, moneda e idempotencia.
     """
 
-    # =====================================================================
+    # =========================================================================
+    # QUERY PARAMETER FIRMADO
+    # =========================================================================
+    #
+    # Mercado Pago utiliza específicamente data.id del query string
+    # durante la validación de la firma.
+    #
+    # Ejemplo:
+    #
+    # /webhooks/mercadopago/?data.id=123456&type=payment
+    #
+    # =========================================================================
+
+    data_id_query = str(
+        request.GET.get(
+            "data.id",
+            "",
+        )
+        or ""
+    ).strip()
+
+    # =========================================================================
+    # HEADERS DE SEGURIDAD
+    # =========================================================================
+
+    tiene_signature = bool(
+        str(
+            request.headers.get(
+                "x-signature",
+                "",
+            )
+            or ""
+        ).strip()
+    )
+
+    tiene_request_id = bool(
+        str(
+            request.headers.get(
+                "x-request-id",
+                "",
+            )
+            or ""
+        ).strip()
+    )
+
+    # =========================================================================
     # LEER JSON
-    # =====================================================================
+    # =========================================================================
 
     try:
+
         payload = json.loads(
             request.body
             or b"{}"
@@ -7817,11 +7855,14 @@ def mercadopago_webhook(
         UnicodeDecodeError,
         TypeError,
     ):
+
         logger.warning(
             (
                 "Webhook Mercado Pago "
-                "con JSON inválido."
-            )
+                "con JSON inválido. "
+                "data.id=%s"
+            ),
+            data_id_query or "vacío",
         )
 
         return HttpResponse(
@@ -7829,14 +7870,15 @@ def mercadopago_webhook(
             status=400,
         )
 
-    # =====================================================================
-    # VALIDAR ESTRUCTURA
-    # =====================================================================
+    # =========================================================================
+    # VALIDAR PAYLOAD
+    # =========================================================================
 
     if not isinstance(
         payload,
         dict,
     ):
+
         logger.warning(
             (
                 "Webhook Mercado Pago "
@@ -7848,6 +7890,10 @@ def mercadopago_webhook(
             "invalid payload",
             status=400,
         )
+
+    # =========================================================================
+    # DATA DEL BODY
+    # =========================================================================
 
     payload_data = (
         payload.get(
@@ -7862,9 +7908,17 @@ def mercadopago_webhook(
     ):
         payload_data = {}
 
-    # =====================================================================
+    data_id_body = str(
+        payload_data.get(
+            "id",
+            "",
+        )
+        or ""
+    ).strip()
+
+    # =========================================================================
     # TIPO DE NOTIFICACIÓN
-    # =====================================================================
+    # =========================================================================
 
     topic = str(
         payload.get(
@@ -7879,26 +7933,9 @@ def mercadopago_webhook(
         or ""
     ).strip().lower()
 
-    # =====================================================================
-    # RESOURCE ID
-    # =====================================================================
-
-    resource_id = str(
-        request.GET.get(
-            "data.id"
-        )
-        or payload_data.get(
-            "id"
-        )
-        or request.GET.get(
-            "id"
-        )
-        or ""
-    ).strip()
-
-    # =====================================================================
+    # =========================================================================
     # ACTION
-    # =====================================================================
+    # =========================================================================
 
     action = str(
         payload.get(
@@ -7907,28 +7944,56 @@ def mercadopago_webhook(
         or ""
     ).strip().lower()
 
+    # =========================================================================
+    # LIVE MODE
+    # =========================================================================
+
+    live_mode = payload.get(
+        "live_mode"
+    )
+
+    # =========================================================================
+    # LOG DE DIAGNÓSTICO SEGURO
+    # =========================================================================
+    #
+    # No mostramos:
+    #
+    # - secret
+    # - firma recibida
+    # - firma calculada
+    #
+    # =========================================================================
+
     logger.info(
         (
             "Webhook Mercado Pago recibido. "
             "Topic=%s "
             "Action=%s "
-            "Resource ID=%s"
+            "data_id_query=%s "
+            "data_id_body=%s "
+            "x_signature=%s "
+            "x_request_id=%s "
+            "live_mode=%s."
         ),
         topic or "vacío",
         action or "vacía",
-        resource_id or "vacío",
+        data_id_query or "vacío",
+        data_id_body or "vacío",
+        tiene_signature,
+        tiene_request_id,
+        live_mode,
     )
 
-    # =====================================================================
-    # VALIDAR TOPIC
-    # =====================================================================
+    # =========================================================================
+    # SIN TOPIC
+    # =========================================================================
 
     if not topic:
 
         logger.warning(
             (
                 "Webhook Mercado Pago "
-                "ignorado: falta topic/type."
+                "ignorado: falta type/topic."
             )
         )
 
@@ -7937,15 +8002,23 @@ def mercadopago_webhook(
             status=200,
         )
 
-    # =====================================================================
+    # =========================================================================
     # IGNORAR MERCHANT ORDER
-    # =====================================================================
+    # =========================================================================
     #
-    # Mercado Pago puede generar también merchant_order.
+    # AUDEX procesa únicamente payment.
     #
-    # AUDEX trabaja solamente con payment para evitar que
-    # el mismo pago sea procesado por dos tipos de evento.
-    # =====================================================================
+    # Merchant order no modifica:
+    #
+    # - pedido
+    # - stock
+    # - descuentos
+    # - correos
+    # - Nubox
+    #
+    # Por eso podemos responder 200 inmediatamente.
+    #
+    # =========================================================================
 
     if topic in {
         "merchant_order",
@@ -7956,9 +8029,14 @@ def mercadopago_webhook(
         logger.info(
             (
                 "Merchant order Mercado Pago "
-                "ignorada. Resource ID=%s."
+                "ignorada correctamente. "
+                "Resource ID=%s."
             ),
-            resource_id or "vacío",
+            (
+                data_id_query
+                or data_id_body
+                or "vacío"
+            ),
         )
 
         return HttpResponse(
@@ -7966,9 +8044,9 @@ def mercadopago_webhook(
             status=200,
         )
 
-    # =====================================================================
-    # IGNORAR EVENTOS NO PAYMENT
-    # =====================================================================
+    # =========================================================================
+    # IGNORAR EVENTOS QUE NO SEAN PAYMENT
+    # =========================================================================
 
     if topic not in {
         "payment",
@@ -7978,11 +8056,9 @@ def mercadopago_webhook(
         logger.info(
             (
                 "Notificación Mercado Pago "
-                "ignorada. "
-                "Topic=%s Resource ID=%s."
+                "ignorada. Topic=%s."
             ),
             topic,
-            resource_id or "vacío",
         )
 
         return HttpResponse(
@@ -7990,55 +8066,124 @@ def mercadopago_webhook(
             status=200,
         )
 
-    # =====================================================================
-    # VALIDAR RESOURCE ID
-    # =====================================================================
+    # =========================================================================
+    # PAYMENT DEBE TRAER DATA.ID EN QUERY PARAMETER
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # Para comprobar x-signature utilizamos exclusivamente
+    # el data.id recibido en request.GET.
+    #
+    # =========================================================================
 
-    if not resource_id:
+    if not data_id_query:
 
         logger.warning(
             (
-                "Webhook Mercado Pago "
-                "ignorado: falta resource_id. "
-                "Topic=%s."
-            ),
-            topic,
+                "Webhook payment Mercado Pago "
+                "sin query parameter data.id."
+            )
         )
 
         return HttpResponse(
-            "ignored",
-            status=200,
+            "missing data.id",
+            status=400,
         )
 
-    # =====================================================================
-    # VALIDAR FIRMA DE MERCADO PAGO
-    # =====================================================================
+    # =========================================================================
+    # COMPROBAR CONSISTENCIA QUERY / BODY
+    # =========================================================================
+
+    if (
+        data_id_body
+        and data_id_query
+        != data_id_body
+    ):
+
+        logger.error(
+            (
+                "Webhook Mercado Pago inconsistente. "
+                "data.id query=%s "
+                "data.id body=%s."
+            ),
+            data_id_query,
+            data_id_body,
+        )
+
+        return HttpResponse(
+            "resource mismatch",
+            status=400,
+        )
+
+    # =========================================================================
+    # VALIDAR HEADERS
+    # =========================================================================
+
+    if not tiene_signature:
+
+        logger.warning(
+            (
+                "Webhook payment Mercado Pago "
+                "sin header x-signature. "
+                "Resource ID=%s."
+            ),
+            data_id_query,
+        )
+
+        return HttpResponse(
+            "missing signature",
+            status=401,
+        )
+
+    if not tiene_request_id:
+
+        logger.warning(
+            (
+                "Webhook payment Mercado Pago "
+                "sin header x-request-id. "
+                "Resource ID=%s."
+            ),
+            data_id_query,
+        )
+
+        return HttpResponse(
+            "missing request id",
+            status=401,
+        )
+
+    # =========================================================================
+    # VALIDAR FIRMA
+    # =========================================================================
     #
-    # MUY IMPORTANTE:
+    # validar_firma_mercado_pago(request)
+    # debe utilizar:
     #
-    # csrf_exempt es necesario porque Mercado Pago no puede
-    # conocer el token CSRF de Django.
+    # - request.headers["x-signature"]
+    # - request.headers["x-request-id"]
+    # - request.GET["data.id"]
+    # - settings.MERCADOPAGO_WEBHOOK_SECRET
     #
-    # Por eso la autenticidad del webhook se comprueba mediante
-    # la firma enviada por Mercado Pago.
-    #
-    # =====================================================================
+    # =========================================================================
 
     try:
+
         firma_valida = (
             validar_firma_mercado_pago(
                 request
             )
         )
+
     except Exception as error:
 
         logger.exception(
             (
-                "Error validando firma "
-                "Mercado Pago. "
-                "Resource ID=%s. Error=%s"
+                "Error inesperado validando "
+                "firma Mercado Pago. "
+                "Resource ID=%s. "
+                "Error=%s"
             ),
-            resource_id,
+            data_id_query,
             error,
         )
 
@@ -8046,6 +8191,10 @@ def mercadopago_webhook(
             "signature error",
             status=500,
         )
+
+    # =========================================================================
+    # FIRMA INVÁLIDA
+    # =========================================================================
 
     if not firma_valida:
 
@@ -8055,33 +8204,43 @@ def mercadopago_webhook(
                 "rechazado por firma inválida. "
                 "Resource ID=%s."
             ),
-            resource_id,
+            data_id_query,
         )
 
-        return JsonResponse(
-            {
-                "error": (
-                    "Firma inválida"
-                )
-            },
+        return HttpResponse(
+            "invalid signature",
             status=401,
         )
 
-    # =====================================================================
-    # CONSULTAR PAGO REAL EN MERCADO PAGO
-    # =====================================================================
+    # =========================================================================
+    # FIRMA CORRECTA
+    # =========================================================================
+
+    logger.info(
+        (
+            "Firma Mercado Pago "
+            "validada correctamente. "
+            "Resource ID=%s."
+        ),
+        data_id_query,
+    )
+
+    # =========================================================================
+    # RESOURCE ID DEFINITIVO
+    # =========================================================================
     #
-    # NO utilizamos:
+    # Después de validar la firma, data.id firmado pasa a ser
+    # el identificador autorizado del recurso.
     #
-    # - monto recibido por webhook;
-    # - status recibido por webhook;
-    # - external_reference recibida por webhook.
-    #
-    # El webhook solamente nos entrega el payment_id.
-    #
-    # La información económica real se consulta mediante
-    # la API de Mercado Pago.
-    # =====================================================================
+    # =========================================================================
+
+    resource_id = (
+        data_id_query
+    )
+
+    # =========================================================================
+    # CONSULTAR PAGO DIRECTAMENTE A MERCADO PAGO
+    # =========================================================================
 
     try:
 
@@ -8089,10 +8248,15 @@ def mercadopago_webhook(
             resource_id
         )
 
+        # =====================================================================
+        # VALIDAR RESPUESTA
+        # =====================================================================
+
         if not isinstance(
             pago,
             dict,
         ):
+
             raise MercadoPagoError(
                 (
                     "Mercado Pago devolvió "
@@ -8100,16 +8264,20 @@ def mercadopago_webhook(
                 )
             )
 
-        # =================================================================
-        # DATOS REALES DEL PROVEEDOR
-        # =================================================================
+        # =====================================================================
+        # PAYMENT ID REAL
+        # =====================================================================
 
         payment_id = str(
             pago.get(
                 "id"
             )
-            or resource_id
+            or ""
         ).strip()
+
+        # =====================================================================
+        # STATUS REAL
+        # =====================================================================
 
         estado_pago = str(
             pago.get(
@@ -8118,6 +8286,10 @@ def mercadopago_webhook(
             or ""
         ).strip().lower()
 
+        # =====================================================================
+        # REFERENCIA REAL
+        # =====================================================================
+
         referencia_externa = str(
             pago.get(
                 "external_reference"
@@ -8125,22 +8297,26 @@ def mercadopago_webhook(
             or ""
         ).strip()
 
+        # =====================================================================
+        # LOG
+        # =====================================================================
+
         logger.info(
             (
-                "Pago Mercado Pago "
-                "consultado desde webhook. "
+                "Pago Mercado Pago consultado "
+                "desde webhook. "
                 "Payment ID=%s "
                 "Status=%s "
                 "Referencia=%s."
             ),
-            payment_id,
+            payment_id or "vacío",
             estado_pago or "vacío",
             referencia_externa or "vacía",
         )
 
-        # =================================================================
+        # =====================================================================
         # PAYMENT ID
-        # =================================================================
+        # =====================================================================
 
         if not payment_id:
 
@@ -8151,9 +8327,28 @@ def mercadopago_webhook(
                 )
             )
 
-        # =================================================================
+        # =====================================================================
+        # PAYMENT ID DEBE COINCIDIR CON EL RECURSO FIRMADO
+        # =====================================================================
+
+        if (
+            payment_id
+            != resource_id
+        ):
+
+            raise MercadoPagoError(
+                (
+                    "El payment_id consultado "
+                    "no coincide con el recurso "
+                    "firmado por Mercado Pago. "
+                    f"Firmado={resource_id}. "
+                    f"Consultado={payment_id}."
+                )
+            )
+
+        # =====================================================================
         # EXTERNAL REFERENCE
-        # =================================================================
+        # =====================================================================
 
         if not referencia_externa:
 
@@ -8165,19 +8360,26 @@ def mercadopago_webhook(
                 )
             )
 
-        # =================================================================
-        # SOLO APROBADOS
-        # =================================================================
+        # =====================================================================
+        # SOLO CONFIRMAMOS APPROVED
+        # =====================================================================
         #
-        # Pending, rejected, cancelled, etc. no pueden:
+        # El webhook puede llegar también cuando el pago está:
         #
-        # - marcar pedido como pagado;
+        # pending
+        # rejected
+        # cancelled
+        # refunded
+        # etc.
+        #
+        # Esos estados no deben:
+        #
         # - descontar stock;
-        # - confirmar descuento;
+        # - consumir descuentos;
         # - generar boleta;
-        # - enviar correo.
+        # - enviar correo de aprobación.
         #
-        # =================================================================
+        # =========================================================================
 
         if (
             estado_pago
@@ -8187,10 +8389,10 @@ def mercadopago_webhook(
             logger.info(
                 (
                     "Pago Mercado Pago "
-                    "no aprobado. "
+                    "aún no aprobado. "
                     "Payment ID=%s "
                     "Status=%s. "
-                    "No se modificará el pedido."
+                    "Webhook reconocido."
                 ),
                 payment_id,
                 estado_pago or "vacío",
@@ -8201,32 +8403,19 @@ def mercadopago_webhook(
                 status=200,
             )
 
-        # =================================================================
-        # CONFIRMACIÓN SEGURA
-        # =================================================================
-        #
-        # Esta función vuelve a comprobar:
-        #
-        # - pago dict;
-        # - payment_id;
-        # - status == approved;
-        # - external_reference;
-        # - pedido existente;
-        # - transaction_amount;
-        # - currency_id == CLP;
-        # - payment_id duplicado;
-        # - idempotencia.
-        #
-        # Después delega en marcar_pedido_como_pagado(),
-        # que controla stock, descuento, correo y boleta.
-        #
-        # =================================================================
+        # =====================================================================
+        # CONFIRMACIÓN DEFINITIVA
+        # =====================================================================
 
         pedido = (
             confirmar_pago_mercadopago(
                 pago
             )
         )
+
+        # =====================================================================
+        # LOG FINAL
+        # =====================================================================
 
         logger.info(
             (
@@ -8243,31 +8432,30 @@ def mercadopago_webhook(
             payment_id,
         )
 
-    # =====================================================================
+    # =========================================================================
     # ERROR TEMPORAL DE BASE DE DATOS
-    # =====================================================================
+    # =========================================================================
 
     except OperationalError as error:
 
         logger.exception(
             (
-                "Base de datos temporalmente "
-                "bloqueada procesando pago %s: %s"
+                "Error temporal de base de datos "
+                "procesando pago Mercado Pago %s: %s"
             ),
             resource_id,
             error,
         )
 
-        # HTTP 500 permite que Mercado Pago
-        # vuelva a intentar posteriormente.
+        # Mercado Pago podrá volver a intentarlo.
         return HttpResponse(
-            "error",
+            "temporary error",
             status=500,
         )
 
-    # =====================================================================
-    # ERROR CONSULTANDO MERCADO PAGO
-    # =====================================================================
+    # =========================================================================
+    # ERROR API MERCADO PAGO
+    # =========================================================================
 
     except MercadoPagoError as error:
 
@@ -8281,13 +8469,13 @@ def mercadopago_webhook(
         )
 
         return HttpResponse(
-            "error",
+            "mercadopago error",
             status=500,
         )
 
-    # =====================================================================
-    # ERROR VALIDANDO / CONFIRMANDO PAGO
-    # =====================================================================
+    # =========================================================================
+    # ERROR DE VALIDACIÓN INTERNA
+    # =========================================================================
 
     except ConfirmacionPagoError as error:
 
@@ -8302,13 +8490,13 @@ def mercadopago_webhook(
         )
 
         return HttpResponse(
-            "error",
+            "confirmation error",
             status=500,
         )
 
-    # =====================================================================
+    # =========================================================================
     # ERROR INESPERADO
-    # =====================================================================
+    # =========================================================================
 
     except Exception as error:
 
@@ -8323,13 +8511,13 @@ def mercadopago_webhook(
         )
 
         return HttpResponse(
-            "error",
+            "internal error",
             status=500,
         )
 
-    # =====================================================================
-    # RESPUESTA CORRECTA
-    # =====================================================================
+    # =========================================================================
+    # RESPUESTA EXITOSA
+    # =========================================================================
 
     return HttpResponse(
         "ok",
