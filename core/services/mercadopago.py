@@ -126,6 +126,51 @@ def _es_url_publica_https(
     )
 
 
+def _obtener_notification_url(
+    *,
+    base_url: str,
+    webhook_path: str,
+) -> str:
+    """
+    Obtiene la URL pública que Mercado Pago utilizará
+    para enviar notificaciones Webhook.
+
+    Prioridad:
+
+    1. MERCADOPAGO_NOTIFICATION_URL configurada en settings / Railway.
+    2. SITE_URL + reverse("core:mercadopago_webhook").
+
+    En producción debe ser una URL HTTPS pública.
+    """
+
+    notification_url = str(
+        getattr(
+            settings,
+            "MERCADOPAGO_NOTIFICATION_URL",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if not notification_url:
+        notification_url = (
+            f"{base_url}"
+            f"{webhook_path}"
+        )
+
+    if not _es_url_publica_https(
+        notification_url
+    ):
+        raise MercadoPagoError(
+            (
+                "MERCADOPAGO_NOTIFICATION_URL debe ser "
+                "una URL pública HTTPS válida."
+            )
+        )
+
+    return notification_url
+
+
 # =============================================================================
 # CALCULAR TOTAL DEL PEDIDO
 # =============================================================================
@@ -560,8 +605,10 @@ def crear_preferencia(
         preference_data[
             "notification_url"
         ] = (
-            f"{base_url}"
-            f"{webhook_path}"
+            _obtener_notification_url(
+                base_url=base_url,
+                webhook_path=webhook_path,
+            )
         )
 
     # =========================================================================
