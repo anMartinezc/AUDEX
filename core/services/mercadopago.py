@@ -292,7 +292,6 @@ def _crear_descripcion_pedido(
 # CREAR PREFERENCIA
 # =============================================================================
 
-
 def crear_preferencia(
     *,
     request,
@@ -316,6 +315,27 @@ def crear_preferencia(
     - redondeos.
 
     pedido.total es la fuente definitiva.
+
+    WEBHOOKS:
+
+    Las notificaciones Webhook se configuran
+    directamente en:
+
+        Mercado Pago Developers
+        -> Tus integraciones
+        -> Audex
+        -> Webhooks
+
+    URL:
+
+        https://audex.cl/webhooks/mercadopago/
+
+    Por esta razón NO enviamos notification_url
+    al crear cada preferencia.
+
+    Así evitamos que una URL particular de una
+    preferencia tenga prioridad sobre la configuración
+    Webhook de la aplicación.
     """
 
     # =========================================================================
@@ -375,19 +395,7 @@ def crear_preferencia(
     )
 
     # =========================================================================
-    # VALIDACIÓN DE SEGURIDAD
-    # =========================================================================
-    #
-    # Verificamos:
-    #
-    # subtotal
-    # - descuento
-    # + despacho
-    #
-    # contra pedido.total.
-    #
-    # No usamos este cálculo para cobrar.
-    # Solo permite detectar inconsistencias.
+    # VALIDACIÓN ECONÓMICA
     # =========================================================================
 
     total_calculado = (
@@ -415,13 +423,18 @@ def crear_preferencia(
     )
 
     # =========================================================================
-    # ITEM DE MERCADO PAGO
+    # ITEM MERCADO PAGO
     # =========================================================================
     #
-    # Utilizamos UN SOLO ITEM.
+    # Se utiliza un único item cuyo precio corresponde
+    # exactamente al total definitivo del pedido.
     #
-    # Esto garantiza que Mercado Pago cobre exactamente
-    # el mismo total mostrado en tu checkout.
+    # Esto evita diferencias entre:
+    #
+    # productos
+    # descuentos
+    # despacho
+    # total Mercado Pago
     #
     # =========================================================================
 
@@ -461,7 +474,9 @@ def crear_preferencia(
         str,
         Any,
     ] = {
-        "items": items,
+        "items": (
+            items
+        ),
 
         "payer": {
             "name": str(
@@ -487,9 +502,17 @@ def crear_preferencia(
             },
         },
 
+        # =====================================================================
+        # REFERENCIA INTERNA AUDEX
+        # =====================================================================
+
         "external_reference": str(
             pedido.numero
         ),
+
+        # =====================================================================
+        # TEXTO QUE PUEDE APARECER EN EL RESUMEN DEL PAGO
+        # =====================================================================
 
         "statement_descriptor": (
             "AUDEX"
@@ -497,11 +520,6 @@ def crear_preferencia(
 
         # =====================================================================
         # METADATA
-        # =====================================================================
-        #
-        # Guardamos el desglose para poder revisar
-        # posteriormente qué se cobró.
-        #
         # =====================================================================
 
         "metadata": {
@@ -532,13 +550,30 @@ def crear_preferencia(
     }
 
     # =========================================================================
-    # URLS DE RETORNO / WEBHOOK
+    # URLS DE RETORNO
+    # =========================================================================
+    #
+    # Estas URLs solamente controlan dónde vuelve
+    # EL NAVEGADOR DEL CLIENTE.
+    #
+    # No deben confundirse con el Webhook.
+    #
+    # Webhook:
+    #
+    #   Mercado Pago -> servidor AUDEX
+    #
+    # back_urls:
+    #
+    #   navegador Mercado Pago -> navegador AUDEX
+    #
     # =========================================================================
 
     if _es_url_publica_https(
         base_url
     ):
+
         try:
+
             success_path = reverse(
                 "core:mercadopago_retorno_exitoso",
                 kwargs={
@@ -566,18 +601,18 @@ def crear_preferencia(
                 },
             )
 
-            webhook_path = reverse(
-                "core:mercadopago_webhook",
-            )
-
         except NoReverseMatch as error:
+
             raise MercadoPagoError(
                 (
                     "No se encontraron las URLs "
-                    "de retorno o webhook "
-                    "de Mercado Pago."
+                    "de retorno de Mercado Pago."
                 )
             ) from error
+
+        # =====================================================================
+        # BACK URLS
+        # =====================================================================
 
         preference_data[
             "back_urls"
@@ -598,24 +633,48 @@ def crear_preferencia(
             ),
         }
 
-        preference_data[
-            "auto_return"
-        ] = "approved"
+        # =====================================================================
+        # RETORNO AUTOMÁTICO
+        # =====================================================================
+        #
+        # Cuando Mercado Pago aprueba el pago,
+        # devuelve automáticamente al comprador a AUDEX.
+        #
+        # =========================================================================
 
         preference_data[
-            "notification_url"
+            "auto_return"
         ] = (
-            _obtener_notification_url(
-                base_url=base_url,
-                webhook_path=webhook_path,
-            )
+            "approved"
         )
+
+    # =========================================================================
+    # IMPORTANTE
+    # =========================================================================
+    #
+    # NO agregar:
+    #
+    # preference_data["notification_url"]
+    #
+    # El Webhook se configura directamente desde:
+    #
+    # Mercado Pago Developers
+    # -> Tus integraciones
+    # -> Audex
+    # -> Webhooks
+    #
+    # URL:
+    #
+    # https://audex.cl/webhooks/mercadopago/
+    #
+    # =========================================================================
 
     # =========================================================================
     # CREAR PREFERENCIA EN MERCADO PAGO
     # =========================================================================
 
     try:
+
         respuesta = requests.post(
             (
                 f"{_api_url()}"
@@ -634,6 +693,7 @@ def crear_preferencia(
         )
 
     except requests.Timeout as error:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago demoró demasiado "
@@ -642,6 +702,7 @@ def crear_preferencia(
         ) from error
 
     except requests.RequestException as error:
+
         raise MercadoPagoError(
             (
                 "No fue posible conectar "
@@ -650,10 +711,11 @@ def crear_preferencia(
         ) from error
 
     # =========================================================================
-    # ERROR HTTP
+    # VALIDAR HTTP
     # =========================================================================
 
     if not respuesta.ok:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago rechazó "
@@ -665,15 +727,17 @@ def crear_preferencia(
         )
 
     # =========================================================================
-    # JSON
+    # OBTENER JSON
     # =========================================================================
 
     try:
+
         datos = (
             respuesta.json()
         )
 
     except ValueError as error:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago devolvió "
@@ -695,6 +759,7 @@ def crear_preferencia(
     )
 
     if not checkout_url:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago no devolvió "
@@ -703,19 +768,46 @@ def crear_preferencia(
         )
 
     # =========================================================================
+    # PREFERENCE ID
+    # =========================================================================
+
+    preference_id = str(
+        datos.get(
+            "id",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if not preference_id:
+
+        raise MercadoPagoError(
+            (
+                "Mercado Pago no devolvió "
+                "un preference_id."
+            )
+        )
+
+    # =========================================================================
     # GUARDAR PREFERENCE ID
+    # =========================================================================
+    #
+    # Tu flujo de iniciar_pago_mercadopago()
+    # posteriormente también guarda
+    # mercadopago_preference_id.
+    #
+    # Mantenemos compatibilidad por si el modelo
+    # todavía contiene preference_id.
+    #
     # =========================================================================
 
     if hasattr(
         pedido,
         "preference_id",
     ):
+
         pedido.preference_id = (
-            datos.get(
-                "id",
-                "",
-            )
-            or ""
+            preference_id
         )
 
         pedido.save(
@@ -730,10 +822,7 @@ def crear_preferencia(
 
     return {
         "preference_id": (
-            datos.get(
-                "id",
-                "",
-            )
+            preference_id
         ),
 
         "checkout_url": (
@@ -750,8 +839,6 @@ def crear_preferencia(
             datos
         ),
     }
-
-
 # =============================================================================
 # CONSULTAR PAGO
 # =============================================================================
