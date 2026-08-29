@@ -72,7 +72,7 @@
                 </span>
 
 
-                {% if pedido.pagado %}
+                {% if pedido.pago_aprobado %}
 
                     <span class="detalle-admin__pago detalle-admin__pago--ok">
 
@@ -236,7 +236,7 @@
 
                                 <strong class="seguimiento-producto__precio">
 
-                                    ${{ item.total|floatformat:0|intcomma }} CLP
+                                    ${{ item.total_final|default:item.total|floatformat:0|intcomma }} CLP
 
                                 </strong>
 
@@ -293,7 +293,7 @@
                         </div>
 
 
-                        {% if pedido.nubox_emitido %}
+                        {% if pedido.nubox_disponible %}
 
                             <span class="detalle-admin__documento-estado detalle-admin__documento-estado--ok">
 
@@ -303,17 +303,7 @@
 
                             </span>
 
-                        {% elif pedido.nubox_ultimo_error %}
-
-                            <span class="detalle-admin__documento-estado detalle-admin__documento-estado--error">
-
-                                <i class="bi bi-exclamation-triangle-fill"></i>
-
-                                Error
-
-                            </span>
-
-                        {% elif pedido.nubox_document_id %}
+                        {% elif pedido.nubox_en_proceso %}
 
                             <span class="detalle-admin__documento-estado">
 
@@ -328,6 +318,16 @@
                                     Procesando
 
                                 {% endif %}
+
+                            </span>
+
+                        {% elif pedido.nubox_tiene_error %}
+
+                            <span class="detalle-admin__documento-estado detalle-admin__documento-estado--error">
+
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+
+                                Error
 
                             </span>
 
@@ -346,9 +346,9 @@
                     </div>
 
 
-                    {% if pedido.pagado %}
+                    {% if pedido.pago_aprobado %}
 
-                        {% if pedido.nubox_emitido %}
+                        {% if pedido.nubox_disponible %}
 
                             <div class="detalle-admin__boleta">
 
@@ -400,6 +400,39 @@
 
                                     {% endif %}
 
+
+                                    {% if pedido.nubox_emitido_en %}
+
+                                        <small>
+                                            Emitida:
+                                            {{ pedido.nubox_emitido_en|date:"d/m/Y H:i" }}
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
+
+                                        <small>
+
+                                            Códigos territoriales:
+
+                                            {% if pedido.nubox_region_codigo %}
+
+                                                región {{ pedido.nubox_region_codigo }}
+
+                                            {% endif %}
+
+                                            {% if pedido.nubox_comuna_codigo %}
+
+                                                / comuna {{ pedido.nubox_comuna_codigo }}
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    {% endif %}
+
                                 </div>
 
 
@@ -440,45 +473,7 @@
                             </div>
 
 
-                        {% elif pedido.nubox_ultimo_error %}
-
-                            <div class="detalle-admin__boleta-error">
-
-                                <div>
-
-                                    <i class="bi bi-exclamation-triangle"></i>
-
-                                </div>
-
-
-                                <div>
-
-                                    <strong>
-                                        No fue posible emitir la boleta
-                                    </strong>
-
-                                    <p>
-                                        Nubox registró un problema durante
-                                        la emisión de este documento.
-                                    </p>
-
-
-                                    <details>
-
-                                        <summary>
-                                            Ver detalle técnico
-                                        </summary>
-
-                                        <pre>{{ pedido.nubox_ultimo_error }}</pre>
-
-                                    </details>
-
-                                </div>
-
-                            </div>
-
-
-                        {% elif pedido.nubox_document_id %}
+                        {% elif pedido.nubox_en_proceso %}
 
                             <div class="detalle-admin__boleta-pendiente">
 
@@ -498,7 +493,8 @@
                                     <p>
 
                                         Nubox recibió la solicitud de emisión
-                                        y el documento se encuentra procesando.
+                                        y el documento todavía se encuentra
+                                        procesando.
 
                                         {% if pedido.nubox_estado %}
 
@@ -508,6 +504,119 @@
                                         {% endif %}
 
                                     </p>
+
+
+                                    {% if pedido.nubox_document_id %}
+
+                                        <small>
+                                            ID Nubox:
+                                            {{ pedido.nubox_document_id }}
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
+
+                                        <small>
+
+                                            Códigos territoriales:
+
+                                            {% if pedido.nubox_region_codigo %}
+
+                                                región {{ pedido.nubox_region_codigo }}
+
+                                            {% endif %}
+
+                                            {% if pedido.nubox_comuna_codigo %}
+
+                                                / comuna {{ pedido.nubox_comuna_codigo }}
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="detalle-admin__boleta-acciones">
+
+                                    <a
+                                        href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
+                                        class="boton boton--secundario"
+                                        title="Consultar nuevamente el estado en Nubox"
+                                    >
+
+                                        <i class="bi bi-arrow-clockwise"></i>
+
+                                        Actualizar Nubox
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+
+                        {% elif pedido.nubox_tiene_error %}
+
+                            <div class="detalle-admin__boleta-error">
+
+                                <div>
+
+                                    <i class="bi bi-exclamation-triangle"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+                                        No fue posible emitir la boleta
+                                    </strong>
+
+                                    <p>
+                                        Nubox registró un problema durante
+                                        la solicitud de emisión. El pedido
+                                        permanece confirmado y el error se
+                                        conserva para revisión administrativa.
+                                    </p>
+
+
+                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
+
+                                        <small>
+
+                                            Códigos territoriales:
+
+                                            {% if pedido.nubox_region_codigo %}
+
+                                                región {{ pedido.nubox_region_codigo }}
+
+                                            {% endif %}
+
+                                            {% if pedido.nubox_comuna_codigo %}
+
+                                                / comuna {{ pedido.nubox_comuna_codigo }}
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    <details>
+
+                                        <summary>
+                                            Ver detalle técnico
+                                        </summary>
+
+                                        <pre>{{ pedido.nubox_ultimo_error }}</pre>
+
+                                    </details>
 
                                 </div>
 
@@ -528,14 +637,37 @@
                                 <div>
 
                                     <strong>
-                                        Boleta todavía no emitida
+                                        Boleta todavía no registrada en Nubox
                                     </strong>
 
                                     <p>
                                         El pedido está pagado, pero todavía
-                                        no registra una boleta electrónica
-                                        en Nubox.
+                                        no posee un identificador de documento
+                                        Nubox.
                                     </p>
+
+
+                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
+
+                                        <small>
+
+                                            Códigos territoriales:
+
+                                            {% if pedido.nubox_region_codigo %}
+
+                                                región {{ pedido.nubox_region_codigo }}
+
+                                            {% endif %}
+
+                                            {% if pedido.nubox_comuna_codigo %}
+
+                                                / comuna {{ pedido.nubox_comuna_codigo }}
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    {% endif %}
 
                                 </div>
 
@@ -769,7 +901,7 @@
 
                             <strong>
 
-                                {% if pedido.pagado %}
+                                {% if pedido.pago_aprobado %}
 
                                     <span class="detalle-admin__dato-ok">
 
@@ -991,6 +1123,31 @@
                             <i class="bi bi-info-circle"></i>
 
                             {{ pedido.referencia }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
+
+                        <div class="detalle-admin__referencia">
+
+                            <i class="bi bi-geo"></i>
+
+                            Nubox:
+
+                            {% if pedido.nubox_region_codigo %}
+
+                                región {{ pedido.nubox_region_codigo }}
+
+                            {% endif %}
+
+                            {% if pedido.nubox_comuna_codigo %}
+
+                                / comuna {{ pedido.nubox_comuna_codigo }}
+
+                            {% endif %}
 
                         </div>
 

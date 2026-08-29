@@ -1313,6 +1313,8 @@ def panel_pedidos(request):
 # ==========================================================================
 
 
+
+
 @staff_member_required
 @require_http_methods([
     "GET",
@@ -1330,11 +1332,20 @@ def panel_pedido_detalle(
     - revisar productos;
     - consultar cliente y despacho;
     - revisar información del pago;
-    - consultar el estado de la boleta Nubox;
+    - consultar automáticamente el estado Nubox;
     - consultar el folio Nubox;
     - revisar errores de emisión;
     - revisar historial;
     - avanzar el estado operativo.
+
+    Nubox:
+
+    Si el pedido ya posee nubox_document_id
+    pero todavía no está marcado como emitido,
+    al abrir el detalle administrativo se consulta
+    nuevamente el estado directamente en Nubox.
+
+    Esta consulta NO vuelve a emitir la boleta.
     """
 
     # =========================================================================
@@ -1355,6 +1366,79 @@ def panel_pedido_detalle(
     )
 
     # =========================================================================
+    # SINCRONIZAR NUBOX
+    # =========================================================================
+    #
+    # Solo consultamos:
+    #
+    # - pedidos pagados;
+    # - que ya poseen document_id;
+    # - que todavía no aparecen como emitidos.
+    #
+    # IMPORTANTE:
+    #
+    # sincronizar_estado_nubox() únicamente consulta
+    # el documento existente.
+    #
+    # NO vuelve a emitir la boleta.
+    # =========================================================================
+
+    if (
+        request.method == "GET"
+        and pedido.pago_aprobado
+        and pedido.nubox_document_id
+        and not pedido.nubox_emitido
+    ):
+
+        try:
+
+            sincronizar_estado_nubox(
+                pedido
+            )
+
+        except NuboxError as error:
+
+            # No bloqueamos el panel administrativo
+            # si Nubox está temporalmente caído.
+            #
+            # El error puede quedar registrado en logs,
+            # pero el administrador igualmente podrá
+            # revisar y gestionar el pedido.
+            logger.warning(
+                (
+                    "No fue posible sincronizar "
+                    "Nubox desde detalle admin. "
+                    "Pedido=%s Error=%s"
+                ),
+                pedido.numero,
+                error,
+            )
+
+        except Exception as error:
+
+            logger.exception(
+                (
+                    "Error inesperado sincronizando "
+                    "Nubox desde detalle admin. "
+                    "Pedido=%s Error=%s"
+                ),
+                pedido.numero,
+                error,
+            )
+
+        # Volvemos a cargar el pedido porque
+        # sincronizar_estado_nubox() puede haber
+        # actualizado:
+        #
+        # - nubox_estado
+        # - nubox_folio
+        # - nubox_emitido
+        # - nubox_emitido_en
+        # - actualizado
+
+        pedido.refresh_from_db()
+
+    # =========================================================================
     # FORMULARIO
     # =========================================================================
 
@@ -1364,7 +1448,7 @@ def panel_pedido_detalle(
     )
 
     # =========================================================================
-    # ACTUALIZAR ESTADO
+    # ACTUALIZAR ESTADO OPERATIVO
     # =========================================================================
 
     if (
@@ -1461,6 +1545,8 @@ def panel_pedido_detalle(
             "historial": historial,
         },
     )
+
+
 
 
 
