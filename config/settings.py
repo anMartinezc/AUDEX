@@ -689,18 +689,35 @@ SITE_URL = SITE_URL.rstrip("/")
 
 MERCADOPAGO_NOTIFICATION_URL = os.getenv(
     "MERCADOPAGO_NOTIFICATION_URL",
-    (
-        f"{SITE_URL}/webhooks/mercadopago/"
-        if SITE_URL
-        else ""
-    ),
+    "",
 ).strip()
+
+
+# Si no existe una URL configurada explícitamente,
+# se construye automáticamente usando SITE_URL.
+if not MERCADOPAGO_NOTIFICATION_URL:
+
+    if SITE_URL:
+
+        MERCADOPAGO_NOTIFICATION_URL = (
+            f"{SITE_URL}/webhooks/mercadopago/"
+        )
+
+
+# Normaliza la URL para evitar inconsistencias
+# con la barra final.
+if MERCADOPAGO_NOTIFICATION_URL:
+
+    MERCADOPAGO_NOTIFICATION_URL = (
+        MERCADOPAGO_NOTIFICATION_URL.rstrip("/")
+        + "/"
+    )
 
 
 MERCADOPAGO_API_URL = os.getenv(
     "MERCADOPAGO_API_URL",
     "https://api.mercadopago.com",
-).rstrip("/")
+).strip().rstrip("/")
 
 
 # =============================================================================
