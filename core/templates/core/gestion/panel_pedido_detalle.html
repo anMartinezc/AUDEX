@@ -276,7 +276,13 @@
                      DOCUMENTOS / BOLETA
                 ================================================== -->
 
-                <article class="seguimiento-tarjeta detalle-admin__documentos">
+                <article
+                    id="nubox-admin-documento"
+                    class="seguimiento-tarjeta detalle-admin__documentos"
+                    data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
+                    data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
+                    data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
+                >
 
                     <div class="detalle-admin__seccion-cabecera">
 
@@ -309,15 +315,17 @@
 
                                 <i class="bi bi-hourglass-split"></i>
 
-                                {% if pedido.nubox_estado %}
+                                <span data-nubox-estado>
+                                    {% if pedido.nubox_estado %}
 
-                                    {{ pedido.nubox_estado }}
+                                        {{ pedido.nubox_estado }}
 
-                                {% else %}
+                                    {% else %}
 
-                                    Procesando
+                                        Procesando
 
-                                {% endif %}
+                                    {% endif %}
+                                </span>
 
                             </span>
 
@@ -499,7 +507,9 @@
                                         {% if pedido.nubox_estado %}
 
                                             Estado actual:
-                                            {{ pedido.nubox_estado }}.
+                                            <span data-nubox-estado>
+                                                {{ pedido.nubox_estado }}
+                                            </span>.
 
                                         {% endif %}
 
@@ -551,7 +561,7 @@
 
                                         <i class="bi bi-arrow-clockwise"></i>
 
-                                        Actualizar Nubox
+                                        Consultar ahora
 
                                     </a>
 
@@ -1162,5 +1172,235 @@
     </div>
 
 </section>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            const documento = document.getElementById(
+                "nubox-admin-documento"
+            );
+
+            if (!documento) {
+                return;
+            }
+
+            const yaEmitido = (
+                documento.dataset.nuboxEmitido === "true"
+            );
+
+            const documentId = (
+                documento.dataset.nuboxDocumentId || ""
+            ).trim();
+
+            const statusUrl = (
+                documento.dataset.nuboxStatusUrl || ""
+            ).trim();
+
+            /*
+             * Solo hacemos polling cuando:
+             *
+             * - Nubox ya recibió el documento;
+             * - existe nubox_document_id;
+             * - la boleta todavía no está emitida.
+             *
+             * Si no existe document_id, esta pantalla no
+             * intenta volver a emitir la boleta.
+             */
+            if (
+                yaEmitido
+                || !documentId
+                || !statusUrl
+            ) {
+                return;
+            }
+
+            let intentos = 0;
+
+            const MAX_INTENTOS = 40;
+            const INTERVALO_MS = 3000;
+            const PRIMERA_CONSULTA_MS = 1500;
+
+            let consultaEnCurso = false;
+            let detenerPolling = false;
+
+
+            const actualizarEstadoVisual = (
+                estado
+            ) => {
+
+                if (!estado) {
+                    return;
+                }
+
+                const elementos = (
+                    documento.querySelectorAll(
+                        "[data-nubox-estado]"
+                    )
+                );
+
+                elementos.forEach(
+                    (elemento) => {
+                        elemento.textContent = estado;
+                    },
+                );
+            };
+
+
+            const consultarEstadoNubox = async () => {
+
+                if (
+                    detenerPolling
+                    || consultaEnCurso
+                    || document.hidden
+                ) {
+                    return;
+                }
+
+                intentos += 1;
+                consultaEnCurso = true;
+
+                try {
+
+                    const response = await fetch(
+                        statusUrl,
+                        {
+                            method: "GET",
+
+                            headers: {
+                                "X-Requested-With": (
+                                    "XMLHttpRequest"
+                                ),
+                                "Accept": (
+                                    "application/json"
+                                ),
+                            },
+
+                            credentials: "same-origin",
+                            cache: "no-store",
+                        },
+                    );
+
+
+                    /*
+                     * 403:
+                     * la sesión ya no tiene acceso.
+                     *
+                     * 404:
+                     * el pedido ya no existe.
+                     *
+                     * En ambos casos detenemos el polling.
+                     */
+                    if (
+                        response.status === 403
+                        || response.status === 404
+                    ) {
+                        detenerPolling = true;
+                        return;
+                    }
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            `HTTP ${response.status}`
+                        );
+                    }
+
+
+                    const data = await response.json();
+
+
+                    if (data.estado) {
+
+                        actualizarEstadoVisual(
+                            data.estado
+                        );
+                    }
+
+
+                    /*
+                     * Cuando Nubox finalmente confirma
+                     * la emisión, recargamos una sola vez.
+                     *
+                     * Django volverá a renderizar:
+                     *
+                     * - nubox_emitido=True
+                     * - folio
+                     * - fecha de emisión
+                     * - botón de descarga
+                     */
+                    if (data.emitido) {
+
+                        detenerPolling = true;
+
+                        window.location.reload();
+
+                        return;
+                    }
+
+                } catch (error) {
+
+                    console.warn(
+                        "No fue posible consultar "
+                        + "el estado Nubox:",
+                        error,
+                    );
+
+                } finally {
+
+                    consultaEnCurso = false;
+                }
+
+
+                if (
+                    !detenerPolling
+                    && intentos < MAX_INTENTOS
+                ) {
+
+                    window.setTimeout(
+                        consultarEstadoNubox,
+                        INTERVALO_MS,
+                    );
+
+                }
+            };
+
+
+            /*
+             * Si el administrador vuelve a esta pestaña,
+             * hacemos una consulta inmediata.
+             */
+            document.addEventListener(
+                "visibilitychange",
+                () => {
+
+                    if (
+                        !document.hidden
+                        && !detenerPolling
+                        && intentos < MAX_INTENTOS
+                    ) {
+
+                        window.setTimeout(
+                            consultarEstadoNubox,
+                            250,
+                        );
+                    }
+                },
+            );
+
+
+            window.setTimeout(
+                consultarEstadoNubox,
+                PRIMERA_CONSULTA_MS,
+            );
+        },
+    );
+</script>
 
 {% endblock %}

@@ -1320,6 +1320,13 @@ def panel_pedidos(request):
     "GET",
     "POST",
 ])
+
+
+
+
+
+
+
 def panel_pedido_detalle(
     request,
     numero,
