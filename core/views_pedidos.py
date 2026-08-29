@@ -766,6 +766,8 @@ def seguimiento_pedido(
 # ==========================================================================
 # PANEL ADMINISTRATIVO DE PEDIDOS
 # ==========================================================================
+
+
 @staff_member_required
 def panel_pedidos(request):
     """

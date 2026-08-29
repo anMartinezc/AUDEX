@@ -415,7 +415,13 @@ Gestión de pedidos | Audex
 
                     {% for pedido in page_obj %}
 
-                        <div class="pedido-admin-item">
+                        <div
+                            class="pedido-admin-item"
+                            data-nubox-pedido
+                            data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
+                            data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
+                            data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
+                        >
 
 
                             <!-- =========================================
@@ -631,7 +637,7 @@ Gestión de pedidos | Audex
                                  DOCUMENTOS
                             ========================================== -->
 
-                            {% if pedido.pagado %}
+                            {% if pedido.pago_aprobado %}
 
                                 <div class="pedido-admin-item__documentos">
 
@@ -683,15 +689,19 @@ Gestión de pedidos | Audex
 
                                             <i class="bi bi-hourglass-split"></i>
 
-                                            {% if pedido.nubox_estado %}
+                                            <span data-nubox-estado>
 
-                                                {{ pedido.nubox_estado }}
+                                                {% if pedido.nubox_estado %}
 
-                                            {% else %}
+                                                    {{ pedido.nubox_estado }}
 
-                                                Boleta procesando
+                                                {% else %}
 
-                                            {% endif %}
+                                                    Boleta procesando
+
+                                                {% endif %}
+
+                                            </span>
 
                                         </span>
 
@@ -868,7 +878,13 @@ Gestión de pedidos | Audex
 
                             {% for pedido in bandeja.pedidos %}
 
-                                <div class="tarjeta-pedido-admin-wrap">
+                                <div
+                                    class="tarjeta-pedido-admin-wrap"
+                                    data-nubox-pedido
+                                    data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
+                                    data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
+                                    data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
+                                >
 
                                     <a
                                         href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
@@ -1078,15 +1094,19 @@ Gestión de pedidos | Audex
 
                                             <i class="bi bi-hourglass-split"></i>
 
-                                            {% if pedido.nubox_estado %}
+                                            <span data-nubox-estado>
 
-                                                {{ pedido.nubox_estado }}
+                                                {% if pedido.nubox_estado %}
 
-                                            {% else %}
+                                                    {{ pedido.nubox_estado }}
 
-                                                Procesando
+                                                {% else %}
 
-                                            {% endif %}
+                                                    Procesando
+
+                                                {% endif %}
+
+                                            </span>
 
                                         </span>
 
@@ -1105,7 +1125,7 @@ Gestión de pedidos | Audex
                                         </span>
 
 
-                                    {% elif pedido.pagado %}
+                                    {% elif pedido.pago_aprobado %}
 
                                         <span
                                             class="tarjeta-pedido-admin__boleta"
@@ -1179,3 +1199,331 @@ Gestión de pedidos | Audex
 </section>
 
 {% endblock %}
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            const pedidos = Array.from(
+                document.querySelectorAll(
+                    "[data-nubox-pedido]"
+                )
+            );
+
+            if (!pedidos.length) {
+                return;
+            }
+
+
+            /*
+             * Solo monitorizamos pedidos que:
+             *
+             * - ya poseen nubox_document_id;
+             * - todavía no están emitidos;
+             * - tienen una URL válida para consultar estado.
+             *
+             * IMPORTANTE:
+             *
+             * Este código NO emite ni reemite boletas.
+             * Solo consulta estado_boleta_nubox().
+             */
+            const pendientes = pedidos.filter(
+                (pedido) => {
+
+                    const documentId = (
+                        pedido.dataset.nuboxDocumentId || ""
+                    ).trim();
+
+                    const emitido = (
+                        pedido.dataset.nuboxEmitido === "true"
+                    );
+
+                    const statusUrl = (
+                        pedido.dataset.nuboxStatusUrl || ""
+                    ).trim();
+
+                    return (
+                        Boolean(documentId)
+                        && !emitido
+                        && Boolean(statusUrl)
+                    );
+                },
+            );
+
+
+            if (!pendientes.length) {
+                return;
+            }
+
+
+            /*
+             * Panel administrativo:
+             *
+             * 5 segundos evita hacer demasiadas consultas
+             * cuando existen varios pedidos simultáneamente.
+             *
+             * 24 intentos = aproximadamente 2 minutos.
+             */
+            const INTERVALO_MS = 5000;
+            const PRIMERA_CONSULTA_MS = 1500;
+            const MAX_INTENTOS = 24;
+
+            let intentos = 0;
+            let consultaEnCurso = false;
+            let detenerPolling = false;
+
+
+            const actualizarEstadoVisual = (
+                pedido,
+                estado,
+            ) => {
+
+                if (!estado) {
+                    return;
+                }
+
+                pedido
+                    .querySelectorAll(
+                        "[data-nubox-estado]"
+                    )
+                    .forEach(
+                        (elemento) => {
+
+                            elemento.textContent = estado;
+                        },
+                    );
+            };
+
+
+            const consultarPedido = async (
+                pedido,
+            ) => {
+
+                const statusUrl = (
+                    pedido.dataset.nuboxStatusUrl || ""
+                ).trim();
+
+                if (!statusUrl) {
+                    return false;
+                }
+
+
+                const response = await fetch(
+                    statusUrl,
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "X-Requested-With": (
+                                "XMLHttpRequest"
+                            ),
+                            "Accept": (
+                                "application/json"
+                            ),
+                        },
+
+                        credentials: "same-origin",
+                        cache: "no-store",
+                    },
+                );
+
+
+                /*
+                 * Si la sesión pierde autorización
+                 * o el pedido ya no existe, dejamos
+                 * de consultar esa tarjeta.
+                 */
+                if (
+                    response.status === 403
+                    || response.status === 404
+                ) {
+
+                    pedido.dataset.nuboxEmitido = "true";
+
+                    return false;
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP ${response.status}`
+                    );
+                }
+
+
+                const data = await response.json();
+
+
+                if (data.estado) {
+
+                    actualizarEstadoVisual(
+                        pedido,
+                        data.estado,
+                    );
+                }
+
+
+                /*
+                 * Cuando Nubox confirma la emisión,
+                 * marcamos el pedido y avisamos al
+                 * ciclo principal para recargar.
+                 */
+                if (data.emitido) {
+
+                    pedido.dataset.nuboxEmitido = "true";
+
+                    return true;
+                }
+
+
+                return false;
+            };
+
+
+            const consultarPendientes = async () => {
+
+                if (
+                    detenerPolling
+                    || consultaEnCurso
+                    || document.hidden
+                ) {
+                    return;
+                }
+
+
+                consultaEnCurso = true;
+                intentos += 1;
+
+
+                try {
+
+                    const activos = pendientes.filter(
+                        (pedido) => (
+                            pedido.dataset.nuboxEmitido
+                            !== "true"
+                        ),
+                    );
+
+
+                    if (!activos.length) {
+
+                        detenerPolling = true;
+
+                        return;
+                    }
+
+
+                    const resultados = await Promise.allSettled(
+                        activos.map(
+                            (pedido) => (
+                                consultarPedido(
+                                    pedido
+                                )
+                            ),
+                        ),
+                    );
+
+
+                    const algunaBoletaEmitida = resultados.some(
+                        (resultado) => (
+                            resultado.status === "fulfilled"
+                            && resultado.value === true
+                        ),
+                    );
+
+
+                    /*
+                     * Si al menos una boleta acaba de emitirse,
+                     * recargamos una sola vez.
+                     *
+                     * Así Django vuelve a renderizar:
+                     *
+                     * - folio;
+                     * - nubox_emitido=True;
+                     * - nubox_url_pdf;
+                     * - botón Descargar boleta;
+                     * - contador de boletas pendientes.
+                     */
+                    if (algunaBoletaEmitida) {
+
+                        detenerPolling = true;
+
+                        window.location.reload();
+
+                        return;
+                    }
+
+
+                    resultados.forEach(
+                        (resultado) => {
+
+                            if (
+                                resultado.status === "rejected"
+                            ) {
+
+                                console.warn(
+                                    "No fue posible consultar "
+                                    + "el estado Nubox:",
+                                    resultado.reason,
+                                );
+                            }
+                        },
+                    );
+
+                } finally {
+
+                    consultaEnCurso = false;
+                }
+
+
+                if (
+                    !detenerPolling
+                    && intentos < MAX_INTENTOS
+                ) {
+
+                    window.setTimeout(
+                        consultarPendientes,
+                        INTERVALO_MS,
+                    );
+                }
+            };
+
+
+            /*
+             * No consultamos mientras la pestaña está oculta.
+             * Cuando el administrador vuelve al panel,
+             * se realiza una comprobación casi inmediata.
+             */
+            document.addEventListener(
+                "visibilitychange",
+                () => {
+
+                    if (
+                        !document.hidden
+                        && !detenerPolling
+                        && intentos < MAX_INTENTOS
+                    ) {
+
+                        window.setTimeout(
+                            consultarPendientes,
+                            250,
+                        );
+                    }
+                },
+            );
+
+
+            window.setTimeout(
+                consultarPendientes,
+                PRIMERA_CONSULTA_MS,
+            );
+        },
+    );
+</script>
+
+{% endblock %}
+

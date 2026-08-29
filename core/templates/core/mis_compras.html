@@ -230,7 +230,13 @@ Mis compras | Audex
 
             {% for pedido in page_obj %}
 
-                <article class="pedido-historial">
+                <article
+                    class="pedido-historial"
+                    data-nubox-pedido
+                    data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
+                    data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
+                    data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
+                >
 
                     <!-- =================================================
                          SUPERIOR
@@ -522,15 +528,19 @@ Mis compras | Audex
 
                                 <i class="bi bi-hourglass-split"></i>
 
-                                {% if pedido.nubox_estado %}
+                                <span data-nubox-estado>
 
-                                    {{ pedido.nubox_estado }}
+                                    {% if pedido.nubox_estado %}
 
-                                {% else %}
+                                        {{ pedido.nubox_estado }}
 
-                                    Boleta en proceso
+                                    {% else %}
 
-                                {% endif %}
+                                        Boleta en proceso
+
+                                    {% endif %}
+
+                                </span>
 
                             </span>
 
@@ -737,6 +747,309 @@ Mis compras | Audex
     src="{% static 'core/js/mis_compras.js' %}?v=1"
     defer
 ></script>
+
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            const pedidos = Array.from(
+                document.querySelectorAll(
+                    "[data-nubox-pedido]"
+                )
+            );
+
+            if (!pedidos.length) {
+                return;
+            }
+
+
+            /*
+             * Solo se monitorizan pedidos que:
+             *
+             * - ya tienen nubox_document_id;
+             * - todavía no están emitidos.
+             *
+             * Este código NO emite ni reemite boletas.
+             * Únicamente consulta el endpoint de estado.
+             */
+            const pendientes = pedidos.filter(
+                (pedido) => {
+
+                    const documentId = (
+                        pedido.dataset.nuboxDocumentId || ""
+                    ).trim();
+
+                    const emitido = (
+                        pedido.dataset.nuboxEmitido === "true"
+                    );
+
+                    const statusUrl = (
+                        pedido.dataset.nuboxStatusUrl || ""
+                    ).trim();
+
+                    return (
+                        Boolean(documentId)
+                        && !emitido
+                        && Boolean(statusUrl)
+                    );
+                },
+            );
+
+
+            if (!pendientes.length) {
+                return;
+            }
+
+
+            const INTERVALO_MS = 5000;
+            const PRIMERA_CONSULTA_MS = 1500;
+            const MAX_INTENTOS = 24;
+
+            let intentos = 0;
+            let consultaEnCurso = false;
+            let detenerPolling = false;
+
+
+            const actualizarEstadoVisual = (
+                pedido,
+                estado,
+            ) => {
+
+                if (!estado) {
+                    return;
+                }
+
+                pedido
+                    .querySelectorAll(
+                        "[data-nubox-estado]"
+                    )
+                    .forEach(
+                        (elemento) => {
+                            elemento.textContent = estado;
+                        },
+                    );
+            };
+
+
+            const consultarPedido = async (
+                pedido,
+            ) => {
+
+                const statusUrl = (
+                    pedido.dataset.nuboxStatusUrl || ""
+                ).trim();
+
+                if (!statusUrl) {
+                    return false;
+                }
+
+
+                const response = await fetch(
+                    statusUrl,
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "X-Requested-With": (
+                                "XMLHttpRequest"
+                            ),
+                            "Accept": (
+                                "application/json"
+                            ),
+                        },
+
+                        credentials: "same-origin",
+                        cache: "no-store",
+                    },
+                );
+
+
+                /*
+                 * Si el usuario perdió autorización,
+                 * o el pedido dejó de existir, dejamos
+                 * de consultar esa tarjeta.
+                 */
+                if (
+                    response.status === 403
+                    || response.status === 404
+                ) {
+
+                    pedido.dataset.nuboxEmitido = "true";
+
+                    return false;
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP ${response.status}`
+                    );
+                }
+
+
+                const data = await response.json();
+
+
+                if (data.estado) {
+
+                    actualizarEstadoVisual(
+                        pedido,
+                        data.estado,
+                    );
+                }
+
+
+                if (data.emitido) {
+
+                    pedido.dataset.nuboxEmitido = "true";
+
+                    return true;
+                }
+
+
+                return false;
+            };
+
+
+            const consultarPendientes = async () => {
+
+                if (
+                    detenerPolling
+                    || consultaEnCurso
+                    || document.hidden
+                ) {
+                    return;
+                }
+
+
+                consultaEnCurso = true;
+                intentos += 1;
+
+                try {
+
+                    const activos = pendientes.filter(
+                        (pedido) => (
+                            pedido.dataset.nuboxEmitido
+                            !== "true"
+                        ),
+                    );
+
+
+                    if (!activos.length) {
+
+                        detenerPolling = true;
+
+                        return;
+                    }
+
+
+                    const resultados = await Promise.allSettled(
+                        activos.map(
+                            (pedido) => (
+                                consultarPedido(
+                                    pedido
+                                )
+                            ),
+                        ),
+                    );
+
+
+                    const algunoEmitido = resultados.some(
+                        (resultado) => (
+                            resultado.status === "fulfilled"
+                            && resultado.value === true
+                        ),
+                    );
+
+
+                    /*
+                     * Si alguna boleta fue emitida,
+                     * recargamos para que Django renderice:
+                     *
+                     * - folio;
+                     * - botón Ver boleta;
+                     * - nubox_url_pdf;
+                     * - estado emitido.
+                     */
+                    if (algunoEmitido) {
+
+                        detenerPolling = true;
+
+                        window.location.reload();
+
+                        return;
+                    }
+
+
+                    resultados.forEach(
+                        (resultado) => {
+
+                            if (
+                                resultado.status === "rejected"
+                            ) {
+
+                                console.warn(
+                                    "No fue posible consultar "
+                                    + "el estado Nubox:",
+                                    resultado.reason,
+                                );
+                            }
+                        },
+                    );
+
+                } finally {
+
+                    consultaEnCurso = false;
+                }
+
+
+                if (
+                    !detenerPolling
+                    && intentos < MAX_INTENTOS
+                ) {
+
+                    window.setTimeout(
+                        consultarPendientes,
+                        INTERVALO_MS,
+                    );
+                }
+            };
+
+
+            /*
+             * Al volver a la pestaña hacemos una consulta
+             * casi inmediata, evitando consumir peticiones
+             * mientras la página está oculta.
+             */
+            document.addEventListener(
+                "visibilitychange",
+                () => {
+
+                    if (
+                        !document.hidden
+                        && !detenerPolling
+                        && intentos < MAX_INTENTOS
+                    ) {
+
+                        window.setTimeout(
+                            consultarPendientes,
+                            250,
+                        );
+                    }
+                },
+            );
+
+
+            window.setTimeout(
+                consultarPendientes,
+                PRIMERA_CONSULTA_MS,
+            );
+        },
+    );
+</script>
 
 {% endblock %}
 
