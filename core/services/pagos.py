@@ -333,41 +333,83 @@ def descontar_stock_pedido(
     pedido,
 ):
     """
-    Descuenta físicamente el stock
-    de los productos del pedido.
+    Descuenta físicamente el stock de los productos del pedido.
 
-    Esta función debe ejecutarse una
-    sola vez por pedido aprobado.
+    Debe ejecutarse dentro de la transacción que confirma el pago.
+    Es defensiva e idempotente respecto de pedido.stock_descontado.
 
-    La protección principal es:
-
-        pedido.stock_descontado
+    Los PedidoItem y Producto se bloquean sin select_related(),
+    evitando OUTER JOIN incompatibles con SELECT ... FOR UPDATE
+    en PostgreSQL. Los productos se bloquean siempre por PK para
+    reducir el riesgo de deadlocks entre compras concurrentes.
     """
 
     # =========================================================================
-    # OBTENER ITEMS CON BLOQUEO
+    # VALIDAR PEDIDO
     # =========================================================================
 
-    items = (
+    if pedido is None:
+        raise ValueError(
+            "No existe un pedido para descontar stock."
+        )
+
+    # =========================================================================
+    # IDEMPOTENCIA
+    # =========================================================================
+
+    if getattr(
+        pedido,
+        "stock_descontado",
+        False,
+    ):
+        logger.info(
+            (
+                "El stock del pedido %s "
+                "ya había sido descontado."
+            ),
+            pedido.numero,
+        )
+
+        return
+
+    # =========================================================================
+    # BLOQUEAR ITEMS DEL PEDIDO
+    # =========================================================================
+    #
+    # No usamos select_related("producto") junto con select_for_update().
+    # El producto se bloquea explícitamente en una segunda consulta.
+    # =========================================================================
+
+    items = list(
         pedido.items
         .select_for_update()
-        .all()
+        .order_by(
+            "producto_id",
+            "pk",
+        )
     )
 
+    if not items:
+        raise ValueError(
+            (
+                "El pedido no contiene items válidos "
+                "para descontar stock. "
+                f"Pedido={pedido.numero}."
+            )
+        )
+
     # =========================================================================
-    # RECORRER ITEMS
+    # VALIDAR ITEMS Y AGRUPAR CANTIDADES
     # =========================================================================
+    #
+    # Agrupar protege también frente a un pedido que, por cualquier motivo,
+    # tenga más de una línea asociada al mismo Producto.
+    # =========================================================================
+
+    cantidades_por_producto = {}
+    nombres_por_producto = {}
 
     for item in items:
-
-        # ---------------------------------------------------------------------
-        # Usamos producto_id directamente.
-        #
-        # No hacemos select_related("producto") junto con select_for_update(),
-        # porque si la relación fuera nullable PostgreSQL podría intentar
-        # aplicar FOR UPDATE sobre el lado nullable de un OUTER JOIN.
-        # El producto se bloquea explícitamente más abajo.
-        # ---------------------------------------------------------------------
 
         producto_id = getattr(
             item,
@@ -376,60 +418,161 @@ def descontar_stock_pedido(
         )
 
         if not producto_id:
-            continue
+            raise ValueError(
+                (
+                    "Uno de los items del pedido no tiene "
+                    "un producto asociado. "
+                    f"Pedido={pedido.numero}. "
+                    f"Item={item.pk}."
+                )
+            )
 
-        cantidad = int(
-            item.cantidad
-            or 0
-        )
+        try:
+            cantidad = int(
+                item.cantidad
+                or 0
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ) as error:
+            raise ValueError(
+                (
+                    "Uno de los items del pedido tiene "
+                    "una cantidad inválida. "
+                    f"Pedido={pedido.numero}. "
+                    f"Item={item.pk}."
+                )
+            ) from error
 
         if cantidad <= 0:
-            continue
+            raise ValueError(
+                (
+                    "Uno de los items del pedido tiene "
+                    "una cantidad igual o inferior a cero. "
+                    f"Pedido={pedido.numero}. "
+                    f"Item={item.pk}."
+                )
+            )
 
-        # =====================================================================
-        # BLOQUEAR PRODUCTO
-        # =====================================================================
+        cantidades_por_producto[producto_id] = (
+            cantidades_por_producto.get(
+                producto_id,
+                0,
+            )
+            + cantidad
+        )
 
-        producto = (
-            Producto.objects
-            .select_for_update()
-            .get(
-                pk=producto_id
+        nombres_por_producto[producto_id] = str(
+            getattr(
+                item,
+                "nombre_producto",
+                "",
+            )
+            or f"Producto {producto_id}"
+        )
+
+    # =========================================================================
+    # BLOQUEAR PRODUCTOS EN ORDEN DETERMINISTA
+    # =========================================================================
+
+    productos = list(
+        Producto.objects
+        .select_for_update()
+        .filter(
+            pk__in=cantidades_por_producto.keys(),
+        )
+        .order_by(
+            "pk"
+        )
+    )
+
+    productos_por_id = {
+        producto.pk: producto
+        for producto in productos
+    }
+
+    productos_faltantes = (
+        set(
+            cantidades_por_producto
+        )
+        - set(
+            productos_por_id
+        )
+    )
+
+    if productos_faltantes:
+        ids_faltantes = ", ".join(
+            str(producto_id)
+            for producto_id in sorted(
+                productos_faltantes
             )
         )
 
-        # =====================================================================
-        # VALIDAR STOCK
-        # =====================================================================
+        raise ValueError(
+            (
+                "Uno o más productos del pedido ya no existen. "
+                f"Pedido={pedido.numero}. "
+                f"Productos={ids_faltantes}."
+            )
+        )
 
-        if producto.stock < cantidad:
+    # =========================================================================
+    # VALIDAR TODO EL STOCK ANTES DE MODIFICARLO
+    # =========================================================================
+
+    for producto_id, cantidad in (
+        cantidades_por_producto.items()
+    ):
+        producto = productos_por_id[
+            producto_id
+        ]
+
+        stock_actual = int(
+            producto.stock
+            or 0
+        )
+
+        if stock_actual < cantidad:
             raise ValueError(
                 (
-                    f"No existe stock suficiente para "
-                    f"{item.nombre_producto}. "
-                    f"Stock actual: {producto.stock}. "
+                    "No existe stock suficiente para "
+                    f"{nombres_por_producto[producto_id]}. "
+                    f"Stock actual: {stock_actual}. "
                     f"Cantidad vendida: {cantidad}."
                 )
             )
 
-        # =====================================================================
-        # DESCONTAR STOCK
-        # =====================================================================
+    # =========================================================================
+    # DESCONTAR STOCK
+    # =========================================================================
+
+    for producto in productos:
+        cantidad = cantidades_por_producto[
+            producto.pk
+        ]
 
         producto.stock = (
-            producto.stock
+            int(
+                producto.stock
+                or 0
+            )
             - cantidad
         )
 
-        # =====================================================================
+        campos_actualizar = [
+            "stock",
+        ]
+
+        # ---------------------------------------------------------------------
         # STOCK RESERVADO
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         if hasattr(
             producto,
             "stock_reservado",
         ):
-
             producto.stock_reservado = max(
                 (
                     int(
@@ -441,24 +584,36 @@ def descontar_stock_pedido(
                 0,
             )
 
-            producto.save(
-                update_fields=[
-                    "stock",
-                    "stock_reservado",
-                    "actualizado",
-                ]
+            campos_actualizar.append(
+                "stock_reservado"
             )
 
-        else:
-
-            producto.save(
-                update_fields=[
-                    "stock",
-                    "actualizado",
-                ]
+        if hasattr(
+            producto,
+            "actualizado",
+        ):
+            campos_actualizar.append(
+                "actualizado"
             )
 
+        producto.save(
+            update_fields=list(
+                dict.fromkeys(
+                    campos_actualizar
+                )
+            )
+        )
 
+        logger.info(
+            (
+                "Stock actualizado. "
+                "Pedido=%s Producto=%s Cantidad=%s Stock_final=%s."
+            ),
+            pedido.numero,
+            producto.pk,
+            cantidad,
+            producto.stock,
+        )
 # =============================================================================
 # CONFIRMAR CÓDIGO UTILIZADO
 # =============================================================================
@@ -692,6 +847,17 @@ def marcar_pedido_como_pagado(
         or {}
     )
 
+    if not isinstance(
+        datos_pago,
+        dict,
+    ):
+        raise ValueError(
+            (
+                "Los datos del proveedor de pago "
+                "no tienen un formato válido."
+            )
+        )
+
     # =========================================================================
     # TRANSACCIÓN PRINCIPAL
     # =========================================================================
@@ -828,6 +994,154 @@ def marcar_pedido_como_pagado(
                         "no es válido."
                     )
                 ) from error
+
+        # =====================================================================
+        # VALIDAR MÉTODO CONTRA EL PEDIDO
+        # =====================================================================
+
+        metodo_pedido = str(
+            pedido.metodo_pago
+            or ""
+        ).strip().lower()
+
+        if not metodo:
+            raise ValueError(
+                "No se recibió un método de pago válido."
+            )
+
+        if metodo != metodo_pedido:
+            raise ValueError(
+                (
+                    "El método recibido desde el proveedor "
+                    "no coincide con el método del pedido. "
+                    f"Pedido={pedido.numero}. "
+                    f"Método pedido={metodo_pedido or 'vacío'}. "
+                    f"Método recibido={metodo}."
+                )
+            )
+
+        # =====================================================================
+        # VALIDACIONES ESPECÍFICAS DEL PROVEEDOR
+        # =====================================================================
+        #
+        # Esta función es la última barrera antes de descontar stock y marcar
+        # el pedido como pagado. Por eso vuelve a validar los campos críticos,
+        # aunque las vistas o servicios anteriores ya los hayan comprobado.
+        # =====================================================================
+
+        if (
+            metodo
+            == Pedido.MetodoPago.MERCADOPAGO
+        ):
+
+            if not payment_id:
+                raise ValueError(
+                    (
+                        "Mercado Pago no entregó "
+                        "un payment_id válido."
+                    )
+                )
+
+            if status != "approved":
+                raise ValueError(
+                    (
+                        "No se puede confirmar un pago "
+                        "de Mercado Pago que no esté approved. "
+                        f"Estado recibido={status or 'vacío'}."
+                    )
+                )
+
+            if transaction_amount is None:
+                raise ValueError(
+                    (
+                        "Mercado Pago no entregó "
+                        "transaction_amount."
+                    )
+                )
+
+            # -----------------------------------------------------------------
+            # PAYMENT ID NO PUEDE PERTENECER A OTRO PEDIDO
+            # -----------------------------------------------------------------
+
+            payment_id_en_otro_pedido = (
+                Pedido.objects
+                .filter(
+                    mercadopago_payment_id=payment_id,
+                )
+                .exclude(
+                    pk=pedido.pk,
+                )
+                .exists()
+            )
+
+            if payment_id_en_otro_pedido:
+                raise ValueError(
+                    (
+                        "El payment_id de Mercado Pago "
+                        "ya está asociado a otro pedido."
+                    )
+                )
+
+        elif (
+            metodo
+            == Pedido.MetodoPago.WEBPAY
+        ):
+
+            if not payment_id:
+                raise ValueError(
+                    (
+                        "Webpay no entregó un identificador "
+                        "de transacción válido."
+                    )
+                )
+
+            if status != "authorized":
+                raise ValueError(
+                    (
+                        "No se puede confirmar un pago Webpay "
+                        "que no esté AUTHORIZED. "
+                        f"Estado recibido={status or 'vacío'}."
+                    )
+                )
+
+            if transaction_amount is None:
+                raise ValueError(
+                    (
+                        "Webpay no entregó "
+                        "transaction_amount."
+                    )
+                )
+
+            response_code_validacion = (
+                datos_pago.get(
+                    "response_code"
+                )
+            )
+
+            try:
+                response_code_validacion = int(
+                    response_code_validacion
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ) as error:
+                raise ValueError(
+                    (
+                        "Webpay no entregó un "
+                        "response_code válido."
+                    )
+                ) from error
+
+            if response_code_validacion != 0:
+                raise ValueError(
+                    (
+                        "No se puede confirmar Webpay con "
+                        "un response_code distinto de 0. "
+                        f"Response code={response_code_validacion}."
+                    )
+                )
 
         # =====================================================================
         # COMPROBAR SI YA ESTABA PAGADO

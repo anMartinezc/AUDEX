@@ -7412,6 +7412,9 @@ def mercadopago_retorno_fallido(
         numero=pedido.numero,
     )
 
+
+
+
 @transaction.atomic
 def actualizar_pedido_desde_pago(
     *,
@@ -7424,13 +7427,14 @@ def actualizar_pedido_desde_pago(
 
     Reglas:
 
-    - Bloquea el pedido durante la actualización.
+    - Bloquea exclusivamente la fila del pedido.
     - Valida payment_id.
     - Valida external_reference.
     - Valida transaction_amount.
+    - Valida que el pedido corresponda a Mercado Pago.
     - No confía en datos recibidos directamente del webhook.
     - Un pago approved se confirma mediante
-      confirmar_pago_mercadopago(), evitando duplicar lógica.
+      confirmar_pago_mercadopago().
     - No degrada accidentalmente un pedido ya aprobado.
     - Persiste estados pending, rejected, cancelled,
       refunded y charged_back.
@@ -7452,19 +7456,70 @@ def actualizar_pedido_desde_pago(
         )
 
     # =========================================================================
-    # BLOQUEAR PEDIDO
+    # VALIDAR PEDIDO RECIBIDO
     # =========================================================================
 
-    pedido = (
-        Pedido.objects
-        .select_for_update()
-        .select_related(
-            "usuario"
+    if pedido is None:
+
+        raise ValueError(
+            (
+                "No se recibió un pedido válido "
+                "para sincronizar con Mercado Pago."
+            )
         )
-        .get(
-            pk=pedido.pk
-        )
+
+    pedido_pk = getattr(
+        pedido,
+        "pk",
+        None,
     )
+
+    if not pedido_pk:
+
+        raise ValueError(
+            (
+                "El pedido recibido no tiene "
+                "un identificador válido."
+            )
+        )
+
+    # =========================================================================
+    # BLOQUEAR PEDIDO
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # No utilizamos:
+    #
+    #     .select_related("usuario")
+    #
+    # junto con select_for_update().
+    #
+    # Si Pedido.usuario permite NULL, PostgreSQL puede generar
+    # un LEFT OUTER JOIN y rechazar FOR UPDATE sobre el lado
+    # nullable del JOIN.
+    #
+    # Bloqueamos exclusivamente la fila de Pedido.
+    # =========================================================================
+
+    try:
+
+        pedido = (
+            Pedido.objects
+            .select_for_update()
+            .get(
+                pk=pedido_pk
+            )
+        )
+
+    except Pedido.DoesNotExist as error:
+
+        raise ValueError(
+            (
+                "El pedido que se intenta sincronizar "
+                "ya no existe."
+            )
+        ) from error
 
     # =========================================================================
     # DATOS MERCADO PAGO
@@ -7571,10 +7626,7 @@ def actualizar_pedido_desde_pago(
             )
         )
 
-    if (
-        external_reference
-        != pedido.numero
-    ):
+    if external_reference != pedido.numero:
 
         raise ValueError(
             (
@@ -7608,7 +7660,7 @@ def actualizar_pedido_desde_pago(
                 "El pedido no corresponde "
                 "a Mercado Pago. "
                 f"Pedido={pedido.numero}. "
-                f"Método={metodo_pago_pedido}."
+                f"Método={metodo_pago_pedido or 'vacío'}."
             )
         )
 
@@ -7653,31 +7705,8 @@ def actualizar_pedido_desde_pago(
         )
 
     # =========================================================================
-    # PROTEGER PEDIDO YA APROBADO
+    # PAYMENT ID ACTUAL DEL PEDIDO
     # =========================================================================
-    #
-    # Un webhook antiguo de tipo:
-    #
-    # pending
-    # rejected
-    # cancelled
-    #
-    # no debe convertir nuevamente un pedido APROBADO
-    # en pendiente o cancelado.
-    #
-    # Excepción:
-    #
-    # refunded
-    # charged_back
-    #
-    # sí representan cambios posteriores reales.
-    # =========================================================================
-
-    pedido_ya_aprobado = bool(
-        pedido.pagado
-        and pedido.estado_pago
-        == Pedido.EstadoPago.APROBADO
-    )
 
     payment_id_guardado = (
         str(
@@ -7689,6 +7718,28 @@ def actualizar_pedido_desde_pago(
             or ""
         )
         .strip()
+    )
+
+    # =========================================================================
+    # PROTEGER PEDIDO YA APROBADO
+    # =========================================================================
+    #
+    # Una notificación antigua:
+    #
+    # pending
+    # in_process
+    # rejected
+    # cancelled
+    #
+    # nunca debe degradar un pago ya aprobado.
+    #
+    # refunded y charged_back sí son estados posteriores legítimos.
+    # =========================================================================
+
+    pedido_ya_aprobado = bool(
+        pedido.pagado
+        and pedido.estado_pago
+        == Pedido.EstadoPago.APROBADO
     )
 
     estados_posteriores_aprobacion = {
@@ -7703,13 +7754,12 @@ def actualizar_pedido_desde_pago(
     ):
 
         # ---------------------------------------------------------------------
-        # MISMO PAGO YA APROBADO
+        # MISMO PAYMENT ID
         # ---------------------------------------------------------------------
 
         if (
             payment_id_guardado
-            and payment_id_guardado
-            == payment_id
+            and payment_id_guardado == payment_id
         ):
 
             logger.info(
@@ -7732,9 +7782,21 @@ def actualizar_pedido_desde_pago(
 
         if (
             payment_id_guardado
-            and payment_id_guardado
-            != payment_id
+            and payment_id_guardado != payment_id
         ):
+
+            logger.error(
+                (
+                    "Pedido Mercado Pago ya aprobado "
+                    "con otro payment_id. "
+                    "Pedido=%s "
+                    "Actual=%s "
+                    "Recibido=%s."
+                ),
+                pedido.numero,
+                payment_id_guardado,
+                payment_id,
+            )
 
             raise ValueError(
                 (
@@ -7745,6 +7807,41 @@ def actualizar_pedido_desde_pago(
                     f"Recibido={payment_id}."
                 )
             )
+
+    # =========================================================================
+    # PROTEGER PAYMENT ID ENTRE PEDIDOS
+    # =========================================================================
+
+    payment_id_en_otro_pedido = (
+        Pedido.objects
+        .filter(
+            mercadopago_payment_id=payment_id,
+        )
+        .exclude(
+            pk=pedido.pk,
+        )
+        .exists()
+    )
+
+    if payment_id_en_otro_pedido:
+
+        logger.error(
+            (
+                "Payment ID Mercado Pago ya asociado "
+                "a otro pedido. "
+                "Pedido=%s "
+                "Payment ID=%s."
+            ),
+            pedido.numero,
+            payment_id,
+        )
+
+        raise ValueError(
+            (
+                "El payment_id de Mercado Pago "
+                "ya está asociado a otro pedido."
+            )
+        )
 
     # =========================================================================
     # LOG
@@ -7772,19 +7869,22 @@ def actualizar_pedido_desde_pago(
     # PAGO APROBADO
     # =========================================================================
     #
-    # IMPORTANTE:
+    # La confirmación approved se centraliza en:
     #
-    # No duplicamos aquí:
+    # confirmar_pago_mercadopago()
     #
-    # - validación de monto;
-    # - validación de moneda;
-    # - descuento de stock;
-    # - consumo de código;
+    # que ya se encarga de:
+    #
+    # - validar monto;
+    # - validar moneda;
+    # - validar payment_id;
+    # - idempotencia;
+    # - bloquear el pedido;
+    # - marcar pedido como pagado;
+    # - stock;
+    # - descuento;
     # - correo;
-    # - boleta;
-    # - idempotencia.
-    #
-    # confirmar_pago_mercadopago() ya centraliza ese proceso.
+    # - Nubox / DTE.
     # =========================================================================
 
     if status == "approved":
@@ -7803,6 +7903,15 @@ def actualizar_pedido_desde_pago(
                 pago
             )
         )
+
+        if pedido_confirmado is None:
+
+            raise ValueError(
+                (
+                    "No fue posible obtener el pedido "
+                    "confirmado desde Mercado Pago."
+                )
+            )
 
         logger.info(
             (
@@ -7999,11 +8108,10 @@ def actualizar_pedido_desde_pago(
     }:
 
         # ---------------------------------------------------------------------
-        # Para el sistema el dinero ya no debe considerarse pagado.
+        # El dinero ya no debe considerarse pagado.
         #
-        # No modificamos automáticamente pedido.estado aquí porque
-        # puede existir lógica logística/facturación asociada al pedido
-        # ya confirmado.
+        # No modificamos automáticamente Pedido.estado porque el pedido
+        # podría haber avanzado en logística, despacho o facturación.
         # ---------------------------------------------------------------------
 
         pedido.pagado = False
@@ -8069,6 +8177,15 @@ def actualizar_pedido_desde_pago(
     )
 
     return pedido
+
+
+
+
+
+
+
+
+
 
 
 def descontar_stock_pedido(
@@ -8941,7 +9058,6 @@ def mercadopago_webhook(request):
         status=200,
     )
 
-
 @transaction.atomic
 def confirmar_pago_mercadopago(
     pago,
@@ -9144,13 +9260,22 @@ def confirmar_pago_mercadopago(
     # OBTENER Y BLOQUEAR PEDIDO
     # =========================================================================
     #
-    # select_for_update() evita que:
+    # IMPORTANTE:
     #
-    # - el webhook;
-    # - mercadopago_retorno_exitoso();
-    # - otro webhook repetido
+    # No usamos select_related("usuario") junto con select_for_update().
     #
-    # intenten confirmar el mismo pedido simultáneamente.
+    # Si Pedido.usuario permite NULL, PostgreSQL genera un LEFT OUTER JOIN
+    # y no permite aplicar FOR UPDATE sobre el lado nullable del JOIN.
+    #
+    # Solo bloqueamos la fila de Pedido.
+    #
+    # Esto protege frente a:
+    #
+    # - webhook simultáneo;
+    # - retorno exitoso simultáneo;
+    # - webhook repetido;
+    # - doble confirmación.
+    #
     # =========================================================================
 
     try:
@@ -9158,9 +9283,6 @@ def confirmar_pago_mercadopago(
         pedido = (
             Pedido.objects
             .select_for_update()
-            .select_related(
-                "usuario"
-            )
             .get(
                 numero=numero_pedido,
             )
@@ -9322,7 +9444,7 @@ def confirmar_pago_mercadopago(
     # IDEMPOTENCIA
     # =========================================================================
     #
-    # Caso:
+    # Ejemplos:
     #
     # webhook -> confirma
     # retorno -> intenta confirmar nuevamente
@@ -9333,13 +9455,12 @@ def confirmar_pago_mercadopago(
     # webhook #2
     #
     # Si ya está aprobado con exactamente el mismo payment_id,
-    # no hacemos absolutamente nada.
+    # no volvemos a ejecutar ninguna acción.
     # =========================================================================
 
     if (
         pedido.pago_aprobado
-        and pedido_payment_id
-        == payment_id
+        and pedido_payment_id == payment_id
     ):
 
         logger.info(
@@ -9362,8 +9483,7 @@ def confirmar_pago_mercadopago(
     if (
         pedido.pago_aprobado
         and pedido_payment_id
-        and pedido_payment_id
-        != payment_id
+        and pedido_payment_id != payment_id
     ):
 
         logger.error(
@@ -9393,9 +9513,7 @@ def confirmar_pago_mercadopago(
     # PAYMENT ID UTILIZADO POR OTRO PEDIDO
     # =========================================================================
     #
-    # Defensa adicional:
-    #
-    # un mismo payment_id de Mercado Pago no debe confirmar
+    # Un mismo payment_id de Mercado Pago no debe confirmar
     # dos pedidos diferentes.
     # =========================================================================
 
@@ -9431,13 +9549,7 @@ def confirmar_pago_mercadopago(
         )
 
     # =========================================================================
-    # CASO LEGACY / PEDIDO APROBADO SIN PAYMENT ID
-    # =========================================================================
-    #
-    # No devolvemos inmediatamente.
-    #
-    # Permitimos que marcar_pedido_como_pagado() complete la información
-    # faltante de forma idempotente.
+    # CASO LEGACY: PEDIDO APROBADO SIN PAYMENT ID
     # =========================================================================
 
     if (
@@ -9570,7 +9682,7 @@ def confirmar_pago_mercadopago(
         )
 
     # =========================================================================
-    # REFRESCAR
+    # REFRESCAR PEDIDO
     # =========================================================================
 
     pedido_confirmado.refresh_from_db()
@@ -9611,6 +9723,50 @@ def confirmar_pago_mercadopago(
         )
 
     # =========================================================================
+    # COMPROBAR PAYMENT ID FINAL
+    # =========================================================================
+    #
+    # Además de verificar pagado/estado_pago,
+    # comprobamos que el payment_id persistido corresponda
+    # efectivamente al pago que estamos confirmando.
+    # =========================================================================
+
+    payment_id_final = (
+        str(
+            getattr(
+                pedido_confirmado,
+                "mercadopago_payment_id",
+                "",
+            )
+            or ""
+        )
+        .strip()
+    )
+
+    if payment_id_final != payment_id:
+
+        logger.error(
+            (
+                "Pedido aprobado pero payment_id final "
+                "no coincide. "
+                "Pedido=%s "
+                "esperado=%s "
+                "guardado=%s."
+            ),
+            pedido_confirmado.numero,
+            payment_id,
+            payment_id_final or "vacío",
+        )
+
+        raise ConfirmacionPagoError(
+            (
+                "El pedido quedó aprobado, pero "
+                "el payment_id persistido no coincide "
+                "con el pago confirmado."
+            )
+        )
+
+    # =========================================================================
     # LOG FINAL
     # =========================================================================
 
@@ -9628,8 +9784,6 @@ def confirmar_pago_mercadopago(
 
     return pedido_confirmado
 
-
-
 def obtener_datos_iniciales_checkout(request):
   
 
@@ -9644,34 +9798,67 @@ def obtener_datos_iniciales_checkout(request):
 
 
 
-
 def registrar_error_inicio_pago(
     *,
     pedido,
     mensaje,
 ):
     """
-    Guarda el error de inicio de pago cuando
-    el modelo contiene campos para ello.
+    Registra de forma segura un error ocurrido
+    al intentar iniciar un pago.
     """
+
+    if pedido is None:
+        return
 
     campos_actualizados = []
 
-    if hasattr(pedido, "estado_pago"):
-        pedido.estado_pago = "error"
-        campos_actualizados.append("estado_pago")
-
-    if hasattr(pedido, "error_pago"):
-        pedido.error_pago = mensaje[:500]
-        campos_actualizados.append("error_pago")
-
-    if campos_actualizados:
-        pedido.save(
-            update_fields=campos_actualizados,
+    if hasattr(
+        pedido,
+        "estado_pago",
+    ):
+        pedido.estado_pago = (
+            Pedido.EstadoPago.REVISION
         )
 
+        campos_actualizados.append(
+            "estado_pago"
+        )
 
+    if hasattr(
+        pedido,
+        "error_pago",
+    ):
+        pedido.error_pago = (
+            str(
+                mensaje
+                or ""
+            )[:500]
+        )
 
+        campos_actualizados.append(
+            "error_pago"
+        )
+
+    if hasattr(
+        pedido,
+        "actualizado",
+    ):
+        campos_actualizados.append(
+            "actualizado"
+        )
+
+    if campos_actualizados:
+
+        pedido.save(
+            update_fields=(
+                list(
+                    dict.fromkeys(
+                        campos_actualizados
+                    )
+                )
+            )
+        )
 
 
 
