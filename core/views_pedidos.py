@@ -1,15 +1,21 @@
 from datetime import timedelta
+import logging
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import (
     staff_member_required,
 )
-from django.http import HttpResponse
+from django.http import (
+    HttpResponse,
+    JsonResponse,
+)
+from django.urls import reverse
 
 
 from core.services.nubox import (
     NuboxError,
     obtener_pdf_nubox,
+    sincronizar_estado_nubox,
 )
 
 from django.contrib.auth.decorators import (
@@ -37,6 +43,9 @@ from core.services.flujo_pedidos import (
     cambiar_estado_pedido,
     construir_timeline,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 # ==========================================================================
@@ -574,6 +583,15 @@ def seguimiento_pedido(
         else:
 
             # =================================================================
+            # AUTORIZAR PEDIDO EN LA SESIÓN
+            # =================================================================
+
+            _autorizar_pedido_en_sesion(
+                request,
+                pedido.numero,
+            )
+
+            # =================================================================
             # CONSTRUIR TIMELINE
             # =================================================================
 
@@ -710,6 +728,11 @@ def seguimiento_pedido(
 
             else:
 
+                _autorizar_pedido_en_sesion(
+                    request,
+                    pedido.numero,
+                )
+
                 return redirect(
                     "core:seguimiento_pedido_numero",
                     numero=pedido.numero,
@@ -743,8 +766,6 @@ def seguimiento_pedido(
 # ==========================================================================
 # PANEL ADMINISTRATIVO DE PEDIDOS
 # ==========================================================================
-
-
 @staff_member_required
 def panel_pedidos(request):
     """
@@ -753,42 +774,15 @@ def panel_pedidos(request):
     El tablero principal muestra exclusivamente ventas
     cuyo pago fue confirmado.
 
-    Organización:
+    Además:
 
-    - Nuevos:
-        pedidos pagados y confirmados.
-
-    - En operación:
-        preparación / listo para despacho.
-
-    - En despacho:
-        pedidos enviados.
-
-    - Finalizados:
-        entregados o cancelados después de una venta válida.
-
-    Pagos pendientes:
-
-    - No forman parte del tablero operativo.
-    - Solo se muestran durante las primeras 48 horas
-      desde su última actualización.
-    - Después de 48 horas dejan de mostrarse como alerta
-      y desaparecen de la bandeja administrativa.
-    - Los registros antiguos NO se eliminan de la base
-      de datos; simplemente dejan de mostrarse aquí.
-
-    Nubox:
-
-    - Se contabilizan boletas pendientes de emisión.
-    - Nubox funciona de forma asíncrona.
-    - Un documento puede tener nubox_document_id y seguir
-      temporalmente con nubox_emitido=False.
-    - El template puede acceder directamente a:
-        pedido.nubox_document_id
-        pedido.nubox_folio
-        pedido.nubox_estado
-        pedido.nubox_emitido
-        pedido.nubox_ultimo_error
+    - sincroniza automáticamente una cantidad limitada
+      de documentos Nubox pendientes;
+    - evita mantener boletas marcadas como pendientes
+      cuando Nubox ya terminó su emisión;
+    - no vuelve a emitir documentos;
+    - solamente consulta documentos que ya poseen
+      nubox_document_id.
     """
 
     # =========================================================================
@@ -843,27 +837,97 @@ def panel_pedidos(request):
     # VENTAS CONFIRMADAS
     # =========================================================================
 
-    ventas_confirmadas = pedidos.filter(
-        pagado=True,
-        estado_pago=(
-            Pedido.EstadoPago.APROBADO
-        ),
+    ventas_confirmadas = (
+        pedidos.filter(
+            pagado=True,
+            estado_pago=(
+                Pedido.EstadoPago.APROBADO
+            ),
+        )
     )
+
+    # =========================================================================
+    # SINCRONIZACIÓN AUTOMÁTICA NUBOX
+    # =========================================================================
+    #
+    # Importante:
+    #
+    # - Solo consultamos documentos que Nubox ya recibió.
+    # - No volvemos a emitir ninguna boleta.
+    # - Procesamos una cantidad limitada para no hacer
+    #   lenta la carga del panel.
+    # - Evitamos volver a consultar documentos recién
+    #   sincronizados.
+    # =========================================================================
+
+    limite_sincronizacion_nubox = (
+        timezone.now()
+        - timedelta(
+            seconds=15
+        )
+    )
+
+    documentos_nubox_pendientes = (
+        Pedido.objects
+        .filter(
+            pagado=True,
+            estado_pago=(
+                Pedido.EstadoPago.APROBADO
+            ),
+            nubox_emitido=False,
+            nubox_document_id__isnull=False,
+            actualizado__lt=(
+                limite_sincronizacion_nubox
+            ),
+        )
+        .exclude(
+            nubox_document_id=""
+        )
+        .order_by(
+            "actualizado",
+        )[:10]
+    )
+
+    for pedido_nubox in (
+        documentos_nubox_pendientes
+    ):
+
+        try:
+
+            sincronizar_estado_nubox(
+                pedido_nubox
+            )
+
+        except NuboxError:
+
+            # El panel administrativo no debe
+            # dejar de cargar si Nubox está
+            # temporalmente no disponible.
+            pass
+
+        except Exception:
+
+            # Mismo criterio:
+            # un problema externo de Nubox no
+            # debe romper el panel completo.
+            pass
 
     # =========================================================================
     # TODOS LOS PAGOS PENDIENTES
     # =========================================================================
 
-    pendientes_pago_todos = pedidos.filter(
-        pagado=False,
-        estado_pago__in=[
-            Pedido.EstadoPago.PENDIENTE,
-            Pedido.EstadoPago.INICIADO,
-        ],
+    pendientes_pago_todos = (
+        pedidos.filter(
+            pagado=False,
+            estado_pago__in=[
+                Pedido.EstadoPago.PENDIENTE,
+                Pedido.EstadoPago.INICIADO,
+            ],
+        )
     )
 
     # =========================================================================
-    # LÍMITE DE VISIBILIDAD DE PAGOS PENDIENTES
+    # LÍMITE DE VISIBILIDAD
     # =========================================================================
 
     limite_pendientes_visibles = (
@@ -906,56 +970,52 @@ def panel_pedidos(request):
     # BANDEJAS OPERATIVAS
     # =========================================================================
 
-    nuevos = ventas_confirmadas.filter(
-        estado=(
-            Pedido.EstadoPedido.CONFIRMADO
-        ),
+    nuevos = (
+        ventas_confirmadas.filter(
+            estado=(
+                Pedido.EstadoPedido.CONFIRMADO
+            ),
+        )
     )
 
-    operacion = ventas_confirmadas.filter(
-        estado__in=[
-            Pedido.EstadoPedido.PREPARACION,
-            Pedido.EstadoPedido.LISTO,
-        ],
+    operacion = (
+        ventas_confirmadas.filter(
+            estado__in=[
+                Pedido.EstadoPedido.PREPARACION,
+                Pedido.EstadoPedido.LISTO,
+            ],
+        )
     )
 
-    despacho = ventas_confirmadas.filter(
-        estado=(
-            Pedido.EstadoPedido.ENVIADO
-        ),
+    despacho = (
+        ventas_confirmadas.filter(
+            estado=(
+                Pedido.EstadoPedido.ENVIADO
+            ),
+        )
     )
 
-    finalizados = ventas_confirmadas.filter(
-        estado__in=[
-            Pedido.EstadoPedido.ENTREGADO,
-            Pedido.EstadoPedido.CANCELADO,
-        ],
+    finalizados = (
+        ventas_confirmadas.filter(
+            estado__in=[
+                Pedido.EstadoPedido.ENTREGADO,
+                Pedido.EstadoPedido.CANCELADO,
+            ],
+        )
     )
 
     # =========================================================================
     # NUBOX
-    # =========================================================================
-    #
-    # Venta pagada que todavía no registra
-    # una boleta electrónica emitida.
-    #
-    # IMPORTANTE:
-    #
-    # Nubox es asíncrono.
-    #
-    # Por eso aquí incluimos tanto:
-    #
-    # - solicitudes todavía no enviadas;
-    # - documentos recibidos por Nubox pero pendientes.
-    #
-    # nubox_emitido=True significa que el documento
-    # ya fue confirmado como emitido.
     # =========================================================================
 
     boletas_pendientes = (
         ventas_confirmadas
         .filter(
             nubox_emitido=False,
+            nubox_document_id__isnull=False,
+        )
+        .exclude(
+            nubox_document_id=""
         )
         .order_by(
             "-actualizado",
@@ -971,9 +1031,7 @@ def panel_pedidos(request):
         "operacion": operacion,
         "despacho": despacho,
         "finalizados": finalizados,
-
         "pendientes": pendientes_pago,
-
         "boletas": boletas_pendientes,
     }
 
@@ -1087,10 +1145,6 @@ def panel_pedidos(request):
     # =========================================================================
     # TARJETAS DEL TABLERO
     # =========================================================================
-    #
-    # Pagos pendientes y Nubox son incidencias
-    # administrativas, no estados logísticos.
-    # =========================================================================
 
     bandejas = []
 
@@ -1187,7 +1241,7 @@ def panel_pedidos(request):
             ),
 
             # =============================================================
-            # CONTADORES OPERATIVOS
+            # CONTADORES
             # =============================================================
 
             "total_principal": (
@@ -1217,10 +1271,6 @@ def panel_pedidos(request):
             "total_pendientes_recientes": (
                 total_pendientes_pago
             ),
-
-            # =============================================================
-            # HISTÓRICO EXPIRADO
-            # =============================================================
 
             "total_pendientes_expirados": (
                 total_pendientes_expirados
@@ -1255,6 +1305,7 @@ def panel_pedidos(request):
             ],
         },
     )
+
 
 
 # ==========================================================================
@@ -1415,6 +1466,188 @@ def panel_pedido_detalle(
 
 
 @require_http_methods(["GET"])
+def estado_boleta_nubox(
+    request,
+    numero,
+):
+    """
+    Consulta el estado más reciente de la boleta en Nubox.
+
+    Está pensado para el polling AJAX de la página de confirmación.
+    Si Nubox todavía está procesando el documento, devuelve el estado
+    actual sin bloquear la compra ni volver a emitir la boleta.
+
+    IMPORTANTE:
+
+    - Nunca crea una segunda boleta.
+    - Nunca cambia el X-Idempotence-id.
+    - Solo sincroniza un documento Nubox ya existente.
+    - No expone credenciales ni mensajes internos de Nubox al navegador.
+    """
+
+    # =========================================================================
+    # NORMALIZAR Y OBTENER PEDIDO
+    # =========================================================================
+
+    numero = _normalizar_numero_pedido(
+        numero
+    )
+
+    pedido = get_object_or_404(
+        Pedido.objects.select_related(
+            "usuario",
+        ),
+        numero__iexact=numero,
+    )
+
+    # =========================================================================
+    # AUTORIZACIÓN
+    # =========================================================================
+
+    if not _usuario_puede_ver(
+        request,
+        pedido,
+    ):
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "No autorizado.",
+            },
+            status=403,
+        )
+
+    # =========================================================================
+    # VALIDAR PAGO
+    # =========================================================================
+
+    if not pedido.pago_aprobado:
+        return JsonResponse(
+            {
+                "ok": False,
+                "emitido": False,
+                "estado": "PAGO_NO_APROBADO",
+                "folio": None,
+                "descarga_url": None,
+            },
+            status=409,
+        )
+
+    # =========================================================================
+    # TODAVÍA NO EXISTE DOCUMENT ID
+    # =========================================================================
+
+    if not pedido.nubox_document_id:
+        response = JsonResponse(
+            {
+                "ok": True,
+                "emitido": False,
+                "estado": (
+                    pedido.nubox_estado
+                    or "PREPARANDO"
+                ),
+                "folio": None,
+                "descarga_url": None,
+                "error_temporal": bool(
+                    pedido.nubox_ultimo_error
+                ),
+            }
+        )
+
+        response[
+            "Cache-Control"
+        ] = "no-store"
+
+        return response
+
+    # =========================================================================
+    # SINCRONIZAR ESTADO REAL CON NUBOX
+    # =========================================================================
+
+    if not pedido.nubox_emitido:
+
+        try:
+            sincronizar_estado_nubox(
+                pedido
+            )
+
+        except NuboxError as error:
+
+            logger.warning(
+                (
+                    "No fue posible sincronizar "
+                    "Nubox para pedido %s: %s"
+                ),
+                pedido.numero,
+                error,
+            )
+
+        except Exception:
+
+            logger.exception(
+                (
+                    "Error inesperado al sincronizar "
+                    "Nubox para pedido %s."
+                ),
+                pedido.numero,
+            )
+
+        pedido.refresh_from_db()
+
+    # =========================================================================
+    # URL DE DESCARGA
+    # =========================================================================
+
+    descarga_url = None
+
+    if pedido.nubox_emitido:
+        descarga_url = reverse(
+            "core:descargar_boleta_nubox",
+            kwargs={
+                "numero": pedido.numero,
+            },
+        )
+
+    # =========================================================================
+    # RESPUESTA JSON
+    # =========================================================================
+
+    response = JsonResponse(
+        {
+            "ok": True,
+            "document_id": (
+                pedido.nubox_document_id
+            ),
+            "emitido": bool(
+                pedido.nubox_emitido
+            ),
+            "estado": (
+                pedido.nubox_estado
+                or "PROCESANDO"
+            ),
+            "folio": (
+                pedido.nubox_folio
+                or None
+            ),
+            "descarga_url": descarga_url,
+            "error_temporal": bool(
+                pedido.nubox_ultimo_error
+            ),
+        }
+    )
+
+    response[
+        "Cache-Control"
+    ] = "no-store"
+
+    return response
+
+
+# ==========================================================================
+# DESCARGAR BOLETA NUBOX
+# ==========================================================================
+
+
+@require_http_methods(["GET"])
 def descargar_boleta_nubox(
     request,
     numero,
@@ -1425,6 +1658,10 @@ def descargar_boleta_nubox(
 
     Las credenciales de Nubox permanecen
     exclusivamente en el backend.
+
+    Antes de solicitar el PDF se comprueba el estado
+    más reciente del documento para evitar pedir a Nubox
+    un PDF que todavía no ha terminado de emitirse.
     """
 
     # =========================================================================
@@ -1478,6 +1715,51 @@ def descargar_boleta_nubox(
         )
 
     # =========================================================================
+    # SINCRONIZAR ANTES DE DESCARGAR
+    # =========================================================================
+
+    if not pedido.nubox_emitido:
+
+        try:
+            sincronizar_estado_nubox(
+                pedido
+            )
+
+        except NuboxError as error:
+
+            logger.warning(
+                (
+                    "No fue posible sincronizar "
+                    "Nubox antes de descargar. "
+                    "Pedido=%s error=%s"
+                ),
+                pedido.numero,
+                error,
+            )
+
+        except Exception:
+
+            logger.exception(
+                (
+                    "Error inesperado sincronizando "
+                    "Nubox antes de descargar. "
+                    "Pedido=%s"
+                ),
+                pedido.numero,
+            )
+
+        pedido.refresh_from_db()
+
+    if not pedido.nubox_emitido:
+        return HttpResponse(
+            (
+                "La boleta todavía está "
+                "en procesamiento."
+            ),
+            status=409,
+        )
+
+    # =========================================================================
     # OBTENER PDF DESDE NUBOX
     # =========================================================================
 
@@ -1489,10 +1771,39 @@ def descargar_boleta_nubox(
 
     except NuboxError as error:
 
+        logger.warning(
+            (
+                "No fue posible obtener PDF Nubox. "
+                "Pedido=%s document_id=%s error=%s"
+            ),
+            pedido.numero,
+            pedido.nubox_document_id,
+            error,
+        )
+
         return HttpResponse(
             (
-                "No fue posible obtener "
-                f"la boleta: {error}"
+                "No fue posible obtener la boleta "
+                "en este momento. Intenta nuevamente."
+            ),
+            status=502,
+        )
+
+    except Exception:
+
+        logger.exception(
+            (
+                "Error inesperado obteniendo PDF Nubox. "
+                "Pedido=%s document_id=%s"
+            ),
+            pedido.numero,
+            pedido.nubox_document_id,
+        )
+
+        return HttpResponse(
+            (
+                "No fue posible obtener la boleta "
+                "en este momento. Intenta nuevamente."
             ),
             status=502,
         )
@@ -1513,7 +1824,15 @@ def descargar_boleta_nubox(
     response[
         "Content-Disposition"
     ] = (
-        f'inline; filename="{nombre_archivo}"'
+        f'attachment; filename="{nombre_archivo}"'
     )
+
+    response[
+        "Cache-Control"
+    ] = "private, no-store"
+
+    response[
+        "X-Content-Type-Options"
+    ] = "nosniff"
 
     return response

@@ -117,6 +117,24 @@ urlpatterns = [
     name="pedido_confirmacion",
     ),
 
+    path(
+    "pedido/<str:numero>/confirmacion/",
+    views.pedido_confirmacion,
+    name="pedido_confirmacion",
+    ),
+
+    path(
+        "pedido/<str:numero>/nubox/estado/",
+        views_pedidos.estado_boleta_nubox,
+        name="estado_boleta_nubox",
+    ),
+
+    path(
+        "pedidos/<str:numero>/boleta/",
+        views_pedidos.descargar_boleta_nubox,
+        name="descargar_boleta_nubox",
+    ),
+
 
 
 

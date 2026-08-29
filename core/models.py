@@ -530,8 +530,6 @@ class ProductoImagen(models.Model):
 
         return ""
 
-
-
 class Pedido(models.Model):
     # -------------------------------------------------------------------------
     # ESTADOS DEL PEDIDO
@@ -1232,11 +1230,19 @@ class Pedido(models.Model):
             ),
         ]
 
+    # -------------------------------------------------------------------------
+    # REPRESENTACIÓN
+    # -------------------------------------------------------------------------
+
     def __str__(self):
         return (
             f"{self.numero} - "
             f"{self.nombre_completo}"
         )
+
+    # -------------------------------------------------------------------------
+    # DATOS DERIVADOS DEL CLIENTE
+    # -------------------------------------------------------------------------
 
     @property
     def nombre_completo(self):
@@ -1265,35 +1271,29 @@ class Pedido(models.Model):
         )
 
     # -------------------------------------------------------------------------
-    # URL PDF NUBOX
+    # ESTADO Y URL DE NUBOX
     # -------------------------------------------------------------------------
 
     @property
     def nubox_url_pdf(self):
         """
-        URL interna de AUDEX para consultar o descargar
-        la boleta electrónica asociada al pedido.
+        URL interna de AUDEX para descargar
+        la boleta electrónica.
 
-        Esta propiedad NO guarda una URL de Nubox en
-        la base de datos.
+        Solo se expone cuando:
 
-        En su lugar genera una ruta interna de Django:
+        - existe nubox_document_id;
+        - Nubox confirmó que la boleta
+          está efectivamente emitida.
 
-            /pedidos/<numero>/boleta/
-
-        La vista correspondiente será la responsable de:
-
-        - validar permisos;
-        - validar que el pedido esté pagado;
-        - validar que exista nubox_document_id;
-        - consultar el PDF mediante la API de Nubox;
-        - devolver el PDF al navegador.
-
-        De esta forma las credenciales de Nubox nunca
-        quedan expuestas en el frontend.
+        Las credenciales de Nubox permanecen
+        exclusivamente en el backend.
         """
 
-        if not self.nubox_document_id:
+        if (
+            not self.nubox_document_id
+            or not self.nubox_emitido
+        ):
             return ""
 
         return reverse(
@@ -1302,6 +1302,48 @@ class Pedido(models.Model):
                 "numero": self.numero,
             },
         )
+
+    @property
+    def nubox_en_proceso(self):
+        """
+        Nubox ya recibió el documento,
+        pero todavía no confirmó la emisión.
+        """
+
+        return bool(
+            self.nubox_document_id
+            and not self.nubox_emitido
+        )
+
+    @property
+    def nubox_disponible(self):
+        """
+        Indica si la boleta se encuentra
+        completamente emitida y disponible.
+        """
+
+        return bool(
+            self.nubox_document_id
+            and self.nubox_emitido
+        )
+
+    @property
+    def nubox_tiene_error(self):
+        """
+        Indica si existe un error Nubox
+        registrado para el pedido.
+        """
+
+        return bool(
+            str(
+                self.nubox_ultimo_error
+                or ""
+            ).strip()
+        )
+
+    # -------------------------------------------------------------------------
+    # ESTADO DEL PAGO
+    # -------------------------------------------------------------------------
 
     @property
     def pago_aprobado(self):
@@ -1321,6 +1363,10 @@ class Pedido(models.Model):
             and self.pagado
         )
 
+    # -------------------------------------------------------------------------
+    # DESCUENTOS
+    # -------------------------------------------------------------------------
+
     @property
     def tiene_descuento(self):
         return (
@@ -1328,6 +1374,10 @@ class Pedido(models.Model):
             and self.tipo_descuento
             != self.TipoDescuento.NINGUNO
         )
+
+    # -------------------------------------------------------------------------
+    # CORREOS
+    # -------------------------------------------------------------------------
 
     @property
     def email_usuario(self):
@@ -1389,6 +1439,10 @@ class Pedido(models.Model):
             .casefold()
         )
 
+    # -------------------------------------------------------------------------
+    # GUARDADO
+    # -------------------------------------------------------------------------
+
     def save(
         self,
         *args,
@@ -1441,6 +1495,10 @@ class Pedido(models.Model):
             **kwargs,
         )
 
+    # -------------------------------------------------------------------------
+    # GENERAR NÚMERO DE PEDIDO
+    # -------------------------------------------------------------------------
+
     @classmethod
     def _generar_numero_unico(cls):
         while True:
@@ -1464,11 +1522,6 @@ class Pedido(models.Model):
 
             if not existe:
                 return numero
-
-
-
-
-
 
 
 

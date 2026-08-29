@@ -701,7 +701,10 @@ Compra confirmada | Audex
         ====================================================== -->
 
         <article
+            id="nubox-documento"
             class="pago-tarjeta"
+            data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
+            data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
             style="
                 margin-top: 28px;
                 overflow: hidden;
@@ -736,8 +739,8 @@ Compra confirmada | Audex
                         line-height: 1.6;
                     "
                 >
-                    Puedes consultar y descargar los documentos
-                    asociados a esta compra cuando los necesites.
+                    La boleta electrónica se actualizará
+                    automáticamente apenas Nubox termine su emisión.
                 </p>
 
             </div>
@@ -747,341 +750,422 @@ Compra confirmada | Audex
                  BOLETA ELECTRÓNICA NUBOX
             ================================================== -->
 
-            {% if pedido.nubox_emitido %}
+            <div
+                id="nubox-contenido"
+                aria-live="polite"
+            >
 
-                <div
-                    style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        gap: 22px;
-                        padding: 24px 30px;
-                    "
-                >
+                {% if pedido.nubox_disponible %}
+
+                    <!-- =============================================
+                         BOLETA EMITIDA
+                    ============================================== -->
 
                     <div
                         style="
                             display: flex;
                             align-items: center;
-                            gap: 18px;
-                            min-width: 0;
+                            justify-content: space-between;
+                            gap: 22px;
+                            padding: 24px 30px;
+                            flex-wrap: wrap;
                         "
                     >
 
                         <div
                             style="
-                                width: 52px;
-                                height: 52px;
-                                flex: 0 0 52px;
-                                display: grid;
-                                place-items: center;
-                                border-radius: 14px;
-                                background: rgba(92, 207, 242, 0.10);
-                                border: 1px solid rgba(92, 207, 242, 0.18);
-                                color: var(--color-celeste);
-                                font-size: 1.35rem;
-                            "
-                        >
-                            <i class="bi bi-receipt"></i>
-                        </div>
-
-
-                        <div
-                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 18px;
                                 min-width: 0;
                             "
                         >
 
-                            <strong
+                            <div
                                 style="
-                                    display: block;
-                                    margin-bottom: 5px;
-                                    font-size: 1.05rem;
+                                    width: 52px;
+                                    height: 52px;
+                                    flex: 0 0 52px;
+                                    display: grid;
+                                    place-items: center;
+                                    border-radius: 14px;
+                                    background: rgba(92, 207, 242, 0.10);
+                                    border: 1px solid rgba(92, 207, 242, 0.18);
+                                    color: var(--color-celeste);
+                                    font-size: 1.35rem;
                                 "
                             >
-                                Boleta electrónica emitida
-                            </strong>
+                                <i class="bi bi-receipt"></i>
+                            </div>
 
-                            <span
+
+                            <div
                                 style="
-                                    display: block;
-                                    color: var(--color-gris-claro);
-                                    font-size: .92rem;
+                                    min-width: 0;
                                 "
                             >
 
-                                {% if pedido.nubox_folio %}
+                                <strong
+                                    style="
+                                        display: block;
+                                        margin-bottom: 5px;
+                                        font-size: 1.05rem;
+                                    "
+                                >
+                                    Boleta electrónica emitida
+                                </strong>
 
-                                    Boleta N.º
-                                    {{ pedido.nubox_folio }}
+                                <span
+                                    style="
+                                        display: block;
+                                        color: var(--color-gris-claro);
+                                        font-size: .92rem;
+                                    "
+                                >
 
-                                {% else %}
+                                    {% if pedido.nubox_folio %}
 
-                                    Documento tributario de tu compra
+                                        Boleta N.º
+                                        {{ pedido.nubox_folio }}
+
+                                    {% else %}
+
+                                        Documento tributario disponible
+
+                                    {% endif %}
+
+                                </span>
+
+
+                                {% if pedido.nubox_document_id %}
+
+                                    <small
+                                        style="
+                                            display: block;
+                                            margin-top: 5px;
+                                            color: var(--color-gris-claro);
+                                        "
+                                    >
+                                        ID Nubox:
+                                        {{ pedido.nubox_document_id }}
+                                    </small>
 
                                 {% endif %}
 
-                            </span>
-
-
-                            {% if pedido.nubox_document_id %}
-
-                                <small
-                                    style="
-                                        display: block;
-                                        margin-top: 5px;
-                                        color: var(--color-gris-claro);
-                                    "
-                                >
-                                    ID Nubox:
-                                    {{ pedido.nubox_document_id }}
-                                </small>
-
-                            {% endif %}
+                            </div>
 
                         </div>
 
+
+                        {% if pedido.nubox_url_pdf %}
+
+                            <a
+                                href="{{ pedido.nubox_url_pdf }}"
+                                class="boton boton--primario"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                <i class="bi bi-download"></i>
+                                Descargar boleta
+                            </a>
+
+                        {% else %}
+
+                            <div
+                                style="
+                                    width: 44px;
+                                    height: 44px;
+                                    flex: 0 0 44px;
+                                    display: grid;
+                                    place-items: center;
+                                    border-radius: 50%;
+                                    border: 1px solid rgba(255, 255, 255, 0.10);
+                                    color: var(--color-celeste);
+                                    font-size: 1.25rem;
+                                "
+                            >
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+
+                        {% endif %}
+
                     </div>
 
+
+                {% elif pedido.nubox_tiene_error %}
+
+                    <!-- =============================================
+                         ERROR / INCIDENCIA TEMPORAL
+                    ============================================== -->
 
                     <div
                         style="
-                            width: 44px;
-                            height: 44px;
-                            flex: 0 0 44px;
-                            display: grid;
-                            place-items: center;
-                            border-radius: 50%;
-                            border: 1px solid rgba(255, 255, 255, 0.10);
-                            color: var(--color-celeste);
-                            font-size: 1.25rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 22px;
+                            padding: 24px 30px;
+                            flex-wrap: wrap;
                         "
                     >
-                        <i class="bi bi-check-lg"></i>
-                    </div>
 
-                </div>
-
-
-            {% elif pedido.nubox_ultimo_error %}
-
-                <!-- =================================================
-                     ERROR DE EMISIÓN NUBOX
-                ================================================== -->
-
-                <div
-                    style="
-                        display: flex;
-                        align-items: center;
-                        gap: 18px;
-                        padding: 24px 30px;
-                    "
-                >
-
-                    <div
-                        style="
-                            width: 52px;
-                            height: 52px;
-                            flex: 0 0 52px;
-                            display: grid;
-                            place-items: center;
-                            border-radius: 14px;
-                            background: rgba(244, 201, 93, 0.10);
-                            color: #f4c95d;
-                            font-size: 1.3rem;
-                        "
-                    >
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
-
-                    <div>
-
-                        <strong
+                        <div
                             style="
-                                display: block;
-                                margin-bottom: 5px;
+                                display: flex;
+                                align-items: center;
+                                gap: 18px;
                             "
                         >
-                            Boleta temporalmente no disponible
-                        </strong>
+
+                            <div
+                                style="
+                                    width: 52px;
+                                    height: 52px;
+                                    flex: 0 0 52px;
+                                    display: grid;
+                                    place-items: center;
+                                    border-radius: 14px;
+                                    background: rgba(244, 201, 93, 0.10);
+                                    color: #f4c95d;
+                                    font-size: 1.3rem;
+                                "
+                            >
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+
+                            <div>
+
+                                <strong
+                                    style="
+                                        display: block;
+                                        margin-bottom: 5px;
+                                    "
+                                >
+                                    Boleta temporalmente no disponible
+                                </strong>
+
+                                <span
+                                    data-nubox-estado
+                                    style="
+                                        color: var(--color-gris-claro);
+                                    "
+                                >
+                                    Estamos intentando actualizar el
+                                    documento electrónico de tu compra.
+                                </span>
+
+                            </div>
+
+                        </div>
+
 
                         <span
+                            data-nubox-indicador
                             style="
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
                                 color: var(--color-gris-claro);
+                                font-size: .9rem;
                             "
                         >
-                            Estamos procesando el documento electrónico
-                            de tu compra.
+                            <i
+                                class="bi bi-arrow-repeat"
+                                aria-hidden="true"
+                            ></i>
+                            Reintentando automáticamente
                         </span>
 
                     </div>
 
-                </div>
 
+                {% elif pedido.nubox_en_proceso %}
 
-            {% elif pedido.nubox_document_id %}
-
-                <!-- =================================================
-                     NUBOX RECIBIÓ EL DOCUMENTO
-                ================================================== -->
-
-                <div
-                    style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        gap: 22px;
-                        padding: 24px 30px;
-                    "
-                >
+                    <!-- =============================================
+                         DOCUMENTO RECIBIDO POR NUBOX
+                    ============================================== -->
 
                     <div
                         style="
                             display: flex;
                             align-items: center;
-                            gap: 18px;
+                            justify-content: space-between;
+                            gap: 22px;
+                            padding: 24px 30px;
+                            flex-wrap: wrap;
                         "
                     >
 
                         <div
                             style="
-                                width: 52px;
-                                height: 52px;
-                                flex: 0 0 52px;
-                                display: grid;
-                                place-items: center;
-                                border-radius: 14px;
-                                background: rgba(244, 201, 93, 0.10);
-                                color: #f4c95d;
-                                font-size: 1.3rem;
+                                display: flex;
+                                align-items: center;
+                                gap: 18px;
                             "
                         >
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
 
-                        <div>
-
-                            <strong
+                            <div
                                 style="
-                                    display: block;
-                                    margin-bottom: 5px;
+                                    width: 52px;
+                                    height: 52px;
+                                    flex: 0 0 52px;
+                                    display: grid;
+                                    place-items: center;
+                                    border-radius: 14px;
+                                    background: rgba(244, 201, 93, 0.10);
+                                    color: #f4c95d;
+                                    font-size: 1.3rem;
                                 "
                             >
-                                Boleta electrónica en procesamiento
-                            </strong>
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
 
-                            <span
-                                style="
-                                    color: var(--color-gris-claro);
-                                "
-                            >
+                            <div>
 
-                                {% if pedido.nubox_estado %}
+                                <strong
+                                    style="
+                                        display: block;
+                                        margin-bottom: 5px;
+                                    "
+                                >
+                                    Boleta electrónica en procesamiento
+                                </strong>
 
-                                    Estado:
-                                    {{ pedido.nubox_estado }}
+                                <span
+                                    data-nubox-estado
+                                    style="
+                                        color: var(--color-gris-claro);
+                                    "
+                                >
 
-                                {% else %}
+                                    {% if pedido.nubox_estado %}
 
-                                    Nubox recibió el documento y
-                                    está procesando su emisión.
+                                        Estado:
+                                        {{ pedido.nubox_estado }}
 
-                                {% endif %}
+                                    {% else %}
 
-                            </span>
+                                        Nubox recibió el documento y
+                                        está procesando su emisión.
+
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
 
                         </div>
+
+
+                        <span
+                            data-nubox-indicador
+                            style="
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                                color: var(--color-gris-claro);
+                                font-size: .9rem;
+                            "
+                        >
+                            <i
+                                class="bi bi-arrow-repeat"
+                                aria-hidden="true"
+                            ></i>
+                            Actualizando automáticamente
+                        </span>
 
                     </div>
 
 
-                    <a
-                        href="{% url 'core:pedido_confirmacion' numero=pedido.numero %}"
-                        class="boton boton--secundario"
-                    >
-                        <i class="bi bi-arrow-clockwise"></i>
-                        Actualizar
-                    </a>
+                {% else %}
 
-                </div>
-
-
-            {% else %}
-
-                <!-- =================================================
-                     BOLETA TODAVÍA EN PROCESO
-                ================================================== -->
-
-                <div
-                    style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        gap: 22px;
-                        padding: 24px 30px;
-                    "
-                >
+                    <!-- =============================================
+                         BOLETA TODAVÍA EN PREPARACIÓN
+                    ============================================== -->
 
                     <div
                         style="
                             display: flex;
                             align-items: center;
-                            gap: 18px;
+                            justify-content: space-between;
+                            gap: 22px;
+                            padding: 24px 30px;
+                            flex-wrap: wrap;
                         "
                     >
 
                         <div
                             style="
-                                width: 52px;
-                                height: 52px;
-                                flex: 0 0 52px;
-                                display: grid;
-                                place-items: center;
-                                border-radius: 14px;
-                                background: rgba(244, 201, 93, 0.10);
-                                color: #f4c95d;
-                                font-size: 1.3rem;
+                                display: flex;
+                                align-items: center;
+                                gap: 18px;
                             "
                         >
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
 
-                        <div>
-
-                            <strong
+                            <div
                                 style="
-                                    display: block;
-                                    margin-bottom: 5px;
+                                    width: 52px;
+                                    height: 52px;
+                                    flex: 0 0 52px;
+                                    display: grid;
+                                    place-items: center;
+                                    border-radius: 14px;
+                                    background: rgba(244, 201, 93, 0.10);
+                                    color: #f4c95d;
+                                    font-size: 1.3rem;
                                 "
                             >
-                                Boleta electrónica en preparación
-                            </strong>
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
 
-                            <span
-                                style="
-                                    color: var(--color-gris-claro);
-                                "
-                            >
-                                La boleta estará disponible
-                                en unos instantes.
-                            </span>
+                            <div>
+
+                                <strong
+                                    style="
+                                        display: block;
+                                        margin-bottom: 5px;
+                                    "
+                                >
+                                    Boleta electrónica en preparación
+                                </strong>
+
+                                <span
+                                    data-nubox-estado
+                                    style="
+                                        color: var(--color-gris-claro);
+                                    "
+                                >
+                                    Estamos preparando el documento
+                                    electrónico de tu compra.
+                                </span>
+
+                            </div>
 
                         </div>
+
+
+                        <span
+                            data-nubox-indicador
+                            style="
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                                color: var(--color-gris-claro);
+                                font-size: .9rem;
+                            "
+                        >
+                            <i
+                                class="bi bi-arrow-repeat"
+                                aria-hidden="true"
+                            ></i>
+                            Esperando respuesta de Nubox
+                        </span>
 
                     </div>
 
+                {% endif %}
 
-                    <a
-                        href="{% url 'core:pedido_confirmacion' numero=pedido.numero %}"
-                        class="boton boton--secundario"
-                    >
-                        <i class="bi bi-arrow-clockwise"></i>
-                        Actualizar
-                    </a>
-
-                </div>
-
-            {% endif %}
+            </div>
 
         </article>
 
@@ -1287,67 +1371,261 @@ Compra confirmada | Audex
         "DOMContentLoaded",
         () => {
 
+            // =============================================================
+            // COPIAR NÚMERO DE PEDIDO
+            // =============================================================
+
             const botonCopiar = document.querySelector(
                 ".pago-exitoso__copiar"
             );
 
-            if (!botonCopiar) {
+            if (botonCopiar) {
+
+                botonCopiar.addEventListener(
+                    "click",
+                    async () => {
+
+                        const numeroPedido =
+                            botonCopiar.dataset.numeroPedido;
+
+                        try {
+
+                            await navigator.clipboard.writeText(
+                                numeroPedido
+                            );
+
+                            botonCopiar.innerHTML =
+                                '<i class="bi bi-check-lg"></i>';
+
+                            botonCopiar.classList.add(
+                                "pago-exitoso__copiar--correcto"
+                            );
+
+                            botonCopiar.setAttribute(
+                                "aria-label",
+                                "Número copiado"
+                            );
+
+                            window.setTimeout(
+                                () => {
+
+                                    botonCopiar.innerHTML =
+                                        '<i class="bi bi-copy"></i>';
+
+                                    botonCopiar.classList.remove(
+                                        "pago-exitoso__copiar--correcto"
+                                    );
+
+                                    botonCopiar.setAttribute(
+                                        "aria-label",
+                                        "Copiar número del pedido"
+                                    );
+
+                                },
+                                1800,
+                            );
+
+                        } catch (error) {
+
+                            console.error(
+                                "No fue posible copiar el pedido:",
+                                error,
+                            );
+
+                        }
+                    },
+                );
+            }
+
+
+            // =============================================================
+            // ESTADO AUTOMÁTICO DE LA BOLETA NUBOX
+            // =============================================================
+
+            const documentoNubox = document.getElementById(
+                "nubox-documento"
+            );
+
+            if (!documentoNubox) {
                 return;
             }
 
-            botonCopiar.addEventListener(
-                "click",
-                async () => {
+            if (
+                documentoNubox.dataset.nuboxEmitido
+                === "true"
+            ) {
+                return;
+            }
 
-                    const numeroPedido =
-                        botonCopiar.dataset.numeroPedido;
+            const statusUrl =
+                documentoNubox.dataset.nuboxStatusUrl;
 
-                    try {
+            if (!statusUrl) {
+                return;
+            }
 
-                        await navigator.clipboard.writeText(
-                            numeroPedido
+            const estadoElemento =
+                documentoNubox.querySelector(
+                    "[data-nubox-estado]"
+                );
+
+            const indicadorElemento =
+                documentoNubox.querySelector(
+                    "[data-nubox-indicador]"
+                );
+
+            let intentos = 0;
+            let consultaEnCurso = false;
+
+            const maxIntentos = 20;
+            const esperaInicial = 2500;
+            const intervaloConsulta = 3000;
+
+
+            const detenerIndicador = (
+                mensaje,
+            ) => {
+
+                if (!indicadorElemento) {
+                    return;
+                }
+
+                indicadorElemento.innerHTML = "";
+                indicadorElemento.textContent = mensaje;
+            };
+
+
+            const consultarEstadoNubox = async () => {
+
+                if (consultaEnCurso) {
+                    return;
+                }
+
+                consultaEnCurso = true;
+                intentos += 1;
+
+                try {
+
+                    const response = await fetch(
+                        statusUrl,
+                        {
+                            method: "GET",
+                            headers: {
+                                "X-Requested-With": (
+                                    "XMLHttpRequest"
+                                ),
+                                "Accept": "application/json",
+                            },
+                            credentials: "same-origin",
+                            cache: "no-store",
+                        },
+                    );
+
+                    if (
+                        response.status === 401
+                        || response.status === 403
+                    ) {
+
+                        detenerIndicador(
+                            "No fue posible actualizar automáticamente."
                         );
 
-                        botonCopiar.innerHTML =
-                            '<i class="bi bi-check-lg"></i>';
+                        return;
+                    }
 
-                        botonCopiar.classList.add(
-                            "pago-exitoso__copiar--correcto"
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP ${response.status}`
                         );
+                    }
 
-                        botonCopiar.setAttribute(
-                            "aria-label",
-                            "Número copiado"
+                    const data = await response.json();
+
+                    if (
+                        data
+                        && data.estado
+                        && estadoElemento
+                    ) {
+
+                        if (
+                            data.estado === "PREPARANDO"
+                            || data.estado === "PROCESANDO"
+                        ) {
+
+                            estadoElemento.textContent = (
+                                "La boleta está siendo procesada."
+                            );
+
+                        } else {
+
+                            estadoElemento.textContent = (
+                                `Estado: ${data.estado}`
+                            );
+                        }
+                    }
+
+                    if (
+                        data
+                        && data.emitido
+                    ) {
+
+                        detenerIndicador(
+                            "Boleta emitida correctamente."
                         );
 
                         window.setTimeout(
                             () => {
-
-                                botonCopiar.innerHTML =
-                                    '<i class="bi bi-copy"></i>';
-
-                                botonCopiar.classList.remove(
-                                    "pago-exitoso__copiar--correcto"
-                                );
-
-                                botonCopiar.setAttribute(
-                                    "aria-label",
-                                    "Copiar número del pedido"
-                                );
-
+                                window.location.reload();
                             },
-                            1800,
+                            350,
                         );
 
-                    } catch (error) {
-
-                        console.error(
-                            "No fue posible copiar el pedido:",
-                            error,
-                        );
-
+                        return;
                     }
-                },
+
+                } catch (error) {
+
+                    console.warn(
+                        "No fue posible consultar el estado Nubox:",
+                        error,
+                    );
+
+                } finally {
+
+                    consultaEnCurso = false;
+                }
+
+
+                if (
+                    intentos
+                    < maxIntentos
+                ) {
+
+                    window.setTimeout(
+                        consultarEstadoNubox,
+                        intervaloConsulta,
+                    );
+
+                    return;
+                }
+
+
+                detenerIndicador(
+                    "La emisión continúa en proceso."
+                );
+
+                if (estadoElemento) {
+                    estadoElemento.textContent = (
+                        "La boleta sigue en procesamiento. "
+                        + "Puedes volver a esta página más tarde."
+                    );
+                }
+            };
+
+
+            window.setTimeout(
+                consultarEstadoNubox,
+                esperaInicial,
             );
         },
     );

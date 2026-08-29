@@ -16,7 +16,7 @@ Gestión de pedidos | Audex
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/panel_pedidos.css' %}?v=3"
+    href="{% static 'core/css/panel_pedidos.css' %}?v=4"
 >
 
 {% endblock %}
@@ -250,7 +250,7 @@ Gestión de pedidos | Audex
                         <span>
 
                             Intentos de pago con actividad
-                            durante las últimas 24 horas.
+                            durante las últimas 48 horas.
 
                             {% if total_pendientes_pago > total_pendientes_recientes %}
 
@@ -296,7 +296,7 @@ Gestión de pedidos | Audex
                             {{ total_pendientes_pago }}
                             intentos pendientes históricos,
                             pero ninguno tuvo actividad
-                            durante las últimas 24 horas.
+                            durante las últimas 48 horas.
 
                         </span>
 
@@ -635,7 +635,7 @@ Gestión de pedidos | Audex
 
                                 <div class="pedido-admin-item__documentos">
 
-                                    {% if pedido.nubox_emitido and pedido.nubox_url_pdf %}
+                                    {% if pedido.nubox_disponible and pedido.nubox_url_pdf %}
 
                                         <a
                                             href="{{ pedido.nubox_url_pdf }}"
@@ -658,7 +658,7 @@ Gestión de pedidos | Audex
                                         </a>
 
 
-                                    {% elif pedido.nubox_emitido %}
+                                    {% elif pedido.nubox_disponible %}
 
                                         <span
                                             class="boton boton--secundario"
@@ -677,7 +677,7 @@ Gestión de pedidos | Audex
                                         </span>
 
 
-                                    {% elif pedido.nubox_document_id %}
+                                    {% elif pedido.nubox_en_proceso %}
 
                                         <span class="pedido-admin-boleta">
 
@@ -696,7 +696,7 @@ Gestión de pedidos | Audex
                                         </span>
 
 
-                                    {% elif pedido.nubox_ultimo_error %}
+                                    {% elif pedido.nubox_tiene_error %}
 
                                         <span
                                             class="
@@ -1025,7 +1025,7 @@ Gestión de pedidos | Audex
                                          BOLETA RÁPIDA
                                     ====================================== -->
 
-                                    {% if pedido.nubox_emitido and pedido.nubox_url_pdf %}
+                                    {% if pedido.nubox_disponible and pedido.nubox_url_pdf %}
 
                                         <a
                                             href="{{ pedido.nubox_url_pdf }}"
@@ -1050,7 +1050,7 @@ Gestión de pedidos | Audex
                                         </a>
 
 
-                                    {% elif pedido.nubox_emitido %}
+                                    {% elif pedido.nubox_disponible %}
 
                                         <span
                                             class="tarjeta-pedido-admin__boleta"
@@ -1070,7 +1070,7 @@ Gestión de pedidos | Audex
                                         </span>
 
 
-                                    {% elif pedido.nubox_document_id %}
+                                    {% elif pedido.nubox_en_proceso %}
 
                                         <span
                                             class="tarjeta-pedido-admin__boleta"
@@ -1087,6 +1087,33 @@ Gestión de pedidos | Audex
                                                 Procesando
 
                                             {% endif %}
+
+                                        </span>
+
+
+                                    {% elif pedido.nubox_tiene_error %}
+
+                                        <span
+                                            class="tarjeta-pedido-admin__boleta pedido-admin-boleta--error"
+                                            title="Error de emisión Nubox"
+                                        >
+
+                                            <i class="bi bi-exclamation-triangle"></i>
+
+                                            Error Nubox
+
+                                        </span>
+
+
+                                    {% elif pedido.pagado %}
+
+                                        <span
+                                            class="tarjeta-pedido-admin__boleta"
+                                        >
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            Boleta pendiente
 
                                         </span>
 

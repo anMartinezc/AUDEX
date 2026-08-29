@@ -1,5 +1,6 @@
 # core/services/nubox.py
 
+import json
 import logging
 import re
 import uuid
@@ -91,6 +92,412 @@ REGIONES_NUBOX = {
 
 
 # =============================================================================
+# COMUNAS
+# =============================================================================
+
+
+# Códigos legalCode publicados por Nubox para
+# client.territorialDivisionL2LegalCode.
+#
+# Las claves están normalizadas con el mismo criterio
+# utilizado por _normalizar_texto().
+COMUNAS_NUBOX = {
+    # 01 - Tarapacá
+    "iquique": "01101",
+    "alto hospicio": "01107",
+    "pozo almonte": "01401",
+    "camina": "01402",
+    "colchane": "01403",
+    "huara": "01404",
+    "pica": "01405",
+
+    # 02 - Antofagasta
+    "antofagasta": "02101",
+    "mejillones": "02102",
+    "sierra gorda": "02103",
+    "taltal": "02104",
+    "calama": "02201",
+    "ollague": "02202",
+    "san pedro de atacama": "02203",
+    "tocopilla": "02301",
+    "maria elena": "02302",
+
+    # 03 - Atacama
+    "copiapo": "03101",
+    "caldera": "03102",
+    "tierra amarilla": "03103",
+    "chanaral": "03201",
+    "diego de almagro": "03202",
+    "vallenar": "03301",
+    "alto del carmen": "03302",
+    "freirina": "03303",
+    "huasco": "03304",
+
+    # 04 - Coquimbo
+    "la serena": "04101",
+    "coquimbo": "04102",
+    "andacollo": "04103",
+    "la higuera": "04104",
+    "paiguano": "04105",
+    "vicuna": "04106",
+    "illapel": "04201",
+    "canela": "04202",
+    "los vilos": "04203",
+    "salamanca": "04204",
+    "ovalle": "04301",
+    "combarbala": "04302",
+    "monte patria": "04303",
+    "punitaqui": "04304",
+    "rio hurtado": "04305",
+
+    # 05 - Valparaíso
+    "valparaiso": "05101",
+    "casablanca": "05102",
+    "concon": "05103",
+    "juan fernandez": "05104",
+    "puchuncavi": "05105",
+    "quintero": "05107",
+    "vina del mar": "05109",
+    "isla de pascua": "05201",
+    "los andes": "05301",
+    "calle larga": "05302",
+    "rinconada": "05303",
+    "san esteban": "05304",
+    "la ligua": "05401",
+    "cabildo": "05402",
+    "papudo": "05403",
+    "petorca": "05404",
+    "zapallar": "05405",
+    "quillota": "05501",
+    "calera": "05502",
+    "hijuelas": "05503",
+    "la cruz": "05504",
+    "nogales": "05506",
+    "san antonio": "05601",
+    "algarrobo": "05602",
+    "cartagena": "05603",
+    "el quisco": "05604",
+    "el tabo": "05605",
+    "santo domingo": "05606",
+    "san felipe": "05701",
+    "catemu": "05702",
+    "llaillay": "05703",
+    "panquehue": "05704",
+    "putaendo": "05705",
+    "santa maria": "05706",
+    "quilpue": "05801",
+    "limache": "05802",
+    "olmue": "05803",
+    "villa alemana": "05804",
+
+    # 06 - O'Higgins
+    "rancagua": "06101",
+    "codegua": "06102",
+    "coinco": "06103",
+    "coltauco": "06104",
+    "donihue": "06105",
+    "graneros": "06106",
+    "las cabras": "06107",
+    "machali": "06108",
+    "malloa": "06109",
+    "mostazal": "06110",
+    "olivar": "06111",
+    "peumo": "06112",
+    "pichidegua": "06113",
+    "quinta de tilcoco": "06114",
+    "rengo": "06115",
+    "requinoa": "06116",
+    "san vicente": "06117",
+    "pichilemu": "06201",
+    "la estrella": "06202",
+    "litueche": "06203",
+    "marchihue": "06204",
+    "navidad": "06205",
+    "paredones": "06206",
+    "san fernando": "06301",
+    "chepica": "06302",
+    "chimbarongo": "06303",
+    "lolol": "06304",
+    "nancagua": "06305",
+    "palmilla": "06306",
+    "peralillo": "06307",
+    "placilla": "06308",
+    "pumanque": "06309",
+    "santa cruz": "06310",
+
+    # 07 - Maule
+    "talca": "07101",
+    "constitucion": "07102",
+    "curepto": "07103",
+    "empedrado": "07104",
+    "maule": "07105",
+    "pelarco": "07106",
+    "pencahue": "07107",
+    "rio claro": "07108",
+    "san clemente": "07109",
+    "san rafael": "07110",
+    "cauquenes": "07201",
+    "chanco": "07202",
+    "pelluhue": "07203",
+    "curico": "07301",
+    "hualane": "07302",
+    "licanten": "07303",
+    "molina": "07304",
+    "rauco": "07305",
+    "romeral": "07306",
+    "sagrada familia": "07307",
+    "teno": "07308",
+    "vichuquen": "07309",
+    "linares": "07401",
+    "colbun": "07402",
+    "longavi": "07403",
+    "parral": "07404",
+    "retiro": "07405",
+    "san javier": "07406",
+    "villa alegre": "07407",
+    "yerbas buenas": "07408",
+
+    # 08 - Biobío
+    "concepcion": "08101",
+    "coronel": "08102",
+    "chiguayante": "08103",
+    "florida": "08104",
+    "hualqui": "08105",
+    "lota": "08106",
+    "penco": "08107",
+    "san pedro de la paz": "08108",
+    "santa juana": "08109",
+    "talcahuano": "08110",
+    "tome": "08111",
+    "hualpen": "08112",
+    "lebu": "08201",
+    "arauco": "08202",
+    "canete": "08203",
+    "contulmo": "08204",
+    "curanilahue": "08205",
+    "los alamos": "08206",
+    "tirua": "08207",
+    "los angeles": "08301",
+    "antuco": "08302",
+    "cabrero": "08303",
+    "laja": "08304",
+    "mulchen": "08305",
+    "nacimiento": "08306",
+    "negrete": "08307",
+    "quilaco": "08308",
+    "quilleco": "08309",
+    "san rosendo": "08310",
+    "santa barbara": "08311",
+    "tucapel": "08312",
+    "yumbel": "08313",
+    "alto biobio": "08314",
+
+    # 09 - La Araucanía
+    "temuco": "09101",
+    "carahue": "09102",
+    "cunco": "09103",
+    "curarrehue": "09104",
+    "freire": "09105",
+    "galvarino": "09106",
+    "gorbea": "09107",
+    "lautaro": "09108",
+    "loncoche": "09109",
+    "melipeuco": "09110",
+    "nueva imperial": "09111",
+    "padre las casas": "09112",
+    "perquenco": "09113",
+    "pitrufquen": "09114",
+    "pucon": "09115",
+    "saavedra": "09116",
+    "teodoro schmidt": "09117",
+    "tolten": "09118",
+    "vilcun": "09119",
+    "villarrica": "09120",
+    "cholchol": "09121",
+    "angol": "09201",
+    "collipulli": "09202",
+    "curacautin": "09203",
+    "ercilla": "09204",
+    "lonquimay": "09205",
+    "los sauces": "09206",
+    "lumaco": "09207",
+    "puren": "09208",
+    "renaico": "09209",
+    "traiguen": "09210",
+    "victoria": "09211",
+
+    # 10 - Los Lagos
+    "puerto montt": "10101",
+    "calbuco": "10102",
+    "cochamo": "10103",
+    "fresia": "10104",
+    "frutillar": "10105",
+    "los muermos": "10106",
+    "llanquihue": "10107",
+    "maullin": "10108",
+    "puerto varas": "10109",
+    "castro": "10201",
+    "ancud": "10202",
+    "chonchi": "10203",
+    "curaco de velez": "10204",
+    "dalcahue": "10205",
+    "puqueldon": "10206",
+    "queilen": "10207",
+    "quellon": "10208",
+    "quemchi": "10209",
+    "quinchao": "10210",
+    "osorno": "10301",
+    "puerto octay": "10302",
+    "purranque": "10303",
+    "puyehue": "10304",
+    "rio negro": "10305",
+    "san juan de la costa": "10306",
+    "san pablo": "10307",
+    "chaiten": "10401",
+    "futaleufu": "10402",
+    "hualaihue": "10403",
+    "palena": "10404",
+
+    # 11 - Aysén
+    "coyhaique": "11101",
+    "lago verde": "11102",
+    "aisen": "11201",
+    "cisnes": "11202",
+    "guaitecas": "11203",
+    "cochrane": "11301",
+    "o'higgins": "11302",
+    "tortel": "11303",
+    "chile chico": "11401",
+    "rio ibanez": "11402",
+
+    # 12 - Magallanes
+    "punta arenas": "12101",
+    "laguna blanca": "12102",
+    "rio verde": "12103",
+    "san gregorio": "12104",
+    "cabo de hornos": "12201",
+    "antartica": "12202",
+    "porvenir": "12301",
+    "primavera": "12302",
+    "timaukel": "12303",
+    "natales": "12401",
+    "torres del paine": "12402",
+
+    # 13 - Metropolitana
+    "santiago": "13101",
+    "cerrillos": "13102",
+    "cerro navia": "13103",
+    "conchali": "13104",
+    "el bosque": "13105",
+    "estacion central": "13106",
+    "huechuraba": "13107",
+    "independencia": "13108",
+    "la cisterna": "13109",
+    "la florida": "13110",
+    "la granja": "13111",
+    "la pintana": "13112",
+    "la reina": "13113",
+    "las condes": "13114",
+    "lo barnechea": "13115",
+    "lo espejo": "13116",
+    "lo prado": "13117",
+    "macul": "13118",
+    "maipu": "13119",
+    "nunoa": "13120",
+    "pedro aguirre cerda": "13121",
+    "penalolen": "13122",
+    "providencia": "13123",
+    "pudahuel": "13124",
+    "quilicura": "13125",
+    "quinta normal": "13126",
+    "recoleta": "13127",
+    "renca": "13128",
+    "san joaquin": "13129",
+    "san miguel": "13130",
+    "san ramon": "13131",
+    "vitacura": "13132",
+    "puente alto": "13201",
+    "pirque": "13202",
+    "san jose de maipo": "13203",
+    "colina": "13301",
+    "lampa": "13302",
+    "tiltil": "13303",
+    "san bernardo": "13401",
+    "buin": "13402",
+    "calera de tango": "13403",
+    "paine": "13404",
+    "melipilla": "13501",
+    "alhue": "13502",
+    "curacavi": "13503",
+    "maria pinto": "13504",
+    "san pedro": "13505",
+    "talagante": "13601",
+    "el monte": "13602",
+    "isla de maipo": "13603",
+    "padre hurtado": "13604",
+    "penaflor": "13605",
+
+    # 14 - Los Ríos
+    "valdivia": "14101",
+    "corral": "14102",
+    "lanco": "14103",
+    "los lagos": "14104",
+    "mafil": "14105",
+    "mariquina": "14106",
+    "paillaco": "14107",
+    "panguipulli": "14108",
+    "la union": "14201",
+    "futrono": "14202",
+    "lago ranco": "14203",
+    "rio bueno": "14204",
+
+    # 15 - Arica y Parinacota
+    "arica": "15101",
+    "camarones": "15102",
+    "putre": "15201",
+    "general lagos": "15202",
+
+    # 16 - Ñuble
+    "chillan": "16101",
+    "bulnes": "16102",
+    "chillan viejo": "16103",
+    "el carmen": "16104",
+    "pemuco": "16105",
+    "pinto": "16106",
+    "quillon": "16107",
+    "san ignacio": "16108",
+    "yungay": "16109",
+    "quirihue": "16201",
+    "cobquecura": "16202",
+    "coelemu": "16203",
+    "ninhue": "16204",
+    "portezuelo": "16205",
+    "ranquil": "16206",
+    "treguaco": "16207",
+    "san carlos": "16301",
+    "coihueco": "16302",
+    "niquen": "16303",
+    "san fabian": "16304",
+    "san nicolas": "16305",
+
+}
+
+
+# Alias habituales que pueden venir desde formularios,
+# proveedores de despacho o bases históricas.
+COMUNAS_NUBOX_ALIASES = {
+    "la calera": "05502",
+    "paihuano": "04105",
+    "san vicente de tagua tagua": "06117",
+    "san vicente tagua tagua": "06117",
+    "aysen": "11201",
+    "coihaique": "11101",
+    "o higgins": "11302",
+    "ohiggins": "11302",
+    "rapa nui": "05201",
+}
+
+# =============================================================================
 # UTILIDADES
 # =============================================================================
 
@@ -129,6 +536,9 @@ def _normalizar_texto(
         "ú": "u",
         "ü": "u",
         "ñ": "n",
+        "’": "'",
+        "´": "'",
+        "`": "'",
     }
 
     for origen, destino in reemplazos.items():
@@ -144,6 +554,71 @@ def _normalizar_texto(
     ).strip()
 
     return texto
+
+
+def _mapping_desde_settings(
+    nombre,
+):
+    """
+    Obtiene un mapping desde settings.
+
+    Acepta:
+    - dict ya parseado;
+    - JSON en texto, útil cuando el valor
+      viene directamente desde .env.
+    """
+
+    valor = getattr(
+        settings,
+        nombre,
+        {},
+    )
+
+    if not valor:
+        return {}
+
+    if isinstance(
+        valor,
+        dict,
+    ):
+        return valor
+
+    if isinstance(
+        valor,
+        str,
+    ):
+        try:
+            data = json.loads(
+                valor
+            )
+
+        except json.JSONDecodeError as error:
+            raise NuboxError(
+                (
+                    f"{nombre} debe contener "
+                    "un objeto JSON válido."
+                )
+            ) from error
+
+        if not isinstance(
+            data,
+            dict,
+        ):
+            raise NuboxError(
+                (
+                    f"{nombre} debe ser "
+                    "un objeto JSON."
+                )
+            )
+
+        return data
+
+    raise NuboxError(
+        (
+            f"{nombre} debe ser un dict "
+            "o un objeto JSON."
+        )
+    )
 
 
 def _decimal(
@@ -249,36 +724,210 @@ def _separar_neto_iva(
 
 
 def _configuracion():
+    """
+    Resuelve la configuración Nubox.
+
+    Compatibilidad:
+
+    URL:
+    - NUBOX_API_URL
+    - NUBOX_BASE_URL
+    - NUBOX_UAT_BASE_URL
+    - NUBOX_PRODUCTION_BASE_URL
+
+    API Key:
+    - NUBOX_API_KEY
+    - NUBOX_COMPANY_API_KEY
+
+    De esta forma el servicio funciona tanto
+    con la configuración anterior como con
+    el .env nuevo por ambientes.
+    """
+
+    enabled = getattr(
+        settings,
+        "NUBOX_ENABLED",
+        True,
+    )
+
+    if isinstance(
+        enabled,
+        str,
+    ):
+        enabled = (
+            enabled.strip().lower()
+            in {
+                "1",
+                "true",
+                "yes",
+                "si",
+                "sí",
+                "on",
+            }
+        )
+
+    if not enabled:
+        raise NuboxError(
+            (
+                "La integración Nubox "
+                "está deshabilitada."
+            )
+        )
+
+    environment = _texto(
+        getattr(
+            settings,
+            "NUBOX_ENV",
+            "uat",
+        )
+    ).lower()
+
+    ambientes_uat = {
+        "uat",
+        "test",
+        "testing",
+        "certificacion",
+        "certificación",
+    }
+
+    ambientes_produccion = {
+        "prod",
+        "production",
+        "produccion",
+        "producción",
+    }
+
+    if (
+        environment
+        not in (
+            ambientes_uat
+            | ambientes_produccion
+        )
+    ):
+        raise NuboxError(
+            (
+                "NUBOX_ENV inválido. "
+                "Usa 'uat' o 'production'."
+            )
+        )
+
+    # Primero respetamos una URL ya resuelta
+    # desde settings.py para mantener
+    # compatibilidad con configuraciones
+    # anteriores.
     base_url = (
         getattr(
             settings,
             "NUBOX_API_URL",
             "",
         )
+        or getattr(
+            settings,
+            "NUBOX_BASE_URL",
+            "",
+        )
         or ""
-    ).strip().rstrip("/")
+    )
 
-    partner_token = (
+    if not _texto(
+        base_url
+    ):
+        if (
+            environment
+            in ambientes_produccion
+        ):
+            base_url = getattr(
+                settings,
+                "NUBOX_PRODUCTION_BASE_URL",
+                "",
+            )
+
+        else:
+            base_url = getattr(
+                settings,
+                "NUBOX_UAT_BASE_URL",
+                "",
+            )
+
+    base_url = (
+        _texto(
+            base_url
+        )
+        .rstrip("/?")
+    )
+
+    partner_token = _texto(
         getattr(
             settings,
             "NUBOX_PARTNER_TOKEN",
             "",
         )
-        or ""
-    ).strip()
+    )
 
-    company_api_key = (
+    # Si por error se configuró con "Bearer ",
+    # lo limpiamos para no duplicarlo en headers.
+    if (
+        partner_token.lower()
+        .startswith(
+            "bearer "
+        )
+    ):
+        partner_token = (
+            partner_token[7:]
+            .strip()
+        )
+
+    company_api_key = _texto(
         getattr(
+            settings,
+            "NUBOX_API_KEY",
+            "",
+        )
+        or getattr(
             settings,
             "NUBOX_COMPANY_API_KEY",
             "",
         )
-        or ""
-    ).strip()
+    )
+
+    timeout_valor = getattr(
+        settings,
+        "NUBOX_TIMEOUT",
+        30,
+    )
+
+    try:
+        timeout = float(
+            timeout_valor
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ) as error:
+        raise NuboxError(
+            (
+                "NUBOX_TIMEOUT debe ser "
+                "un número válido."
+            )
+        ) from error
+
+    if timeout <= 0:
+        raise NuboxError(
+            (
+                "NUBOX_TIMEOUT debe ser "
+                "mayor que cero."
+            )
+        )
 
     if not base_url:
         raise NuboxError(
-            "NUBOX_API_URL no está configurado."
+            (
+                "No existe URL base Nubox. "
+                "Configura NUBOX_API_URL, "
+                "NUBOX_BASE_URL o la URL "
+                "del ambiente correspondiente."
+            )
         )
 
     if not partner_token:
@@ -292,6 +941,7 @@ def _configuracion():
     if not company_api_key:
         raise NuboxError(
             (
+                "NUBOX_API_KEY / "
                 "NUBOX_COMPANY_API_KEY "
                 "no está configurado."
             )
@@ -304,6 +954,10 @@ def _configuracion():
         ),
         "company_api_key": (
             company_api_key
+        ),
+        "timeout": timeout,
+        "environment": (
+            environment
         ),
     }
 
@@ -479,7 +1133,9 @@ def _get(
                 params
                 or {}
             ),
-            timeout=30,
+            timeout=config[
+                "timeout"
+            ],
         )
 
     except requests.RequestException as error:
@@ -541,7 +1197,9 @@ def _post(
                 ),
             ),
             json=payload,
-            timeout=30,
+            timeout=config[
+                "timeout"
+            ],
         )
 
     except requests.RequestException as error:
@@ -632,10 +1290,10 @@ def _codigo_region_nubox(
             )
         )
 
-    mappings = getattr(
-        settings,
-        "NUBOX_REGION_CODES",
-        {},
+    mappings = (
+        _mapping_desde_settings(
+            "NUBOX_REGION_CODES"
+        )
     )
 
     if isinstance(
@@ -685,19 +1343,21 @@ def _codigo_comuna_nubox(
     pedido,
 ):
     """
-    Nubox requiere el código legal SII
-    de la comuna.
+    Obtiene el legalCode de comuna requerido
+    por Nubox.
 
-    Ejemplo:
+    Prioridad:
 
-        Santiago -> 13101
+    1. Código guardado directamente en Pedido.
+    2. Si pedido.comuna ya contiene un código
+       de 5 dígitos, se utiliza directamente.
+    3. NUBOX_COMUNA_CODES en settings/.env.
+    4. Catálogo oficial de comunas incluido
+       en este servicio.
+    5. Alias habituales.
 
-    No se intenta inventar el código.
-
-    Puede venir:
-
-    1. directamente desde Pedido;
-    2. desde NUBOX_COMUNA_CODES en settings.
+    El catálogo interno evita tener que
+    mantener las 346 comunas dentro del .env.
     """
 
     for atributo in (
@@ -712,9 +1372,25 @@ def _codigo_comuna_nubox(
         )
 
         if valor:
-            return str(
+            codigo = str(
                 valor
-            ).zfill(5)
+            ).strip()
+
+            if not re.fullmatch(
+                r"\d{1,5}",
+                codigo,
+            ):
+                raise NuboxError(
+                    (
+                        f"El código de comuna "
+                        f"'{codigo}' guardado "
+                        "en el Pedido no es válido."
+                    )
+                )
+
+            return codigo.zfill(
+                5
+            )
 
     comuna = _texto(
         getattr(
@@ -732,51 +1408,149 @@ def _codigo_comuna_nubox(
             )
         )
 
-    mappings = getattr(
-        settings,
-        "NUBOX_COMUNA_CODES",
-        {},
-    )
-
-    if isinstance(
-        mappings,
-        dict,
-    ):
-        normalizada = (
-            _normalizar_texto(
-                comuna
-            )
-        )
-
-        for nombre, codigo in mappings.items():
-
-            if (
-                _normalizar_texto(nombre)
-                == normalizada
-            ):
-                return str(
-                    codigo
-                ).zfill(5)
-
     # También aceptamos que pedido.comuna
-    # ya venga directamente con el código SII.
+    # venga directamente con el código SII.
     if re.fullmatch(
         r"\d{5}",
         comuna,
     ):
         return comuna
 
+    normalizada = (
+        _normalizar_texto(
+            comuna
+        )
+    )
+
+    # Permite sobrescribir o agregar códigos
+    # sin tocar el código fuente.
+    mappings = (
+        _mapping_desde_settings(
+            "NUBOX_COMUNA_CODES"
+        )
+    )
+
+    for nombre, codigo in mappings.items():
+
+        if (
+            _normalizar_texto(
+                nombre
+            )
+            == normalizada
+        ):
+            codigo = str(
+                codigo
+            ).strip()
+
+            if not re.fullmatch(
+                r"\d{1,5}",
+                codigo,
+            ):
+                raise NuboxError(
+                    (
+                        "Código inválido en "
+                        "NUBOX_COMUNA_CODES para "
+                        f"'{nombre}': '{codigo}'."
+                    )
+                )
+
+            return codigo.zfill(
+                5
+            )
+
+    codigo = (
+        COMUNAS_NUBOX.get(
+            normalizada
+        )
+        or COMUNAS_NUBOX_ALIASES.get(
+            normalizada
+        )
+    )
+
+    if codigo:
+        return codigo
+
     raise NuboxError(
         (
-            "No existe código Nubox/SII "
-            f"configurado para la comuna "
+            "No fue posible determinar "
+            "el código Nubox/SII de la comuna "
             f"'{comuna}'. "
-            "Configura NUBOX_COMUNA_CODES "
-            "o guarda el código en el Pedido."
+            "Revisa el nombre recibido desde "
+            "checkout o agrega un alias en "
+            "NUBOX_COMUNA_CODES."
         )
     )
 
 
+
+
+
+
+
+def _guardar_codigos_territoriales_nubox(
+    pedido,
+):
+    """
+    Resuelve y guarda en el Pedido los códigos
+    territoriales utilizados por Nubox.
+    """
+
+    codigo_region = _codigo_region_nubox(
+        pedido
+    )
+
+    codigo_comuna = _codigo_comuna_nubox(
+        pedido
+    )
+
+    campos_update = []
+
+    if hasattr(
+        pedido,
+        "nubox_region_codigo",
+    ):
+        pedido.nubox_region_codigo = (
+            codigo_region
+        )
+
+        campos_update.append(
+            "nubox_region_codigo"
+        )
+
+    if hasattr(
+        pedido,
+        "nubox_comuna_codigo",
+    ):
+        pedido.nubox_comuna_codigo = (
+            codigo_comuna
+        )
+
+        campos_update.append(
+            "nubox_comuna_codigo"
+        )
+
+    if campos_update:
+
+        if hasattr(
+            pedido,
+            "actualizado",
+        ):
+            campos_update.append(
+                "actualizado"
+            )
+
+        pedido.save(
+            update_fields=list(
+                dict.fromkeys(
+                    campos_update
+                )
+            )
+        )
+
+    return (
+        codigo_region,
+        codigo_comuna,
+    )
 # =============================================================================
 # CLIENTE
 # =============================================================================
@@ -1522,8 +2296,6 @@ def _procesar_respuesta_emision(
 # =============================================================================
 # EMITIR BOLETA
 # =============================================================================
-
-
 def emitir_boleta_nubox(
     pedido,
 ):
@@ -1537,6 +2309,14 @@ def emitir_boleta_nubox(
     ya haya sido aceptada por el SII.
 
     La API Nubox es asíncrona.
+
+    Antes de emitir:
+
+    - valida que el pedido esté pagado;
+    - evita duplicados mediante document_id;
+    - genera/conserva X-Idempotence-id;
+    - resuelve y guarda los códigos territoriales
+      de región y comuna.
 
     Después se debe consultar:
 
@@ -1573,6 +2353,17 @@ def emitir_boleta_nubox(
     )
 
     if document_id_existente:
+
+        logger.info(
+            (
+                "Pedido %s ya posee "
+                "documento Nubox %s. "
+                "No se volverá a emitir."
+            ),
+            pedido.numero,
+            document_id_existente,
+        )
+
         return {
             "id": (
                 document_id_existente
@@ -1593,28 +2384,90 @@ def emitir_boleta_nubox(
     )
 
     if not idempotence_id:
+
         idempotence_id = (
             str(
                 uuid.uuid4()
             )
         )
 
-        # Solo guardamos si el modelo
-        # ya posee el campo.
         if hasattr(
             pedido,
             "nubox_idempotence_id",
         ):
+
             pedido.nubox_idempotence_id = (
                 idempotence_id
             )
 
+            campos_idempotencia = [
+                "nubox_idempotence_id",
+            ]
+
+            if hasattr(
+                pedido,
+                "actualizado",
+            ):
+                campos_idempotencia.append(
+                    "actualizado"
+                )
+
             pedido.save(
-                update_fields=[
-                    "nubox_idempotence_id",
-                    "actualizado",
-                ]
+                update_fields=(
+                    campos_idempotencia
+                )
             )
+
+    else:
+
+        idempotence_id = str(
+            idempotence_id
+        )
+
+    # =========================================================================
+    # CÓDIGOS TERRITORIALES NUBOX
+    # =========================================================================
+    #
+    # Resuelve:
+    #
+    #     pedido.region
+    #         ↓
+    #     nubox_region_codigo
+    #
+    #     pedido.comuna
+    #         ↓
+    #     nubox_comuna_codigo
+    #
+    # Ejemplo:
+    #
+    # Metropolitana -> 13
+    # Las Condes     -> 13114
+    #
+    # Los códigos quedan guardados en el Pedido
+    # antes de realizar la petición a Nubox.
+    # =========================================================================
+
+    (
+        codigo_region,
+        codigo_comuna,
+    ) = (
+        _guardar_codigos_territoriales_nubox(
+            pedido
+        )
+    )
+
+    logger.info(
+        (
+            "Códigos territoriales Nubox "
+            "resueltos. "
+            "Pedido=%s "
+            "region=%s "
+            "comuna=%s"
+        ),
+        pedido.numero,
+        codigo_region,
+        codigo_comuna,
+    )
 
     # =========================================================================
     # PAYLOAD
@@ -1648,6 +2501,10 @@ def emitir_boleta_nubox(
         ),
     )
 
+    # =========================================================================
+    # PROCESAR RESPUESTA
+    # =========================================================================
+
     resultado = (
         _procesar_respuesta_emision(
             data
@@ -1660,8 +2517,16 @@ def emitir_boleta_nubox(
         )
     )
 
+    if not document_id:
+        raise NuboxError(
+            (
+                "Nubox respondió sin "
+                "identificador de documento."
+            )
+        )
+
     # =========================================================================
-    # GUARDAR
+    # GUARDAR DOCUMENTO NUBOX
     # =========================================================================
 
     campos_update = []
@@ -1670,8 +2535,11 @@ def emitir_boleta_nubox(
         pedido,
         "nubox_document_id",
     ):
+
         pedido.nubox_document_id = (
-            document_id
+            str(
+                document_id
+            )
         )
 
         campos_update.append(
@@ -1682,6 +2550,7 @@ def emitir_boleta_nubox(
         pedido,
         "nubox_estado",
     ):
+
         pedido.nubox_estado = (
             "PENDIENTE"
         )
@@ -1694,7 +2563,10 @@ def emitir_boleta_nubox(
         pedido,
         "nubox_emitido",
     ):
-        # Todavía NO está emitido.
+
+        # Nubox recibió la solicitud,
+        # pero todavía no significa
+        # que el DTE esté emitido.
         pedido.nubox_emitido = False
 
         campos_update.append(
@@ -1705,6 +2577,10 @@ def emitir_boleta_nubox(
         pedido,
         "nubox_ultimo_error",
     ):
+
+        # Si anteriormente hubo un error,
+        # se elimina después de que Nubox
+        # recibe correctamente el documento.
         pedido.nubox_ultimo_error = ""
 
         campos_update.append(
@@ -1713,29 +2589,42 @@ def emitir_boleta_nubox(
 
     if campos_update:
 
-        campos_update.append(
-            "actualizado"
-        )
+        if hasattr(
+            pedido,
+            "actualizado",
+        ):
+            campos_update.append(
+                "actualizado"
+            )
 
         pedido.save(
-            update_fields=(
-                campos_update
+            update_fields=list(
+                dict.fromkeys(
+                    campos_update
+                )
             )
         )
+
+    # =========================================================================
+    # LOG
+    # =========================================================================
 
     logger.info(
         (
             "Solicitud de emisión Nubox "
-            "recibida. Pedido=%s "
-            "documentId=%s."
+            "recibida correctamente. "
+            "Pedido=%s "
+            "documentId=%s "
+            "region=%s "
+            "comuna=%s."
         ),
         pedido.numero,
         document_id,
+        codigo_region,
+        codigo_comuna,
     )
 
     return resultado
-
-
 # =============================================================================
 # CONSULTAR DOCUMENTO
 # =============================================================================
@@ -2170,3 +3059,6 @@ def emitir_boleta_nubox_por_pedido(
             )
 
         return None
+
+
+
