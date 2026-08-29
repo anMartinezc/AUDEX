@@ -723,51 +723,167 @@ MERCADOPAGO_API_URL = os.getenv(
 # =============================================================================
 # NUBOX
 # =============================================================================
+#
+# Ambientes:
+#
+# UAT:
+#   NUBOX_ENV=uat
+#
+# PRODUCCIÓN:
+#   NUBOX_ENV=production
+#
+# core/services/nubox.py resuelve automáticamente el ambiente,
+# las credenciales y los códigos territoriales.
+# =============================================================================
 
-NUBOX_API_URL = env(
-    "NUBOX_API_URL",
-    default="",
+NUBOX_ENABLED = env_bool(
+    "NUBOX_ENABLED",
+    True,
 )
 
 
-NUBOX_PARTNER_TOKEN = env(
+# -----------------------------------------------------------------------------
+# AMBIENTE
+# -----------------------------------------------------------------------------
+
+NUBOX_ENV = os.getenv(
+    "NUBOX_ENV",
+    "uat",
+).strip().lower()
+
+
+# -----------------------------------------------------------------------------
+# URLS
+# -----------------------------------------------------------------------------
+
+NUBOX_UAT_BASE_URL = os.getenv(
+    "NUBOX_UAT_BASE_URL",
+    "https://api.test-nubox.com/nbxpymapi-uat",
+).strip().rstrip("/?")
+
+
+NUBOX_PRODUCTION_BASE_URL = os.getenv(
+    "NUBOX_PRODUCTION_BASE_URL",
+    "https://api.pyme.nubox.com/nbxpymapi-environment-pyme",
+).strip().rstrip("/?")
+
+
+# -----------------------------------------------------------------------------
+# URL ACTIVA SEGÚN AMBIENTE
+# -----------------------------------------------------------------------------
+
+if NUBOX_ENV in {
+    "prod",
+    "production",
+    "produccion",
+    "producción",
+}:
+
+    NUBOX_BASE_URL = (
+        NUBOX_PRODUCTION_BASE_URL
+    )
+
+else:
+
+    NUBOX_BASE_URL = (
+        NUBOX_UAT_BASE_URL
+    )
+
+
+# Compatibilidad con versiones anteriores del servicio.
+NUBOX_API_URL = NUBOX_BASE_URL
+
+
+# -----------------------------------------------------------------------------
+# CREDENCIALES
+# -----------------------------------------------------------------------------
+
+NUBOX_PARTNER_TOKEN = os.getenv(
     "NUBOX_PARTNER_TOKEN",
-    default="",
-)
+    "",
+).strip()
 
 
-NUBOX_COMPANY_API_KEY = env(
+NUBOX_API_KEY = os.getenv(
+    "NUBOX_API_KEY",
+    "",
+).strip()
+
+
+# Compatibilidad con el nombre antiguo.
+NUBOX_COMPANY_API_KEY = os.getenv(
     "NUBOX_COMPANY_API_KEY",
-    default="",
-)
+    NUBOX_API_KEY,
+).strip()
 
 
-NUBOX_BOLETA_LEGAL_CODE = env(
+# -----------------------------------------------------------------------------
+# TIMEOUT
+# -----------------------------------------------------------------------------
+
+try:
+
+    NUBOX_TIMEOUT = float(
+        os.getenv(
+            "NUBOX_TIMEOUT",
+            "20",
+        )
+    )
+
+except (
+    TypeError,
+    ValueError,
+):
+
+    NUBOX_TIMEOUT = 20.0
+
+
+# -----------------------------------------------------------------------------
+# CONFIGURACIÓN DEL DTE
+# -----------------------------------------------------------------------------
+
+NUBOX_BOLETA_LEGAL_CODE = os.getenv(
     "NUBOX_BOLETA_LEGAL_CODE",
-    default="39",
+    "39",
+).strip()
+
+
+NUBOX_SALE_TYPE_ID = int(
+    os.getenv(
+        "NUBOX_SALE_TYPE_ID",
+        "1",
+    )
 )
 
 
-NUBOX_SALE_TYPE_ID = 1
-
-NUBOX_PAYMENT_FORM_ID = 1
-
-
-NUBOX_CLIENT_MAIN_ACTIVITY = (
-    "Consumidor final"
+NUBOX_PAYMENT_FORM_ID = int(
+    os.getenv(
+        "NUBOX_PAYMENT_FORM_ID",
+        "1",
+    )
 )
 
 
-NUBOX_COMUNA_CODES = {
+NUBOX_CLIENT_MAIN_ACTIVITY = os.getenv(
+    "NUBOX_CLIENT_MAIN_ACTIVITY",
+    "Consumidor final",
+).strip()
 
-    # Configurar códigos reales utilizados
-    # por Nubox / SII.
-    #
-    # Ejemplo:
-    #
-    # "Santiago": "13101",
-    # "Providencia": "13123",
-}
+
+# -----------------------------------------------------------------------------
+# CÓDIGOS TERRITORIALES PERSONALIZADOS
+# -----------------------------------------------------------------------------
+#
+# core/services/nubox.py ya contiene el catálogo completo
+# de regiones y comunas utilizado para las nuevas compras.
+#
+# Estos mappings quedan disponibles únicamente como
+# mecanismo de sobrescritura o compatibilidad.
+# -----------------------------------------------------------------------------
+
+NUBOX_REGION_CODES = {}
+
+NUBOX_COMUNA_CODES = {}
 
 
 # =============================================================================
