@@ -126,51 +126,6 @@ def _es_url_publica_https(
     )
 
 
-def _obtener_notification_url(
-    *,
-    base_url: str,
-    webhook_path: str,
-) -> str:
-    """
-    Obtiene la URL pública que Mercado Pago utilizará
-    para enviar notificaciones Webhook.
-
-    Prioridad:
-
-    1. MERCADOPAGO_NOTIFICATION_URL configurada en settings / Railway.
-    2. SITE_URL + reverse("core:mercadopago_webhook").
-
-    En producción debe ser una URL HTTPS pública.
-    """
-
-    notification_url = str(
-        getattr(
-            settings,
-            "MERCADOPAGO_NOTIFICATION_URL",
-            "",
-        )
-        or ""
-    ).strip()
-
-    if not notification_url:
-        notification_url = (
-            f"{base_url}"
-            f"{webhook_path}"
-        )
-
-    if not _es_url_publica_https(
-        notification_url
-    ):
-        raise MercadoPagoError(
-            (
-                "MERCADOPAGO_NOTIFICATION_URL debe ser "
-                "una URL pública HTTPS válida."
-            )
-        )
-
-    return notification_url
-
-
 # =============================================================================
 # CALCULAR TOTAL DEL PEDIDO
 # =============================================================================
@@ -292,6 +247,7 @@ def _crear_descripcion_pedido(
 # CREAR PREFERENCIA
 # =============================================================================
 
+
 def crear_preferencia(
     *,
     request,
@@ -309,21 +265,40 @@ def crear_preferencia(
         + despacho
         = total
 
-    WEBHOOK:
+    IMPORTANTE SOBRE WEBHOOKS:
 
-    La preferencia envía explícitamente notification_url
-    para que Mercado Pago notifique a AUDEX en:
+    Esta función NO envía notification_url dentro
+    de la preferencia.
+
+    Las notificaciones de pago deben configurarse
+    exclusivamente desde el panel de Mercado Pago:
+
+        Tus integraciones
+        -> Aplicación
+        -> Webhooks
+        -> Pagos
+
+    URL:
 
         https://audex.cl/webhooks/mercadopago/
 
-    La URL definitiva se obtiene desde:
-
-        MERCADOPAGO_NOTIFICATION_URL
-
-    y, si no existe, se construye utilizando:
-
-        SITE_URL + reverse("core:mercadopago_webhook")
+    De esta manera se evita mezclar la configuración
+    de la preferencia con la configuración Webhook
+    asociada a la clave secreta utilizada para validar
+    x-signature.
     """
+
+    # =========================================================================
+    # VALIDAR PEDIDO
+    # =========================================================================
+
+    if pedido is None:
+        raise MercadoPagoError(
+            (
+                "No existe un pedido válido "
+                "para crear la preferencia."
+            )
+        )
 
     # =========================================================================
     # URL BASE
@@ -450,7 +425,6 @@ def crear_preferencia(
     #
     # Esto garantiza que Mercado Pago cobre exactamente
     # el monto definitivo del Pedido.
-    #
     # =========================================================================
 
     items: list[
@@ -569,7 +543,7 @@ def crear_preferencia(
     }
 
     # =========================================================================
-    # URLS
+    # RESOLVER BACK URLS
     # =========================================================================
 
     try:
@@ -613,20 +587,13 @@ def crear_preferencia(
             },
         )
 
-        # ---------------------------------------------------------------------
-        # WEBHOOK
-        # ---------------------------------------------------------------------
-
-        webhook_path = reverse(
-            "core:mercadopago_webhook",
-        )
-
     except NoReverseMatch as error:
 
         raise MercadoPagoError(
             (
                 "No fue posible resolver alguna "
-                "de las URLs de Mercado Pago."
+                "de las URLs de retorno "
+                "de Mercado Pago."
             )
         ) from error
 
@@ -634,10 +601,10 @@ def crear_preferencia(
     # BACK URLS
     # =========================================================================
     #
-    # Estas URLs son para EL NAVEGADOR.
+    # Estas URLs pertenecen exclusivamente
+    # al navegador del cliente.
     #
-    # No confundir con notification_url.
-    #
+    # NO son Webhooks.
     # =========================================================================
 
     preference_data[
@@ -662,6 +629,11 @@ def crear_preferencia(
     # =========================================================================
     # AUTO RETURN
     # =========================================================================
+    #
+    # Si Mercado Pago aprueba el pago,
+    # Checkout Pro puede devolver automáticamente
+    # al usuario a success.
+    # =========================================================================
 
     preference_data[
         "auto_return"
@@ -673,40 +645,28 @@ def crear_preferencia(
     # WEBHOOK
     # =========================================================================
     #
-    # Mercado Pago enviará las notificaciones del pago aquí.
-    #
     # IMPORTANTE:
     #
-    # NO agregar:
+    # NO enviamos:
     #
-    #     ?source_news=ipn
+    #     notification_url
     #
-    # La URL debe quedar exactamente:
+    # dentro de la preferencia.
+    #
+    # El Webhook debe quedar configurado exclusivamente
+    # desde el panel de Mercado Pago:
+    #
+    #     Tus integraciones
+    #     -> Aplicación
+    #     -> Webhooks
+    #     -> Pagos
+    #
+    # con:
     #
     #     https://audex.cl/webhooks/mercadopago/
     #
+    # Esto mantiene una única configuración de notificaciones.
     # =========================================================================
-
-    notification_url = (
-        _obtener_notification_url(
-            base_url=base_url,
-            webhook_path=webhook_path,
-        )
-    )
-
-    if not notification_url:
-        raise MercadoPagoError(
-            (
-                "No fue posible determinar "
-                "notification_url de Mercado Pago."
-            )
-        )
-
-    preference_data[
-        "notification_url"
-    ] = (
-        notification_url
-    )
 
     # =========================================================================
     # CREAR PREFERENCIA
@@ -848,7 +808,6 @@ def crear_preferencia(
     #
     # iniciar_pago_mercadopago() también puede guardar
     # mercadopago_preference_id posteriormente.
-    #
     # =========================================================================
 
     if hasattr(
@@ -885,18 +844,12 @@ def crear_preferencia(
             )
         ),
 
-        # ---------------------------------------------------------------------
-        # Útil para diagnóstico interno.
-        # ---------------------------------------------------------------------
-
-        "notification_url": (
-            notification_url
-        ),
-
         "respuesta": (
             datos
         ),
     }
+
+
 # =============================================================================
 # CONSULTAR PAGO
 # =============================================================================
@@ -923,6 +876,7 @@ def obtener_pago(
         )
 
     try:
+
         respuesta = requests.get(
             (
                 f"{_api_url()}"
@@ -937,6 +891,7 @@ def obtener_pago(
         )
 
     except requests.Timeout as error:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago demoró demasiado "
@@ -945,6 +900,7 @@ def obtener_pago(
         ) from error
 
     except requests.RequestException as error:
+
         raise MercadoPagoError(
             (
                 "No fue posible consultar "
@@ -952,7 +908,12 @@ def obtener_pago(
             )
         ) from error
 
+    # =========================================================================
+    # VALIDAR RESPUESTA HTTP
+    # =========================================================================
+
     if not respuesta.ok:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago no devolvió "
@@ -963,16 +924,38 @@ def obtener_pago(
             )
         )
 
+    # =========================================================================
+    # JSON
+    # =========================================================================
+
     try:
-        return respuesta.json()
+
+        datos = (
+            respuesta.json()
+        )
 
     except ValueError as error:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago devolvió "
                 "un pago inválido."
             )
         ) from error
+
+    if not isinstance(
+        datos,
+        dict,
+    ):
+
+        raise MercadoPagoError(
+            (
+                "Mercado Pago devolvió "
+                "un pago con formato inválido."
+            )
+        )
+
+    return datos
 
 
 # =============================================================================
@@ -993,6 +976,7 @@ def obtener_orden_comercial(
     ).strip()
 
     if not merchant_order_id:
+
         raise MercadoPagoError(
             (
                 "El identificador de la "
@@ -1001,6 +985,7 @@ def obtener_orden_comercial(
         )
 
     try:
+
         respuesta = requests.get(
             (
                 f"{_api_url()}"
@@ -1016,6 +1001,7 @@ def obtener_orden_comercial(
         )
 
     except requests.Timeout as error:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago demoró demasiado "
@@ -1024,6 +1010,7 @@ def obtener_orden_comercial(
         ) from error
 
     except requests.RequestException as error:
+
         raise MercadoPagoError(
             (
                 "No fue posible consultar "
@@ -1031,7 +1018,12 @@ def obtener_orden_comercial(
             )
         ) from error
 
+    # =========================================================================
+    # VALIDAR RESPUESTA HTTP
+    # =========================================================================
+
     if not respuesta.ok:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago no devolvió "
@@ -1042,13 +1034,35 @@ def obtener_orden_comercial(
             )
         )
 
+    # =========================================================================
+    # JSON
+    # =========================================================================
+
     try:
-        return respuesta.json()
+
+        datos = (
+            respuesta.json()
+        )
 
     except ValueError as error:
+
         raise MercadoPagoError(
             (
                 "Mercado Pago devolvió "
                 "una orden inválida."
             )
         ) from error
+
+    if not isinstance(
+        datos,
+        dict,
+    ):
+
+        raise MercadoPagoError(
+            (
+                "Mercado Pago devolvió "
+                "una orden con formato inválido."
+            )
+        )
+
+    return datos
