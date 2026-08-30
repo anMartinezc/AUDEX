@@ -17,7 +17,6 @@ from dataclasses import dataclass
 # 6 - 10 productos  -> M
 # 11 - 20 productos -> L
 #
-# Tarifas tomadas de la tabla que compartiste.
 # =============================================================================
 
 
