@@ -10178,8 +10178,6 @@ def mi_perfil(request):
         contexto,
     )
 
-
-
 @csrf_exempt
 def webpay_retorno(request):
     """
@@ -10202,6 +10200,7 @@ def webpay_retorno(request):
        - no genera boleta;
        - libera descuentos reservados.
     6. Si Transbank autoriza:
+       - guarda todos los datos técnicos de Webpay;
        - marca el Pedido como pagado;
        - descuenta stock;
        - confirma descuento;
@@ -10211,6 +10210,8 @@ def webpay_retorno(request):
     9. Redirige a pedido_confirmacion(), que selecciona
        el HTML según el estado persistido.
     """
+
+    from django.utils.dateparse import parse_datetime
 
     # =========================================================================
     # TOKEN RETORNADO POR WEBPAY
@@ -10316,6 +10317,7 @@ def webpay_retorno(request):
                         _liberar_descuento_si_corresponde(
                             pedido
                         )
+
                     except Exception:
                         logger.exception(
                             (
@@ -10410,6 +10412,7 @@ def webpay_retorno(request):
         )
 
         if numero_pedido_sesion:
+
             return redirect(
                 "core:pedido_confirmacion",
                 numero=numero_pedido_sesion,
@@ -10459,6 +10462,7 @@ def webpay_retorno(request):
         )
 
         if numero_pedido_sesion:
+
             return redirect(
                 "core:pedido_confirmacion",
                 numero=numero_pedido_sesion,
@@ -10477,7 +10481,7 @@ def webpay_retorno(request):
         dict,
     ):
 
-        response_code = (
+        response_code_raw = (
             respuesta.get(
                 "response_code"
             )
@@ -10521,6 +10525,18 @@ def webpay_retorno(request):
             or ""
         ).strip()
 
+        installments_number_raw = (
+            respuesta.get(
+                "installments_number"
+            )
+        )
+
+        transaction_date_raw = (
+            respuesta.get(
+                "transaction_date"
+            )
+        )
+
         card_detail = (
             respuesta.get(
                 "card_detail"
@@ -10530,7 +10546,7 @@ def webpay_retorno(request):
 
     else:
 
-        response_code = getattr(
+        response_code_raw = getattr(
             respuesta,
             "response_code",
             None,
@@ -10578,6 +10594,18 @@ def webpay_retorno(request):
             or ""
         ).strip()
 
+        installments_number_raw = getattr(
+            respuesta,
+            "installments_number",
+            None,
+        )
+
+        transaction_date_raw = getattr(
+            respuesta,
+            "transaction_date",
+            None,
+        )
+
         card_detail = (
             getattr(
                 respuesta,
@@ -10586,6 +10614,128 @@ def webpay_retorno(request):
             )
             or {}
         )
+
+    # =========================================================================
+    # NORMALIZAR RESPONSE CODE
+    # =========================================================================
+
+    response_code = None
+
+    if response_code_raw is not None:
+
+        try:
+
+            response_code = int(
+                response_code_raw
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            logger.warning(
+                (
+                    "Webpay devolvió response_code "
+                    "inválido. "
+                    "Pedido sesión=%s valor=%s"
+                ),
+                numero_pedido_sesion,
+                response_code_raw,
+            )
+
+            response_code = None
+
+    # =========================================================================
+    # NORMALIZAR CUOTAS
+    # =========================================================================
+
+    installments_number = None
+
+    if installments_number_raw is not None:
+
+        try:
+
+            installments_number = int(
+                installments_number_raw
+            )
+
+            if installments_number < 0:
+                installments_number = None
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            logger.warning(
+                (
+                    "Webpay devolvió installments_number "
+                    "inválido. "
+                    "Pedido sesión=%s valor=%s"
+                ),
+                numero_pedido_sesion,
+                installments_number_raw,
+            )
+
+            installments_number = None
+
+    # =========================================================================
+    # NORMALIZAR FECHA DE TRANSACCIÓN
+    # =========================================================================
+
+    transaction_date = None
+
+    if transaction_date_raw:
+
+        try:
+
+            if isinstance(
+                transaction_date_raw,
+                str,
+            ):
+
+                transaction_date = (
+                    parse_datetime(
+                        transaction_date_raw
+                    )
+                )
+
+            else:
+
+                transaction_date = (
+                    transaction_date_raw
+                )
+
+            if transaction_date is not None:
+
+                if timezone.is_naive(
+                    transaction_date
+                ):
+
+                    transaction_date = (
+                        timezone.make_aware(
+                            transaction_date
+                        )
+                    )
+
+        except (
+            TypeError,
+            ValueError,
+            OverflowError,
+        ):
+
+            logger.warning(
+                (
+                    "Webpay devolvió transaction_date "
+                    "inválida. "
+                    "Pedido sesión=%s valor=%s"
+                ),
+                numero_pedido_sesion,
+                transaction_date_raw,
+            )
+
+            transaction_date = None
 
     # =========================================================================
     # LOG RESPUESTA TRANSBANK
@@ -10600,6 +10750,8 @@ def webpay_retorno(request):
             "amount=%s "
             "authorization_code=%s "
             "payment_type_code=%s "
+            "installments_number=%s "
+            "transaction_date=%s "
             "pedido_sesion=%s"
         ),
         response_code,
@@ -10608,6 +10760,8 @@ def webpay_retorno(request):
         amount_raw,
         authorization_code,
         payment_type_code,
+        installments_number,
+        transaction_date,
         numero_pedido_sesion,
     )
 
@@ -10861,18 +11015,17 @@ def webpay_retorno(request):
             or ""
         )
 
-        if response_code is not None:
+        pedido.webpay_response_code = (
+            response_code
+        )
 
-            try:
-                pedido.webpay_response_code = int(
-                    response_code
-                )
+        pedido.webpay_installments_number = (
+            installments_number
+        )
 
-            except (
-                TypeError,
-                ValueError,
-            ):
-                pedido.webpay_response_code = None
+        pedido.webpay_transaction_date = (
+            transaction_date
+        )
 
         pedido.save(
             update_fields=[
@@ -10883,6 +11036,8 @@ def webpay_retorno(request):
                 "webpay_authorization_code",
                 "webpay_payment_type_code",
                 "webpay_response_code",
+                "webpay_installments_number",
+                "webpay_transaction_date",
                 "actualizado",
             ]
         )
@@ -10951,18 +11106,17 @@ def webpay_retorno(request):
             or ""
         )
 
-        if response_code is not None:
+        pedido.webpay_response_code = (
+            response_code
+        )
 
-            try:
-                pedido.webpay_response_code = int(
-                    response_code
-                )
+        pedido.webpay_installments_number = (
+            installments_number
+        )
 
-            except (
-                TypeError,
-                ValueError,
-            ):
-                pedido.webpay_response_code = None
+        pedido.webpay_transaction_date = (
+            transaction_date
+        )
 
         # ---------------------------------------------------------------------
         # ESTADO REAL DEL PEDIDO
@@ -10985,6 +11139,8 @@ def webpay_retorno(request):
                 "webpay_authorization_code",
                 "webpay_response_code",
                 "webpay_payment_type_code",
+                "webpay_installments_number",
+                "webpay_transaction_date",
                 "pagado",
                 "estado_pago",
                 "estado",
@@ -11045,13 +11201,17 @@ def webpay_retorno(request):
                 "estado=%s "
                 "estado_pago=%s "
                 "pagado=%s "
-                "response_code=%s."
+                "response_code=%s "
+                "installments_number=%s "
+                "transaction_date=%s."
             ),
             pedido.numero,
             pedido.estado,
             pedido.estado_pago,
             pedido.pagado,
             pedido.webpay_response_code,
+            pedido.webpay_installments_number,
+            pedido.webpay_transaction_date,
         )
 
         # ---------------------------------------------------------------------
@@ -11085,12 +11245,16 @@ def webpay_retorno(request):
             "Pedido=%s "
             "response_code=%s "
             "status=%s "
-            "amount=%s"
+            "amount=%s "
+            "installments_number=%s "
+            "transaction_date=%s"
         ),
         pedido.numero,
         response_code,
         status,
         amount,
+        installments_number,
+        transaction_date,
     )
 
     # =========================================================================
@@ -11155,12 +11319,24 @@ def webpay_retorno(request):
                         payment_type_code
                     ),
 
+                    "installments_number": (
+                        installments_number
+                    ),
+
+                    "transaction_date": (
+                        transaction_date
+                    ),
+
                     "card_number": (
                         card_number
                     ),
 
                     "token_ws": (
                         token_ws
+                    ),
+
+                    "buy_order": (
+                        buy_order
                     ),
                 },
             )
@@ -11214,6 +11390,68 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
+    # ASEGURAR PERSISTENCIA DE TODOS LOS DATOS WEBPAY
+    # =========================================================================
+    #
+    # marcar_pedido_como_pagado() sigue siendo responsable
+    # del flujo central:
+    #
+    # - marcar pago;
+    # - stock;
+    # - descuentos;
+    # - correo;
+    # - Nubox.
+    #
+    # Aquí solamente garantizamos que TODOS los datos técnicos
+    # entregados por Transbank queden guardados en Pedido.
+    # =========================================================================
+
+    pedido.webpay_token = (
+        token_ws
+        or ""
+    )
+
+    pedido.webpay_buy_order = (
+        buy_order
+        or pedido.numero
+    )
+
+    pedido.webpay_authorization_code = (
+        authorization_code
+        or ""
+    )
+
+    pedido.webpay_response_code = (
+        response_code
+    )
+
+    pedido.webpay_payment_type_code = (
+        payment_type_code
+        or ""
+    )
+
+    pedido.webpay_installments_number = (
+        installments_number
+    )
+
+    pedido.webpay_transaction_date = (
+        transaction_date
+    )
+
+    pedido.save(
+        update_fields=[
+            "webpay_token",
+            "webpay_buy_order",
+            "webpay_authorization_code",
+            "webpay_response_code",
+            "webpay_payment_type_code",
+            "webpay_installments_number",
+            "webpay_transaction_date",
+            "actualizado",
+        ]
+    )
+
+    # =========================================================================
     # RECARGAR PEDIDO
     # =========================================================================
 
@@ -11257,6 +11495,34 @@ def webpay_retorno(request):
             "core:pedido_confirmacion",
             numero=pedido.numero,
         )
+
+    # =========================================================================
+    # LOG DE DATOS WEBPAY PERSISTIDOS
+    # =========================================================================
+
+    logger.info(
+        (
+            "Datos Webpay persistidos. "
+            "Pedido=%s "
+            "token=%s "
+            "buy_order=%s "
+            "authorization_code=%s "
+            "response_code=%s "
+            "payment_type_code=%s "
+            "installments_number=%s "
+            "transaction_date=%s"
+        ),
+        pedido.numero,
+        bool(
+            pedido.webpay_token
+        ),
+        pedido.webpay_buy_order,
+        pedido.webpay_authorization_code,
+        pedido.webpay_response_code,
+        pedido.webpay_payment_type_code,
+        pedido.webpay_installments_number,
+        pedido.webpay_transaction_date,
+    )
 
     # =========================================================================
     # VACIAR CARRITO
@@ -11367,6 +11633,9 @@ def webpay_retorno(request):
             "status_webpay=%s "
             "response_code=%s "
             "monto=%s "
+            "payment_type=%s "
+            "cuotas=%s "
+            "transaction_date=%s "
             "carrito_vaciado=%s"
         ),
         pedido.numero,
@@ -11375,6 +11644,9 @@ def webpay_retorno(request):
         status,
         response_code,
         amount,
+        pedido.webpay_payment_type_code,
+        pedido.webpay_installments_number,
+        pedido.webpay_transaction_date,
         carrito_vaciado,
     )
 
