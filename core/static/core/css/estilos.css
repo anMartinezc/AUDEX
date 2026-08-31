@@ -4846,3 +4846,100 @@ main {
             !important;
     }
 }
+
+
+/* =========================================================
+   FIX — PREFERENCIAS DE COOKIES EN FOOTER
+========================================================= */
+
+.footer
+.footer__columna
+button.cookie-preferencias-enlace,
+.footer
+.footer__columna
+button.footer__enlace-boton {
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: inline-block !important;
+
+    color: var(--color-gris) !important;
+
+    font-family:
+        "Inter",
+        Arial,
+        Helvetica,
+        sans-serif !important;
+
+    font-size: 0.84rem !important;
+    font-weight: 400 !important;
+
+    line-height: 1.55 !important;
+
+    text-align: left !important;
+    text-decoration: none !important;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
+
+    box-shadow: none !important;
+
+    transform: none !important;
+
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    cursor: pointer;
+}
+
+
+.footer
+.footer__columna
+button.cookie-preferencias-enlace:hover,
+.footer
+.footer__columna
+button.footer__enlace-boton:hover {
+    color:
+        var(--color-azul-claro)
+        !important;
+
+    background:
+        transparent
+        !important;
+
+    transform:
+        none
+        !important;
+
+    box-shadow:
+        none
+        !important;
+}
+
+
+.footer
+.footer__columna
+button.cookie-preferencias-enlace:focus-visible,
+.footer
+.footer__columna
+button.footer__enlace-boton:focus-visible {
+    color:
+        var(--color-azul-claro)
+        !important;
+
+    outline:
+        1px
+        solid
+        var(--color-azul-claro);
+
+    outline-offset: 4px;
+
+    border-radius: 2px !important;
+}
