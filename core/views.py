@@ -7,6 +7,10 @@ from django.views.generic import CreateView, DeleteView, UpdateView
 from django.views.decorators.csrf import ensure_csrf_cookie
 import uuid
 from .forms import *
+from core.services.blue_express import (
+    obtener_zona_blue_express,
+    obtener_tiempo_estimado_blue_express,
+)
 from .models import *
 from functools import partial
 from django.db import OperationalError
@@ -3746,8 +3750,6 @@ def _sincronizar_totales_pedido_antes_pago(
 
 
 
-
-
 def checkout(request):
     # =========================================================================
     # OBTENER CARRITO
@@ -3852,8 +3854,6 @@ def checkout(request):
                     # SINCRONIZAR TOTAL DEFINITIVO
                     # =========================================================
                     #
-                    # Esto garantiza:
-                    #
                     # subtotal productos
                     # - descuento adicional
                     # + Blue Express
@@ -3874,10 +3874,6 @@ def checkout(request):
 
                 # =============================================================
                 # REFRESCAR PEDIDO DESDE BASE DE DATOS
-                # =============================================================
-                #
-                # Así nos aseguramos de que iniciar_pago_pedido() reciba
-                # exactamente los valores persistidos.
                 # =============================================================
 
                 pedido.refresh_from_db(
@@ -4014,18 +4010,6 @@ def checkout(request):
                 # =============================================================
                 # WEBPAY / PROVEEDORES QUE REQUIEREN POST
                 # =============================================================
-                #
-                # Webpay entrega:
-                #
-                # - una URL de Transbank;
-                # - un token_ws.
-                #
-                # No debemos hacer redirect(url), ya que token_ws
-                # debe enviarse mediante POST.
-                #
-                # Para ello renderizamos una página intermedia que
-                # contiene un formulario oculto y se autoenvía.
-                # =============================================================
 
                 url_post = getattr(
                     resultado_pago,
@@ -4109,14 +4093,6 @@ def checkout(request):
 
                 # =============================================================
                 # REDIRECCIÓN INTERNA
-                # =============================================================
-                #
-                # Ejemplo:
-                #
-                # transferencia bancaria
-                #
-                # nombre_url = core:pedido_confirmacion
-                # parametros_url = {"numero": pedido.numero}
                 # =============================================================
 
                 nombre_url = getattr(
@@ -4285,7 +4261,11 @@ def checkout(request):
     # El RUT se utiliza para validar que el cliente no haya utilizado
     # anteriormente el mismo código.
     #
-    # La región se utiliza para calcular Blue Express.
+    # La región se utiliza para:
+    #
+    # - calcular la tarifa Blue Express;
+    # - calcular el tiempo estimado de entrega.
+    #
     # =========================================================================
 
     if request.method == "POST":
@@ -4359,6 +4339,103 @@ def checkout(request):
     )
 
     # =========================================================================
+    # TIEMPO ESTIMADO DE ENTREGA
+    # =========================================================================
+    #
+    # Región Metropolitana:
+    #     SANTIAGO -> 48 hrs
+    #
+    # Regiones Centro:
+    #     CENTRO -> 72 hrs
+    #
+    # Regiones Extremo:
+    #     EXTREMO -> 72 hrs
+    #
+    # Si todavía no se ha seleccionado una región,
+    # no mostramos tiempo estimado.
+    # =========================================================================
+
+    zona_envio = None
+
+    tiempo_estimado_horas = None
+
+    tiempo_estimado_texto = None
+
+    if region_envio:
+
+        try:
+
+            zona_envio = (
+                obtener_zona_blue_express(
+                    region_envio
+                )
+            )
+
+            tiempo_estimado_horas = (
+                obtener_tiempo_estimado_blue_express(
+                    zona=zona_envio,
+                )
+            )
+
+            tiempo_estimado_texto = (
+                f"{tiempo_estimado_horas} hrs"
+            )
+
+        except ValueError as error:
+
+            logger.warning(
+                (
+                    "No fue posible calcular el tiempo "
+                    "estimado Blue Express para "
+                    "la región %s: %s"
+                ),
+                region_envio,
+                error,
+            )
+
+            zona_envio = None
+
+            tiempo_estimado_horas = None
+
+            tiempo_estimado_texto = None
+
+    # =========================================================================
+    # AGREGAR DATOS DE ENVÍO AL RESUMEN
+    # =========================================================================
+    #
+    # De esta forma también podremos acceder desde el template mediante:
+    #
+    # resumen.tiempo_estimado_horas
+    # resumen.tiempo_estimado_texto
+    # resumen.zona_envio
+    #
+    # siempre que resumen sea un diccionario.
+    # =========================================================================
+
+    if isinstance(
+        resumen,
+        dict,
+    ):
+
+        resumen[
+            "zona_envio"
+        ] = (
+            zona_envio
+        )
+
+        resumen[
+            "tiempo_estimado_horas"
+        ] = (
+            tiempo_estimado_horas
+        )
+
+        resumen[
+            "tiempo_estimado_texto"
+        ] = (
+            tiempo_estimado_texto
+        )
+
+    # =========================================================================
     # PREMIOS PERSONALES
     # =========================================================================
 
@@ -4392,6 +4469,22 @@ def checkout(request):
         "comunas_por_region": (
             COMUNAS_POR_REGION
         ),
+
+        # =====================================================================
+        # BLUE EXPRESS
+        # =====================================================================
+
+        "zona_envio": (
+            zona_envio
+        ),
+
+        "tiempo_estimado_horas": (
+            tiempo_estimado_horas
+        ),
+
+        "tiempo_estimado_texto": (
+            tiempo_estimado_texto
+        ),
     }
 
     # =========================================================================
@@ -4403,10 +4496,6 @@ def checkout(request):
         "core/checkout.html",
         contexto,
     )
-
-
-
-
 
 
 

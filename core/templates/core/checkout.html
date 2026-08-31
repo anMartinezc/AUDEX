@@ -6,28 +6,180 @@
 Finalizar compra | Audex
 {% endblock %}
 
+
 {% block extra_css %}
+
 <link
     rel="stylesheet"
-    href="{% static 'core/css/checkout.css' %}?v=12"
+    href="{% static 'core/css/checkout.css' %}?v=13"
 >
+
+<style>
+
+    /* =========================================================
+       TIEMPO ESTIMADO
+    ========================================================== */
+
+    .checkout-tiempo-entrega {
+        color: var(--color-azul-claro);
+    }
+
+
+    /* =========================================================
+       TÉRMINOS Y CONDICIONES
+    ========================================================== */
+
+    .checkout-terminos-contenedor {
+        margin-top: 18px;
+    }
+
+
+    .checkout-terminos-detalle {
+        margin-top: 10px;
+
+        border:
+            1px
+            solid
+            rgba(131, 216, 243, 0.18);
+
+        border-radius: 12px;
+
+        background:
+            rgba(54, 169, 214, 0.04);
+
+        overflow: hidden;
+    }
+
+
+    .checkout-terminos-detalle summary {
+        padding: 13px 15px;
+
+        color: var(--color-azul-claro);
+
+        font-size: 0.8rem;
+        font-weight: 700;
+
+        cursor: pointer;
+
+        list-style: none;
+    }
+
+
+    .checkout-terminos-detalle summary::-webkit-details-marker {
+        display: none;
+    }
+
+
+    .checkout-terminos-detalle summary::before {
+        content: "+";
+
+        margin-right: 8px;
+
+        font-weight: 900;
+    }
+
+
+    .checkout-terminos-detalle[open]
+    summary::before {
+        content: "−";
+    }
+
+
+    .checkout-terminos-detalle__contenido {
+        max-height: 320px;
+
+        padding:
+            0
+            16px
+            17px;
+
+        overflow-y: auto;
+
+        color: var(--color-gris-claro);
+
+        font-size: 0.76rem;
+
+        line-height: 1.65;
+    }
+
+
+    .checkout-terminos-detalle__contenido h4 {
+        margin:
+            16px
+            0
+            6px;
+
+        color: var(--color-blanco);
+
+        font-size: 0.8rem;
+    }
+
+
+    .checkout-terminos-detalle__contenido p {
+        margin: 0;
+    }
+
+
+    .checkout-terminos-detalle__contenido ul,
+    .checkout-terminos-detalle__contenido ol {
+        margin:
+            7px
+            0
+            0
+            18px;
+    }
+
+
+    .checkout-terminos-detalle__contenido a {
+        color: var(--color-azul-claro);
+
+        font-weight: 700;
+    }
+
+
+    .checkout-terminos-pagina {
+        margin-top: 16px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 6px;
+    }
+
+</style>
+
 {% endblock %}
+
 
 {% block content %}
 
 <section
     class="checkout"
     id="checkout"
+
     data-subtotal="{{ carrito.subtotal }}"
+
     data-meta-envio="50000"
-    data-costo-envio="4990"
+
     data-resumen-url="{% url 'core:checkout_resumen_descuento' %}"
+
     data-region-seleccionada="{{ form.region.value|default_if_none:'' }}"
+
     data-comuna-seleccionada="{{ form.comuna.value|default_if_none:'' }}"
+
+    data-tiempo-estimado="{{ tiempo_estimado_horas|default_if_none:'' }}"
 >
+
     <div class="contenedor">
 
+
+        <!-- =====================================================
+             BREADCRUMB
+        ====================================================== -->
+
         <nav class="checkout-breadcrumb">
+
             <a href="{% url 'core:inicio' %}">
                 Inicio
             </a>
@@ -40,66 +192,141 @@ Finalizar compra | Audex
 
             <i class="bi bi-chevron-right"></i>
 
-            <span>Checkout</span>
+            <span>
+                Checkout
+            </span>
+
         </nav>
 
+
+        <!-- =====================================================
+             CABECERA
+        ====================================================== -->
+
         <header class="checkout-cabecera">
+
             <div>
+
                 <span class="etiqueta-seccion">
                     Compra segura
                 </span>
 
-                <h1>Finalizar compra</h1>
+                <h1>
+                    Finalizar compra
+                </h1>
 
                 <p>
                     Completa tus datos para preparar
                     y despachar tu pedido.
                 </p>
+
             </div>
+
 
             <a
                 href="{% url 'core:carrito_completo' %}"
                 class="checkout-volver"
             >
+
                 <i class="bi bi-arrow-left"></i>
+
                 Volver al carrito
+
             </a>
+
         </header>
 
+
+        <!-- =====================================================
+             PASOS
+        ====================================================== -->
+
         <div class="checkout-pasos">
-            <article class="checkout-paso checkout-paso--completado">
+
+            <article
+                class="
+                    checkout-paso
+                    checkout-paso--completado
+                "
+            >
+
                 <span>
                     <i class="bi bi-check-lg"></i>
                 </span>
 
                 <div>
-                    <strong>Carrito</strong>
-                    <small>Productos seleccionados</small>
+
+                    <strong>
+                        Carrito
+                    </strong>
+
+                    <small>
+                        Productos seleccionados
+                    </small>
+
                 </div>
+
             </article>
+
 
             <div></div>
 
-            <article class="checkout-paso checkout-paso--activo">
-                <span>2</span>
+
+            <article
+                class="
+                    checkout-paso
+                    checkout-paso--activo
+                "
+            >
+
+                <span>
+                    2
+                </span>
 
                 <div>
-                    <strong>Datos</strong>
-                    <small>Despacho y contacto</small>
+
+                    <strong>
+                        Datos
+                    </strong>
+
+                    <small>
+                        Despacho y contacto
+                    </small>
+
                 </div>
+
             </article>
 
+
             <div></div>
+
 
             <article class="checkout-paso">
-                <span>3</span>
+
+                <span>
+                    3
+                </span>
 
                 <div>
-                    <strong>Confirmación</strong>
-                    <small>Pedido completado</small>
+
+                    <strong>
+                        Confirmación
+                    </strong>
+
+                    <small>
+                        Pedido completado
+                    </small>
+
                 </div>
+
             </article>
+
         </div>
+
+
+        <!-- =====================================================
+             FORMULARIO
+        ====================================================== -->
 
         <form
             method="post"
@@ -107,95 +334,196 @@ Finalizar compra | Audex
             id="checkoutFormulario"
             novalidate
         >
+
             {% csrf_token %}
+
+
+            <!-- =================================================
+                 FORMULARIO IZQUIERDO
+            ================================================== -->
 
             <div class="checkout-formulario">
 
+
+                <!-- =============================================
+                     ERRORES GENERALES
+                ============================================== -->
+
                 {% if form.non_field_errors %}
+
                     <div class="checkout-error-general">
+
                         <i class="bi bi-exclamation-circle"></i>
 
                         <div>
+
                             {% for error in form.non_field_errors %}
-                                <p>{{ error }}</p>
+
+                                <p>
+                                    {{ error }}
+                                </p>
+
                             {% endfor %}
+
                         </div>
+
                     </div>
+
                 {% endif %}
 
+
+                <!-- =============================================
+                     PASO 1
+                ============================================== -->
+
                 <section class="checkout-bloque">
+
                     <div class="checkout-bloque__titulo">
+
                         <div>
                             <i class="bi bi-person"></i>
                         </div>
 
                         <div>
-                            <span>Paso 1</span>
-                            <h2>Datos de contacto</h2>
+
+                            <span>
+                                Paso 1
+                            </span>
+
+                            <h2>
+                                Datos de contacto
+                            </h2>
 
                             <p>
                                 Usaremos esta información para enviarte
                                 la confirmación y actualizar el pedido.
                             </p>
+
                         </div>
+
                     </div>
 
-                    <div class="checkout-campos checkout-campos--dos">
+
+                    <div
+                        class="
+                            checkout-campos
+                            checkout-campos--dos
+                        "
+                    >
+
                         {% include "core/includes/checkout_campo.html" with campo=form.nombre %}
+
                         {% include "core/includes/checkout_campo.html" with campo=form.apellido %}
+
                         {% include "core/includes/checkout_campo.html" with campo=form.rut %}
+
                         {% include "core/includes/checkout_campo.html" with campo=form.telefono %}
+
                     </div>
+
 
                     {% include "core/includes/checkout_campo.html" with campo=form.email %}
+
                 </section>
 
+
+                <!-- =============================================
+                     PASO 2
+                ============================================== -->
+
                 <section class="checkout-bloque">
+
                     <div class="checkout-bloque__titulo">
+
                         <div>
                             <i class="bi bi-geo-alt"></i>
                         </div>
 
                         <div>
-                            <span>Paso 2</span>
-                            <h2>Dirección de despacho</h2>
+
+                            <span>
+                                Paso 2
+                            </span>
+
+                            <h2>
+                                Dirección de despacho
+                            </h2>
 
                             <p>
                                 Selecciona una región y luego una
                                 de sus comunas.
                             </p>
+
                         </div>
+
                     </div>
 
-                    <div class="checkout-campos checkout-campos--dos">
+
+                    <div
+                        class="
+                            checkout-campos
+                            checkout-campos--dos
+                        "
+                    >
+
                         {% include "core/includes/checkout_campo.html" with campo=form.region %}
+
                         {% include "core/includes/checkout_campo.html" with campo=form.comuna %}
+
                     </div>
 
-                    <div class="checkout-campos checkout-campos--direccion">
+
+                    <div
+                        class="
+                            checkout-campos
+                            checkout-campos--direccion
+                        "
+                    >
+
                         {% include "core/includes/checkout_campo.html" with campo=form.direccion %}
+
                         {% include "core/includes/checkout_campo.html" with campo=form.numero_direccion %}
+
                         {% include "core/includes/checkout_campo.html" with campo=form.departamento %}
+
                     </div>
+
 
                     {% include "core/includes/checkout_campo.html" with campo=form.referencia %}
+
                 </section>
 
+
+                <!-- =============================================
+                     PASO 3
+                ============================================== -->
+
                 <section class="checkout-bloque">
+
                     <div class="checkout-bloque__titulo">
+
                         <div>
                             <i class="bi bi-credit-card"></i>
                         </div>
 
                         <div>
-                            <span>Paso 3</span>
-                            <h2>Método de pago</h2>
+
+                            <span>
+                                Paso 3
+                            </span>
+
+                            <h2>
+                                Método de pago
+                            </h2>
 
                             <p>
                                 Selecciona cómo deseas pagar tu compra.
                             </p>
+
                         </div>
+
                     </div>
+
 
                     <div class="checkout-metodos">
 
@@ -204,7 +532,9 @@ Finalizar compra | Audex
                             {% if opcion.data.value != "transferencia" and opcion.data.value != "transferencia_bancaria" %}
 
                                 <label class="checkout-metodo">
+
                                     {{ opcion.tag }}
+
 
                                     <span class="checkout-metodo__icono">
 
@@ -220,7 +550,9 @@ Finalizar compra | Audex
 
                                     </span>
 
+
                                     <span>
+
                                         <strong>
                                             {{ opcion.choice_label }}
                                         </strong>
@@ -238,9 +570,12 @@ Finalizar compra | Audex
                                             {% endif %}
 
                                         </small>
+
                                     </span>
 
+
                                     <i class="bi bi-check-circle-fill"></i>
+
                                 </label>
 
                             {% endif %}
@@ -248,35 +583,59 @@ Finalizar compra | Audex
                         {% endfor %}
 
                     </div>
+
                 </section>
 
+
+                <!-- =============================================
+                     NOTAS
+                ============================================== -->
+
                 <section class="checkout-bloque">
+
                     <div class="checkout-bloque__titulo">
+
                         <div>
                             <i class="bi bi-chat-left-text"></i>
                         </div>
 
                         <div>
-                            <span>Opcional</span>
-                            <h2>Notas del pedido</h2>
+
+                            <span>
+                                Opcional
+                            </span>
+
+                            <h2>
+                                Notas del pedido
+                            </h2>
+
                         </div>
+
                     </div>
 
+
                     {% include "core/includes/checkout_campo.html" with campo=form.notas %}
+
                 </section>
 
             </div>
 
 
+            <!-- =================================================
+                 RESUMEN
+            ================================================== -->
+
             <aside class="checkout-resumen">
 
-                <!-- ============================================================= -->
-                <!-- CABECERA -->
-                <!-- ============================================================= -->
+
+                <!-- =============================================
+                     CABECERA
+                ============================================== -->
 
                 <div class="checkout-resumen__titulo">
 
                     <div>
+
                         <span>
                             Resumen
                         </span>
@@ -284,6 +643,7 @@ Finalizar compra | Audex
                         <h2>
                             Tu compra
                         </h2>
+
                     </div>
 
                     <i
@@ -294,9 +654,9 @@ Finalizar compra | Audex
                 </div>
 
 
-                <!-- ============================================================= -->
-                <!-- PRODUCTOS -->
-                <!-- ============================================================= -->
+                <!-- =============================================
+                     PRODUCTOS
+                ============================================== -->
 
                 <div class="checkout-productos">
 
@@ -304,9 +664,6 @@ Finalizar compra | Audex
 
                         <article class="checkout-producto">
 
-                            <!-- ================================================= -->
-                            <!-- IMAGEN -->
-                            <!-- ================================================= -->
 
                             <div class="checkout-producto__imagen">
 
@@ -341,10 +698,6 @@ Finalizar compra | Audex
                             </div>
 
 
-                            <!-- ================================================= -->
-                            <!-- INFORMACIÓN -->
-                            <!-- ================================================= -->
-
                             <div class="checkout-producto__informacion">
 
                                 <strong class="checkout-producto__nombre">
@@ -361,10 +714,6 @@ Finalizar compra | Audex
                                 {% endif %}
 
 
-                                <!-- ============================================= -->
-                                <!-- PRECIOS DEL PRODUCTO -->
-                                <!-- ============================================= -->
-
                                 <div class="checkout-producto__precios">
 
                                     {% if item.en_oferta %}
@@ -372,6 +721,7 @@ Finalizar compra | Audex
                                         <span class="checkout-producto__precio-original">
                                             {{ item.precio_original_formateado }} CLP
                                         </span>
+
 
                                         <strong class="checkout-producto__precio-oferta">
                                             {{ item.precio_formateado }} CLP
@@ -413,18 +763,16 @@ Finalizar compra | Audex
                                 {% if item.cantidad > 1 %}
 
                                     <small class="checkout-producto__precio-cada-uno">
+
                                         {{ item.precio_formateado }} CLP
                                         c/u
+
                                     </small>
 
                                 {% endif %}
 
                             </div>
 
-
-                            <!-- ================================================= -->
-                            <!-- TOTAL PRODUCTO -->
-                            <!-- ================================================= -->
 
                             <div class="checkout-producto__total">
 
@@ -449,9 +797,9 @@ Finalizar compra | Audex
                 </div>
 
 
-                <!-- ============================================================= -->
-                <!-- CUPÓN -->
-                <!-- ============================================================= -->
+                <!-- =============================================
+                     CUPÓN
+                ============================================== -->
 
                 <div class="checkout-cupon">
 
@@ -466,15 +814,24 @@ Finalizar compra | Audex
                             type="text"
                             name="codigo_descuento"
                             id="id_codigo_descuento"
+
                             value="{{ form.codigo_descuento.value|default_if_none:'' }}"
+
                             maxlength="64"
-                            placeholder="Ejemplo: BIENVENIDA10"
+
+                            placeholder="Ingresa tu código"
+
                             autocomplete="off"
+
                             autocapitalize="characters"
+
                             spellcheck="false"
+
                             aria-describedby="checkoutMensajeCupon"
+
                             class="
                                 checkout-cupon__input
+
                                 {% if form.codigo_descuento.errors %}
                                     checkout-cupon__input--error
                                 {% endif %}
@@ -501,20 +858,20 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- ========================================================= -->
-                    <!-- MENSAJE CUPÓN -->
-                    <!-- ========================================================= -->
-
                     <small
                         id="checkoutMensajeCupon"
+
                         class="
                             checkout-cupon__mensaje
+
                             {% if resumen.error_descuento %}
                                 checkout-cupon__mensaje--error
+
                             {% elif resumen.tiene_descuento_aplicado %}
                                 checkout-cupon__mensaje--exito
                             {% endif %}
                         "
+
                         aria-live="polite"
                     >
 
@@ -546,8 +903,7 @@ Finalizar compra | Audex
 
                         {% else %}
 
-                            Puedes usar un código general
-                            o un premio personal.
+                            Ingresa un código si dispones de uno.
 
                         {% endif %}
 
@@ -565,9 +921,9 @@ Finalizar compra | Audex
                 </div>
 
 
-                <!-- ============================================================= -->
-                <!-- PREMIOS -->
-                <!-- ============================================================= -->
+                <!-- =============================================
+                     PREMIOS
+                ============================================== -->
 
                 {% if codigos_fidelidad %}
 
@@ -627,6 +983,7 @@ Finalizar compra | Audex
 
                                     </span>
 
+
                                     <i
                                         class="bi bi-plus-circle"
                                         aria-hidden="true"
@@ -643,16 +1000,14 @@ Finalizar compra | Audex
                 {% endif %}
 
 
-                <!-- ============================================================= -->
-                <!-- DESGLOSE DE VALORES -->
-                <!-- ============================================================= -->
+                <!-- =============================================
+                     VALORES
+                ============================================== -->
 
                 <div class="checkout-valores">
 
 
-                    <!-- ========================================================= -->
-                    <!-- TOTAL PRODUCTOS SIN DESCUENTOS -->
-                    <!-- ========================================================= -->
+                    <!-- TOTAL PRODUCTOS -->
 
                     <div class="checkout-valores__fila">
 
@@ -686,15 +1041,14 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- ========================================================= -->
-                    <!-- AHORRO POR OFERTAS -->
-                    <!-- ========================================================= -->
+                    <!-- AHORRO OFERTAS -->
 
                     <div
                         class="
                             checkout-valores__fila
                             checkout-valores__fila--descuento
                         "
+
                         id="checkoutFilaAhorroOfertas"
 
                         {% if not carrito.tiene_ofertas %}
@@ -735,9 +1089,7 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- ========================================================= -->
-                    <!-- SUBTOTAL DESPUÉS DE OFERTAS -->
-                    <!-- ========================================================= -->
+                    <!-- SUBTOTAL -->
 
                     <div
                         class="
@@ -751,6 +1103,7 @@ Finalizar compra | Audex
                             <span>
                                 Subtotal
                             </span>
+
 
                             {% if carrito.tiene_ofertas %}
 
@@ -770,15 +1123,14 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- ========================================================= -->
-                    <!-- DESCUENTO ADICIONAL POR CÓDIGO -->
-                    <!-- ========================================================= -->
+                    <!-- DESCUENTO CUPÓN -->
 
                     <div
                         class="
                             checkout-valores__fila
                             checkout-valores__fila--cupon
                         "
+
                         id="checkoutFilaDescuento"
 
                         {% if not resumen.tiene_descuento_aplicado %}
@@ -789,6 +1141,7 @@ Finalizar compra | Audex
                         <div>
 
                             <span>
+
                                 Descuento adicional
 
                                 <small
@@ -797,7 +1150,9 @@ Finalizar compra | Audex
                                 >
 
                                     {% if resumen.tiene_descuento_aplicado %}
+
                                         {{ resumen.codigo_aplicado }}
+
                                     {% endif %}
 
                                 </small>
@@ -847,15 +1202,14 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- ========================================================= -->
-                    <!-- SUBTOTAL CON DESCUENTO ADICIONAL -->
-                    <!-- ========================================================= -->
+                    <!-- SUBTOTAL DESCUENTO -->
 
                     <div
                         class="
                             checkout-valores__fila
                             checkout-valores__fila--despues-descuento
                         "
+
                         id="checkoutFilaSubtotalConDescuento"
 
                         {% if not resumen.tiene_descuento_aplicado %}
@@ -893,9 +1247,9 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- ========================================================= -->
-                    <!-- DESPACHO -->
-                    <!-- ========================================================= -->
+                    <!-- =========================================
+                         DESPACHO BLUE EXPRESS
+                    ========================================== -->
 
                     <div
                         class="
@@ -925,7 +1279,52 @@ Finalizar compra | Audex
 
                             {% else %}
 
-                                Completa los datos de envío
+                                Selecciona una región
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         TIEMPO ESTIMADO BLUE EXPRESS
+                    ========================================== -->
+
+                    <div
+                        class="
+                            checkout-valores__fila
+                            checkout-valores__fila--tiempo
+                        "
+                        id="checkoutFilaTiempoEstimado"
+                    >
+
+                        <div>
+
+                            <span>
+                                Entrega estimada
+                            </span>
+
+                            <small>
+                                Tiempo aproximado Blue Express
+                            </small>
+
+                        </div>
+
+
+                        <strong
+                            id="checkoutTiempoEstimado"
+                            class="checkout-tiempo-entrega"
+                        >
+
+                            {% if tiempo_estimado_texto %}
+
+                                {{ tiempo_estimado_texto }}
+
+                            {% else %}
+
+                                Selecciona una región
 
                             {% endif %}
 
@@ -936,9 +1335,9 @@ Finalizar compra | Audex
                 </div>
 
 
-                <!-- ============================================================= -->
-                <!-- TOTAL FINAL -->
-                <!-- ============================================================= -->
+                <!-- =============================================
+                     TOTAL
+                ============================================== -->
 
                 <div class="checkout-total">
 
@@ -956,15 +1355,13 @@ Finalizar compra | Audex
 
 
                     <strong id="checkoutTotal">
+
                         ${{ resumen.total|floatformat:0|intcomma }} CLP
+
                     </strong>
 
                 </div>
 
-
-                <!-- ============================================================= -->
-                <!-- ACLARACIÓN -->
-                <!-- ============================================================= -->
 
                 <p class="checkout-total__aclaracion">
 
@@ -979,33 +1376,210 @@ Finalizar compra | Audex
                 </p>
 
 
-                <!-- ============================================================= -->
-                <!-- TÉRMINOS -->
-                <!-- ============================================================= -->
+                <!-- =============================================
+                     TÉRMINOS Y CONDICIONES
+                ============================================== -->
 
-                <label class="checkout-terminos">
+                <div class="checkout-terminos-contenedor">
 
-                    {{ form.aceptar_terminos }}
+                    <label class="checkout-terminos">
 
-                    <span>
-                        {{ form.aceptar_terminos.label }}
-                    </span>
+                        {{ form.aceptar_terminos }}
 
-                </label>
+                        <span>
+                            {{ form.aceptar_terminos.label }}
+                        </span>
 
-
-                {% for error in form.aceptar_terminos.errors %}
-
-                    <span class="checkout-error-campo">
-                        {{ error }}
-                    </span>
-
-                {% endfor %}
+                    </label>
 
 
-                <!-- ============================================================= -->
-                <!-- CONFIRMAR -->
-                <!-- ============================================================= -->
+                    <details class="checkout-terminos-detalle">
+
+                        <summary>
+                            Ver términos y condiciones
+                        </summary>
+
+
+                        <div class="checkout-terminos-detalle__contenido">
+
+                            <h4>
+                                6.1 Identificación del vendedor
+                            </h4>
+
+                            <p>
+                                Este sitio web, audex.cl, es operado por
+                                Sociedad Martínez Leiva SpA,
+                                RUT 78.473.913-9,
+                                Puente Alto, Región Metropolitana, Chile.
+                            </p>
+
+
+                            <h4>
+                                6.2 Aceptación de los términos
+                            </h4>
+
+                            <p>
+                                Al navegar y comprar en audex.cl,
+                                el usuario acepta estos Términos y Condiciones,
+                                junto con nuestra Política de Privacidad
+                                y Política de Cookies.
+                            </p>
+
+
+                            <h4>
+                                6.3 Productos y precios
+                            </h4>
+
+                            <ul>
+
+                                <li>
+                                    Los precios están expresados
+                                    en pesos chilenos (CLP)
+                                    e incluyen IVA.
+                                </li>
+
+                                <li>
+                                    Audex puede modificar precios y stock
+                                    sin afectar compras ya confirmadas.
+                                </li>
+
+                                <li>
+                                    Las imágenes de los productos
+                                    son referenciales.
+                                </li>
+
+                            </ul>
+
+
+                            <h4>
+                                6.4 Proceso de compra
+                            </h4>
+
+                            <ol>
+
+                                <li>
+                                    Selección de productos
+                                    y agregado al carrito.
+                                </li>
+
+                                <li>
+                                    Ingreso de datos de contacto
+                                    y despacho.
+                                </li>
+
+                                <li>
+                                    Pago mediante Webpay
+                                    o Mercado Pago.
+                                </li>
+
+                                <li>
+                                    Recepción del correo de confirmación
+                                    y posteriormente de la boleta electrónica.
+                                </li>
+
+                            </ol>
+
+
+                            <h4>
+                                6.5 Medios de pago
+                            </h4>
+
+                            <p>
+                                Audex acepta tarjetas de crédito y débito
+                                mediante Webpay (Transbank)
+                                y Mercado Pago.
+                            </p>
+
+
+                            <h4>
+                                6.6 Plazos de entrega
+                            </h4>
+
+                            <p>
+                                Los plazos estimados de entrega
+                                son informados antes de confirmar la compra
+                                según la región de despacho seleccionada.
+                            </p>
+
+
+                            <h4>
+                                6.7 Documentación tributaria
+                            </h4>
+
+                            <p>
+                                Se emite boleta electrónica por cada venta,
+                                la cual es enviada al correo registrado
+                                por el cliente.
+                            </p>
+
+
+                            <h4>
+                                6.8 Propiedad intelectual
+                            </h4>
+
+                            <p>
+                                Los contenidos del sitio,
+                                incluyendo textos, imágenes,
+                                logo y marca Audex,
+                                no pueden ser reproducidos
+                                sin autorización.
+                            </p>
+
+
+                            <h4>
+                                6.9 Modificaciones
+                            </h4>
+
+                            <p>
+                                Audex puede actualizar sus Términos
+                                y Condiciones, publicando la fecha
+                                correspondiente de actualización.
+                            </p>
+
+
+                            <h4>
+                                6.10 Legislación aplicable
+                            </h4>
+
+                            <p>
+                                Estos términos se rigen por la normativa
+                                chilena aplicable en materia
+                                de protección de los consumidores.
+                            </p>
+
+
+                            <a
+                                href="{% url 'core:terminos_condiciones' %}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="checkout-terminos-pagina"
+                            >
+
+                                Abrir página completa
+
+                                <i class="bi bi-box-arrow-up-right"></i>
+
+                            </a>
+
+                        </div>
+
+                    </details>
+
+
+                    {% for error in form.aceptar_terminos.errors %}
+
+                        <span class="checkout-error-campo">
+                            {{ error }}
+                        </span>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- =============================================
+                     CONFIRMAR
+                ============================================== -->
 
                 <button
                     type="submit"
@@ -1025,10 +1599,6 @@ Finalizar compra | Audex
                 </button>
 
 
-                <!-- ============================================================= -->
-                <!-- SEGURIDAD -->
-                <!-- ============================================================= -->
-
                 <p class="checkout-seguridad">
 
                     <i
@@ -1041,123 +1611,419 @@ Finalizar compra | Audex
                 </p>
 
             </aside>
+
         </form>
 
     </div>
+
 </section>
+
 
 {{ comunas_por_region|json_script:"comunas-por-region" }}
 
 {% endblock %}
 
 
+
 {% block extra_js %}
 
+
 <script
-    src="{% static 'core/js/checkout.js' %}?v=12"
+    src="{% static 'core/js/checkout.js' %}?v=13"
 ></script>
 
 
-<!-- ===================================================================== -->
-<!-- FORMATO CHILENO + CLP PARA ACTUALIZACIONES DINÁMICAS -->
-<!-- ===================================================================== -->
-
 <script>
+
 (function () {
+
     "use strict";
 
+
+    /* =========================================================
+       TIEMPO ESTIMADO BLUE EXPRESS
+    ========================================================== */
+
+    const REGION_SANTIAGO = new Set([
+        "Metropolitana"
+    ]);
+
+
+    const REGIONES_CENTRO = new Set([
+        "Coquimbo",
+        "Valparaíso",
+        "O’Higgins",
+        "O'Higgins",
+        "Maule",
+        "Ñuble",
+        "Biobío",
+        "La Araucanía",
+        "Los Ríos",
+        "Los Lagos"
+    ]);
+
+
+    const REGIONES_EXTREMO = new Set([
+        "Arica y Parinacota",
+        "Tarapacá",
+        "Antofagasta",
+        "Atacama",
+        "Aysén",
+        "Magallanes"
+    ]);
+
+
+    function obtenerTiempoEntrega(
+        region
+    ) {
+
+        region = (
+            region
+            || ""
+        ).trim();
+
+
+        if (
+            REGION_SANTIAGO.has(
+                region
+            )
+        ) {
+
+            return 48;
+
+        }
+
+
+        if (
+            REGIONES_CENTRO.has(
+                region
+            )
+            ||
+            REGIONES_EXTREMO.has(
+                region
+            )
+        ) {
+
+            return 72;
+
+        }
+
+
+        return null;
+
+    }
+
+
+    function actualizarTiempoEntrega() {
+
+        const region =
+            document.getElementById(
+                "id_region"
+            );
+
+
+        const salida =
+            document.getElementById(
+                "checkoutTiempoEstimado"
+            );
+
+
+        if (
+            !region
+            || !salida
+        ) {
+            return;
+        }
+
+
+        const horas =
+            obtenerTiempoEntrega(
+                region.value
+            );
+
+
+        if (horas) {
+
+            salida.textContent =
+                `${horas} hrs`;
+
+        } else {
+
+            salida.textContent =
+                "Selecciona una región";
+
+        }
+
+    }
+
+
+    const region =
+        document.getElementById(
+            "id_region"
+        );
+
+
+    if (region) {
+
+        region.addEventListener(
+            "change",
+            actualizarTiempoEntrega
+        );
+
+    }
+
+
+    actualizarTiempoEntrega();
+
+
+
+    /* =========================================================
+       LIMPIAR EJEMPLOS VISUALES
+    ========================================================== */
+
+    const formulario =
+        document.getElementById(
+            "checkoutFormulario"
+        );
+
+
+    if (formulario) {
+
+        formulario
+            .querySelectorAll(
+                "input[placeholder], textarea[placeholder]"
+            )
+            .forEach(
+                function (campo) {
+
+                    const placeholder =
+                        campo.getAttribute(
+                            "placeholder"
+                        )
+                        || "";
+
+
+                    /*
+                     * Eliminamos únicamente ejemplos
+                     * que contengan nombres personales.
+                     *
+                     * Nunca eliminamos el value real
+                     * introducido por el usuario.
+                     */
+
+                    if (
+                        /antonio/i.test(
+                            placeholder
+                        )
+                    ) {
+
+                        campo.removeAttribute(
+                            "placeholder"
+                        );
+
+                    }
+
+                }
+            );
+
+
+        formulario
+            .querySelectorAll(
+                ".helptext, small"
+            )
+            .forEach(
+                function (elemento) {
+
+                    const texto =
+                        (
+                            elemento.textContent
+                            || ""
+                        ).trim();
+
+
+                    if (
+                        /^ejemplo\s*:/i.test(
+                            texto
+                        )
+                        ||
+                        /ejemplo.*antonio/i.test(
+                            texto
+                        )
+                    ) {
+
+                        elemento.remove();
+
+                    }
+
+                }
+            );
+
+    }
+
+
+
+    /* =========================================================
+       FORMATO MONETARIO CHILENO
+    ========================================================== */
+
     const selectoresMonetarios = [
+
         ".checkout-producto__precio-original",
+
         ".checkout-producto__precio-oferta",
+
         ".checkout-producto__precio-normal",
+
         ".checkout-producto__ahorro-unitario",
+
         ".checkout-producto__precio-cada-uno",
+
         ".checkout-producto__total-original",
+
         ".checkout-producto__total > strong",
 
         "#checkoutTotalProductosOriginal",
+
         "#checkoutAhorroOfertas",
+
         "#checkoutSubtotal",
+
         "#checkoutDescuento",
+
         "#checkoutSubtotalConDescuento",
+
         "#checkoutDespacho",
+
         "#checkoutTotal"
+
     ];
 
 
-    function normalizarMilesChile(texto) {
+    function normalizarMilesChile(
+        texto
+    ) {
 
         if (!texto) {
             return texto;
         }
 
+
         return texto.replace(
             /(-?\$)\s*([\d.,]+)/g,
-            function (coincidencia, simbolo, numero) {
 
-                const soloDigitos = numero.replace(
-                    /[^\d]/g,
-                    ""
-                );
+            function (
+                coincidencia,
+                simbolo,
+                numero
+            ) {
+
+                const soloDigitos =
+                    numero.replace(
+                        /[^\d]/g,
+                        ""
+                    );
+
 
                 if (!soloDigitos) {
                     return coincidencia;
                 }
 
-                const numeroEntero = parseInt(
-                    soloDigitos,
-                    10
-                );
 
-                if (Number.isNaN(numeroEntero)) {
+                const numeroEntero =
+                    parseInt(
+                        soloDigitos,
+                        10
+                    );
+
+
+                if (
+                    Number.isNaN(
+                        numeroEntero
+                    )
+                ) {
+
                     return coincidencia;
+
                 }
 
-                const formateado = new Intl.NumberFormat(
-                    "es-CL",
-                    {
-                        maximumFractionDigits: 0
-                    }
-                ).format(numeroEntero);
 
-                return `${simbolo}${formateado}`;
+                const formateado =
+                    new Intl.NumberFormat(
+                        "es-CL",
+                        {
+                            maximumFractionDigits: 0
+                        }
+                    ).format(
+                        numeroEntero
+                    );
+
+
+                return (
+                    `${simbolo}` +
+                    `${formateado}`
+                );
+
             }
         );
 
     }
 
 
-    function contieneMonto(texto) {
+    function contieneMonto(
+        texto
+    ) {
 
-        return /-?\$\s*[\d.,]+/.test(texto);
+        return (
+            /-?\$\s*[\d.,]+/.test(
+                texto
+            )
+        );
 
     }
 
 
-    function formatearElemento(elemento) {
+    function formatearElemento(
+        elemento
+    ) {
 
         if (!elemento) {
             return;
         }
 
-        let texto = elemento.textContent.trim();
+
+        let texto =
+            elemento.textContent.trim();
+
 
         if (!texto) {
             return;
         }
 
-        if (!contieneMonto(texto)) {
+
+        if (
+            !contieneMonto(
+                texto
+            )
+        ) {
             return;
         }
 
-        texto = normalizarMilesChile(texto);
 
-        texto = texto.replace(
-            /\s+CLP\b/gi,
-            ""
-        );
+        texto =
+            normalizarMilesChile(
+                texto
+            );
 
-        elemento.textContent = `${texto} CLP`;
+
+        texto =
+            texto.replace(
+                /\s+CLP\b/gi,
+                ""
+            );
+
+
+        elemento.textContent =
+            `${texto} CLP`;
 
     }
 
@@ -1168,8 +2034,12 @@ Finalizar compra | Audex
             function (selector) {
 
                 document
-                    .querySelectorAll(selector)
-                    .forEach(formatearElemento);
+                    .querySelectorAll(
+                        selector
+                    )
+                    .forEach(
+                        formatearElemento
+                    );
 
             }
         );
@@ -1177,50 +2047,50 @@ Finalizar compra | Audex
     }
 
 
-    if (document.readyState === "loading") {
+    aplicarFormatoMonetario();
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            aplicarFormatoMonetario
+
+    /* =========================================================
+       ACTUALIZACIONES DINÁMICAS
+    ========================================================== */
+
+    const checkout =
+        document.getElementById(
+            "checkout"
         );
-
-    } else {
-
-        aplicarFormatoMonetario();
-
-    }
-
-
-    const checkout = document.getElementById(
-        "checkout"
-    );
 
 
     if (checkout) {
 
         let pendiente = false;
 
-        const observer = new MutationObserver(
-            function () {
 
-                if (pendiente) {
-                    return;
-                }
+        const observer =
+            new MutationObserver(
+                function () {
 
-                pendiente = true;
-
-                requestAnimationFrame(
-                    function () {
-
-                        aplicarFormatoMonetario();
-
-                        pendiente = false;
-
+                    if (pendiente) {
+                        return;
                     }
-                );
 
-            }
-        );
+
+                    pendiente = true;
+
+
+                    requestAnimationFrame(
+                        function () {
+
+                            aplicarFormatoMonetario();
+
+                            actualizarTiempoEntrega();
+
+                            pendiente = false;
+
+                        }
+                    );
+
+                }
+            );
 
 
         observer.observe(
@@ -1235,6 +2105,7 @@ Finalizar compra | Audex
     }
 
 })();
+
 </script>
 
 {% endblock %}

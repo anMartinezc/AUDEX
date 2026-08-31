@@ -719,6 +719,9 @@ def validar_rut_chileno(
             code="rut_dv_invalido",
         )
 
+
+
+
 class CheckoutForm(
     forms.ModelForm
 ):
@@ -737,7 +740,6 @@ class CheckoutForm(
         required=True,
         min_length=8,
         max_length=12,
-        help_text="Ejemplo: 12.345.678-5",
         validators=[
             validar_rut_chileno,
         ],
@@ -795,8 +797,8 @@ class CheckoutForm(
             ),
         ],
         help_text=(
-            "Las comunas se cargan según "
-            "la región seleccionada."
+            "Selecciona una región "
+            "para cargar sus comunas."
         ),
         widget=forms.Select(
             attrs={
@@ -819,9 +821,8 @@ class CheckoutForm(
             required=False,
             max_length=64,
             help_text=(
-                "Ejemplo: BIENVENIDA10. "
                 "Solo se permite un código "
-                "por pedido."
+                "de descuento por pedido."
             ),
             widget=forms.TextInput(
                 attrs={
@@ -832,7 +833,7 @@ class CheckoutForm(
                         "checkout-cupon__input"
                     ),
                     "placeholder": (
-                        "Ejemplo: BIENVENIDA10"
+                        "Ingresa tu código"
                     ),
                     "maxlength": "64",
                     "autocomplete": "off",
@@ -876,6 +877,7 @@ class CheckoutForm(
         ]
 
         widgets = {
+
             "nombre": forms.TextInput(
                 attrs={
                     "id": "id_nombre",
@@ -883,13 +885,14 @@ class CheckoutForm(
                         "checkout-control"
                     ),
                     "placeholder": (
-                        "Ejemplo: Antonio"
+                        "Ejemplo: Juan"
                     ),
                     "autocomplete": (
                         "given-name"
                     ),
                 }
             ),
+
             "apellido": forms.TextInput(
                 attrs={
                     "id": "id_apellido",
@@ -904,6 +907,7 @@ class CheckoutForm(
                     ),
                 }
             ),
+
             "telefono": forms.TextInput(
                 attrs={
                     "id": "id_telefono",
@@ -917,6 +921,7 @@ class CheckoutForm(
                     "inputmode": "tel",
                 }
             ),
+
             "email": forms.EmailInput(
                 attrs={
                     "id": "id_email",
@@ -924,11 +929,12 @@ class CheckoutForm(
                         "checkout-control"
                     ),
                     "placeholder": (
-                        "Ejemplo: antonio@correo.cl"
+                        "Ejemplo: cliente@correo.cl"
                     ),
                     "autocomplete": "email",
                 }
             ),
+
             "direccion": forms.TextInput(
                 attrs={
                     "id": "id_direccion",
@@ -943,6 +949,7 @@ class CheckoutForm(
                     ),
                 }
             ),
+
             "numero_direccion": (
                 forms.TextInput(
                     attrs={
@@ -961,6 +968,7 @@ class CheckoutForm(
                     }
                 )
             ),
+
             "departamento": (
                 forms.TextInput(
                     attrs={
@@ -980,6 +988,7 @@ class CheckoutForm(
                     }
                 )
             ),
+
             "referencia": forms.TextInput(
                 attrs={
                     "id": "id_referencia",
@@ -992,9 +1001,11 @@ class CheckoutForm(
                     ),
                 }
             ),
+
             "metodo_pago": (
                 forms.RadioSelect()
             ),
+
             "notas": forms.Textarea(
                 attrs={
                     "id": "id_notas",
@@ -1010,6 +1021,7 @@ class CheckoutForm(
             ),
         }
 
+
     def __init__(
         self,
         *args,
@@ -1021,65 +1033,90 @@ class CheckoutForm(
         )
 
         # ---------------------------------------------------------------------
-        # EJEMPLOS Y AYUDAS
+        # AYUDAS DE LOS CAMPOS
+        # ---------------------------------------------------------------------
+        #
+        # Los ejemplos visuales se muestran únicamente
+        # mediante placeholder dentro de los inputs.
+        #
+        # Aquí dejamos solo textos de ayuda que aportan
+        # información adicional al usuario.
         # ---------------------------------------------------------------------
 
         textos_ayuda = {
-            "nombre": "Ejemplo: Antonio",
-            "apellido": "Ejemplo: Pérez",
-            "rut": (
-                "Ejemplo: 12.345.678-5"
-            ),
-            "telefono": (
-                "Ejemplo: +56 9 1234 5678"
-            ),
-            "email": (
-                "Ejemplo: antonio@correo.cl"
-            ),
+
             "region": (
                 "Selecciona la región "
-                "de despacho."
+                "donde se realizará el despacho."
             ),
+
             "comuna": (
-                "Selecciona primero "
-                "una región."
+                "Selecciona una región "
+                "para cargar sus comunas."
             ),
-            "direccion": (
-                "Ejemplo: Avenida Providencia"
-            ),
-            "numero_direccion": (
-                "Ejemplo: 1234"
-            ),
-            "departamento": (
-                "Ejemplo: Depto. 201 o casa B"
-            ),
-            "referencia": (
-                "Ejemplo: Portón azul, "
-                "dejar en conserjería"
-            ),
-            "notas": (
-                "Ejemplo: Llamar antes "
-                "de entregar"
-            ),
+
             "codigo_descuento": (
-                "Ejemplo: BIENVENIDA10"
+                "Solo se permite un código "
+                "de descuento por pedido."
             ),
         }
+
 
         for (
             nombre_campo,
             texto,
         ) in textos_ayuda.items():
-            if nombre_campo in self.fields:
+
+            if (
+                nombre_campo
+                in self.fields
+            ):
+
                 self.fields[
                     nombre_campo
                 ].help_text = texto
+
+
+        # ---------------------------------------------------------------------
+        # ELIMINAR HELP TEXT DUPLICADO
+        # ---------------------------------------------------------------------
+        #
+        # Estos campos ya muestran su ejemplo mediante
+        # placeholder dentro del input.
+        # ---------------------------------------------------------------------
+
+        campos_sin_ayuda = (
+            "nombre",
+            "apellido",
+            "rut",
+            "telefono",
+            "email",
+            "direccion",
+            "numero_direccion",
+            "departamento",
+            "referencia",
+            "notas",
+        )
+
+
+        for nombre_campo in campos_sin_ayuda:
+
+            if (
+                nombre_campo
+                in self.fields
+            ):
+
+                self.fields[
+                    nombre_campo
+                ].help_text = ""
+
 
         # ---------------------------------------------------------------------
         # REGIÓN Y COMUNA SELECCIONADAS
         # ---------------------------------------------------------------------
 
         if self.is_bound:
+
             region_seleccionada = (
                 self.data.get(
                     self.add_prefix(
@@ -1101,6 +1138,7 @@ class CheckoutForm(
             ).strip()
 
         else:
+
             region_seleccionada = (
                 self.initial.get(
                     "region"
@@ -1125,6 +1163,7 @@ class CheckoutForm(
                 or ""
             ).strip()
 
+
         comunas_region = (
             COMUNAS_POR_REGION.get(
                 region_seleccionada,
@@ -1132,7 +1171,9 @@ class CheckoutForm(
             )
         )
 
+
         if comunas_region:
+
             self.fields[
                 "comuna"
             ].choices = [
@@ -1153,6 +1194,7 @@ class CheckoutForm(
                 ],
             ]
 
+
             self.fields[
                 "comuna"
             ].widget.attrs.pop(
@@ -1161,6 +1203,7 @@ class CheckoutForm(
             )
 
         else:
+
             self.fields[
                 "comuna"
             ].choices = [
@@ -1173,20 +1216,25 @@ class CheckoutForm(
                 ),
             ]
 
+
             self.fields[
                 "comuna"
             ].widget.attrs[
                 "disabled"
             ] = "disabled"
 
+
         if comuna_seleccionada:
+
             self.initial[
                 "comuna"
             ] = comuna_seleccionada
 
+
     def clean_rut(
         self,
     ):
+
         rut = (
             self.cleaned_data.get(
                 "rut",
@@ -1195,17 +1243,21 @@ class CheckoutForm(
             or ""
         )
 
+
         validar_rut_chileno(
             rut
         )
+
 
         return formatear_rut(
             rut
         )
 
+
     def clean_region(
         self,
     ):
+
         region = (
             self.cleaned_data.get(
                 "region",
@@ -1214,10 +1266,12 @@ class CheckoutForm(
             or ""
         ).strip()
 
+
         if (
             region
             not in COMUNAS_POR_REGION
         ):
+
             raise forms.ValidationError(
                 (
                     "Selecciona una "
@@ -1225,11 +1279,14 @@ class CheckoutForm(
                 )
             )
 
+
         return region
+
 
     def clean_comuna(
         self,
     ):
+
         comuna = (
             self.cleaned_data.get(
                 "comuna",
@@ -1238,16 +1295,21 @@ class CheckoutForm(
             or ""
         ).strip()
 
+
         if not comuna:
+
             raise forms.ValidationError(
                 "Selecciona una comuna."
             )
 
+
         return comuna
+
 
     def clean_codigo_descuento(
         self,
     ):
+
         codigo = (
             self.cleaned_data.get(
                 "codigo_descuento",
@@ -1256,6 +1318,7 @@ class CheckoutForm(
             or ""
         ).strip().upper()
 
+
         if (
             codigo
             and not re.fullmatch(
@@ -1263,6 +1326,7 @@ class CheckoutForm(
                 codigo,
             )
         ):
+
             raise forms.ValidationError(
                 (
                     "El código solo puede "
@@ -1271,22 +1335,28 @@ class CheckoutForm(
                 )
             )
 
+
         return codigo
+
 
     def clean(
         self,
     ):
+
         cleaned_data = (
             super().clean()
         )
+
 
         region = cleaned_data.get(
             "region"
         )
 
+
         comuna = cleaned_data.get(
             "comuna"
         )
+
 
         if (
             region
@@ -1297,6 +1367,7 @@ class CheckoutForm(
                 [],
             )
         ):
+
             self.add_error(
                 "comuna",
                 (
@@ -1306,7 +1377,16 @@ class CheckoutForm(
                 ),
             )
 
+
         return cleaned_data
+
+
+
+
+
+
+
+
 
 class BuscarPedidoForm(forms.Form):
     numero = forms.CharField(

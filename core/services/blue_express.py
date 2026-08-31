@@ -44,6 +44,14 @@ TARIFAS_BLUE_EXPRESS = {
 }
 
 
+
+TIEMPOS_BLUE_EXPRESS = {
+    "SANTIAGO": 48,
+    "CENTRO": 72,
+    "EXTREMO": 72,
+}
+
+
 # =============================================================================
 # REGIONES POR ZONA
 # =============================================================================
@@ -403,3 +411,52 @@ def cotizar_blue_express(
         zona=zona,
         costo=costo,
     )
+
+
+
+
+
+def obtener_tiempo_estimado_blue_express(
+    *,
+    zona,
+):
+    tiempo = (
+        TIEMPOS_BLUE_EXPRESS.get(
+            zona
+        )
+    )
+
+    if tiempo is None:
+        raise ValueError(
+            (
+                "No existe un tiempo estimado "
+                "configurado para la zona "
+                f"{zona}."
+            )
+        )
+
+    try:
+        tiempo = int(
+            tiempo
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+        raise ValueError(
+            (
+                "El tiempo estimado configurado "
+                f"para {zona} no es válido."
+            )
+        )
+
+    if tiempo <= 0:
+        raise ValueError(
+            (
+                "El tiempo estimado configurado "
+                f"para {zona} debe ser mayor a 0."
+            )
+        )
+
+    return tiempo
