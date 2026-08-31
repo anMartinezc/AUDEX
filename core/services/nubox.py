@@ -658,6 +658,22 @@ def _redondear_peso(
     )
 
 
+def _numero_nubox(
+    valor,
+):
+    """
+    Convierte Decimal a un número compatible
+    con JSON manteniendo la precisión necesaria
+    para Nubox.
+    """
+
+    return float(
+        _decimal(
+            valor
+        )
+    )
+
+
 def _precio_neto_desde_bruto(
     precio_bruto,
 ):
@@ -679,45 +695,56 @@ def _precio_neto_desde_bruto(
     )
 
 
+
+
+
 def _separar_neto_iva(
     precio_bruto,
 ):
     """
-    Recibe un monto final IVA incluido
-    y devuelve:
+    Separa un monto bruto IVA incluido en neto e IVA.
 
-    (neto, iva)
-
-    ambos redondeados al peso.
-
-    Se fuerza que:
-
-        neto + iva == bruto
-
-    para evitar diferencias de redondeo.
+    Conservamos precisión decimal para que Nubox
+    pueda recalcular el IVA sin generar diferencias
+    de $1 por redondeo anticipado.
     """
 
-    bruto = _redondear_peso(
+    bruto = _decimal(
         precio_bruto
     )
 
-    neto = _redondear_peso(
-        _precio_neto_desde_bruto(
-            bruto
+    if bruto < 0:
+        raise NuboxError(
+            (
+                "No se pueden enviar "
+                "montos negativos a Nubox."
+            )
         )
+
+    precision = Decimal(
+        "0.000001"
+    )
+
+    neto = (
+        bruto
+        / FACTOR_IVA
+    ).quantize(
+        precision,
+        rounding=ROUND_HALF_UP,
     )
 
     iva = (
         bruto
         - neto
+    ).quantize(
+        precision,
+        rounding=ROUND_HALF_UP,
     )
 
     return (
         neto,
         iva,
     )
-
-
 # =============================================================================
 # CONFIGURACIÓN
 # =============================================================================
@@ -1939,15 +1966,20 @@ def _crear_detalles_nubox(
                     )
                 },
 
-                # Precio NETO.
-                "price": neto,
+                # Precio NETO con precisión decimal
+                # compatible con JSON/Nubox.
+                "price": _numero_nubox(
+                    neto
+                ),
 
                 "taxes": [
                     {
                         "legalCode": (
                             NUBOX_IVA_LEGAL_CODE
                         ),
-                        "amount": iva,
+                        "amount": _numero_nubox(
+                            iva
+                        ),
                     }
                 ],
 
@@ -2031,14 +2063,18 @@ def _agregar_despacho_nubox(
                 )
             },
 
-            "price": neto,
+            "price": _numero_nubox(
+                neto
+            ),
 
             "taxes": [
                 {
                     "legalCode": (
                         NUBOX_IVA_LEGAL_CODE
                     ),
-                    "amount": iva,
+                    "amount": _numero_nubox(
+                        iva
+                    ),
                 }
             ],
 
@@ -3059,6 +3095,4 @@ def emitir_boleta_nubox_por_pedido(
             )
 
         return None
-
-
 
