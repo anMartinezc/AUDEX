@@ -422,4 +422,47 @@ path(
         views.webpay_retorno,
         name="webpay_retorno",
     ),
+
+
+
+        path(
+        "preguntas-frecuentes/",
+        views.faq,
+        name="faq",
+    ),
+    path(
+        "despachos/",
+        views.despachos,
+        name="despachos",
+    ),
+    path(
+        "cambios-devoluciones/",
+        views.cambios_devoluciones,
+        name="cambios_devoluciones",
+    ),
+    path(
+        "garantia/",
+        views.garantia,
+        name="garantia",
+    ),
+    path(
+        "contacto/",
+        views.contacto,
+        name="contacto",
+    ),
+    path(
+        "terminos-condiciones/",
+        views.terminos_condiciones,
+        name="terminos_condiciones",
+    ),
+    path(
+        "politica-privacidad/",
+        views.politica_privacidad,
+        name="politica_privacidad",
+    ),
+    path(
+        "politica-cookies/",
+        views.politica_cookies,
+        name="politica_cookies",
+    ),
 ]

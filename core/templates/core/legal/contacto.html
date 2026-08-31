@@ -1,0 +1,131 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+    Contacto | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/legal.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="legal">
+
+    <div class="contenedor">
+
+        <header class="legal__hero">
+
+            <div class="legal__icono" aria-hidden="true">
+                <i class="bi bi-headset"></i>
+            </div>
+
+            <span class="legal__etiqueta">
+                Estamos para ayudarte
+            </span>
+
+            <h1>Contacto</h1>
+
+            <p class="legal__introduccion">
+                Puedes comunicarte con Audex por nuestros canales de atención para consultas, compras, garantías o seguimiento.
+            </p>
+
+            <p class="legal__actualizacion">
+                Última actualización: 30/08/2026
+            </p>
+
+        </header>
+
+        <div class="legal__contenido">
+            
+            <section class="legal__seccion">
+                <h2>5.1 Datos de la empresa</h2>
+                
+                <p>
+                    <strong>Sociedad Martínez Leiva SpA</strong><br>
+                    RUT: 78.473.913-9<br>
+                    Puente Alto, Región Metropolitana, Chile.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>5.2 Canales de atención</h2>
+                
+                <ul class="legal__contactos">
+                    <li>
+                        <i class="bi bi-whatsapp"></i>
+                        <span><strong>WhatsApp Business</strong><br>+56 9 9344 5949</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-envelope"></i>
+                        <span><strong>Correo electrónico</strong><br>contacto@audex.cl</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-clock"></i>
+                        <span>
+                            <strong>Horario</strong><br>
+                            Lunes a jueves, 09:00 a 18:00 hrs.<br>
+                            Viernes, 09:00 a 17:00 hrs.
+                        </span>
+                    </li>
+                </ul>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>5.3 Redes sociales</h2>
+                
+                <p>
+                    También puedes encontrarnos en Instagram, Facebook y TikTok.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>5.4 Tiempo de respuesta estimado</h2>
+                
+                <p>
+                    Respondemos tus consultas dentro de un plazo estimado de 24 horas hábiles.
+                </p>
+        
+            </section>
+        
+        </div>
+
+        <div class="legal__ayuda">
+            <div>
+                <span>¿Necesitas ayuda?</span>
+                <strong>Estamos disponibles para orientarte.</strong>
+            </div>
+
+            <div class="legal__ayuda-acciones">
+                <a
+                    href="mailto:contacto@audex.cl"
+                    class="boton boton--secundario"
+                >
+                    <i class="bi bi-envelope"></i>
+                    contacto@audex.cl
+                </a>
+
+                <a
+                    href="https://wa.me/56993445949"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

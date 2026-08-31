@@ -1,0 +1,183 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+    Términos y Condiciones | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/legal.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="legal">
+
+    <div class="contenedor">
+
+        <header class="legal__hero">
+
+            <div class="legal__icono" aria-hidden="true">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+
+            <span class="legal__etiqueta">
+                Condiciones de uso y compra
+            </span>
+
+            <h1>Términos y Condiciones</h1>
+
+            <p class="legal__introduccion">
+                Estos términos regulan el uso de audex.cl y las compras realizadas a través de nuestra tienda.
+            </p>
+
+            <p class="legal__actualizacion">
+                Última actualización: 30/08/2026
+            </p>
+
+        </header>
+
+        <div class="legal__contenido">
+            
+            <section class="legal__seccion">
+                <h2>6.1 Identificación del vendedor</h2>
+                
+                <p>
+                    Este sitio web es operado por Sociedad Martínez Leiva SpA,
+                    RUT 78.473.913-9, Puente Alto, Región Metropolitana, Chile.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.2 Aceptación de los términos</h2>
+                
+                <p>
+                    Al navegar y comprar en audex.cl, el usuario acepta estos Términos y
+                    Condiciones junto con nuestra Política de Privacidad y Política de Cookies.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.3 Productos y precios</h2>
+                
+                <ul>
+                    <li>Los precios se expresan en pesos chilenos (CLP) e incluyen IVA.</li>
+                    <li>Audex puede modificar precios y stock sin afectar compras ya confirmadas.</li>
+                    <li>Las imágenes de los productos son referenciales.</li>
+                </ul>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.4 Proceso de compra</h2>
+                
+                <ol>
+                    <li>Selección de productos y agregado al carrito.</li>
+                    <li>Ingreso de datos de contacto y despacho.</li>
+                    <li>Pago mediante los medios disponibles.</li>
+                    <li>Recepción de confirmación y documentación tributaria correspondiente.</li>
+                </ol>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.5 Medios de pago</h2>
+                
+                <p>
+                    Aceptamos tarjetas de crédito y débito mediante Webpay (Transbank)
+                    y Mercado Pago.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.6 Plazos de entrega</h2>
+                
+                <p>
+                    Los plazos de entrega se informan antes de confirmar la compra.
+                    Ante atrasos, el cliente puede contactar a Audex para recibir información
+                    actualizada.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.7 Documentación tributaria</h2>
+                
+                <p>
+                    Se emite boleta electrónica por cada venta y se envía al correo registrado
+                    por el cliente.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.8 Propiedad intelectual</h2>
+                
+                <p>
+                    Los contenidos del sitio, incluyendo textos, imágenes, logo y marca Audex,
+                    pertenecen a Sociedad Martínez Leiva SpA o se utilizan con la autorización
+                    correspondiente y no pueden reproducirse sin permiso.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.9 Modificaciones</h2>
+                
+                <p>
+                    Audex puede actualizar estos Términos y Condiciones, publicando la fecha de
+                    su última actualización.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>6.10 Legislación aplicable</h2>
+                
+                <p>
+                    Estos términos se rigen por la normativa chilena aplicable,
+                    incluyendo la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores.
+                </p>
+        
+            </section>
+        
+        </div>
+
+        <div class="legal__ayuda">
+            <div>
+                <span>¿Necesitas ayuda?</span>
+                <strong>Estamos disponibles para orientarte.</strong>
+            </div>
+
+            <div class="legal__ayuda-acciones">
+                <a
+                    href="mailto:contacto@audex.cl"
+                    class="boton boton--secundario"
+                >
+                    <i class="bi bi-envelope"></i>
+                    contacto@audex.cl
+                </a>
+
+                <a
+                    href="https://wa.me/56993445949"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

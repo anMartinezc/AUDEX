@@ -117,8 +117,67 @@ class AdministradorProductosMixin(UserPassesTestMixin):
         return es_administrador_productos(self.request.user)
 
 
+
+
 def inicio(request):
-    return render(request, "core/inicio.html")
+
+    # =========================================================
+    # 4 CATEGORÍAS PRINCIPALES
+    # =========================================================
+
+    categorias_inicio = list(
+        Categoria.objects
+        .filter(
+            activa=True,
+        )
+        .order_by(
+            "orden",
+            "nombre",
+        )[:4]
+    )
+
+
+    # =========================================================
+    # 1 PRODUCTO PRINCIPAL POR CADA CATEGORÍA
+    # =========================================================
+
+    for categoria in categorias_inicio:
+
+        producto_principal = (
+            Producto.objects
+            .filter(
+                activo=True,
+                categoria=categoria,
+            )
+            .order_by(
+                "-destacado",
+                "-creado",
+                "nombre",
+            )
+            .first()
+        )
+
+        categoria.producto_principal = (
+            producto_principal
+        )
+
+
+    # =========================================================
+    # CONTEXTO
+    # =========================================================
+
+    contexto = {
+        "categorias_inicio": categorias_inicio,
+    }
+
+
+    return render(
+        request,
+        "core/inicio.html",
+        contexto,
+    )
+
+
 
 
 @ensure_csrf_cookie
@@ -247,6 +306,11 @@ def productos(request):
         "core/productos.html",
         contexto,
     )
+
+
+
+
+
 @ensure_csrf_cookie
 def producto_detalle(request, slug):
     producto = get_object_or_404(
@@ -11669,4 +11733,66 @@ def webpay_retorno(request):
     return redirect(
         "core:pedido_confirmacion",
         numero=pedido.numero,
+    )
+
+
+
+
+
+
+
+
+def faq(request):
+    return render(
+        request,
+        "core/legal/faq.html",
+    )
+
+
+def despachos(request):
+    return render(
+        request,
+        "core/legal/despachos.html",
+    )
+
+
+def cambios_devoluciones(request):
+    return render(
+        request,
+        "core/legal/cambios_devoluciones.html",
+    )
+
+
+def garantia(request):
+    return render(
+        request,
+        "core/legal/garantia.html",
+    )
+
+
+def contacto(request):
+    return render(
+        request,
+        "core/legal/contacto.html",
+    )
+
+
+def terminos_condiciones(request):
+    return render(
+        request,
+        "core/legal/terminos_condiciones.html",
+    )
+
+
+def politica_privacidad(request):
+    return render(
+        request,
+        "core/legal/politica_privacidad.html",
+    )
+
+
+def politica_cookies(request):
+    return render(
+        request,
+        "core/legal/politica_cookies.html",
     )

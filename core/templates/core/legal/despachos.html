@@ -1,0 +1,204 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+    Despachos | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/legal.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="legal">
+
+    <div class="contenedor">
+
+        <header class="legal__hero">
+
+            <div class="legal__icono" aria-hidden="true">
+                <i class="bi bi-truck"></i>
+            </div>
+
+            <span class="legal__etiqueta">
+                Envíos a todo Chile
+            </span>
+
+            <h1>Despachos</h1>
+
+            <p class="legal__introduccion">
+                Información sobre cobertura, preparación, tiempos estimados y seguimiento de tus pedidos.
+            </p>
+
+            <p class="legal__actualizacion">
+                Última actualización: 30/08/2026
+            </p>
+
+        </header>
+
+        <div class="legal__contenido">
+            
+            <section class="legal__seccion">
+                <h2>4.1 Cobertura</h2>
+                
+                <p>
+                    Realizamos despachos a todo Chile a través de Blue Express.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.2 Costo de envío</h2>
+                
+                <p>
+                    El costo se calcula según la zona de destino y se informa antes de
+                    confirmar el pago.
+                </p>
+                <div class="legal__tabla-wrap">
+                    <table class="legal__tabla">
+                        <thead>
+                            <tr>
+                                <th>Zona</th>
+                                <th>Tiempo estimado</th>
+                                <th>Costo aproximado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Región Metropolitana</td>
+                                <td>48 hrs</td>
+                                <td>XS $3.100 · S $4.200 · M $4.800 · L $5.400</td>
+                            </tr>
+                            <tr>
+                                <td>Centro</td>
+                                <td>72 hrs</td>
+                                <td>XS $4.300 · S $5.600 · M $7.300 · L $9.200</td>
+                            </tr>
+                            <tr>
+                                <td>Extremo</td>
+                                <td>72 hrs</td>
+                                <td>XS $5.200 · S $9.500 · M $14.500 · L $17.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.3 Modalidad de entrega</h2>
+                
+                <p>
+                    El courier entrega directamente en la dirección informada por el cliente.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.4 Seguimiento</h2>
+                
+                <p>
+                    Una vez despachado, se envía al correo del cliente un número de seguimiento
+                    para monitorear el estado del envío.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.5 Preparación del pedido</h2>
+                
+                <p>
+                    Los pedidos se preparan y despachan dentro de 1 a 2 días hábiles desde
+                    la confirmación del pago.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.6 Horario de corte</h2>
+                
+                <p>
+                    Los pedidos realizados hasta las 09:30 hrs de un día hábil pueden
+                    procesarse ese mismo día. Los realizados después de ese horario se
+                    procesan el siguiente día hábil.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.7 Días de despacho</h2>
+                
+                <p>
+                    Los despachos se realizan de lunes a viernes en días hábiles.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.8 Alta demanda o causas externas</h2>
+                
+                <p>
+                    En eventos de alta demanda, condiciones climáticas u otras causas externas,
+                    el plazo informado puede extenderse.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.9 Problemas con la entrega</h2>
+                
+                <p>
+                    Si tu pedido no llega en el plazo informado, presenta daños o existe un
+                    error en la dirección, contáctanos indicando tu número de boleta.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>4.10 Zonas sin cobertura directa</h2>
+                
+                <p>
+                    Para localidades muy apartadas, el despacho puede realizarse mediante
+                    otro operador logístico, con plazos de entrega mayores.
+                </p>
+        
+            </section>
+        
+        </div>
+
+        <div class="legal__ayuda">
+            <div>
+                <span>¿Necesitas ayuda?</span>
+                <strong>Estamos disponibles para orientarte.</strong>
+            </div>
+
+            <div class="legal__ayuda-acciones">
+                <a
+                    href="mailto:contacto@audex.cl"
+                    class="boton boton--secundario"
+                >
+                    <i class="bi bi-envelope"></i>
+                    contacto@audex.cl
+                </a>
+
+                <a
+                    href="https://wa.me/56993445949"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

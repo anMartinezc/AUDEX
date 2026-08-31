@@ -1,0 +1,176 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+    Cambios y Devoluciones | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/legal.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="legal">
+
+    <div class="contenedor">
+
+        <header class="legal__hero">
+
+            <div class="legal__icono" aria-hidden="true">
+                <i class="bi bi-arrow-left-right"></i>
+            </div>
+
+            <span class="legal__etiqueta">
+                Compra con tranquilidad
+            </span>
+
+            <h1>Cambios y Devoluciones</h1>
+
+            <p class="legal__introduccion">
+                Conoce las condiciones aplicables a retractos, cambios y devoluciones de productos comprados en Audex.
+            </p>
+
+            <p class="legal__actualizacion">
+                Última actualización: 30/08/2026
+            </p>
+
+        </header>
+
+        <div class="legal__contenido">
+            
+            <section class="legal__seccion">
+                <h2>2.1 Derecho a retracto</h2>
+                
+                <p>
+                    Conforme al artículo 3° bis de la Ley N° 19.496, el cliente puede
+                    retractarse de su compra dentro de <strong>10 días corridos</strong>
+                    desde que recibe el producto, siempre que:
+                </p>
+                <ul>
+                    <li>El producto esté sin uso.</li>
+                    <li>Se conserve en su empaque original.</li>
+                    <li>Incluya accesorios, manuales y etiquetas.</li>
+                </ul>
+                <div class="legal__nota">
+                    Si Audex no envía un correo de confirmación de la compra, el plazo puede
+                    extenderse conforme a la normativa aplicable.
+                </div>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>2.2 Excepción al retracto por razones de higiene</h2>
+                
+                <p>
+                    Para audífonos y earbuds de uso personal que entran en contacto directo
+                    con el oído, el retracto por arrepentimiento no procede una vez abierto
+                    el empaque sellado.
+                </p>
+                <p>
+                    Esta restricción no afecta la garantía legal por fallas de fabricación.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>2.3 Productos con retracto normal</h2>
+                
+                <p>
+                    Los parlantes Bluetooth mantienen el derecho a retracto estándar de
+                    10 días, siempre que se mantengan sin uso y en su empaque original.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>2.4 Cambios por color o modelo</h2>
+                
+                <p>
+                    Los cambios por otro color o modelo pueden solicitarse dentro del plazo
+                    aplicable, sujetos a disponibilidad de stock y a las condiciones de higiene.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>2.5 Condiciones generales</h2>
+                
+                <ul>
+                    <li>El producto debe estar en las mismas condiciones en que fue recibido.</li>
+                    <li>Debe incluir boleta electrónica o número de folio.</li>
+                    <li>El empaque original debe estar en buen estado.</li>
+                </ul>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>2.6 Procedimiento</h2>
+                
+                <ol>
+                    <li>Escribe a contacto@audex.cl o WhatsApp indicando número de boleta y motivo.</li>
+                    <li>Adjunta fotos o videos cuando corresponda.</li>
+                    <li>Audex confirmará si debe enviarse el producto o si se coordina un retiro.</li>
+                    <li>Las fallas se someten a validación técnica antes de aprobar un cambio o devolución.</li>
+                    <li>Una vez validado, se procesa el cambio o reembolso según corresponda.</li>
+                </ol>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>2.7 Costos de envío</h2>
+                
+                <ul>
+                    <li><strong>Retracto voluntario:</strong> el costo de devolución lo asume el cliente.</li>
+                    <li><strong>Falla de fábrica:</strong> el costo de envío lo asume Audex.</li>
+                </ul>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>2.8 Devolución del dinero</h2>
+                
+                <p>
+                    El reembolso se realiza por el mismo medio de pago utilizado en la compra,
+                    sujeto a los tiempos de procesamiento del proveedor de pago.
+                </p>
+        
+            </section>
+        
+        </div>
+
+        <div class="legal__ayuda">
+            <div>
+                <span>¿Necesitas ayuda?</span>
+                <strong>Estamos disponibles para orientarte.</strong>
+            </div>
+
+            <div class="legal__ayuda-acciones">
+                <a
+                    href="mailto:contacto@audex.cl"
+                    class="boton boton--secundario"
+                >
+                    <i class="bi bi-envelope"></i>
+                    contacto@audex.cl
+                </a>
+
+                <a
+                    href="https://wa.me/56993445949"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

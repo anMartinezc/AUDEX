@@ -286,7 +286,7 @@
 
 
 /* =========================================================
-   SECCIÓN QUÉ ES AUDEX
+   SECCIÓN AUDEX + EARFUN
 ========================================================= */
 
 .historia {
@@ -464,6 +464,7 @@
 
 .historia__puntos {
     margin-top: 30px;
+    margin-bottom: 0;
 
     display: flex;
     flex-direction: column;
@@ -618,6 +619,47 @@
 
 
 /* =========================================================
+   CIERRE AUDEX + EARFUN
+
+   Corresponde al párrafo inmediatamente posterior
+   a las tarjetas de beneficios.
+========================================================= */
+
+.historia__puntos + p {
+    position: relative;
+
+    max-width: 660px;
+
+    margin-top: 30px;
+    margin-bottom: 0;
+
+    padding: 18px 0 18px 20px;
+
+    color:
+        rgba(255, 255, 255, 0.86);
+
+    font-size: 1.02rem;
+    font-weight: 500;
+
+    line-height: 1.7;
+
+    border-left:
+        2px solid
+        rgba(131, 216, 243, 0.55);
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(54, 169, 214, 0.055),
+            transparent 75%
+        );
+
+    border-radius:
+        0 10px 10px 0;
+}
+
+
+/* =========================================================
    NOTEBOOK
 ========================================================= */
 
@@ -735,6 +777,18 @@
 
     .historia__imagen-logo {
         padding: 30px;
+    }
+
+
+    .historia__contenido {
+        max-width: 760px;
+
+        margin-inline: auto;
+    }
+
+
+    .historia__puntos + p {
+        max-width: 700px;
     }
 
 }
@@ -933,6 +987,23 @@
         font-size: 0.8rem;
     }
 
+
+    /* =====================================================
+       CIERRE
+    ===================================================== */
+
+    .historia__puntos + p {
+        margin-top: 24px;
+
+        padding:
+            14px 0
+            14px 16px;
+
+        font-size: 0.94rem;
+
+        line-height: 1.65;
+    }
+
 }
 
 
@@ -968,6 +1039,15 @@
     .historia__punto,
     .historia__puntos article {
         padding: 15px;
+    }
+
+
+    .historia__puntos + p {
+        margin-top: 20px;
+
+        padding-left: 14px;
+
+        font-size: 0.9rem;
     }
 
 }

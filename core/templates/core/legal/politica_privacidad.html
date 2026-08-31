@@ -1,0 +1,199 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+    Política de Privacidad | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/legal.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="legal">
+
+    <div class="contenedor">
+
+        <header class="legal__hero">
+
+            <div class="legal__icono" aria-hidden="true">
+                <i class="bi bi-lock"></i>
+            </div>
+
+            <span class="legal__etiqueta">
+                Protección de datos personales
+            </span>
+
+            <h1>Política de Privacidad</h1>
+
+            <p class="legal__introduccion">
+                Esta política explica cómo Audex trata los datos personales recolectados a través de audex.cl.
+            </p>
+
+            <p class="legal__actualizacion">
+                Última actualización: 30/08/2026
+            </p>
+
+        </header>
+
+        <div class="legal__contenido">
+            
+            <section class="legal__seccion">
+                <h2>7.1 Responsable del tratamiento</h2>
+                
+                <p>
+                    Sociedad Martínez Leiva SpA (Audex), RUT 78.473.913-9, es responsable
+                    del tratamiento de los datos personales recolectados a través de audex.cl.
+                </p>
+                <p>
+                    Contacto para temas de privacidad:
+                    <strong>contacto@audex.cl</strong>.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.2 Datos que recolectamos</h2>
+                
+                <ul>
+                    <li>Nombre completo y RUT.</li>
+                    <li>Dirección de despacho.</li>
+                    <li>Correo electrónico.</li>
+                    <li>Teléfono.</li>
+                    <li>Historial de compras.</li>
+                    <li>Datos de navegación cuando corresponda.</li>
+                </ul>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.3 Finalidades del tratamiento</h2>
+                
+                <ul>
+                    <li>Procesar y despachar compras.</li>
+                    <li>Emitir documentación tributaria.</li>
+                    <li>Responder consultas y reclamos.</li>
+                    <li>Enviar comunicaciones comerciales cuando exista consentimiento.</li>
+                    <li>Realizar analítica del sitio cuando corresponda y exista base legal aplicable.</li>
+                </ul>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.4 Derechos del titular</h2>
+                
+                <p>
+                    Puedes ejercer los derechos que te reconoce la normativa aplicable,
+                    incluyendo acceso, rectificación, eliminación, oposición y portabilidad
+                    cuando corresponda.
+                </p>
+                <p>
+                    Para ejercerlos, escribe a contacto@audex.cl indicando tu identidad y
+                    el derecho que deseas ejercer.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.5 Consentimiento</h2>
+                
+                <p>
+                    Cuando el tratamiento dependa del consentimiento, este debe ser libre,
+                    específico, informado e inequívoco y podrá revocarse posteriormente.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.6 Proveedores y terceros</h2>
+                
+                <p>
+                    Compartimos datos únicamente con proveedores necesarios para operar el
+                    negocio, como plataformas de pago, emisión de documentos tributarios y
+                    servicios de despacho, en la medida necesaria para prestar el servicio.
+                </p>
+                <p>
+                    Audex no vende datos personales a terceros.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.7 Conservación de los datos</h2>
+                
+                <p>
+                    Los datos se conservan durante el tiempo necesario para cumplir las
+                    finalidades informadas y las obligaciones legales y tributarias aplicables.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.8 Seguridad</h2>
+                
+                <p>
+                    El sitio utiliza conexión segura HTTPS y Audex aplica medidas razonables
+                    para proteger la información frente a accesos no autorizados, pérdida
+                    o alteración.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.9 Incidentes de seguridad</h2>
+                
+                <p>
+                    Ante incidentes que comprometan datos personales, Audex actuará conforme
+                    a las obligaciones de notificación que establezca la normativa vigente.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>7.10 Menores de edad</h2>
+                
+                <p>
+                    El sitio está dirigido a mayores de 18 años. Audex no busca recolectar
+                    deliberadamente datos de menores sin la autorización correspondiente.
+                </p>
+        
+            </section>
+        
+        </div>
+
+        <div class="legal__ayuda">
+            <div>
+                <span>¿Necesitas ayuda?</span>
+                <strong>Estamos disponibles para orientarte.</strong>
+            </div>
+
+            <div class="legal__ayuda-acciones">
+                <a
+                    href="mailto:contacto@audex.cl"
+                    class="boton boton--secundario"
+                >
+                    <i class="bi bi-envelope"></i>
+                    contacto@audex.cl
+                </a>
+
+                <a
+                    href="https://wa.me/56993445949"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

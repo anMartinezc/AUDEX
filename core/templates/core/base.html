@@ -159,6 +159,173 @@
                 display: grid;
             }
         }
+
+        /* =========================================================
+           COOKIES AUDEX — AVISO DISCRETO Y NO INVASIVO
+        ========================================================== */
+
+        .cookie-aviso {
+            position: fixed;
+            left: 18px;
+            bottom: 18px;
+            z-index: 9800;
+
+            width: min(460px, calc(100vw - 36px));
+            padding: 16px;
+
+            color: #f4f4f4;
+            background: rgba(17, 17, 17, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.38);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+
+            transition:
+                opacity 0.2s ease,
+                visibility 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .cookie-aviso.cookie-aviso--visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .cookie-aviso__encabezado {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .cookie-aviso__icono {
+            width: 32px;
+            height: 32px;
+            flex: 0 0 32px;
+
+            display: grid;
+            place-items: center;
+
+            color: var(--color-azul-claro, #69c9ff);
+            background: rgba(54, 169, 214, 0.1);
+            border: 1px solid rgba(54, 169, 214, 0.2);
+            border-radius: 9px;
+        }
+
+        .cookie-aviso__titulo {
+            margin: 0 0 3px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .cookie-aviso__texto {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+
+        .cookie-aviso__texto a {
+            color: #ffffff;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .cookie-aviso__acciones {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .cookie-aviso__boton {
+            min-height: 36px;
+            padding: 8px 12px;
+
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+
+            font: inherit;
+            font-size: 0.76rem;
+            font-weight: 650;
+            line-height: 1;
+
+            cursor: pointer;
+
+            transition:
+                background 0.18s ease,
+                border-color 0.18s ease,
+                transform 0.18s ease;
+        }
+
+        .cookie-aviso__boton:hover {
+            transform: translateY(-1px);
+        }
+
+        .cookie-aviso__boton--secundario {
+            color: rgba(255, 255, 255, 0.8);
+            background: transparent;
+        }
+
+        .cookie-aviso__boton--secundario:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .cookie-aviso__boton--primario {
+            color: #081014;
+            background: #ffffff;
+            border-color: #ffffff;
+        }
+
+        .cookie-aviso__boton--primario:hover {
+            background: #eaf8ff;
+            border-color: #eaf8ff;
+        }
+
+        .cookie-preferencias-enlace {
+            padding: 0;
+            color: inherit;
+            background: transparent;
+            border: 0;
+
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .cookie-preferencias-enlace:hover {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        @media (max-width: 560px) {
+            .cookie-aviso {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+                width: auto;
+                padding: 14px;
+            }
+
+            .cookie-aviso__acciones {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .cookie-aviso__boton {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
@@ -188,7 +355,7 @@
             aria-label="Ir al inicio de Audex"
         >
             <img
-                src="{% static 'core/img/LogoAudex14.png' %}"
+                src="{% static 'core/img/LogoAudex15.png' %}"
                 alt="Audex"
                 class="logo__imagen"
             >
@@ -1361,9 +1528,14 @@
          FOOTER
     ====================================================== -->
 
+        
     <footer class="footer">
 
         <div class="contenedor footer__grid">
+
+            <!-- =====================================================
+                MARCA AUDEX
+            ====================================================== -->
 
             <div class="footer__marca">
 
@@ -1384,11 +1556,19 @@
                     </div>
 
                     <div class="logo__texto">
-                        <strong>Audex</strong>
-                        <small>Contigo a todas</small>
+
+                        <strong>
+                            Audex
+                        </strong>
+
+                        <small>
+                            Contigo a todas
+                        </small>
+
                     </div>
 
                 </a>
+
 
                 <p>
                     Tecnología y sonido para acompañarte
@@ -1396,22 +1576,74 @@
                     EarFun seleccionados para ti.
                 </p>
 
+
+                <!-- =================================================
+                    REDES SOCIALES
+                ================================================== -->
+
                 <div class="footer__redes">
 
-                    <a href="#" aria-label="Instagram">
-                        <i class="bi bi-instagram"></i>
+                    <!-- Instagram -->
+
+                    <a
+                        href="https://www.instagram.com/audex.cl/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Instagram"
+                        title="Instagram"
+                    >
+                        <i
+                            class="bi bi-instagram"
+                            aria-hidden="true"
+                        ></i>
                     </a>
 
-                    <a href="#" aria-label="Facebook">
-                        <i class="bi bi-facebook"></i>
+
+                    <!-- Facebook -->
+
+                    <a
+                        href="https://web.facebook.com/people/Audexcl/61593686903838/?rdid=2Il3VFkbHAiAFY1S&share_url=https%3A%2F%2Fweb.facebook.com%2Fshare%2F1CG7gj6QTk%2F%3Fref%3D1%26_rdc%3D1%26_rdr"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Facebook"
+                        title="Facebook"
+                    >
+                        <i
+                            class="bi bi-facebook"
+                            aria-hidden="true"
+                        ></i>
                     </a>
 
-                    <a href="#" aria-label="TikTok">
-                        <i class="bi bi-tiktok"></i>
+
+                    <!-- TikTok -->
+
+                    <a
+                        href="https://vm.tiktok.com/ZS9B9fT21Db3U-2W4IY/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="TikTok"
+                        title="TikTok"
+                    >
+                        <i
+                            class="bi bi-tiktok"
+                            aria-hidden="true"
+                        ></i>
                     </a>
 
-                    <a href="#" aria-label="WhatsApp">
-                        <i class="bi bi-whatsapp"></i>
+
+                    <!-- WhatsApp -->
+
+                    <a
+                        href="https://wa.me/56993445949"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="WhatsApp"
+                        title="WhatsApp"
+                    >
+                        <i
+                            class="bi bi-whatsapp"
+                            aria-hidden="true"
+                        ></i>
                     </a>
 
                 </div>
@@ -1419,94 +1651,158 @@
             </div>
 
 
+            <!-- =====================================================
+                AYUDA
+            ====================================================== -->
+
             <div class="footer__columna">
 
-                <h3>Comprar</h3>
+                <h3>
+                    Ayuda
+                </h3>
 
-                <a href="{% url 'core:productos' %}">
-                    Todos los productos
+
+                <a href="{% url 'core:faq' %}">
+                    Preguntas frecuentes
                 </a>
 
-                <a href="{% url 'core:categorias' %}">
-                    Audífonos inalámbricos
+
+                <a href="{% url 'core:despachos' %}">
+                    Despachos
                 </a>
 
-                <a href="{% url 'core:categorias' %}">
-                    Audífonos deportivos
+
+                <a href="{% url 'core:cambios_devoluciones' %}">
+                    Cambios y devoluciones
                 </a>
 
-                <a href="{% url 'core:categorias' %}">
-                    Audífonos over-ear
+
+                <a href="{% url 'core:garantia' %}">
+                    Garantía
                 </a>
 
-                <a href="{% url 'core:ofertas' %}">
-                    Ofertas
+
+                <a href="{% url 'core:contacto' %}">
+                    Contacto
                 </a>
 
             </div>
 
 
-            <div class="footer__columna">
-
-                <h3>Ayuda</h3>
-
-                <a href="#">Preguntas frecuentes</a>
-                <a href="#">Despachos</a>
-                <a href="#">Cambios y devoluciones</a>
-                <a href="#">Garantía</a>
-                <a href="#">Contacto</a>
-
-            </div>
-
+            <!-- =====================================================
+                INFORMACIÓN
+            ====================================================== -->
 
             <div class="footer__columna">
 
-                <h3>Información</h3>
+                <h3>
+                    Información
+                </h3>
+
 
                 <a href="{% url 'core:nosotros' %}">
                     Sobre Audex
                 </a>
 
-                <a href="#">Términos y condiciones</a>
-                <a href="#">Política de privacidad</a>
-                <a href="#">Política de cookies</a>
 
-                <a href="{% url 'core:mis_favoritos' %}">
-                    Mis favoritos
+                <a href="{% url 'core:terminos_condiciones' %}">
+                    Términos y condiciones
                 </a>
 
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'core:mi_perfil' %}">
-                        Mi perfil
-                    </a>
-                {% endif %}
+
+                <a href="{% url 'core:politica_privacidad' %}">
+                    Política de privacidad
+                </a>
+
+
+                <a href="{% url 'core:politica_cookies' %}">
+                    Política de cookies
+                </a>
+
+
+                <!-- =================================================
+                    PREFERENCIAS DE COOKIES
+                    Se mantiene como button porque lo utiliza cookies.js
+                ================================================== -->
+
+                <button
+                    type="button"
+                    class="footer__enlace-boton cookie-preferencias-enlace"
+                    id="abrirPreferenciasCookies"
+                >
+                    Preferencias de cookies
+                </button>
 
             </div>
 
 
+            <!-- =====================================================
+                CONTACTO
+            ====================================================== -->
+
             <div class="footer__contacto">
 
-                <h3>Contáctanos</h3>
+                <h3>
+                    Contáctanos
+                </h3>
+
+
+                <!-- Correo -->
 
                 <p>
-                    <i class="bi bi-envelope"></i>
-                    contacto@audex.cl
+
+                    <i
+                        class="bi bi-envelope"
+                        aria-hidden="true"
+                    ></i>
+
+                    <a href="mailto:contacto@audex.cl">
+                        contacto@audex.cl
+                    </a>
+
                 </p>
 
-                <p>
-                    <i class="bi bi-telephone"></i>
-                    +56 9 0000 0000
-                </p>
+
+                <!-- Teléfono -->
 
                 <p>
-                    <i class="bi bi-clock"></i>
-                    Lunes a viernes, 09:00 a 18:00
+
+                    <i
+                        class="bi bi-telephone"
+                        aria-hidden="true"
+                    ></i>
+
+                    <a href="tel:+56993445949">
+                        +56 9 9344 5949
+                    </a>
+
+                </p>
+
+
+                <!-- Horario oficial -->
+
+                <p>
+
+                    <i
+                        class="bi bi-clock"
+                        aria-hidden="true"
+                    ></i>
+
+                    <span>
+                        Lunes a jueves, 09:00 a 18:00 hrs.
+                        Viernes, 09:00 a 17:00 hrs.
+                    </span>
+
                 </p>
 
             </div>
 
         </div>
 
+
+        <!-- =========================================================
+            PARTE INFERIOR
+        ========================================================== -->
 
         <div class="contenedor footer__inferior">
 
@@ -1515,20 +1811,88 @@
                 Todos los derechos reservados.
             </p>
 
+
             <div class="footer__pagos">
 
-                <span>Pago seguro</span>
+                <span>
+                    Pago seguro
+                </span>
 
-                <i class="bi bi-credit-card"></i>
-                <i class="bi bi-bank"></i>
-                <i class="bi bi-wallet2"></i>
+                <i
+                    class="bi bi-credit-card"
+                    aria-hidden="true"
+                ></i>
+
+                <i
+                    class="bi bi-bank"
+                    aria-hidden="true"
+                ></i>
+
+                <i
+                    class="bi bi-wallet2"
+                    aria-hidden="true"
+                ></i>
 
             </div>
 
         </div>
 
     </footer>
+    <!-- =====================================================
+         COOKIES AUDEX — AVISO DISCRETO
+    ====================================================== -->
 
+    <section
+        class="cookie-aviso"
+        id="cookieAviso"
+        role="region"
+        aria-label="Preferencias de cookies"
+        aria-live="polite"
+    >
+        <div class="cookie-aviso__encabezado">
+
+            <div
+                class="cookie-aviso__icono"
+                aria-hidden="true"
+            >
+                <i class="bi bi-shield-check"></i>
+            </div>
+
+            <div>
+                <h2 class="cookie-aviso__titulo">
+                    Cookies y privacidad
+                </h2>
+
+                <p class="cookie-aviso__texto">
+                    Usamos cookies esenciales para que Audex funcione
+                    correctamente. Las cookies opcionales solo se activarán
+                    si las autorizas.
+                    <a href="#">Política de cookies</a>
+                </p>
+            </div>
+
+        </div>
+
+        <div class="cookie-aviso__acciones">
+
+            <button
+                type="button"
+                class="cookie-aviso__boton cookie-aviso__boton--secundario"
+                id="cookiesSoloEsenciales"
+            >
+                Solo esenciales
+            </button>
+
+            <button
+                type="button"
+                class="cookie-aviso__boton cookie-aviso__boton--primario"
+                id="cookiesAceptarTodas"
+            >
+                Aceptar
+            </button>
+
+        </div>
+    </section>
 
     <!-- =====================================================
          CARRITO LATERAL
@@ -1642,7 +2006,7 @@
 
 
     <a
-        href="https://wa.me/56900000000"
+        href="https://wa.me/+56993445949"
         class="whatsapp-flotante"
         target="_blank"
         rel="noopener noreferrer"
@@ -1785,271 +2149,10 @@
 
     <script src="{% static 'core/js/carrito.js' %}?v=4"></script>
 
-    <script>
-        (function () {
-            "use strict";
 
+    <script src="{% static 'core/js/formato_carrito.js' %}?v=1"></script>
 
-            /* =====================================================
-               FORMATO MONETARIO CHILENO DEL CARRITO
-            ====================================================== */
-
-            function formatearMontoCLP(texto) {
-
-                if (!texto) {
-                    return texto;
-                }
-
-
-                return texto.replace(
-                    /(-?\$)\s*([\d\s.,]+)(?:\s*CLP)?/gi,
-                    function (
-                        coincidencia,
-                        simbolo,
-                        numero
-                    ) {
-
-                        const soloDigitos =
-                            numero.replace(
-                                /[^\d]/g,
-                                ""
-                            );
-
-
-                        if (!soloDigitos) {
-                            return coincidencia;
-                        }
-
-
-                        const valor =
-                            Number.parseInt(
-                                soloDigitos,
-                                10
-                            );
-
-
-                        if (
-                            Number.isNaN(valor)
-                        ) {
-                            return coincidencia;
-                        }
-
-
-                        const numeroFormateado =
-                            new Intl.NumberFormat(
-                                "es-CL",
-                                {
-                                    maximumFractionDigits: 0
-                                }
-                            ).format(valor);
-
-
-                        return (
-                            `${simbolo}` +
-                            `${numeroFormateado} CLP`
-                        );
-
-                    }
-                );
-
-            }
-
-
-            /* =====================================================
-               PROCESAR NODOS DE TEXTO
-            ====================================================== */
-
-            function procesarNodoTexto(
-                nodo
-            ) {
-
-                if (
-                    !nodo
-                    || nodo.nodeType
-                    !== Node.TEXT_NODE
-                ) {
-                    return;
-                }
-
-
-                const textoOriginal =
-                    nodo.nodeValue;
-
-
-                if (
-                    !textoOriginal
-                    || !textoOriginal.includes("$")
-                ) {
-                    return;
-                }
-
-
-                const textoNuevo =
-                    formatearMontoCLP(
-                        textoOriginal
-                    );
-
-
-                if (
-                    textoNuevo !== textoOriginal
-                ) {
-
-                    nodo.nodeValue =
-                        textoNuevo;
-
-                }
-
-            }
-
-
-            /* =====================================================
-               RECORRER EL CONTENIDO DEL CARRITO
-            ====================================================== */
-
-            function procesarContenedor(
-                contenedor
-            ) {
-
-                if (!contenedor) {
-                    return;
-                }
-
-
-                const walker =
-                    document.createTreeWalker(
-                        contenedor,
-                        NodeFilter.SHOW_TEXT
-                    );
-
-
-                const nodos = [];
-
-
-                while (
-                    walker.nextNode()
-                ) {
-
-                    nodos.push(
-                        walker.currentNode
-                    );
-
-                }
-
-
-                nodos.forEach(
-                    procesarNodoTexto
-                );
-
-            }
-
-
-            /* =====================================================
-               APLICAR FORMATO
-            ====================================================== */
-
-            function aplicarFormatoCarrito() {
-
-                const productos =
-                    document.getElementById(
-                        "carritoProductos"
-                    );
-
-
-                const subtotal =
-                    document.getElementById(
-                        "carritoSubtotal"
-                    );
-
-
-                procesarContenedor(
-                    productos
-                );
-
-
-                procesarContenedor(
-                    subtotal
-                );
-
-            }
-
-
-            /* =====================================================
-               CARGA INICIAL
-            ====================================================== */
-
-            if (
-                document.readyState
-                === "loading"
-            ) {
-
-                document.addEventListener(
-                    "DOMContentLoaded",
-                    aplicarFormatoCarrito
-                );
-
-            } else {
-
-                aplicarFormatoCarrito();
-
-            }
-
-
-            /* =====================================================
-               ACTUALIZACIONES DINÁMICAS DEL CARRITO
-            ====================================================== */
-
-            const carritoLateral =
-                document.getElementById(
-                    "carritoLateral"
-                );
-
-
-            if (carritoLateral) {
-
-                let pendiente = false;
-
-
-                const observer =
-                    new MutationObserver(
-                        function () {
-
-                            if (pendiente) {
-                                return;
-                            }
-
-
-                            pendiente = true;
-
-
-                            requestAnimationFrame(
-                                function () {
-
-                                    aplicarFormatoCarrito();
-
-                                    pendiente = false;
-
-                                }
-                            );
-
-                        }
-                    );
-
-
-                observer.observe(
-                    carritoLateral,
-                    {
-                        childList: true,
-                        subtree: true,
-                        characterData: true
-                    }
-                );
-
-            }
-
-        })();
-    </script>
-
-    </script>
+    <script src="{% static 'core/js/cookies.js' %}?v=1"></script>
 
     <script src="{% static 'core/js/logout.js' %}?v=6"></script>
 

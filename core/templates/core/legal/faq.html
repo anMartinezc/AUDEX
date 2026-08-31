@@ -1,0 +1,167 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+    Preguntas Frecuentes | Audex
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/legal.css' %}?v=1"
+    >
+{% endblock %}
+
+{% block content %}
+
+<section class="legal">
+
+    <div class="contenedor">
+
+        <header class="legal__hero">
+
+            <div class="legal__icono" aria-hidden="true">
+                <i class="bi bi-question-circle"></i>
+            </div>
+
+            <span class="legal__etiqueta">
+                Respuestas rápidas
+            </span>
+
+            <h1>Preguntas Frecuentes</h1>
+
+            <p class="legal__introduccion">
+                Encuentra información útil sobre pagos, despachos, stock, garantías y atención al cliente.
+            </p>
+
+            <p class="legal__actualizacion">
+                Última actualización: 30/08/2026
+            </p>
+
+        </header>
+
+        <div class="legal__contenido">
+            
+            <section class="legal__seccion">
+                <h2>¿Cuáles son los medios de pago disponibles?</h2>
+                
+                <p>
+                    Aceptamos tarjetas de crédito y débito a través de Webpay (Transbank)
+                    y Mercado Pago.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Los precios incluyen IVA?</h2>
+                
+                <p>
+                    Sí. Todos los precios publicados en audex.cl incluyen IVA.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Cuánto demora en llegar mi pedido?</h2>
+                
+                <p>
+                    El plazo estimado se muestra antes de confirmar tu compra, según tu
+                    comuna de despacho.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Puedo devolver o cambiar un producto?</h2>
+                
+                <p>
+                    Depende del tipo de producto y de su estado. Los productos cuentan con
+                    las condiciones de retracto, cambios y garantía indicadas en nuestras
+                    páginas legales.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Cómo recibo mi boleta?</h2>
+                
+                <p>
+                    La boleta electrónica se envía al correo registrado una vez confirmado
+                    el pago, el mismo día de la compra o el siguiente.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Hacen despacho a todo Chile?</h2>
+                
+                <p>
+                    Sí. Realizamos despachos a nivel nacional, sujeto a cobertura del courier
+                    y condiciones particulares de zonas apartadas.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Cómo sé si un producto tiene stock?</h2>
+                
+                <p>
+                    El stock disponible se mantiene actualizado en la ficha de cada producto.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Qué garantía tienen los productos?</h2>
+                
+                <p>
+                    Todos nuestros productos cuentan con garantía legal de hasta 6 meses,
+                    conforme a las condiciones aplicables.
+                </p>
+        
+            </section>
+        
+            <section class="legal__seccion">
+                <h2>¿Cómo contacto a Audex?</h2>
+                
+                <p>
+                    Puedes escribir a contacto@audex.cl o comunicarte por WhatsApp al
+                    +56 9 9344 5949.
+                </p>
+        
+            </section>
+        
+        </div>
+
+        <div class="legal__ayuda">
+            <div>
+                <span>¿Necesitas ayuda?</span>
+                <strong>Estamos disponibles para orientarte.</strong>
+            </div>
+
+            <div class="legal__ayuda-acciones">
+                <a
+                    href="mailto:contacto@audex.cl"
+                    class="boton boton--secundario"
+                >
+                    <i class="bi bi-envelope"></i>
+                    contacto@audex.cl
+                </a>
+
+                <a
+                    href="https://wa.me/56993445949"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boton boton--primario"
+                >
+                    <i class="bi bi-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}
     Audex | Descubre EarFun en Chile
@@ -21,7 +22,9 @@
 
     <div class="contenedor hero__contenido">
 
-        <!-- TEXTO -->
+        <!-- =================================================
+             TEXTO
+        ================================================== -->
         <div class="hero__texto">
 
             <span class="hero__etiqueta">
@@ -46,34 +49,59 @@
                     href="{% url 'core:productos' %}"
                     class="boton boton--primario"
                 >
-                    Conocer EarFun
+                    Ver Productos
                     <i class="bi bi-arrow-right"></i>
                 </a>
 
                 <a
-                    href="{% url 'core:productos' %}"
+                    href="{% url 'core:nosotros' %}"
                     class="boton boton--secundario"
                 >
-                    Ver audífonos
+                    Conoce EarFun
                 </a>
 
             </div>
 
+
+            <!-- =================================================
+                 DATOS DESTACADOS
+            ================================================== -->
             <div class="hero__datos">
 
                 <div class="hero__dato">
-                    <strong>ANC</strong>
-                    <span>Aíslate del ruido exterior</span>
+
+                    <strong>
+                        ANC
+                    </strong>
+
+                    <span>
+                        Aíslate del ruido exterior
+                    </span>
+
                 </div>
 
                 <div class="hero__dato">
-                    <strong>Hi-Res</strong>
-                    <span>Más detalle en tu música</span>
+
+                    <strong>
+                        Hi-Res
+                    </strong>
+
+                    <span>
+                        Más detalle en tu música
+                    </span>
+
                 </div>
 
                 <div class="hero__dato">
-                    <strong>Bluetooth</strong>
-                    <span>Libertad sin cables</span>
+
+                    <strong>
+                        Bluetooth
+                    </strong>
+
+                    <span>
+                        Libertad sin cables
+                    </span>
+
                 </div>
 
             </div>
@@ -81,7 +109,9 @@
         </div>
 
 
-        <!-- PRODUCTO -->
+        <!-- =================================================
+             VISUAL HERO
+        ================================================== -->
         <div class="hero__visual">
 
             <div
@@ -100,25 +130,41 @@
             </div>
 
 
+            <!-- TARJETA SUPERIOR -->
             <div class="hero__tarjeta hero__tarjeta--superior">
 
                 <i class="bi bi-soundwave"></i>
 
                 <div>
-                    <strong>Sonido de alta calidad</strong>
-                    <span>Más detalle en cada canción</span>
+
+                    <strong>
+                        Sonido de alta calidad
+                    </strong>
+
+                    <span>
+                        Más detalle en cada canción
+                    </span>
+
                 </div>
 
             </div>
 
 
+            <!-- TARJETA INFERIOR -->
             <div class="hero__tarjeta hero__tarjeta--inferior">
 
                 <i class="bi bi-earbuds"></i>
 
                 <div>
-                    <strong>Listos para tu rutina</strong>
-                    <span>Música, llamadas y movimiento</span>
+
+                    <strong>
+                        Listos para tu rutina
+                    </strong>
+
+                    <span>
+                        Música, llamadas y movimiento
+                    </span>
+
                 </div>
 
             </div>
@@ -141,15 +187,23 @@
 
     <div class="contenedor beneficios__grid">
 
+
+        <!-- =================================================
+             DESPACHO
+        ================================================== -->
         <article class="beneficio">
 
             <div class="beneficio__icono">
+
                 <i class="bi bi-truck"></i>
+
             </div>
 
             <div class="beneficio__contenido">
 
-                <h3>Despacho rápido</h3>
+                <h3>
+                    Despacho rápido
+                </h3>
 
                 <p>
                     Recibe tus productos de forma rápida
@@ -161,15 +215,22 @@
         </article>
 
 
+        <!-- =================================================
+             COMPRA PROTEGIDA
+        ================================================== -->
         <article class="beneficio">
 
             <div class="beneficio__icono">
+
                 <i class="bi bi-shield-check"></i>
+
             </div>
 
             <div class="beneficio__contenido">
 
-                <h3>Compra protegida</h3>
+                <h3>
+                    Compra protegida
+                </h3>
 
                 <p>
                     Pagos seguros y protección durante
@@ -181,15 +242,22 @@
         </article>
 
 
+        <!-- =================================================
+             CAMBIOS
+        ================================================== -->
         <article class="beneficio">
 
             <div class="beneficio__icono">
+
                 <i class="bi bi-arrow-repeat"></i>
+
             </div>
 
             <div class="beneficio__contenido">
 
-                <h3>Cambios simples</h3>
+                <h3>
+                    Cambios simples
+                </h3>
 
                 <p>
                     Gestiona cambios y devoluciones
@@ -201,15 +269,22 @@
         </article>
 
 
+        <!-- =================================================
+             ASESORÍA
+        ================================================== -->
         <article class="beneficio">
 
             <div class="beneficio__icono">
+
                 <i class="bi bi-headset"></i>
+
             </div>
 
             <div class="beneficio__contenido">
 
-                <h3>Asesoría especializada</h3>
+                <h3>
+                    Asesoría especializada
+                </h3>
 
                 <p>
                     Te ayudamos a encontrar el modelo
@@ -236,7 +311,10 @@
 
     <div class="contenedor marca-earfun__contenido">
 
-        <!-- IMAGEN -->
+
+        <!-- =================================================
+             IMAGEN
+        ================================================== -->
         <div class="marca-earfun__visual">
 
             <div class="marca-earfun__imagen">
@@ -257,7 +335,9 @@
         </div>
 
 
-        <!-- TEXTO -->
+        <!-- =================================================
+             TEXTO
+        ================================================== -->
         <div class="marca-earfun__texto">
 
             <span class="etiqueta-seccion">
@@ -266,68 +346,93 @@
 
             <h2>
                 Tecnología creada
-                <span>para disfrutar el sonido.</span>
+                <span>
+                    para disfrutar el sonido.
+                </span>
             </h2>
 
             <p class="marca-earfun__intro">
+
                 EarFun desarrolla audífonos inalámbricos que combinan
                 diseño moderno, comodidad y tecnología pensada
                 para distintos estilos de uso.
+
             </p>
 
             <p>
+
                 Desde modelos para escuchar música durante todo el día,
                 hasta alternativas con cancelación activa de ruido,
                 resistencia para entrenamientos y funciones inteligentes,
                 hay un EarFun pensado para cada forma de escuchar.
+
             </p>
 
 
+            <!-- =================================================
+                 CARACTERÍSTICAS
+            ================================================== -->
             <div class="marca-earfun__caracteristicas">
 
+
+                <!-- SONIDO -->
                 <article class="marca-caracteristica">
 
                     <i class="bi bi-soundwave"></i>
 
                     <div>
-                        <strong>Sonido con mayor detalle</strong>
+
+                        <strong>
+                            Sonido con mayor detalle
+                        </strong>
 
                         <span>
                             Diseñados para disfrutar música,
                             videos y llamadas con claridad.
                         </span>
+
                     </div>
 
                 </article>
 
 
+                <!-- ANC -->
                 <article class="marca-caracteristica">
 
                     <i class="bi bi-volume-mute"></i>
 
                     <div>
-                        <strong>Aíslate cuando lo necesites</strong>
+
+                        <strong>
+                            Aíslate cuando lo necesites
+                        </strong>
 
                         <span>
                             Modelos con tecnología ANC para
                             reducir el ruido del entorno.
                         </span>
+
                     </div>
 
                 </article>
 
 
+                <!-- BATERÍA -->
                 <article class="marca-caracteristica">
 
                     <i class="bi bi-battery-charging"></i>
 
                     <div>
-                        <strong>Autonomía para acompañarte</strong>
+
+                        <strong>
+                            Autonomía para acompañarte
+                        </strong>
 
                         <span>
                             Pensados para seguir tu rutina
                             durante horas de reproducción.
                         </span>
+
                     </div>
 
                 </article>
@@ -340,7 +445,9 @@
                 class="boton boton--primario marca-earfun__boton"
             >
                 Descubrir productos EarFun
+
                 <i class="bi bi-arrow-right"></i>
+
             </a>
 
         </div>
@@ -352,209 +459,287 @@
 
 
 <!-- =====================================================
-     TIPOS DE AUDÍFONOS
+     PRODUCTOS DESTACADOS POR CATEGORÍA
+
+     Se muestra:
+     1 producto In Ear
+     1 producto Open Ear
+     1 producto Over Ear
+     1 producto Parlantes
 ===================================================== -->
 <section
-    class="tipos-earfun"
-    id="tipos-earfun"
+    class="productos-destacados"
+    id="productos-destacados"
 >
 
     <div class="contenedor">
 
-        <!-- ENCABEZADO -->
-        <header class="seccion-encabezado">
 
-            <div class="seccion-encabezado__titulo">
+        <!-- =================================================
+             ENCABEZADO
+        ================================================== -->
+        <header class="productos-destacados__encabezado">
+
+            <div>
 
                 <span class="etiqueta-seccion">
-                    Encuentra tu EarFun
+                    Explora EarFun
                 </span>
 
                 <h2>
-                    Un audífono
-                    <span>para cada momento.</span>
+                    Un producto
+                    <span>
+                        para cada forma de escuchar.
+                    </span>
                 </h2>
 
             </div>
 
-            <p>
-                Elige según cómo lo usarás: para viajar con menos ruido,
-                comunicarte durante el día o mantenerte activo.
-            </p>
+            <div class="productos-destacados__encabezado-derecha">
+
+                <p>
+                    Conoce un modelo destacado de cada una
+                    de nuestras principales categorías.
+                </p>
+
+                <a
+                    href="{% url 'core:productos' %}"
+                    class="productos-destacados__ver-todos"
+                >
+                    Ver todos
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
 
         </header>
 
 
-        <!-- CARDS -->
-        <div class="tipos-earfun__grid">
+
+        <!-- =================================================
+             GRID DE 4 PRODUCTOS
+        ================================================== -->
+  
+
+        <div class="productos-destacados__grid">
+
+    {% for categoria in categorias_inicio %}
+
+        {% with producto=categoria.producto_principal %}
+
+            <article class="producto-destacado">
+
+                <div class="producto-destacado__media">
+
+                    <span class="producto-destacado__categoria">
+
+                        {% if categoria.nombre == "In Ear" %}
+
+                            <i class="bi bi-earbuds"></i>
+
+                        {% elif categoria.nombre == "Open Ear" %}
+
+                            <i class="bi bi-earbuds"></i>
+
+                        {% elif categoria.nombre == "Over Ear" %}
+
+                            <i class="bi bi-headphones"></i>
+
+                        {% elif categoria.nombre == "Parlantes" %}
+
+                            <i class="bi bi-speaker"></i>
+
+                        {% endif %}
+
+                        {{ categoria.nombre }}
+
+                    </span>
 
 
-            <!-- =================================================
-                 ANC
-            ================================================== -->
-            <article
-                class="
-                    tipo-earfun
-                    tipo-earfun--anc
-                "
-            >
+                    {% if producto and producto.imagen %}
 
-                <div class="tipo-earfun__media">
-
-                    <div class="tipo-earfun__imagen">
-
-                        <img
-                            src="{% static 'core/img/Earfun5.png' %}"
-                            alt="Persona usando audífonos EarFun junto a un tren con reducción de ruido de hasta 50 dB"
-                            loading="lazy"
+                        <a
+                            href="{% url 'core:producto_detalle' producto.id %}"
+                            class="producto-destacado__imagen-enlace"
                         >
 
-                    </div>
+                            <img
+                                src="{{ producto.imagen.url }}"
+                                alt="{{ producto.nombre }}"
+                                class="producto-destacado__imagen"
+                                loading="lazy"
+                            >
+
+                        </a>
+
+                    {% else %}
+
+                        <div class="producto-destacado__sin-imagen">
+
+                            <i class="bi bi-image"></i>
+
+                        </div>
+
+                    {% endif %}
 
                 </div>
 
 
-                <div class="tipo-earfun__contenido">
+                <div class="producto-destacado__contenido">
 
-                    <span class="tipo-earfun__etiqueta">
-                        ANC
-                    </span>
+                    {% if producto %}
 
-                    <h3>
-                        Menos ruido, más de lo que quieres escuchar
-                    </h3>
+                        <span class="producto-destacado__marca">
+                            EARFUN
+                        </span>
 
-                    <p>
-                        Reduce el ruido del transporte y otros entornos
-                        intensos para disfrutar tu música, trabajar
-                        o viajar con mayor tranquilidad.
-                    </p>
+                        <h3>
+
+                            <a
+                                href="{% url 'core:producto_detalle' producto.id %}"
+                            >
+                                {{ producto.nombre }}
+                            </a>
+
+                        </h3>
 
 
-                    <a
-                        href="{% url 'core:productos' %}"
-                        class="tipo-earfun__enlace"
-                    >
-                        Ver modelos ANC
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
+                        {% if producto.descripcion_corta %}
+
+                            <p class="producto-destacado__descripcion">
+
+                                {{ producto.descripcion_corta|truncatechars:90 }}
+
+                            </p>
+
+                        {% elif producto.descripcion %}
+
+                            <p class="producto-destacado__descripcion">
+
+                                {{ producto.descripcion|striptags|truncatechars:90 }}
+
+                            </p>
+
+                        {% endif %}
+
+
+                        <div class="producto-destacado__precio">
+
+                            {% if producto.precio_oferta and producto.precio_oferta < producto.precio %}
+
+                                <div class="producto-destacado__precio-actual">
+
+                                    ${{ producto.precio_oferta|floatformat:0|intcomma }}
+
+                                    <span>
+                                        CLP
+                                    </span>
+
+                                </div>
+
+                                <div class="producto-destacado__precio-anterior">
+
+                                    ${{ producto.precio|floatformat:0|intcomma }}
+                                    CLP
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="producto-destacado__precio-actual">
+
+                                    ${{ producto.precio|floatformat:0|intcomma }}
+
+                                    <span>
+                                        CLP
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="producto-destacado__acciones">
+
+                            <a
+                                href="{% url 'core:producto_detalle' producto.id %}"
+                                class="producto-destacado__ver-producto"
+                            >
+                                Ver producto
+
+                                <i class="bi bi-arrow-up-right"></i>
+
+                            </a>
+
+
+                            <a
+                                href="{% url 'core:productos' %}?categoria={{ categoria.slug }}"
+                                class="producto-destacado__ver-mas"
+                            >
+                                Ver más
+
+                                <i class="bi bi-arrow-right"></i>
+
+                            </a>
+
+                        </div>
+
+                    {% else %}
+
+                        <span class="producto-destacado__marca">
+                            EARFUN
+                        </span>
+
+                        <h3>
+                            {{ categoria.nombre }}
+                        </h3>
+
+                        <p class="producto-destacado__descripcion">
+                            No hay productos activos disponibles
+                            actualmente en esta categoría.
+                        </p>
+
+                        <a
+                            href="{% url 'core:productos' %}?categoria={{ categoria.slug }}"
+                            class="producto-destacado__ver-mas"
+                        >
+                            Ver categoría
+
+                            <i class="bi bi-arrow-right"></i>
+
+                        </a>
+
+                    {% endif %}
 
                 </div>
 
             </article>
 
+        {% endwith %}
+
+    {% endfor %}
+
+</div>
 
 
-            <!-- =================================================
-                 EVERYDAY
-            ================================================== -->
-            <article
-                class="
-                    tipo-earfun
-                    tipo-earfun--everyday
-                "
+        <!-- =================================================
+             BOTÓN INFERIOR
+        ================================================== -->
+        <div class="productos-destacados__pie">
+
+            <a
+                href="{% url 'core:productos' %}"
+                class="boton boton--secundario"
             >
+                Explorar todos los productos
 
-                <div class="tipo-earfun__media">
+                <i class="bi bi-arrow-right"></i>
 
-                    <div class="tipo-earfun__imagen">
-
-                        <img
-                            src="{% static 'core/img/Earfun6.png' %}"
-                            alt="Personas utilizando audífonos EarFun con traducción en tiempo real entre español y francés"
-                            loading="lazy"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="tipo-earfun__contenido">
-
-                    <span class="tipo-earfun__etiqueta">
-                        Everyday
-                    </span>
-
-                    <h3>
-                        Comunícate sin que el idioma te detenga
-                    </h3>
-
-                    <p>
-                        Modelos preparados para tu rutina diaria
-                        con funciones inteligentes como traducción
-                        en tiempo real, llamadas y conexión inalámbrica.
-                    </p>
-
-
-                    <a
-                        href="{% url 'core:productos' %}"
-                        class="tipo-earfun__enlace"
-                    >
-                        Ver modelos Everyday
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =================================================
-                 ACTIVE
-            ================================================== -->
-            <article
-                class="
-                    tipo-earfun
-                    tipo-earfun--active
-                "
-            >
-
-                <div class="tipo-earfun__media">
-
-                    <div class="tipo-earfun__imagen">
-
-                        <img
-                            src="{% static 'core/img/Earfun7.png' %}"
-                            alt="Deportista utilizando audífonos EarFun resistentes al sudor y lluvia ligera"
-                            loading="lazy"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="tipo-earfun__contenido">
-
-                    <span class="tipo-earfun__etiqueta">
-                        Active
-                    </span>
-
-                    <h3>
-                        Entrena sin preocuparte por el sudor
-                    </h3>
-
-                    <p>
-                        Diseños resistentes al sudor y a salpicaduras,
-                        pensados para acompañarte en entrenamientos,
-                        deporte y actividades al aire libre.
-                    </p>
-
-
-                    <a
-                        href="{% url 'core:productos' %}"
-                        class="tipo-earfun__enlace"
-                    >
-                        Ver modelos Active
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-
-                </div>
-
-            </article>
-
+            </a>
 
         </div>
 

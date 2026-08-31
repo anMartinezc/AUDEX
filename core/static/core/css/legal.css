@@ -1,0 +1,1210 @@
+/* =========================================================
+   AUDEX — PÁGINAS LEGALES
+   Archivo: core/static/core/css/legal.css
+
+   CSS compartido para:
+   - Garantía
+   - Cambios y devoluciones
+   - Preguntas frecuentes
+   - Despachos
+   - Contacto
+   - Términos y condiciones
+   - Política de privacidad
+   - Política de cookies
+
+   Trabaja junto a estilos.css y reutiliza
+   las variables globales definidas en :root.
+========================================================= */
+
+
+/* =========================================================
+   CONTENEDOR PRINCIPAL
+========================================================= */
+
+.legal {
+    position: relative;
+
+    width: 100%;
+
+    padding:
+        clamp(70px, 8vw, 110px)
+        0
+        clamp(80px, 9vw, 130px);
+
+    overflow: hidden;
+}
+
+
+/* Fondo decorativo */
+
+.legal::before {
+    content: "";
+
+    position: absolute;
+
+    top: -180px;
+    right: -160px;
+
+    width: 520px;
+    height: 520px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(54, 169, 214, 0.13),
+            transparent 68%
+        );
+
+    pointer-events: none;
+}
+
+
+/* Segundo brillo decorativo */
+
+.legal::after {
+    content: "";
+
+    position: absolute;
+
+    left: -220px;
+    bottom: 10%;
+
+    width: 500px;
+    height: 500px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(35, 127, 168, 0.07),
+            transparent 70%
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CONTENEDOR INTERNO
+========================================================= */
+
+.legal > .contenedor {
+    position: relative;
+    z-index: 1;
+
+    width:
+        min(
+            1180px,
+            calc(100% - 40px)
+        );
+
+    margin-inline: auto;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.legal__hero {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    max-width: 940px;
+
+    margin:
+        0
+        auto
+        42px;
+
+    text-align: left;
+}
+
+
+.legal__icono {
+    width: 54px;
+    height: 54px;
+
+    margin-bottom: 18px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1.3rem;
+
+    border:
+        1px
+        solid
+        var(--borde-azul);
+
+    border-radius: 16px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.08
+        );
+
+    box-shadow:
+        0 10px 28px
+        rgba(
+            54,
+            169,
+            214,
+            0.08
+        );
+}
+
+
+.legal__etiqueta {
+    display: inline-flex;
+    align-items: center;
+
+    margin-bottom: 13px;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+}
+
+
+.legal__hero h1 {
+    max-width: 900px;
+
+    margin-bottom: 18px;
+
+    color:
+        var(--color-blanco);
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size:
+        clamp(
+            2.25rem,
+            6vw,
+            4.6rem
+        );
+
+    font-weight: 800;
+
+    line-height: 1.02;
+
+    letter-spacing: -0.045em;
+}
+
+
+.legal__introduccion {
+    max-width: 800px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size:
+        clamp(
+            0.96rem,
+            1.7vw,
+            1.08rem
+        );
+
+    line-height: 1.8;
+}
+
+
+.legal__actualizacion {
+    margin-top: 16px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.76rem;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.legal__contenido {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    max-width: 940px;
+
+    margin-inline: auto;
+
+    display: grid;
+
+    gap: 16px;
+}
+
+
+/* =========================================================
+   TARJETAS LEGALES
+========================================================= */
+
+.legal__seccion {
+    width: 100%;
+
+    padding:
+        clamp(
+            22px,
+            4vw,
+            34px
+        );
+
+    border:
+        1px
+        solid
+        var(--borde);
+
+    border-radius:
+        var(--radio-medio);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                255,
+                255,
+                255,
+                0.025
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.012
+            )
+        );
+
+    box-shadow:
+        0 12px 35px
+        rgba(
+            0,
+            0,
+            0,
+            0.14
+        );
+
+    transition:
+        border-color var(--transicion),
+        background var(--transicion),
+        transform var(--transicion),
+        box-shadow var(--transicion);
+}
+
+
+.legal__seccion:hover {
+    border-color:
+        rgba(
+            131,
+            216,
+            243,
+            0.18
+        );
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                54,
+                169,
+                214,
+                0.045
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.012
+            )
+        );
+
+    box-shadow:
+        0 16px 42px
+        rgba(
+            0,
+            0,
+            0,
+            0.18
+        );
+}
+
+
+/* =========================================================
+   TÍTULOS DE SECCIONES
+========================================================= */
+
+.legal__seccion h2 {
+    margin-bottom: 16px;
+
+    color:
+        var(--color-blanco);
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size:
+        clamp(
+            1.05rem,
+            2vw,
+            1.32rem
+        );
+
+    font-weight: 800;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   PÁRRAFOS
+========================================================= */
+
+.legal__seccion p {
+    max-width: 100%;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.9rem;
+
+    line-height: 1.8;
+}
+
+
+.legal__seccion p + p {
+    margin-top: 12px;
+}
+
+
+.legal__seccion strong {
+    color:
+        var(--color-blanco);
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   LISTAS
+========================================================= */
+
+.legal__seccion ul,
+.legal__seccion ol {
+    margin-top: 10px;
+
+    padding-left: 0;
+
+    display: grid;
+
+    gap: 10px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.9rem;
+
+    line-height: 1.7;
+}
+
+
+.legal__seccion li {
+    position: relative;
+
+    padding-left: 25px;
+}
+
+
+/* Lista normal */
+
+.legal__seccion ul li::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0.72em;
+    left: 4px;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background:
+        var(--color-azul-claro);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(
+            54,
+            169,
+            214,
+            0.08
+        );
+}
+
+
+/* Lista numerada */
+
+.legal__seccion ol {
+    counter-reset:
+        legal-pasos;
+
+    list-style: none;
+}
+
+
+.legal__seccion ol li {
+    counter-increment:
+        legal-pasos;
+
+    padding-left: 42px;
+}
+
+
+.legal__seccion ol li::before {
+    content:
+        counter(
+            legal-pasos
+        );
+
+    position: absolute;
+
+    top: 1px;
+    left: 0;
+
+    width: 27px;
+    height: 27px;
+
+    display: grid;
+    place-items: center;
+
+    color: #061017;
+
+    font-size: 0.7rem;
+    font-weight: 900;
+
+    border-radius: 9px;
+
+    background:
+        var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   NOTAS DESTACADAS
+========================================================= */
+
+.legal__nota {
+    margin-top: 18px;
+
+    padding:
+        15px
+        17px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.83rem;
+
+    line-height: 1.65;
+
+    border:
+        1px
+        solid
+        rgba(
+            131,
+            216,
+            243,
+            0.18
+        );
+
+    border-radius: 13px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.06
+        );
+}
+
+
+.legal__detalle {
+    margin-top:
+        15px
+        !important;
+
+    color:
+        var(--color-gris)
+        !important;
+
+    font-size:
+        0.78rem
+        !important;
+}
+
+
+/* =========================================================
+   TABLAS
+========================================================= */
+
+.legal__tabla-wrap {
+    width: 100%;
+
+    margin-top: 16px;
+
+    overflow-x: auto;
+
+    border:
+        1px
+        solid
+        var(--borde);
+
+    border-radius: 14px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.012
+        );
+
+    scrollbar-width: thin;
+}
+
+
+.legal__tabla {
+    width: 100%;
+
+    min-width: 680px;
+
+    border-collapse: collapse;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.82rem;
+}
+
+
+.legal__tabla th,
+.legal__tabla td {
+    padding:
+        14px
+        16px;
+
+    text-align: left;
+
+    vertical-align: top;
+
+    border-bottom:
+        1px
+        solid
+        var(--borde);
+}
+
+
+.legal__tabla th {
+    color:
+        var(--color-blanco);
+
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    letter-spacing: 0.05em;
+
+    text-transform: uppercase;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.07
+        );
+}
+
+
+.legal__tabla tr:last-child td {
+    border-bottom: 0;
+}
+
+
+.legal__tabla tbody tr {
+    transition:
+        background
+        var(--transicion);
+}
+
+
+.legal__tabla tbody tr:hover {
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+}
+
+
+.legal__tabla code {
+    color:
+        var(--color-azul-claro);
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    font-size: 0.78rem;
+}
+
+
+/* =========================================================
+   CONTACTOS
+========================================================= */
+
+.legal__contactos {
+    gap:
+        12px
+        !important;
+}
+
+
+.legal__contactos li {
+    min-height: 72px;
+
+    padding:
+        15px
+        !important;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 14px;
+
+    border:
+        1px
+        solid
+        var(--borde);
+
+    border-radius: 14px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.018
+        );
+
+    transition:
+        border-color
+        var(--transicion),
+        background
+        var(--transicion);
+}
+
+
+.legal__contactos li:hover {
+    border-color:
+        var(--borde-azul);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.04
+        );
+}
+
+
+.legal__contactos li::before {
+    display:
+        none
+        !important;
+}
+
+
+.legal__contactos i {
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1rem;
+
+    border:
+        1px
+        solid
+        rgba(
+            131,
+            216,
+            243,
+            0.13
+        );
+
+    border-radius: 11px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.08
+        );
+}
+
+
+/* =========================================================
+   BLOQUE DE AYUDA
+========================================================= */
+
+.legal__ayuda {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    max-width: 940px;
+
+    margin:
+        28px
+        auto
+        0;
+
+    padding:
+        clamp(
+            22px,
+            4vw,
+            32px
+        );
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    border:
+        1px
+        solid
+        var(--borde-azul);
+
+    border-radius:
+        var(--radio-medio);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(
+                54,
+                169,
+                214,
+                0.09
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.018
+            )
+        );
+
+    box-shadow:
+        0 14px 40px
+        rgba(
+            0,
+            0,
+            0,
+            0.16
+        );
+}
+
+
+.legal__ayuda > div:first-child {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+
+.legal__ayuda span {
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.7rem;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+}
+
+
+.legal__ayuda strong {
+    color:
+        var(--color-blanco);
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size:
+        clamp(
+            1rem,
+            2vw,
+            1.25rem
+        );
+
+    line-height: 1.35;
+}
+
+
+.legal__ayuda-acciones {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+
+.legal__ayuda-acciones .boton {
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   ENLACES DENTRO DE CONTENIDO LEGAL
+========================================================= */
+
+.legal__seccion a {
+    color:
+        var(--color-azul-claro);
+
+    font-weight: 600;
+
+    text-decoration: underline;
+
+    text-decoration-color:
+        rgba(
+            131,
+            216,
+            243,
+            0.35
+        );
+
+    text-underline-offset: 3px;
+
+    transition:
+        color
+        var(--transicion),
+        text-decoration-color
+        var(--transicion);
+}
+
+
+.legal__seccion a:hover {
+    color:
+        var(--color-blanco);
+
+    text-decoration-color:
+        var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   FAQ
+========================================================= */
+
+.legal__contenido
+.legal__seccion:first-child {
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .legal > .contenedor {
+        width:
+            min(
+                calc(100% - 32px),
+                1180px
+            );
+    }
+
+
+    .legal__hero,
+    .legal__contenido,
+    .legal__ayuda {
+        max-width: 100%;
+    }
+
+
+    .legal__ayuda {
+        align-items: flex-start;
+    }
+
+
+    .legal__ayuda-acciones {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .legal__ayuda-acciones .boton {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MÓVIL GRANDE
+========================================================= */
+
+@media (max-width: 760px) {
+
+    .legal {
+        padding:
+            55px
+            0
+            80px;
+    }
+
+
+    .legal > .contenedor {
+        width:
+            min(
+                calc(100% - 28px),
+                1180px
+            );
+    }
+
+
+    .legal__hero {
+        margin-bottom: 28px;
+    }
+
+
+    .legal__hero h1 {
+        font-size:
+            clamp(
+                2rem,
+                10vw,
+                3.2rem
+            );
+    }
+
+
+    .legal__seccion {
+        border-radius: 15px;
+    }
+
+
+    .legal__ayuda {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .legal__ayuda-acciones {
+        width: 100%;
+
+        display: grid;
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .legal__ayuda-acciones .boton {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MÓVIL
+========================================================= */
+
+@media (max-width: 500px) {
+
+    .legal {
+        padding:
+            45px
+            0
+            65px;
+    }
+
+
+    .legal > .contenedor {
+        width:
+            calc(
+                100%
+                -
+                24px
+            );
+    }
+
+
+    .legal__icono {
+        width: 48px;
+        height: 48px;
+
+        border-radius: 14px;
+    }
+
+
+    .legal__hero h1 {
+        margin-bottom: 14px;
+
+        font-size:
+            clamp(
+                1.9rem,
+                11vw,
+                2.7rem
+            );
+
+        line-height: 1.06;
+    }
+
+
+    .legal__introduccion {
+        font-size: 0.9rem;
+
+        line-height: 1.7;
+    }
+
+
+    .legal__seccion {
+        padding:
+            20px
+            18px;
+    }
+
+
+    .legal__seccion h2 {
+        margin-bottom: 13px;
+
+        font-size: 1rem;
+    }
+
+
+    .legal__seccion p,
+    .legal__seccion ul,
+    .legal__seccion ol {
+        font-size: 0.84rem;
+    }
+
+
+    .legal__seccion ol li {
+        padding-left: 38px;
+    }
+
+
+    .legal__tabla-wrap {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+
+    .legal__ayuda {
+        padding:
+            20px
+            18px;
+    }
+}
+
+
+/* =========================================================
+   MÓVILES PEQUEÑOS
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .legal > .contenedor {
+        width:
+            calc(
+                100%
+                -
+                20px
+            );
+    }
+
+
+    .legal__seccion {
+        padding:
+            18px
+            16px;
+    }
+
+
+    .legal__hero h1 {
+        font-size: 1.85rem;
+    }
+
+
+    .legal__seccion p,
+    .legal__seccion ul,
+    .legal__seccion ol {
+        font-size: 0.81rem;
+    }
+}
+
+
+/* =========================================================
+   REDUCIR MOVIMIENTO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .legal__seccion,
+    .legal__contactos li,
+    .legal__seccion a {
+        transition: none;
+    }
+}
