@@ -154,6 +154,37 @@
             background: rgba(255, 91, 101, 0.1);
         }
 
+        /* =========================================================
+           BOTÓN ADMINISTRACIÓN
+        ========================================================== */
+
+        .boton-admin {
+            color: var(--color-azul-claro);
+
+            border-color:
+                rgba(131, 216, 243, 0.28);
+
+            background:
+                rgba(54, 169, 214, 0.08);
+        }
+
+        .boton-admin:hover {
+            color: #041017;
+
+            border-color:
+                var(--color-azul-claro);
+
+            background:
+                var(--color-azul-claro);
+
+            transform:
+                translateY(-2px);
+        }
+
+        .boton-admin i {
+            font-size: 1.05rem;
+        }
+
         @media (max-width: 1100px) {
             .menu-movil-boton {
                 display: grid;
@@ -786,6 +817,24 @@
                 ================================================== -->
 
                 {% if request.user.is_authenticated and request.user.is_staff %}
+
+                    <!-- ADMINISTRACIÓN DJANGO -->
+
+                    <a
+                        href="{% url 'admin:index' %}"
+                        class="
+                            boton-icono
+                            boton-admin
+                        "
+                        aria-label="Ir a administración de Audex"
+                        title="Administración"
+                    >
+                        <i
+                            class="bi bi-shield-lock"
+                            aria-hidden="true"
+                        ></i>
+                    </a>
+
 
                     <!-- MI PERFIL -->
 
@@ -1440,6 +1489,15 @@
 
 
             {% if request.user.is_staff %}
+
+                <a
+                    href="{% url 'admin:index' %}"
+                    class="menu-movil__link--cuenta"
+                >
+                    <i class="bi bi-shield-lock"></i>
+                    Administración
+                </a>
+
 
                 <a
                     href="{% url 'core:panel_pedidos' %}"
