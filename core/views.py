@@ -10331,43 +10331,54 @@ def mi_perfil(request):
         contexto,
     )
 
+
+
+
+
+
 @csrf_exempt
 def webpay_retorno(request):
     """
     Procesa el retorno desde Webpay Plus.
 
-    Flujo:
+    Casos soportados:
 
-    1. Obtiene token_ws.
-    2. Si no existe token, considera la operación cancelada.
-    3. Confirma la transacción directamente con Transbank.
-    4. Valida:
-       - response_code
-       - status
-       - buy_order
-       - monto
-       - token de sesión
-    5. Si Transbank rechaza:
-       - guarda RECHAZADO;
+    1. Pago autorizado:
+       - recibe token_ws;
+       - ejecuta commit();
+       - valida response_code, status, buy_order y monto;
+       - marca pedido como pagado;
+       - ejecuta flujo post-pago;
+       - vacía carrito.
+
+    2. Pago rechazado:
+       - recibe token_ws;
+       - ejecuta commit();
+       - Transbank devuelve FAILED / response_code != 0;
+       - guarda rechazo;
        - no descuenta stock;
        - no genera boleta;
        - libera descuentos reservados.
-    6. Si Transbank autoriza:
-       - guarda todos los datos técnicos de Webpay;
-       - marca el Pedido como pagado;
-       - descuenta stock;
-       - confirma descuento;
-       - genera boleta mediante el flujo central.
-    7. Vacía el carrito únicamente después del pago confirmado.
-    8. Limpia los datos temporales de Webpay.
-    9. Redirige a pedido_confirmacion(), que selecciona
-       el HTML según el estado persistido.
+
+    3. Cancelación desde formulario Webpay:
+       - NO recibe token_ws;
+       - recibe:
+           TBK_TOKEN
+           TBK_ID_SESION
+           TBK_ORDEN_COMPRA
+       - NO ejecuta commit();
+       - marca pedido como cancelado;
+       - libera descuentos;
+       - limpia sesión.
+
+    4. Retorno sin token identificable:
+       - se trata como cancelación/abandono seguro.
     """
 
     from django.utils.dateparse import parse_datetime
 
     # =========================================================================
-    # TOKEN RETORNADO POR WEBPAY
+    # TOKEN NORMAL RETORNADO POR WEBPAY
     # =========================================================================
 
     token_ws = (
@@ -10377,6 +10388,61 @@ def webpay_retorno(request):
         )
         or request.GET.get(
             "token_ws",
+            "",
+        )
+        or ""
+    ).strip()
+
+    # =========================================================================
+    # DATOS ESPECIALES DE CANCELACIÓN WEBPAY
+    # =========================================================================
+    #
+    # Cuando el usuario presiona:
+    #
+    # "Anular compra y volver al comercio"
+    #
+    # Transbank NO devuelve token_ws.
+    #
+    # Devuelve:
+    #
+    # TBK_TOKEN
+    # TBK_ID_SESION
+    # TBK_ORDEN_COMPRA
+    #
+    # En este escenario NO se debe ejecutar commit().
+    # =========================================================================
+
+    tbk_token = (
+        request.POST.get(
+            "TBK_TOKEN",
+            "",
+        )
+        or request.GET.get(
+            "TBK_TOKEN",
+            "",
+        )
+        or ""
+    ).strip()
+
+    tbk_id_sesion = (
+        request.POST.get(
+            "TBK_ID_SESION",
+            "",
+        )
+        or request.GET.get(
+            "TBK_ID_SESION",
+            "",
+        )
+        or ""
+    ).strip()
+
+    tbk_orden_compra = (
+        request.POST.get(
+            "TBK_ORDEN_COMPRA",
+            "",
+        )
+        or request.GET.get(
+            "TBK_ORDEN_COMPRA",
             "",
         )
         or ""
@@ -10410,37 +10476,290 @@ def webpay_retorno(request):
         or ""
     ).strip()
 
+    # =========================================================================
+    # LOG GENERAL DE RETORNO
+    # =========================================================================
+
     logger.info(
         (
             "Retorno Webpay recibido. "
             "pedido_webpay=%s "
             "pedido_pago_en_curso=%s "
             "token_sesion=%s "
-            "token_retorno=%s"
+            "token_ws=%s "
+            "tbk_token=%s "
+            "tbk_id_sesion=%s "
+            "tbk_orden_compra=%s"
         ),
         numero_pedido_sesion or "vacío",
         pedido_pago_en_curso or "vacío",
         bool(token_sesion),
         bool(token_ws),
+        bool(tbk_token),
+        tbk_id_sesion or "vacío",
+        tbk_orden_compra or "vacío",
     )
 
     # =========================================================================
-    # SIN TOKEN = CANCELACIÓN / ABANDONO
+    # CANCELACIÓN EXPLÍCITA DESDE FORMULARIO WEBPAY
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # Este bloque debe ejecutarse ANTES del manejo genérico:
+    #
+    #     if not token_ws:
+    #
+    # porque en una cancelación legítima Transbank devuelve TBK_TOKEN,
+    # pero NO devuelve token_ws.
+    #
+    # Nunca llamar commit() aquí.
+    # =========================================================================
+
+    if tbk_token:
+
+        logger.warning(
+            (
+                "CANCELACIÓN WEBPAY RECIBIDA. "
+                "TBK_TOKEN=%s "
+                "TBK_ID_SESION=%s "
+                "TBK_ORDEN_COMPRA=%s "
+                "pedido_sesion=%s"
+            ),
+            tbk_token,
+            tbk_id_sesion or "vacío",
+            tbk_orden_compra or "vacío",
+            numero_pedido_sesion or "vacío",
+        )
+
+        # ---------------------------------------------------------------------
+        # DETERMINAR PEDIDO CANCELADO
+        # ---------------------------------------------------------------------
+
+        numero_pedido_cancelado = (
+            tbk_orden_compra
+            or numero_pedido_sesion
+            or pedido_pago_en_curso
+        )
+
+        pedido = None
+
+        if numero_pedido_cancelado:
+
+            try:
+
+                pedido = Pedido.objects.get(
+                    numero=numero_pedido_cancelado
+                )
+
+            except Pedido.DoesNotExist:
+
+                logger.warning(
+                    (
+                        "No existe el pedido asociado "
+                        "a la cancelación Webpay. "
+                        "TBK_ORDEN_COMPRA=%s "
+                        "pedido_sesion=%s"
+                    ),
+                    tbk_orden_compra or "vacío",
+                    numero_pedido_sesion or "vacío",
+                )
+
+        # ---------------------------------------------------------------------
+        # VALIDAR QUE EL PEDIDO SEA WEBPAY
+        # ---------------------------------------------------------------------
+
+        if pedido is not None:
+
+            metodo_pedido = str(
+                pedido.metodo_pago
+                or ""
+            ).strip().lower()
+
+            if (
+                metodo_pedido
+                != Pedido.MetodoPago.WEBPAY
+            ):
+
+                logger.error(
+                    (
+                        "Cancelación Webpay asociada "
+                        "a pedido de otro método. "
+                        "Pedido=%s metodo=%s"
+                    ),
+                    pedido.numero,
+                    metodo_pedido,
+                )
+
+                messages.error(
+                    request,
+                    (
+                        "La cancelación recibida "
+                        "no coincide con el método "
+                        "de pago del pedido."
+                    ),
+                )
+
+                return redirect(
+                    "core:pedido_confirmacion",
+                    numero=pedido.numero,
+                )
+
+        # ---------------------------------------------------------------------
+        # MARCAR PEDIDO COMO CANCELADO
+        # ---------------------------------------------------------------------
+
+        if (
+            pedido is not None
+            and not pedido.pagado
+        ):
+
+            pedido.estado = (
+                Pedido.EstadoPedido.CANCELADO
+            )
+
+            pedido.estado_pago = (
+                Pedido.EstadoPago.CANCELADO
+            )
+
+            pedido.pagado = False
+
+            pedido.save(
+                update_fields=[
+                    "estado",
+                    "estado_pago",
+                    "pagado",
+                    "actualizado",
+                ]
+            )
+
+            # -----------------------------------------------------------------
+            # LIBERAR DESCUENTO
+            # -----------------------------------------------------------------
+
+            try:
+
+                _liberar_descuento_si_corresponde(
+                    pedido
+                )
+
+            except Exception:
+
+                logger.exception(
+                    (
+                        "No fue posible liberar "
+                        "el descuento del pedido %s "
+                        "tras cancelación Webpay."
+                    ),
+                    pedido.numero,
+                )
+
+            logger.info(
+                (
+                    "Pedido Webpay cancelado correctamente. "
+                    "Pedido=%s "
+                    "estado=%s "
+                    "estado_pago=%s "
+                    "pagado=%s "
+                    "TBK_TOKEN=%s"
+                ),
+                pedido.numero,
+                pedido.estado,
+                pedido.estado_pago,
+                pedido.pagado,
+                tbk_token,
+            )
+
+        elif (
+            pedido is not None
+            and pedido.pagado
+        ):
+
+            logger.warning(
+                (
+                    "Se recibió cancelación Webpay "
+                    "para pedido ya pagado. "
+                    "Pedido=%s. "
+                    "No se modificará el estado."
+                ),
+                pedido.numero,
+            )
+
+        # ---------------------------------------------------------------------
+        # LIMPIAR SESIÓN
+        # ---------------------------------------------------------------------
+
+        request.session.pop(
+            "webpay_token",
+            None,
+        )
+
+        request.session.pop(
+            "webpay_pedido",
+            None,
+        )
+
+        request.session.pop(
+            "pedido_pago_en_curso",
+            None,
+        )
+
+        request.session.modified = True
+
+        # ---------------------------------------------------------------------
+        # MENSAJE
+        # ---------------------------------------------------------------------
+
+        messages.warning(
+            request,
+            (
+                "Cancelaste el pago con Webpay. "
+                "No se confirmó ningún cobro."
+            ),
+        )
+
+        # ---------------------------------------------------------------------
+        # REDIRECCIÓN
+        # ---------------------------------------------------------------------
+
+        if pedido is not None:
+
+            return redirect(
+                "core:pedido_confirmacion",
+                numero=pedido.numero,
+            )
+
+        if numero_pedido_cancelado:
+
+            return redirect(
+                "core:pedido_confirmacion",
+                numero=numero_pedido_cancelado,
+            )
+
+        return redirect(
+            "core:productos"
+        )
+
+    # =========================================================================
+    # SIN TOKEN_WS Y SIN TBK_TOKEN
+    # CANCELACIÓN / ABANDONO / RETORNO INCOMPLETO
     # =========================================================================
 
     if not token_ws:
 
         logger.warning(
             (
-                "Retorno Webpay sin token. "
+                "Retorno Webpay sin token_ws "
+                "y sin TBK_TOKEN. "
                 "Pedido en sesión=%s"
             ),
-            numero_pedido_sesion,
+            numero_pedido_sesion or "vacío",
         )
 
         if numero_pedido_sesion:
 
             try:
+
                 pedido = Pedido.objects.get(
                     numero=numero_pedido_sesion
                 )
@@ -10467,11 +10786,13 @@ def webpay_retorno(request):
                     )
 
                     try:
+
                         _liberar_descuento_si_corresponde(
                             pedido
                         )
 
                     except Exception:
+
                         logger.exception(
                             (
                                 "No fue posible liberar "
@@ -10540,7 +10861,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # VALIDAR TOKEN CONTRA SESIÓN
+    # VALIDAR TOKEN_WS CONTRA SESIÓN
     # =========================================================================
 
     if (
@@ -10577,6 +10898,12 @@ def webpay_retorno(request):
 
     # =========================================================================
     # CONFIRMAR TRANSACCIÓN DIRECTAMENTE CON TRANSBANK
+    # =========================================================================
+    #
+    # Desde este punto existe token_ws.
+    #
+    # Por tanto estamos frente a una transacción que debe
+    # confirmarse mediante commit().
     # =========================================================================
 
     try:
@@ -10946,10 +11273,8 @@ def webpay_retorno(request):
 
     try:
 
-        pedido = (
-            Pedido.objects.get(
-                numero=buy_order
-            )
+        pedido = Pedido.objects.get(
+            numero=buy_order
         )
 
     except Pedido.DoesNotExist:
@@ -11138,10 +11463,6 @@ def webpay_retorno(request):
             amount,
         )
 
-        # ---------------------------------------------------------------------
-        # MONTO INCONSISTENTE -> REVISIÓN
-        # ---------------------------------------------------------------------
-
         pedido.pagado = False
 
         pedido.estado_pago = (
@@ -11235,10 +11556,6 @@ def webpay_retorno(request):
             response_code,
         )
 
-        # ---------------------------------------------------------------------
-        # GUARDAR RESPUESTA WEBPAY
-        # ---------------------------------------------------------------------
-
         pedido.webpay_token = (
             token_ws
             or ""
@@ -11270,10 +11587,6 @@ def webpay_retorno(request):
         pedido.webpay_transaction_date = (
             transaction_date
         )
-
-        # ---------------------------------------------------------------------
-        # ESTADO REAL DEL PEDIDO
-        # ---------------------------------------------------------------------
 
         pedido.pagado = False
 
@@ -11343,10 +11656,6 @@ def webpay_retorno(request):
 
         request.session.modified = True
 
-        # ---------------------------------------------------------------------
-        # LOG
-        # ---------------------------------------------------------------------
-
         logger.info(
             (
                 "Rechazo Webpay persistido. "
@@ -11367,10 +11676,6 @@ def webpay_retorno(request):
             pedido.webpay_transaction_date,
         )
 
-        # ---------------------------------------------------------------------
-        # MENSAJE
-        # ---------------------------------------------------------------------
-
         messages.error(
             request,
             (
@@ -11378,10 +11683,6 @@ def webpay_retorno(request):
                 "No se confirmó ningún cobro."
             ),
         )
-
-        # ---------------------------------------------------------------------
-        # REDIRECCIÓN
-        # ---------------------------------------------------------------------
 
         return redirect(
             "core:pedido_confirmacion",
@@ -11454,7 +11755,9 @@ def webpay_retorno(request):
                         or token_ws
                     ),
 
-                    "status": status,
+                    "status": (
+                        status
+                    ),
 
                     "transaction_amount": (
                         amount
@@ -11544,19 +11847,6 @@ def webpay_retorno(request):
 
     # =========================================================================
     # ASEGURAR PERSISTENCIA DE TODOS LOS DATOS WEBPAY
-    # =========================================================================
-    #
-    # marcar_pedido_como_pagado() sigue siendo responsable
-    # del flujo central:
-    #
-    # - marcar pago;
-    # - stock;
-    # - descuentos;
-    # - correo;
-    # - Nubox.
-    #
-    # Aquí solamente garantizamos que TODOS los datos técnicos
-    # entregados por Transbank queden guardados en Pedido.
     # =========================================================================
 
     pedido.webpay_token = (
@@ -11823,10 +12113,6 @@ def webpay_retorno(request):
         "core:pedido_confirmacion",
         numero=pedido.numero,
     )
-
-
-
-
 
 
 
