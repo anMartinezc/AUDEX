@@ -72,7 +72,7 @@
                 </span>
 
 
-                {% if pedido.pago_aprobado %}
+                {% if pedido.pagado %}
 
                     <span class="detalle-admin__pago detalle-admin__pago--ok">
 
@@ -354,7 +354,7 @@
                     </div>
 
 
-                    {% if pedido.pago_aprobado %}
+                    {% if pedido.pagado %}
 
                         {% if pedido.nubox_disponible %}
 
@@ -713,7 +713,7 @@
 
 
                 <!-- =================================================
-                     HISTORIAL
+                     HISTORIAL / TRAZABILIDAD
                 ================================================== -->
 
                 <article class="seguimiento-tarjeta">
@@ -735,11 +735,63 @@
                     </div>
 
 
-                    <div class="historial-estados">
+                    <div
+                        class="historial-estados"
+                        id="historialPedido"
+                    >
+
+                        <!-- =========================================
+                             PEDIDO CREADO
+
+                             Solo agregamos este hito manualmente
+                             cuando la tabla de historial no posee
+                             movimientos. Así evitamos duplicar el
+                             registro inicial existente.
+                        ========================================== -->
+
+                        {% if not historial %}
+
+                            <div
+                                class="historial-estado"
+                                data-fecha="{{ pedido.creado|date:'c' }}"
+                            >
+
+                                <div class="historial-estado__punto"></div>
+
+
+                                <div>
+
+                                    <strong>
+                                        Pedido creado
+                                    </strong>
+
+
+                                    <time>
+                                        {{ pedido.creado|date:"d/m/Y H:i" }}
+                                    </time>
+
+
+                                    <p>
+                                        Pedido creado desde el checkout.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- =========================================
+                             MOVIMIENTOS OPERATIVOS REGISTRADOS
+                        ========================================== -->
 
                         {% for movimiento in historial %}
 
-                            <div class="historial-estado">
+                            <div
+                                class="historial-estado"
+                                data-fecha="{{ movimiento.creado|date:'c' }}"
+                            >
 
                                 <div class="historial-estado__punto"></div>
 
@@ -778,14 +830,80 @@
 
                             </div>
 
+                        {% endfor %}
 
-                        {% empty %}
+
+                        <!-- =========================================
+                             PAGO CONFIRMADO
+
+                             El pago es un hito independiente del
+                             historial operativo. El pedido puede estar
+                             pagado aunque historial_estados solamente
+                             conserve el estado inicial.
+                        ========================================== -->
+
+                        {% if pedido.pagado %}
+
+                            <div
+                                class="historial-estado historial-estado--pago"
+                                data-fecha="{% if pedido.fecha_pago %}{{ pedido.fecha_pago|date:'c' }}{% else %}{{ pedido.actualizado|date:'c' }}{% endif %}"
+                            >
+
+                                <div class="historial-estado__punto"></div>
+
+
+                                <div>
+
+                                    <strong>
+                                        Pago confirmado
+                                    </strong>
+
+
+                                    {% if pedido.fecha_pago %}
+
+                                        <time>
+                                            {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+                                        </time>
+
+                                    {% endif %}
+
+
+                                    <p>
+                                        Pago aprobado mediante
+                                        {{ pedido.get_metodo_pago_display }}.
+                                    </p>
+
+
+                                    {% if pedido.metodo_pago == "webpay" and pedido.webpay_authorization_code %}
+
+                                        <small>
+                                            Autorización:
+                                            {{ pedido.webpay_authorization_code }}
+                                        </small>
+
+                                    {% elif pedido.metodo_pago == "mercadopago" and pedido.mercadopago_payment_id %}
+
+                                        <small>
+                                            Payment ID:
+                                            {{ pedido.mercadopago_payment_id }}
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if not historial and not pedido.pagado %}
 
                             <p>
                                 No existen movimientos registrados.
                             </p>
 
-                        {% endfor %}
+                        {% endif %}
 
                     </div>
 
@@ -911,7 +1029,7 @@
 
                             <strong>
 
-                                {% if pedido.pago_aprobado %}
+                                {% if pedido.pagado %}
 
                                     <span class="detalle-admin__dato-ok">
 
@@ -1176,6 +1294,67 @@
 {% endblock %}
 
 {% block extra_js %}
+
+<!-- =========================================================
+     ORDENAR TRAZABILIDAD CRONOLÓGICAMENTE
+========================================================= -->
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            const historial = document.getElementById(
+                "historialPedido"
+            );
+
+            if (!historial) {
+                return;
+            }
+
+            const movimientos = Array.from(
+                historial.querySelectorAll(
+                    ".historial-estado[data-fecha]"
+                )
+            );
+
+            movimientos.sort(
+                (a, b) => {
+
+                    const fechaA = Date.parse(
+                        a.dataset.fecha || ""
+                    );
+
+                    const fechaB = Date.parse(
+                        b.dataset.fecha || ""
+                    );
+
+                    if (
+                        Number.isNaN(fechaA)
+                        || Number.isNaN(fechaB)
+                    ) {
+                        return 0;
+                    }
+
+                    return fechaA - fechaB;
+                },
+            );
+
+            movimientos.forEach(
+                (movimiento) => {
+                    historial.appendChild(
+                        movimiento
+                    );
+                },
+            );
+        },
+    );
+</script>
+
+
+<!-- =========================================================
+     POLLING NUBOX
+========================================================= -->
 
 <script>
     document.addEventListener(

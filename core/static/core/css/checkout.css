@@ -1535,3 +1535,161 @@
         font-size: 1.5rem;
     }
 }
+
+
+
+/* ==========================================================================
+   TELÉFONO CHILENO
+   ========================================================================== */
+
+.checkout-telefono-control {
+    position: relative;
+
+    width: 100%;
+    min-height: 52px;
+
+    display: flex;
+    align-items: stretch;
+
+    overflow: hidden;
+
+    border: 1px solid var(--borde);
+    border-radius: 13px;
+
+    background:
+        rgba(5, 10, 14, 0.65);
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+/* ==========================================================================
+   PREFIJO +56
+   ========================================================================== */
+
+.checkout-telefono-prefijo {
+    min-width: 78px;
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: #041017;
+
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+
+    border-right:
+        1px solid
+        rgba(131, 216, 243, 0.35);
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--color-azul-claro),
+            var(--color-azul)
+        );
+
+    user-select: none;
+}
+
+
+/* ==========================================================================
+   INPUT TELÉFONO
+   ========================================================================== */
+
+.checkout-telefono-control #id_telefono {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+
+    padding:
+        12px
+        16px;
+
+    color: var(--color-blanco);
+
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+
+    outline: none;
+
+    background:
+        rgba(5, 10, 14, 0.65) !important;
+
+    box-shadow:
+        none !important;
+}
+
+.checkout-telefono-control #id_telefono::placeholder {
+    color: var(--color-gris);
+    opacity: 0.72;
+}
+
+
+/* ==========================================================================
+   FOCUS DEL CONTROL COMPLETO
+   ========================================================================== */
+
+.checkout-telefono-control:focus-within {
+    border-color:
+        var(--color-azul-claro);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(54, 169, 214, 0.1);
+}
+
+
+/* ==========================================================================
+   HOVER
+   ========================================================================== */
+
+.checkout-telefono-control:hover {
+    border-color:
+        rgba(131, 216, 243, 0.3);
+}
+
+
+/* ==========================================================================
+   ERROR
+   ========================================================================== */
+
+.checkout-campo--error
+.checkout-telefono-control {
+    border-color:
+        rgba(255, 91, 101, 0.55);
+}
+
+
+/* ==========================================================================
+   RESPONSIVE TELÉFONO
+   ========================================================================== */
+
+@media (max-width: 520px) {
+
+    .checkout-telefono-prefijo {
+        min-width: 70px;
+
+        padding:
+            0
+            14px;
+
+        font-size: 0.92rem;
+    }
+
+    .checkout-telefono-control #id_telefono {
+        font-size: 0.95rem;
+    }
+}

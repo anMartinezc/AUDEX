@@ -11,7 +11,7 @@ Finalizar compra | Audex
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/checkout.css' %}?v=13"
+    href="{% static 'core/css/checkout.css' %}?v=14"
 >
 
 <style>
@@ -1860,6 +1860,468 @@ Finalizar compra | Audex
 
     }
 
+
+
+    /* =========================================================
+       TELÉFONO CHILENO
+       +56 VISUAL + 9 DÍGITOS
+    ========================================================== */
+
+    const telefonoInput =
+        document.getElementById(
+            "id_telefono"
+        );
+
+
+    const PREFIJO_TELEFONO =
+        "+56";
+
+
+    /* =========================================================
+       OBTENER LOS 9 DÍGITOS NACIONALES
+    ========================================================== */
+
+    function obtenerDigitosTelefono(
+        valor
+    ) {
+
+        let texto =
+            (
+                valor
+                || ""
+            ).trim();
+
+
+        /*
+         * Si Django devuelve un teléfono
+         * completo, quitamos el +56.
+         *
+         * +56912345678
+         *
+         * pasa visualmente a:
+         *
+         * 912345678
+         */
+
+        if (
+            texto.startsWith(
+                PREFIJO_TELEFONO
+            )
+        ) {
+
+            texto =
+                texto.substring(
+                    PREFIJO_TELEFONO.length
+                );
+
+        }
+
+
+        let digitos =
+            texto.replace(
+                /\D/g,
+                ""
+            );
+
+
+        /*
+         * También permitimos pegar el número
+         * completo sin el signo +:
+         *
+         * 56912345678
+         */
+
+        if (
+            digitos.length === 11
+            &&
+            digitos.startsWith(
+                "56"
+            )
+        ) {
+
+            digitos =
+                digitos.substring(
+                    2
+                );
+
+        }
+
+
+        /*
+         * Máximo 9 dígitos nacionales.
+         */
+
+        return digitos.substring(
+            0,
+            9
+        );
+
+    }
+
+
+    /* =========================================================
+       CREAR BLOQUE VISUAL +56
+    ========================================================== */
+
+    function crearControlTelefono() {
+
+        if (!telefonoInput) {
+            return;
+        }
+
+
+        /*
+         * Evitamos crear el control
+         * más de una vez.
+         */
+
+        if (
+            telefonoInput.closest(
+                ".checkout-telefono-control"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        const contenedorTelefono =
+            document.createElement(
+                "div"
+            );
+
+
+        contenedorTelefono.className =
+            "checkout-telefono-control";
+
+
+        const prefijoTelefono =
+            document.createElement(
+                "span"
+            );
+
+
+        prefijoTelefono.className =
+            "checkout-telefono-prefijo";
+
+
+        prefijoTelefono.textContent =
+            PREFIJO_TELEFONO;
+
+
+        prefijoTelefono.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+
+        /*
+         * Insertamos el nuevo control
+         * exactamente donde estaba el input.
+         */
+
+        telefonoInput.parentNode.insertBefore(
+            contenedorTelefono,
+            telefonoInput
+        );
+
+
+        contenedorTelefono.appendChild(
+            prefijoTelefono
+        );
+
+
+        contenedorTelefono.appendChild(
+            telefonoInput
+        );
+
+    }
+
+
+    /* =========================================================
+       NORMALIZAR CAMPO VISIBLE
+    ========================================================== */
+
+    function normalizarTelefonoChile() {
+
+        if (!telefonoInput) {
+            return;
+        }
+
+
+        const digitos =
+            obtenerDigitosTelefono(
+                telefonoInput.value
+            );
+
+
+        /*
+         * Dentro del input mostramos solamente
+         * los 9 dígitos nacionales.
+         *
+         * El +56 se muestra por separado
+         * dentro del bloque celeste.
+         */
+
+        telefonoInput.value =
+            digitos;
+
+    }
+
+
+    /* =========================================================
+       CONFIGURAR INPUT
+    ========================================================== */
+
+    if (telefonoInput) {
+
+        /*
+         * Guardamos primero cualquier valor
+         * que venga desde Django.
+         */
+
+        const numeroInicial =
+            obtenerDigitosTelefono(
+                telefonoInput.value
+            );
+
+
+        crearControlTelefono();
+
+
+        /*
+         * El usuario escribe únicamente
+         * los 9 dígitos nacionales.
+         */
+
+        telefonoInput.setAttribute(
+            "maxlength",
+            "9"
+        );
+
+
+        telefonoInput.setAttribute(
+            "inputmode",
+            "numeric"
+        );
+
+
+        telefonoInput.setAttribute(
+            "autocomplete",
+            "tel-national"
+        );
+
+
+        telefonoInput.setAttribute(
+            "pattern",
+            "[0-9]{9}"
+        );
+
+
+        telefonoInput.setAttribute(
+            "placeholder",
+            "912345678"
+        );
+
+
+        telefonoInput.setAttribute(
+            "title",
+            "Ingresa un número de teléfono de 9 dígitos."
+        );
+
+
+        telefonoInput.value =
+            numeroInicial;
+
+
+        /* =====================================================
+           ESCRITURA
+        ====================================================== */
+
+        telefonoInput.addEventListener(
+            "input",
+            function () {
+
+                normalizarTelefonoChile();
+
+
+                const digitos =
+                    obtenerDigitosTelefono(
+                        telefonoInput.value
+                    );
+
+
+                if (
+                    digitos.length === 9
+                ) {
+
+                    telefonoInput.setCustomValidity(
+                        ""
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           PEGAR TELÉFONO
+        ====================================================== */
+
+        telefonoInput.addEventListener(
+            "paste",
+            function (evento) {
+
+                evento.preventDefault();
+
+
+                const portapapeles =
+                    evento.clipboardData
+                    || window.clipboardData;
+
+
+                const textoPegado =
+                    portapapeles
+                        ? portapapeles.getData(
+                            "text"
+                        )
+                        : "";
+
+
+                telefonoInput.value =
+                    obtenerDigitosTelefono(
+                        textoPegado
+                    );
+
+
+                const digitos =
+                    obtenerDigitosTelefono(
+                        telefonoInput.value
+                    );
+
+
+                if (
+                    digitos.length === 9
+                ) {
+
+                    telefonoInput.setCustomValidity(
+                        ""
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       VALIDAR TELÉFONO ANTES DE ENVIAR
+    ========================================================== */
+
+    if (
+        formulario
+        &&
+        telefonoInput
+    ) {
+
+        formulario.addEventListener(
+            "submit",
+            function (evento) {
+
+                const digitos =
+                    obtenerDigitosTelefono(
+                        telefonoInput.value
+                    );
+
+
+                /*
+                 * Deben existir exactamente
+                 * 9 dígitos nacionales.
+                 */
+
+                if (
+                    digitos.length !== 9
+                ) {
+
+                    evento.preventDefault();
+
+
+                    telefonoInput.setCustomValidity(
+                        "Ingresa un número de teléfono válido de 9 dígitos."
+                    );
+
+
+                    telefonoInput.reportValidity();
+
+
+                    telefonoInput.focus();
+
+
+                    return;
+
+                }
+
+
+                telefonoInput.setCustomValidity(
+                    ""
+                );
+
+
+                /*
+                 * Justo antes del POST agregamos
+                 * el código de país.
+                 *
+                 * Django recibirá:
+                 *
+                 * +56912345678
+                 */
+
+                telefonoInput.value =
+                    PREFIJO_TELEFONO
+                    +
+                    digitos;
+
+
+                /*
+                 * Si otro script cancela el envío
+                 * (por ejemplo, porque procesa el
+                 * formulario con JavaScript), dejamos
+                 * nuevamente solo los 9 dígitos en la
+                 * parte visible después de que todos
+                 * los listeners hayan leído el valor.
+                 */
+
+                setTimeout(
+                    function () {
+
+                        if (
+                            document.contains(
+                                formulario
+                            )
+                            &&
+                            telefonoInput.value.startsWith(
+                                PREFIJO_TELEFONO
+                            )
+                        ) {
+
+                            telefonoInput.value =
+                                digitos;
+
+                        }
+
+                    },
+                    0
+                );
+
+            },
+            true
+        );
+
+    }
 
 
     /* =========================================================

@@ -1324,17 +1324,12 @@ def panel_pedidos(request):
 ])
 
 
-
-
-
-
-
 def panel_pedido_detalle(
     request,
     numero,
 ):
     """
-    Detalle administrativo de un pedido.
+    Detalle administrativo de un pedido pagado.
 
     Permite:
 
@@ -1345,7 +1340,13 @@ def panel_pedido_detalle(
     - consultar el folio Nubox;
     - revisar errores de emisión;
     - revisar historial;
-    - avanzar el estado operativo.
+    - avanzar el estado operativo;
+    - revisar la trazabilidad completa del pedido.
+
+    IMPORTANTE:
+
+    Esta vista solamente permite acceder a pedidos
+    que estén marcados como pagados en la base de datos.
 
     Nubox:
 
@@ -1368,11 +1369,32 @@ def panel_pedido_detalle(
     # =========================================================================
     # PEDIDO
     # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # El campo real existente en Pedido es:
+    #
+    #     pagado
+    #
+    # No usamos:
+    #
+    #     pago_aprobado
+    #
+    # porque pago_aprobado no es un campo consultable
+    # directamente mediante QuerySet.
+    # =========================================================================
 
     pedido = get_object_or_404(
         _queryset_pedidos(),
         numero__iexact=numero,
+        pagado=True,
     )
+
+    # =========================================================================
+    # REFRESCAR PEDIDO
+    # =========================================================================
+
+    pedido.refresh_from_db()
 
     # =========================================================================
     # SINCRONIZAR NUBOX
@@ -1384,8 +1406,6 @@ def panel_pedido_detalle(
     # - que ya poseen document_id;
     # - que todavía no aparecen como emitidos.
     #
-    # IMPORTANTE:
-    #
     # sincronizar_estado_nubox() únicamente consulta
     # el documento existente.
     #
@@ -1394,7 +1414,7 @@ def panel_pedido_detalle(
 
     if (
         request.method == "GET"
-        and pedido.pago_aprobado
+        and pedido.pagado
         and pedido.nubox_document_id
         and not pedido.nubox_emitido
     ):
@@ -1407,12 +1427,6 @@ def panel_pedido_detalle(
 
         except NuboxError as error:
 
-            # No bloqueamos el panel administrativo
-            # si Nubox está temporalmente caído.
-            #
-            # El error puede quedar registrado en logs,
-            # pero el administrador igualmente podrá
-            # revisar y gestionar el pedido.
             logger.warning(
                 (
                     "No fue posible sincronizar "
@@ -1435,15 +1449,9 @@ def panel_pedido_detalle(
                 error,
             )
 
-        # Volvemos a cargar el pedido porque
-        # sincronizar_estado_nubox() puede haber
-        # actualizado:
-        #
-        # - nubox_estado
-        # - nubox_folio
-        # - nubox_emitido
-        # - nubox_emitido_en
-        # - actualizado
+        # =====================================================================
+        # RECARGAR PEDIDO DESPUÉS DE NUBOX
+        # =====================================================================
 
         pedido.refresh_from_db()
 
@@ -1476,7 +1484,8 @@ def panel_pedido_detalle(
                 "comentario",
                 "",
             )
-        )
+            or ""
+        ).strip()
 
         try:
 
@@ -1506,6 +1515,27 @@ def panel_pedido_detalle(
                     mensaje_error,
                 )
 
+        except Exception as error:
+
+            logger.exception(
+                (
+                    "Error inesperado actualizando "
+                    "estado operativo del pedido. "
+                    "Pedido=%s Estado=%s Error=%s"
+                ),
+                pedido.numero,
+                nuevo_estado,
+                error,
+            )
+
+            form.add_error(
+                None,
+                (
+                    "No fue posible actualizar el estado "
+                    "del pedido. Intenta nuevamente."
+                ),
+            )
+
         else:
 
             messages.success(
@@ -1525,6 +1555,12 @@ def panel_pedido_detalle(
             )
 
     # =========================================================================
+    # REFRESCAR ANTES DE TRAZABILIDAD
+    # =========================================================================
+
+    pedido.refresh_from_db()
+
+    # =========================================================================
     # HISTORIAL
     # =========================================================================
 
@@ -1537,6 +1573,35 @@ def panel_pedido_detalle(
     )
 
     # =========================================================================
+    # TIMELINE
+    # =========================================================================
+
+    timeline = construir_timeline(
+        pedido
+    )
+
+    # =========================================================================
+    # DIAGNÓSTICO
+    # =========================================================================
+
+    if (
+        pedido.pagado
+        and not timeline
+    ):
+
+        logger.warning(
+            (
+                "Timeline vacía para pedido pagado. "
+                "Pedido=%s "
+                "Estado=%s "
+                "EstadoPago=%s"
+            ),
+            pedido.numero,
+            pedido.estado,
+            pedido.estado_pago,
+        )
+
+    # =========================================================================
     # RENDER
     # =========================================================================
 
@@ -1546,15 +1611,10 @@ def panel_pedido_detalle(
         {
             "pedido": pedido,
             "form": form,
-
-            "timeline": construir_timeline(
-                pedido
-            ),
-
+            "timeline": timeline,
             "historial": historial,
         },
     )
-
 
 
 
