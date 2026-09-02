@@ -1,18 +1,18 @@
 """
 Django settings for config project.
 
-Configuración LOCAL para:
+Configuración de PRODUCCIÓN para:
 
-- http://localhost:8000
-- http://127.0.0.1:8000
-- SQLite por defecto.
-- PostgreSQL / MySQL opcional.
-- Mercado Pago en desarrollo.
-- Webpay / Transbank en integración.
+- https://audex.cl
+- https://www.audex.cl
+- PostgreSQL / MySQL mediante variables de entorno.
+- Mercado Pago.
+- Webpay / Transbank.
 - Nubox.
 - Google Allauth.
 - Resend API para correos transaccionales.
 - WhiteNoise para archivos estáticos.
+- Verificación obligatoria de correo electrónico.
 """
 
 from pathlib import Path
@@ -94,7 +94,7 @@ def env_list(
 
 DEBUG = env_bool(
     "DEBUG",
-    True,
+    False,
 )
 
 
@@ -110,9 +110,17 @@ DJANGO_SECRET_KEY = os.getenv(
 
 if not DJANGO_SECRET_KEY:
 
-    DJANGO_SECRET_KEY = (
-        "django-insecure-clave-temporal-solo-desarrollo-local"
-    )
+    if DEBUG:
+
+        DJANGO_SECRET_KEY = (
+            "django-insecure-clave-temporal-solo-desarrollo-local"
+        )
+
+    else:
+
+        raise RuntimeError(
+            "DJANGO_SECRET_KEY debe estar configurada en producción."
+        )
 
 
 SECRET_KEY = DJANGO_SECRET_KEY
@@ -124,23 +132,58 @@ SECRET_KEY = DJANGO_SECRET_KEY
 
 SITE_URL = os.getenv(
     "SITE_URL",
-    "http://localhost:8000",
+    "https://audex.cl",
 ).strip().rstrip("/")
 
 
 ALLOWED_HOSTS = env_list(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1",
+    "audex.cl,www.audex.cl",
 )
 
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     (
-        "http://localhost:8000,"
-        "http://127.0.0.1:8000"
+        "https://audex.cl,"
+        "https://www.audex.cl"
     ),
 )
+
+
+# Dominios opcionales entregados por algunos proveedores de hosting.
+# Se agregan automáticamente si existen como variables de entorno.
+for hosting_domain_env in (
+    "RAILWAY_PUBLIC_DOMAIN",
+    "RENDER_EXTERNAL_HOSTNAME",
+):
+
+    hosting_domain = os.getenv(
+        hosting_domain_env,
+        "",
+    ).strip()
+
+    if (
+        hosting_domain
+        and hosting_domain not in ALLOWED_HOSTS
+    ):
+        ALLOWED_HOSTS.append(
+            hosting_domain
+        )
+
+    if hosting_domain:
+
+        hosting_origin = (
+            f"https://{hosting_domain}"
+        )
+
+        if (
+            hosting_origin
+            not in CSRF_TRUSTED_ORIGINS
+        ):
+            CSRF_TRUSTED_ORIGINS.append(
+                hosting_origin
+            )
 
 
 # =============================================================================
@@ -195,6 +238,9 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 
     "django.contrib.messages.middleware.MessageMiddleware",
+
+    # Bloquea sesiones de clientes cuyo correo aún no fue verificado.
+    "core.middleware.RequireVerifiedEmailMiddleware",
 
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -493,11 +539,15 @@ STORAGES = {
 }
 
 
-WHITENOISE_AUTOREFRESH = True
+WHITENOISE_AUTOREFRESH = DEBUG
 
-WHITENOISE_USE_FINDERS = True
+WHITENOISE_USE_FINDERS = DEBUG
 
-WHITENOISE_MAX_AGE = 0
+WHITENOISE_MAX_AGE = (
+    0
+    if DEBUG
+    else 60 * 60 * 24 * 365
+)
 
 
 # =============================================================================
@@ -806,12 +856,18 @@ EMAIL_BACKEND = os.getenv(
 ).strip()
 
 
-EMAIL_TIMEOUT = int(
-    os.getenv(
-        "EMAIL_TIMEOUT",
-        "20",
+try:
+
+    EMAIL_TIMEOUT = int(
+        os.getenv(
+            "EMAIL_TIMEOUT",
+            "20",
+        )
     )
-)
+
+except (TypeError, ValueError):
+
+    EMAIL_TIMEOUT = 20
 
 
 # =============================================================================
@@ -851,6 +907,7 @@ LOGOUT_REDIRECT_URL = "core:inicio"
 # ALLAUTH
 # =============================================================================
 
+# Usa HTTPS automáticamente en producción y HTTP en desarrollo local.
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = (
     "https"
     if SITE_URL.startswith("https://")
@@ -858,6 +915,7 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = (
 )
 
 
+# El correo es obligatorio para crear una cuenta.
 ACCOUNT_SIGNUP_FIELDS = [
     "email*",
     "password1*",
@@ -865,24 +923,48 @@ ACCOUNT_SIGNUP_FIELDS = [
 ]
 
 
+# El inicio de sesión normal se realiza mediante correo.
 ACCOUNT_LOGIN_METHODS = {
     "email",
 }
 
 
+# No se permiten dos cuentas con el mismo correo.
 ACCOUNT_UNIQUE_EMAIL = True
 
 
+# La verificación del correo es obligatoria.
+#
+# IMPORTANTE:
+# Allauth crea el usuario en la base de datos antes de verificar el correo.
+# Eso es normal. Mientras EmailAddress.verified sea False, el cliente no
+# debe poder utilizar una sesión autenticada.
 ACCOUNT_EMAIL_VERIFICATION = (
     "mandatory"
 )
 
 
+# Mantiene la confirmación mediante enlace enviado por correo.
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
+
+
+# Permite reenviar el correo de confirmación desde el flujo de Allauth.
+ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = True
+
+
+# Los enlaces de confirmación vencen después de 3 días.
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+
+
+# Después de confirmar el correo puede completar automáticamente
+# el inicio de sesión pendiente.
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = (
     True
 )
 
 
+# Después de restablecer correctamente la contraseña,
+# inicia sesión automáticamente.
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = (
     True
 )
@@ -891,12 +973,15 @@ ACCOUNT_LOGIN_ON_PASSWORD_RESET = (
 ACCOUNT_EMAIL_NOTIFICATIONS = True
 
 
+# Reduce la enumeración de cuentas por dirección de correo.
 ACCOUNT_PREVENT_ENUMERATION = True
 
 
+# Cada usuario tendrá como máximo una dirección administrada por Allauth.
 ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 
 
+# No permitimos cambiar el correo desde el flujo estándar de Allauth.
 ACCOUNT_CHANGE_EMAIL = False
 
 
@@ -974,26 +1059,54 @@ SESSION_COOKIE_SAMESITE = "Lax"
 
 
 # =============================================================================
-# SEGURIDAD LOCAL
+# SEGURIDAD PRODUCCIÓN
 # =============================================================================
 
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = env_bool(
+    "SECURE_SSL_REDIRECT",
+    not DEBUG,
+)
 
-SESSION_COOKIE_SECURE = False
 
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = env_bool(
+    "SESSION_COOKIE_SECURE",
+    not DEBUG,
+)
 
-SECURE_HSTS_SECONDS = 0
 
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+CSRF_COOKIE_SECURE = env_bool(
+    "CSRF_COOKIE_SECURE",
+    not DEBUG,
+)
 
-SECURE_HSTS_PRELOAD = False
+
+SECURE_HSTS_SECONDS = int(
+    os.getenv(
+        "SECURE_HSTS_SECONDS",
+        "3600" if not DEBUG else "0",
+    )
+)
+
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool(
+    "SECURE_HSTS_INCLUDE_SUBDOMAINS",
+    False,
+)
+
+
+SECURE_HSTS_PRELOAD = env_bool(
+    "SECURE_HSTS_PRELOAD",
+    False,
+)
+
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
 
 SECURE_REFERRER_POLICY = (
     "strict-origin-when-cross-origin"
 )
+
 
 X_FRAME_OPTIONS = "DENY"
 
