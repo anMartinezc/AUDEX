@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 TARIFAS_BLUE_EXPRESS = {
     "SANTIAGO": {
-        "XS": 0,
+        "XS": 3100,
         "S": 4200,
         "M": 4800,
         "L": 5400,
@@ -300,7 +300,6 @@ def obtener_cantidad_total_carrito(
 # TARIFA
 # =============================================================================
 
-
 def obtener_tarifa_blue_express(
     *,
     zona,
@@ -349,7 +348,33 @@ def obtener_tarifa_blue_express(
             )
         )
 
-    if costo == 0:
+    # =========================================================================
+    # EXCEPCIÓN CONTROLADA PARA TEST TRANSBANK
+    # =========================================================================
+    #
+    # Permitimos despacho $0 únicamente para:
+    #
+    # SANTIAGO / XS
+    #
+    # Esto sirve para realizar las pruebas exigidas
+    # por Transbank con productos de valor $0.
+    #
+    # Todas las demás combinaciones siguen exigiendo
+    # una tarifa mayor a $0.
+    # =========================================================================
+
+    if (
+        zona == "SANTIAGO"
+        and talla == "XS"
+        and costo == 0
+    ):
+        return 0
+
+    # =========================================================================
+    # VALIDACIÓN NORMAL
+    # =========================================================================
+
+    if costo <= 0:
         raise ValueError(
             (
                 "La tarifa Blue Express "
@@ -359,7 +384,6 @@ def obtener_tarifa_blue_express(
         )
 
     return costo
-
 
 # =============================================================================
 # COTIZAR

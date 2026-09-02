@@ -3748,8 +3748,6 @@ def _sincronizar_totales_pedido_antes_pago(
 
 
 
-
-
 def checkout(request):
     # =========================================================================
     # OBTENER CARRITO
@@ -3822,22 +3820,9 @@ def checkout(request):
             pedido = None
 
             try:
+
                 # =============================================================
                 # CREAR PEDIDO
-                # =============================================================
-                #
-                # procesar_pedido_checkout() debe:
-                #
-                # - volver a validar productos;
-                # - validar stock;
-                # - validar el código de descuento;
-                # - reservar el código si corresponde;
-                # - crear Pedido;
-                # - crear PedidoItem;
-                # - guardar el descuento histórico.
-                #
-                # Luego sincronizamos nuevamente los importes definitivos
-                # antes de entregarlos al proveedor de pago.
                 # =============================================================
 
                 with transaction.atomic():
@@ -3853,15 +3838,6 @@ def checkout(request):
                     # =========================================================
                     # SINCRONIZAR TOTAL DEFINITIVO
                     # =========================================================
-                    #
-                    # subtotal productos
-                    # - descuento adicional
-                    # + Blue Express
-                    # = pedido.total
-                    #
-                    # pedido.total será el valor que Mercado Pago / Webpay
-                    # deberá cobrar.
-                    # =========================================================
 
                     pedido = (
                         _sincronizar_totales_pedido_antes_pago(
@@ -3873,7 +3849,7 @@ def checkout(request):
                     )
 
                 # =============================================================
-                # REFRESCAR PEDIDO DESDE BASE DE DATOS
+                # REFRESCAR PEDIDO
                 # =============================================================
 
                 pedido.refresh_from_db(
@@ -3886,7 +3862,7 @@ def checkout(request):
                 )
 
                 # =============================================================
-                # VALIDACIÓN FINAL DE SEGURIDAD
+                # NORMALIZAR IMPORTES
                 # =============================================================
 
                 subtotal_pedido = Decimal(
@@ -3917,18 +3893,80 @@ def checkout(request):
                     )
                 )
 
-                total_esperado = max(
-                    (
-                        subtotal_pedido
-                        - descuento_pedido
-                        + despacho_pedido
-                    ),
-                    Decimal(
-                        "0"
-                    ),
+                # =============================================================
+                # VALIDAR SUBTOTAL
+                # =============================================================
+
+                if subtotal_pedido < 0:
+                    raise ValueError(
+                        (
+                            "El subtotal del pedido "
+                            "no puede ser negativo."
+                        )
+                    )
+
+                # =============================================================
+                # VALIDAR DESCUENTO
+                # =============================================================
+
+                if descuento_pedido < 0:
+                    raise ValueError(
+                        (
+                            "El descuento del pedido "
+                            "no puede ser negativo."
+                        )
+                    )
+
+                if descuento_pedido > subtotal_pedido:
+                    raise ValueError(
+                        (
+                            "El descuento no puede ser "
+                            "mayor que el subtotal."
+                        )
+                    )
+
+                # =============================================================
+                # VALIDAR DESPACHO
+                # =============================================================
+                #
+                # IMPORTANTE:
+                #
+                # Permitimos despacho = 0.
+                #
+                # Esto permite utilizar:
+                #
+                # SANTIAGO / XS = $0
+                #
+                # durante las pruebas de integración
+                # de Transbank.
+                #
+                # Lo único inválido es un despacho negativo.
+                # =============================================================
+
+                if despacho_pedido < 0:
+                    raise ValueError(
+                        (
+                            "El valor de despacho "
+                            "no puede ser negativo."
+                        )
+                    )
+
+                # =============================================================
+                # CALCULAR TOTAL ESPERADO
+                # =============================================================
+
+                total_esperado = (
+                    subtotal_pedido
+                    - descuento_pedido
+                    + despacho_pedido
                 )
 
+                # =============================================================
+                # VALIDAR TOTAL CONTRA DESGLOSE
+                # =============================================================
+
                 if total_pedido != total_esperado:
+
                     raise ValueError(
                         (
                             "El total definitivo del pedido "
@@ -3941,11 +3979,26 @@ def checkout(request):
                         )
                     )
 
+                # =============================================================
+                # TOTAL DEL PROVEEDOR
+                # =============================================================
+                #
+                # El despacho puede ser $0.
+                #
+                # Sin embargo, el TOTAL de la transacción
+                # debe continuar siendo mayor que $0,
+                # porque iniciar_pago_webpay() actualmente
+                # rechaza amount <= 0.
+                #
+                # =============================================================
+
                 if total_pedido <= 0:
+
                     raise ValueError(
                         (
                             "El total definitivo del pedido "
-                            "debe ser mayor que $0."
+                            "debe ser mayor que $0 para "
+                            "iniciar el método de pago."
                         )
                     )
 
@@ -3956,14 +4009,16 @@ def checkout(request):
                 logger.info(
                     (
                         "Pedido %s antes de iniciar pago: "
-                        "subtotal=%s descuento=%s "
-                        "despacho=%s total=%s"
+                        "subtotal=%s "
+                        "descuento=%s "
+                        "despacho=%s "
+                        "total=%s"
                     ),
                     pedido.numero,
-                    pedido.subtotal,
-                    pedido.descuento,
-                    pedido.despacho,
-                    pedido.total,
+                    subtotal_pedido,
+                    descuento_pedido,
+                    despacho_pedido,
+                    total_pedido,
                 )
 
                 # =============================================================
@@ -3982,6 +4037,7 @@ def checkout(request):
                 # =============================================================
 
                 if resultado_pago is None:
+
                     raise ErrorInicioPago(
                         (
                             "El proveedor de pago "
@@ -4008,7 +4064,7 @@ def checkout(request):
                 )
 
                 # =============================================================
-                # WEBPAY / PROVEEDORES QUE REQUIEREN POST
+                # WEBPAY / REDIRECCIÓN POST
                 # =============================================================
 
                 url_post = getattr(
@@ -4029,6 +4085,7 @@ def checkout(request):
                         datos_post,
                         dict,
                     ):
+
                         raise ErrorInicioPago(
                             (
                                 "El proveedor de pago requiere "
@@ -4038,6 +4095,7 @@ def checkout(request):
                         )
 
                     if not datos_post:
+
                         raise ErrorInicioPago(
                             (
                                 "El proveedor de pago requiere "
@@ -4068,7 +4126,7 @@ def checkout(request):
                     )
 
                 # =============================================================
-                # MERCADO PAGO / REDIRECCIÓN EXTERNA NORMAL
+                # MERCADO PAGO / URL EXTERNA
                 # =============================================================
 
                 url_redireccion = getattr(
@@ -4116,6 +4174,7 @@ def checkout(request):
                         parametros_url,
                         dict,
                     ):
+
                         raise ErrorInicioPago(
                             (
                                 "Los parámetros de redirección "
@@ -4140,7 +4199,7 @@ def checkout(request):
                 )
 
             # =================================================================
-            # ERROR AL INICIAR EL PROVEEDOR
+            # ERROR AL INICIAR PROVEEDOR
             # =================================================================
 
             except ErrorInicioPago as error:
@@ -4157,9 +4216,12 @@ def checkout(request):
                 )
 
                 if pedido is not None:
+
                     registrar_error_inicio_pago(
                         pedido=pedido,
-                        mensaje=str(error),
+                        mensaje=str(
+                            error
+                        ),
                     )
 
                 logger.warning(
@@ -4177,7 +4239,9 @@ def checkout(request):
 
                 form.add_error(
                     None,
-                    str(error),
+                    str(
+                        error
+                    ),
                 )
 
             # =================================================================
@@ -4212,7 +4276,9 @@ def checkout(request):
 
                 form.add_error(
                     None,
-                    str(error),
+                    str(
+                        error
+                    ),
                 )
 
             # =================================================================
@@ -4248,6 +4314,40 @@ def checkout(request):
                     ),
                 )
 
+        # =====================================================================
+        # FORMULARIO INVÁLIDO
+        # =====================================================================
+
+        else:
+
+            logger.warning(
+                (
+                    "Checkout inválido. "
+                    "Errores=%s "
+                    "telefono=%s "
+                    "region=%s "
+                    "comuna=%s "
+                    "metodo_pago=%s"
+                ),
+                form.errors.as_json(),
+                request.POST.get(
+                    "telefono",
+                    "",
+                ),
+                request.POST.get(
+                    "region",
+                    "",
+                ),
+                request.POST.get(
+                    "comuna",
+                    "",
+                ),
+                request.POST.get(
+                    "metodo_pago",
+                    "",
+                ),
+            )
+
     else:
 
         form = CheckoutForm(
@@ -4256,16 +4356,6 @@ def checkout(request):
 
     # =========================================================================
     # CÓDIGO, RUT Y REGIÓN PARA EL RESUMEN
-    # =========================================================================
-    #
-    # El RUT se utiliza para validar que el cliente no haya utilizado
-    # anteriormente el mismo código.
-    #
-    # La región se utiliza para:
-    #
-    # - calcular la tarifa Blue Express;
-    # - calcular el tiempo estimado de entrega.
-    #
     # =========================================================================
 
     if request.method == "POST":
@@ -4339,20 +4429,7 @@ def checkout(request):
     )
 
     # =========================================================================
-    # TIEMPO ESTIMADO DE ENTREGA
-    # =========================================================================
-    #
-    # Región Metropolitana:
-    #     SANTIAGO -> 48 hrs
-    #
-    # Regiones Centro:
-    #     CENTRO -> 72 hrs
-    #
-    # Regiones Extremo:
-    #     EXTREMO -> 72 hrs
-    #
-    # Si todavía no se ha seleccionado una región,
-    # no mostramos tiempo estimado.
+    # TIEMPO ESTIMADO ENTREGA
     # =========================================================================
 
     zona_envio = None
@@ -4394,22 +4471,11 @@ def checkout(request):
             )
 
             zona_envio = None
-
             tiempo_estimado_horas = None
-
             tiempo_estimado_texto = None
 
     # =========================================================================
-    # AGREGAR DATOS DE ENVÍO AL RESUMEN
-    # =========================================================================
-    #
-    # De esta forma también podremos acceder desde el template mediante:
-    #
-    # resumen.tiempo_estimado_horas
-    # resumen.tiempo_estimado_texto
-    # resumen.zona_envio
-    #
-    # siempre que resumen sea un diccionario.
+    # AGREGAR DATOS DE ENVÍO
     # =========================================================================
 
     if isinstance(
@@ -4419,21 +4485,15 @@ def checkout(request):
 
         resumen[
             "zona_envio"
-        ] = (
-            zona_envio
-        )
+        ] = zona_envio
 
         resumen[
             "tiempo_estimado_horas"
-        ] = (
-            tiempo_estimado_horas
-        )
+        ] = tiempo_estimado_horas
 
         resumen[
             "tiempo_estimado_texto"
-        ] = (
-            tiempo_estimado_texto
-        )
+        ] = tiempo_estimado_texto
 
     # =========================================================================
     # PREMIOS PERSONALES
@@ -4470,10 +4530,6 @@ def checkout(request):
             COMUNAS_POR_REGION
         ),
 
-        # =====================================================================
-        # BLUE EXPRESS
-        # =====================================================================
-
         "zona_envio": (
             zona_envio
         ),
@@ -4496,8 +4552,6 @@ def checkout(request):
         "core/checkout.html",
         contexto,
     )
-
-
 
 @require_POST
 def checkout_resumen_descuento(
