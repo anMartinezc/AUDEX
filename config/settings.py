@@ -1,24 +1,22 @@
 """
 Django settings for config project.
 
-Configuración preparada para:
+Configuración LOCAL para:
 
-- Desarrollo local.
-- Railway.
-- Producción con HTTPS.
-- PostgreSQL en Railway.
-- SQLite / MySQL opcional en desarrollo.
-- Mercado Pago.
-- Webpay / Transbank.
+- http://localhost:8000
+- http://127.0.0.1:8000
+- SQLite por defecto.
+- PostgreSQL / MySQL opcional.
+- Mercado Pago en desarrollo.
+- Webpay / Transbank en integración.
 - Nubox.
 - Google Allauth.
 - Resend API para correos transaccionales.
-- Anymail + Resend para correos internos de Django / Allauth.
-- Google Workspace para recepción de correo corporativo.
 - WhiteNoise para archivos estáticos.
 """
 
 from pathlib import Path
+from urllib.parse import urlparse
 import os
 
 from dotenv import load_dotenv
@@ -33,20 +31,18 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# En desarrollo carga .env.
-# En Railway las variables del servicio tienen prioridad.
+# =============================================================================
+# VARIABLES DE ENTORNO
+# =============================================================================
+
 load_dotenv(
     BASE_DIR / ".env",
     override=False,
 )
 
 
-# =============================================================================
-# ENVIRONMENT
-# =============================================================================
-
 env = environ.Env(
-    DEBUG=(bool, False),
+    DEBUG=(bool, True),
 )
 
 
@@ -98,7 +94,7 @@ def env_list(
 
 DEBUG = env_bool(
     "DEBUG",
-    False,
+    True,
 )
 
 
@@ -114,87 +110,37 @@ DJANGO_SECRET_KEY = os.getenv(
 
 if not DJANGO_SECRET_KEY:
 
-    if DEBUG:
-
-        DJANGO_SECRET_KEY = (
-            "django-insecure-clave-temporal-solo-desarrollo"
-        )
-
-    else:
-
-        raise RuntimeError(
-            "DJANGO_SECRET_KEY no está configurada."
-        )
+    DJANGO_SECRET_KEY = (
+        "django-insecure-clave-temporal-solo-desarrollo-local"
+    )
 
 
 SECRET_KEY = DJANGO_SECRET_KEY
 
 
 # =============================================================================
-# DOMINIOS
+# DOMINIOS / LOCALHOST
 # =============================================================================
-
-RAILWAY_PUBLIC_DOMAIN = os.getenv(
-    "RAILWAY_PUBLIC_DOMAIN",
-    "",
-).strip()
-
 
 SITE_URL = os.getenv(
     "SITE_URL",
-    "",
+    "http://localhost:8000",
 ).strip().rstrip("/")
 
 
-# -----------------------------------------------------------------------------
-# ALLOWED HOSTS
-# -----------------------------------------------------------------------------
-
 ALLOWED_HOSTS = env_list(
     "ALLOWED_HOSTS",
-    "127.0.0.1,localhost",
+    "localhost,127.0.0.1",
 )
 
-
-if RAILWAY_PUBLIC_DOMAIN:
-
-    if RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
-
-        ALLOWED_HOSTS.append(
-            RAILWAY_PUBLIC_DOMAIN
-        )
-
-
-# -----------------------------------------------------------------------------
-# CSRF TRUSTED ORIGINS
-# -----------------------------------------------------------------------------
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
-    "",
+    (
+        "http://localhost:8000,"
+        "http://127.0.0.1:8000"
+    ),
 )
-
-
-if SITE_URL.startswith("https://"):
-
-    if SITE_URL not in CSRF_TRUSTED_ORIGINS:
-
-        CSRF_TRUSTED_ORIGINS.append(
-            SITE_URL
-        )
-
-
-if RAILWAY_PUBLIC_DOMAIN:
-
-    railway_origin = (
-        f"https://{RAILWAY_PUBLIC_DOMAIN}"
-    )
-
-    if railway_origin not in CSRF_TRUSTED_ORIGINS:
-
-        CSRF_TRUSTED_ORIGINS.append(
-            railway_origin
-        )
 
 
 # =============================================================================
@@ -211,12 +157,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
-
-    # Anymail
-    #
-    # Permite que Django / django-allauth utilicen
-    # Resend mediante el backend estándar de correo.
-    "anymail",
 
     # Proyecto
     "core.apps.CoreConfig",
@@ -239,8 +179,6 @@ MIDDLEWARE = [
 
     "django.middleware.security.SecurityMiddleware",
 
-    # WhiteNoise debe estar inmediatamente
-    # después de SecurityMiddleware.
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -281,14 +219,13 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # =============================================================================
-# RAILWAY / REVERSE PROXY / HTTPS
+# REVERSE PROXY / TÚNELES HTTPS
 # =============================================================================
 
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
 )
-
 
 USE_X_FORWARDED_HOST = True
 
@@ -337,20 +274,6 @@ TEMPLATES = [
 # =============================================================================
 # BASE DE DATOS
 # =============================================================================
-#
-# PRODUCCIÓN / RAILWAY:
-#
-# DATABASE_URL=${{Postgres.DATABASE_URL}}
-#
-# DESARROLLO:
-#
-# 1. DATABASE_URL -> PostgreSQL.
-# 2. Variables MYSQL -> MySQL.
-# 3. DEBUG=True sin las anteriores -> SQLite.
-#
-# En producción NO se permite caer silenciosamente a SQLite.
-#
-# =============================================================================
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
@@ -363,24 +286,20 @@ MYSQLHOST = os.getenv(
     "",
 ).strip()
 
-
 MYSQLPORT = os.getenv(
     "MYSQLPORT",
     "3306",
 ).strip()
-
 
 MYSQLDATABASE = os.getenv(
     "MYSQLDATABASE",
     "",
 ).strip()
 
-
 MYSQLUSER = os.getenv(
     "MYSQLUSER",
     "",
 ).strip()
-
 
 MYSQLPASSWORD = os.getenv(
     "MYSQLPASSWORD",
@@ -389,7 +308,7 @@ MYSQLPASSWORD = os.getenv(
 
 
 # -----------------------------------------------------------------------------
-# POSTGRESQL / RAILWAY
+# POSTGRESQL
 # -----------------------------------------------------------------------------
 
 if DATABASE_URL:
@@ -404,7 +323,7 @@ if DATABASE_URL:
 
 
 # -----------------------------------------------------------------------------
-# MYSQL / DESARROLLO OPCIONAL
+# MYSQL
 # -----------------------------------------------------------------------------
 
 elif (
@@ -440,20 +359,10 @@ elif (
 
 
 # -----------------------------------------------------------------------------
-# SQLITE / SOLO DESARROLLO
+# SQLITE
 # -----------------------------------------------------------------------------
 
 else:
-
-    if not DEBUG:
-
-        raise RuntimeError(
-            (
-                "No existe una base de datos configurada. "
-                "En producción debes configurar DATABASE_URL "
-                "con PostgreSQL de Railway."
-            )
-        )
 
     DATABASES = {
         "default": {
@@ -545,7 +454,6 @@ FORMAT_MODULE_PATH = [
 
 STATIC_URL = "/static/"
 
-
 STATIC_ROOT = (
     BASE_DIR / "staticfiles"
 )
@@ -561,7 +469,7 @@ STATICFILES_DIRS = (
 
 
 # =============================================================================
-# WHITENOISE
+# STORAGE / WHITENOISE
 # =============================================================================
 
 STORAGES = {
@@ -582,30 +490,15 @@ STORAGES = {
 }
 
 
-# En desarrollo WhiteNoise puede buscar directamente
-# los archivos estáticos.
-WHITENOISE_AUTOREFRESH = DEBUG
+WHITENOISE_AUTOREFRESH = True
 
-WHITENOISE_USE_FINDERS = DEBUG
+WHITENOISE_USE_FINDERS = True
 
-
-# Durante la estabilización de producción
-# evitamos caché larga de CSS / JS.
 WHITENOISE_MAX_AGE = 0
 
 
 # =============================================================================
-# ARCHIVOS SUBIDOS / MEDIA
-# =============================================================================
-#
-# En Railway debe existir un Volume montado en:
-#
-# /app/media
-#
-# Como BASE_DIR en Railway es /app:
-#
-# MEDIA_ROOT = /app/media
-#
+# ARCHIVOS MEDIA
 # =============================================================================
 
 MEDIA_URL = "/media/"
@@ -619,11 +512,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 TRANSBANK_ENVIRONMENT = os.getenv(
     "TRANSBANK_ENVIRONMENT",
-    (
-        "integration"
-        if DEBUG
-        else "production"
-    ),
+    "integration",
 ).strip().lower()
 
 
@@ -661,24 +550,15 @@ MERCADOPAGO_WEBHOOK_SECRET = os.getenv(
 ).strip()
 
 
+MERCADOPAGO_API_URL = os.getenv(
+    "MERCADOPAGO_API_URL",
+    "https://api.mercadopago.com",
+).strip().rstrip("/")
+
+
 # =============================================================================
-# URL PÚBLICA
+# URL LOCAL
 # =============================================================================
-
-if not SITE_URL:
-
-    if RAILWAY_PUBLIC_DOMAIN:
-
-        SITE_URL = (
-            f"https://{RAILWAY_PUBLIC_DOMAIN}"
-        )
-
-    elif DEBUG:
-
-        SITE_URL = (
-            "http://127.0.0.1:8000"
-        )
-
 
 SITE_URL = SITE_URL.rstrip("/")
 
@@ -693,8 +573,6 @@ MERCADOPAGO_NOTIFICATION_URL = os.getenv(
 ).strip()
 
 
-# Si no existe una URL configurada explícitamente,
-# se construye automáticamente usando SITE_URL.
 if not MERCADOPAGO_NOTIFICATION_URL:
 
     if SITE_URL:
@@ -704,8 +582,6 @@ if not MERCADOPAGO_NOTIFICATION_URL:
         )
 
 
-# Normaliza la URL para evitar inconsistencias
-# con la barra final.
 if MERCADOPAGO_NOTIFICATION_URL:
 
     MERCADOPAGO_NOTIFICATION_URL = (
@@ -714,211 +590,113 @@ if MERCADOPAGO_NOTIFICATION_URL:
     )
 
 
-MERCADOPAGO_API_URL = os.getenv(
-    "MERCADOPAGO_API_URL",
-    "https://api.mercadopago.com",
-).strip().rstrip("/")
+# =============================================================================
+# REGISTRAR HOSTS / ORÍGENES DE URLS PÚBLICAS
+# =============================================================================
+
+
+def registrar_url_publica_django(
+    url: str,
+) -> None:
+    if not url:
+        return
+
+    try:
+        parsed = urlparse(
+            url
+        )
+    except ValueError:
+        return
+
+    hostname = (
+        parsed.hostname
+        or ""
+    ).strip()
+
+    if (
+        hostname
+        and hostname not in ALLOWED_HOSTS
+    ):
+        ALLOWED_HOSTS.append(
+            hostname
+        )
+
+    if (
+        parsed.scheme in {
+            "http",
+            "https",
+        }
+        and parsed.netloc
+    ):
+        origin = (
+            f"{parsed.scheme}://{parsed.netloc}"
+        )
+
+        if (
+            origin
+            not in CSRF_TRUSTED_ORIGINS
+        ):
+            CSRF_TRUSTED_ORIGINS.append(
+                origin
+            )
+
+
+registrar_url_publica_django(
+    SITE_URL
+)
+
+registrar_url_publica_django(
+    MERCADOPAGO_NOTIFICATION_URL
+)
 
 
 # =============================================================================
 # NUBOX
 # =============================================================================
-#
-# Ambientes:
-#
-# UAT:
-#   NUBOX_ENV=uat
-#
-# PRODUCCIÓN:
-#   NUBOX_ENV=production
-#
-# core/services/nubox.py resuelve automáticamente el ambiente,
-# las credenciales y los códigos territoriales.
-# =============================================================================
 
-NUBOX_ENABLED = env_bool(
-    "NUBOX_ENABLED",
-    True,
+NUBOX_API_URL = env(
+    "NUBOX_API_URL",
+    default="",
 )
 
 
-# -----------------------------------------------------------------------------
-# AMBIENTE
-# -----------------------------------------------------------------------------
-
-NUBOX_ENV = os.getenv(
-    "NUBOX_ENV",
-    "uat",
-).strip().lower()
-
-
-# -----------------------------------------------------------------------------
-# URLS
-# -----------------------------------------------------------------------------
-
-NUBOX_UAT_BASE_URL = os.getenv(
-    "NUBOX_UAT_BASE_URL",
-    "https://api.test-nubox.com/nbxpymapi-uat",
-).strip().rstrip("/?")
-
-
-NUBOX_PRODUCTION_BASE_URL = os.getenv(
-    "NUBOX_PRODUCTION_BASE_URL",
-    "https://api.pyme.nubox.com/nbxpymapi-environment-pyme",
-).strip().rstrip("/?")
-
-
-# -----------------------------------------------------------------------------
-# URL ACTIVA SEGÚN AMBIENTE
-# -----------------------------------------------------------------------------
-
-if NUBOX_ENV in {
-    "prod",
-    "production",
-    "produccion",
-    "producción",
-}:
-
-    NUBOX_BASE_URL = (
-        NUBOX_PRODUCTION_BASE_URL
-    )
-
-else:
-
-    NUBOX_BASE_URL = (
-        NUBOX_UAT_BASE_URL
-    )
-
-
-# Compatibilidad con versiones anteriores del servicio.
-NUBOX_API_URL = NUBOX_BASE_URL
-
-
-# -----------------------------------------------------------------------------
-# CREDENCIALES
-# -----------------------------------------------------------------------------
-
-NUBOX_PARTNER_TOKEN = os.getenv(
+NUBOX_PARTNER_TOKEN = env(
     "NUBOX_PARTNER_TOKEN",
-    "",
-).strip()
+    default="",
+)
 
 
-NUBOX_API_KEY = os.getenv(
-    "NUBOX_API_KEY",
-    "",
-).strip()
-
-
-# Compatibilidad con el nombre antiguo.
-NUBOX_COMPANY_API_KEY = os.getenv(
+NUBOX_COMPANY_API_KEY = env(
     "NUBOX_COMPANY_API_KEY",
-    NUBOX_API_KEY,
-).strip()
+    default="",
+)
 
 
-# -----------------------------------------------------------------------------
-# TIMEOUT
-# -----------------------------------------------------------------------------
-
-try:
-
-    NUBOX_TIMEOUT = float(
-        os.getenv(
-            "NUBOX_TIMEOUT",
-            "20",
-        )
-    )
-
-except (
-    TypeError,
-    ValueError,
-):
-
-    NUBOX_TIMEOUT = 20.0
-
-
-# -----------------------------------------------------------------------------
-# CONFIGURACIÓN DEL DTE
-# -----------------------------------------------------------------------------
-
-NUBOX_BOLETA_LEGAL_CODE = os.getenv(
+NUBOX_BOLETA_LEGAL_CODE = env(
     "NUBOX_BOLETA_LEGAL_CODE",
-    "39",
-).strip()
-
-
-NUBOX_SALE_TYPE_ID = int(
-    os.getenv(
-        "NUBOX_SALE_TYPE_ID",
-        "1",
-    )
+    default="39",
 )
 
 
-NUBOX_PAYMENT_FORM_ID = int(
-    os.getenv(
-        "NUBOX_PAYMENT_FORM_ID",
-        "1",
-    )
+NUBOX_SALE_TYPE_ID = 1
+
+NUBOX_PAYMENT_FORM_ID = 1
+
+
+NUBOX_CLIENT_MAIN_ACTIVITY = (
+    "Consumidor final"
 )
 
 
-NUBOX_CLIENT_MAIN_ACTIVITY = os.getenv(
-    "NUBOX_CLIENT_MAIN_ACTIVITY",
-    "Consumidor final",
-).strip()
-
-
-# -----------------------------------------------------------------------------
-# CÓDIGOS TERRITORIALES PERSONALIZADOS
-# -----------------------------------------------------------------------------
-#
-# core/services/nubox.py ya contiene el catálogo completo
-# de regiones y comunas utilizado para las nuevas compras.
-#
-# Estos mappings quedan disponibles únicamente como
-# mecanismo de sobrescritura o compatibilidad.
-# -----------------------------------------------------------------------------
-
-NUBOX_REGION_CODES = {}
-
-NUBOX_COMUNA_CODES = {}
+NUBOX_COMUNA_CODES = {
+    # Configurar los códigos reales utilizados
+    # por Nubox / SII.
+}
 
 
 # =============================================================================
-# CORREO - RESEND
+# RESEND
 # =============================================================================
-#
-# ARQUITECTURA DE CORREO:
-#
-# 1. SERVICES PROPIOS DE AUDEX
-#
-# core/services/resend_email.py
-#          ↓
-# Resend API HTTPS
-#
-#
-# 2. DJANGO / DJANGO-ALLAUTH
-#
-# Django Email Backend
-#          ↓
-# Anymail
-#          ↓
-# Resend API HTTPS
-#
-#
-# Google Workspace continúa funcionando independientemente
-# para RECIBIR y RESPONDER correos humanos.
-#
-# No se utiliza SMTP desde Railway.
-#
-# =============================================================================
-
-
-# -----------------------------------------------------------------------------
-# API KEY RESEND
-# -----------------------------------------------------------------------------
 
 RESEND_API_KEY = os.getenv(
     "RESEND_API_KEY",
@@ -926,19 +704,41 @@ RESEND_API_KEY = os.getenv(
 ).strip()
 
 
-# En producción Resend es obligatorio.
-if (
-    not DEBUG
-    and not RESEND_API_KEY
-):
+RESEND_FROM_VENTAS = os.getenv(
+    "RESEND_FROM_VENTAS",
+    "Audex Ventas <ventas@audex.cl>",
+).strip()
 
-    raise RuntimeError(
-        (
-            "RESEND_API_KEY no está configurada. "
-            "En producción es necesaria para "
-            "el envío de correos."
-        )
-    )
+
+RESEND_FROM_SOPORTE = os.getenv(
+    "RESEND_FROM_SOPORTE",
+    "Audex Soporte <soporte@audex.cl>",
+).strip()
+
+
+RESEND_FROM_NO_REPLY = os.getenv(
+    "RESEND_FROM_NO_REPLY",
+    "Audex <no-reply@audex.cl>",
+).strip()
+
+
+RESEND_FROM_CONTACTO = os.getenv(
+    "RESEND_FROM_CONTACTO",
+    "Audex <contacto@audex.cl>",
+).strip()
+
+
+# =============================================================================
+# CORREO DJANGO / ALLAUTH - LOCAL
+# =============================================================================
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    (
+        "django.core.mail.backends."
+        "console.EmailBackend"
+    ),
+)
 
 
 # =============================================================================
@@ -970,100 +770,18 @@ EMAIL_NO_REPLY = os.getenv(
 
 
 # =============================================================================
-# REMITENTES RESEND
-# =============================================================================
-
-RESEND_FROM_VENTAS = os.getenv(
-    "RESEND_FROM_VENTAS",
-    f"Audex Ventas <{EMAIL_VENTAS}>",
-).strip()
-
-
-RESEND_FROM_SOPORTE = os.getenv(
-    "RESEND_FROM_SOPORTE",
-    f"Audex Soporte <{EMAIL_SOPORTE}>",
-).strip()
-
-
-RESEND_FROM_NO_REPLY = os.getenv(
-    "RESEND_FROM_NO_REPLY",
-    f"Audex <{EMAIL_NO_REPLY}>",
-).strip()
-
-
-RESEND_FROM_CONTACTO = os.getenv(
-    "RESEND_FROM_CONTACTO",
-    f"Audex <{EMAIL_CONTACTO}>",
-).strip()
-
-
-# =============================================================================
-# ANYMAIL + RESEND
-# =============================================================================
-#
-# Utilizado principalmente por:
-#
-# - django-allauth
-# - recuperación de contraseña
-# - verificación de correo
-# - correos internos de Django
-#
-# =============================================================================
-
-ANYMAIL = {
-    "RESEND_API_KEY": RESEND_API_KEY,
-}
-
-
-# =============================================================================
-# EMAIL BACKEND
-# =============================================================================
-#
-# LOCAL:
-#
-# DEBUG=True
-# Django / Allauth -> consola.
-#
-#
-# PRODUCCIÓN:
-#
-# DEBUG=False
-# Django / Allauth -> Anymail -> Resend API.
-#
-#
-# Los services propios que utilizan enviar_correo_resend()
-# NO dependen de EMAIL_BACKEND.
-#
-# =============================================================================
-
-EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND",
-    (
-        "django.core.mail.backends.console.EmailBackend"
-        if DEBUG
-        else "anymail.backends.resend.EmailBackend"
-    ),
-).strip()
-
-
-# =============================================================================
 # REMITENTE POR DEFECTO
-# =============================================================================
-#
-# Django y django-allauth utilizarán no-reply@audex.cl
-# cuando no se indique otro remitente.
-#
 # =============================================================================
 
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
-    RESEND_FROM_NO_REPLY,
+    f"Audex <{EMAIL_NO_REPLY}>",
 ).strip()
 
 
 SERVER_EMAIL = os.getenv(
     "SERVER_EMAIL",
-    RESEND_FROM_NO_REPLY,
+    f"Audex <{EMAIL_NO_REPLY}>",
 ).strip()
 
 
@@ -1220,77 +938,28 @@ SESSION_COOKIE_SAMESITE = "Lax"
 
 
 # =============================================================================
-# SEGURIDAD DE PRODUCCIÓN
+# SEGURIDAD LOCAL
 # =============================================================================
 
-if not DEBUG:
+SECURE_SSL_REDIRECT = False
 
-    # -------------------------------------------------------------------------
-    # HTTPS
-    # -------------------------------------------------------------------------
+SESSION_COOKIE_SECURE = False
 
-    SECURE_SSL_REDIRECT = env_bool(
-        "SECURE_SSL_REDIRECT",
-        True,
-    )
+CSRF_COOKIE_SECURE = False
 
+SECURE_HSTS_SECONDS = 0
 
-    # -------------------------------------------------------------------------
-    # COOKIES
-    # -------------------------------------------------------------------------
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
-    SESSION_COOKIE_SECURE = True
+SECURE_HSTS_PRELOAD = False
 
-    CSRF_COOKIE_SECURE = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
+SECURE_REFERRER_POLICY = (
+    "strict-origin-when-cross-origin"
+)
 
-    # -------------------------------------------------------------------------
-    # HSTS
-    # -------------------------------------------------------------------------
-
-    SECURE_HSTS_SECONDS = int(
-        os.getenv(
-            "SECURE_HSTS_SECONDS",
-            "3600",
-        )
-    )
-
-
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = (
-        env_bool(
-            "SECURE_HSTS_INCLUDE_SUBDOMAINS",
-            True,
-        )
-    )
-
-
-    SECURE_HSTS_PRELOAD = False
-
-
-    # -------------------------------------------------------------------------
-    # HEADERS
-    # -------------------------------------------------------------------------
-
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-
-
-    SECURE_REFERRER_POLICY = (
-        "strict-origin-when-cross-origin"
-    )
-
-
-    X_FRAME_OPTIONS = "DENY"
-
-
-else:
-
-    SECURE_SSL_REDIRECT = False
-
-    SESSION_COOKIE_SECURE = False
-
-    CSRF_COOKIE_SECURE = False
-
-    SECURE_HSTS_SECONDS = 0
+X_FRAME_OPTIONS = "DENY"
 
 
 # =============================================================================
@@ -1300,3 +969,111 @@ else:
 DEFAULT_AUTO_FIELD = (
     "django.db.models.BigAutoField"
 )
+
+
+# =============================================================================
+# NUBOX - CONFIGURACIÓN
+# =============================================================================
+
+NUBOX_ENABLED = (
+    os.getenv(
+        "NUBOX_ENABLED",
+        "False",
+    ).strip().lower()
+    in {
+        "1",
+        "true",
+        "yes",
+        "si",
+        "sí",
+    }
+)
+
+
+NUBOX_ENV = (
+    os.getenv(
+        "NUBOX_ENV",
+        "uat",
+    )
+    .strip()
+    .lower()
+)
+
+
+NUBOX_UAT_BASE_URL = (
+    os.getenv(
+        "NUBOX_UAT_BASE_URL",
+        "",
+    )
+    .strip()
+    .rstrip("/")
+)
+
+
+NUBOX_PRODUCTION_BASE_URL = (
+    os.getenv(
+        "NUBOX_PRODUCTION_BASE_URL",
+        "",
+    )
+    .strip()
+    .rstrip("/")
+)
+
+
+if NUBOX_ENV == "production":
+
+    NUBOX_BASE_URL = (
+        NUBOX_PRODUCTION_BASE_URL
+    )
+
+else:
+
+    NUBOX_BASE_URL = (
+        NUBOX_UAT_BASE_URL
+    )
+
+
+# Compatibilidad con código anterior
+NUBOX_API_URL = NUBOX_BASE_URL
+
+
+NUBOX_PARTNER_TOKEN = (
+    os.getenv(
+        "NUBOX_PARTNER_TOKEN",
+        "",
+    )
+    .strip()
+)
+
+
+NUBOX_API_KEY = (
+    os.getenv(
+        "NUBOX_API_KEY",
+        "",
+    )
+    .strip()
+)
+
+
+# Compatibilidad con nombre anterior
+NUBOX_COMPANY_API_KEY = (
+    os.getenv(
+        "NUBOX_COMPANY_API_KEY",
+        NUBOX_API_KEY,
+    )
+    .strip()
+)
+
+
+try:
+
+    NUBOX_TIMEOUT = int(
+        os.getenv(
+            "NUBOX_TIMEOUT",
+            "20",
+        )
+    )
+
+except (TypeError, ValueError):
+
+    NUBOX_TIMEOUT = 20

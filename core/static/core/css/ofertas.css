@@ -2467,13 +2467,13 @@ article > strong {
 
     grid-template-columns:
         repeat(
-            2,
+            3,
             minmax(0, 1fr)
         );
 
     align-items: stretch;
 
-    gap: 24px;
+    gap: 20px;
 }
 
 
@@ -2546,12 +2546,12 @@ article > strong {
 
     width: 100%;
 
-    height: 315px;
+    height: 270px;
 
     flex:
         0
         0
-        315px;
+        270px;
 
     overflow: hidden;
 
@@ -2673,9 +2673,9 @@ article > strong {
 
     height: 100%;
 
-    max-width: 430px;
+    max-width: 340px;
 
-    max-height: 270px;
+    max-height: 225px;
 
     object-fit: contain;
 
@@ -2722,9 +2722,9 @@ article > strong {
     min-width: 0;
 
     padding:
-        27px
-        29px
-        29px;
+        23px
+        22px
+        24px;
 
     flex:
         1
@@ -2843,9 +2843,9 @@ article > strong {
 
     font-size:
         clamp(
-            1.55rem,
-            2.4vw,
-            2rem
+            1.25rem,
+            1.55vw,
+            1.62rem
         );
 
     font-weight: 800;
@@ -2893,7 +2893,7 @@ article > strong {
 
     color: var(--of-gris);
 
-    font-size: 0.84rem;
+    font-size: 0.78rem;
 
     line-height: 1.45;
 
@@ -2908,7 +2908,7 @@ article > strong {
    ========================================================================== */
 
 .oferta-producto-card__informacion {
-    min-height: 178px;
+    min-height: 205px;
 
     margin-top: 17px;
 
@@ -2980,10 +2980,7 @@ article > strong {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            2,
-            minmax(0, 1fr)
-        );
+        1fr;
 
     gap:
         9px
@@ -3144,9 +3141,9 @@ article > strong {
 
     font-size:
         clamp(
-            2rem,
-            3.3vw,
-            2.75rem
+            1.75rem,
+            2.35vw,
+            2.25rem
         );
 
     font-weight: 900;
@@ -3162,7 +3159,7 @@ article > strong {
    ========================================================================== */
 
 .oferta-producto-card__ahorro {
-    min-width: 140px;
+    min-width: 120px;
 
     padding:
         10px
@@ -3668,6 +3665,263 @@ article > strong {
 
 
 /* ==========================================================================
+   RESPONSIVE — ESCRITORIO GRANDE / 3 PRODUCTOS POR FILA
+   ========================================================================== */
+
+@media (
+    min-width: 1500px
+) {
+
+    .ofertas-productos-grid {
+        gap: 24px;
+    }
+
+
+    .oferta-producto-card__media {
+        height: 300px;
+
+        flex-basis: 300px;
+    }
+
+
+    .oferta-producto-card__imagen img {
+        max-width: 390px;
+        max-height: 250px;
+    }
+
+
+    .oferta-producto-card__cuerpo {
+        padding:
+            25px
+            25px
+            27px;
+    }
+
+
+    .oferta-producto-card__titulo {
+        font-size:
+            clamp(
+                1.38rem,
+                1.35vw,
+                1.72rem
+            );
+    }
+
+
+    .oferta-producto-card__descripcion {
+        font-size: 0.82rem;
+    }
+
+
+    .oferta-producto-card__informacion {
+        min-height: 195px;
+    }
+
+
+    .oferta-producto-card__caracteristicas {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+}
+
+
+/* ==========================================================================
+   RESPONSIVE — ESCRITORIO MEDIANO
+   ========================================================================== */
+
+@media (
+    min-width: 1051px
+) and (
+    max-width: 1499px
+) {
+
+    .ofertas-productos-grid {
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(0, 1fr)
+            );
+
+        gap: 18px;
+    }
+
+
+    .oferta-producto-card {
+        border-radius: 23px;
+    }
+
+
+    .oferta-producto-card__media {
+        height: 245px;
+
+        flex-basis: 245px;
+    }
+
+
+    .oferta-producto-card__imagen {
+        padding:
+            25px
+            26px;
+    }
+
+
+    .oferta-producto-card__imagen img {
+        max-width: 300px;
+        max-height: 205px;
+    }
+
+
+    .oferta-producto-card__descuento {
+        top: 14px;
+        left: 14px;
+
+        width: 74px;
+        height: 74px;
+    }
+
+
+    .oferta-producto-card__descuento strong {
+        font-size: 1.16rem;
+    }
+
+
+    .oferta-producto-card__descuento small {
+        font-size: 0.5rem;
+    }
+
+
+    .oferta-producto-card__cuerpo {
+        padding:
+            20px
+            19px
+            21px;
+    }
+
+
+    .oferta-producto-card__encabezado {
+        align-items: flex-start;
+
+        gap: 10px;
+    }
+
+
+    .oferta-producto-card__categoria {
+        font-size: 0.64rem;
+    }
+
+
+    .oferta-producto-card__estado {
+        padding:
+            7px
+            9px;
+
+        font-size: 0.58rem;
+    }
+
+
+    .oferta-producto-card__titulo {
+        min-height: 2.35em;
+
+        font-size:
+            clamp(
+                1.12rem,
+                1.35vw,
+                1.35rem
+            );
+    }
+
+
+    .oferta-producto-card__descripcion {
+        font-size: 0.74rem;
+    }
+
+
+    .oferta-producto-card__informacion {
+        min-height: 210px;
+
+        padding:
+            14px
+            14px;
+    }
+
+
+    .oferta-producto-card__caracteristicas {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .oferta-producto-card__caracteristicas li {
+        font-size: 0.7rem;
+    }
+
+
+    .oferta-producto-card__tecnicos > span {
+        padding:
+            6px
+            7px;
+
+        font-size: 0.56rem;
+    }
+
+
+    .oferta-producto-card__precio {
+        grid-template-columns:
+            1fr;
+
+        gap: 10px;
+    }
+
+
+    .oferta-producto-card__precio-principal strong {
+        font-size:
+            clamp(
+                1.7rem,
+                2.2vw,
+                2.05rem
+            );
+    }
+
+
+    .oferta-producto-card__ahorro {
+        width: 100%;
+        min-width: 0;
+
+        align-items: flex-start;
+
+        text-align: left;
+    }
+
+
+    .oferta-producto-card__beneficios {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .oferta-producto-card__acciones {
+        grid-template-columns:
+            1fr;
+
+        gap: 8px;
+    }
+
+
+    .oferta-producto-card__detalle,
+    .oferta-producto-card__comprar {
+        width: 100%;
+
+        min-height: 48px;
+
+        font-size: 0.7rem;
+    }
+}
+
+
+/* ==========================================================================
    RESPONSIVE <= 1200
    ========================================================================== */
 
@@ -3754,6 +4008,17 @@ article > strong {
 @media (
     max-width: 1050px
 ) {
+
+    .ofertas-productos-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 18px;
+    }
+
 
     .ofertas-metas__grid {
         grid-template-columns:
@@ -3915,7 +4180,28 @@ article > strong {
 
 
     .oferta-producto-card__imagen img {
+        max-width: 430px;
         max-height: 260px;
+    }
+
+
+    .oferta-producto-card__titulo {
+        font-size:
+            clamp(
+                1.4rem,
+                4vw,
+                1.8rem
+            );
+    }
+
+
+    .oferta-producto-card__descripcion {
+        font-size: 0.82rem;
+    }
+
+
+    .oferta-producto-card__informacion {
+        min-height: 178px;
     }
 
 
