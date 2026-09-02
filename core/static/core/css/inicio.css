@@ -445,6 +445,19 @@ img {
     justify-content: center;
 
     isolation: isolate;
+
+    /*
+     * Estas variables permiten que las tarjetas flotantes
+     * se posicionen respecto del círculo central y no respecto
+     * del borde de toda la columna.
+     */
+    --hero-circulo-ancho:
+        min(
+            91%,
+            535px
+        );
+
+    --hero-tarjeta-solape: 56px;
 }
 
 
@@ -457,9 +470,8 @@ img {
     z-index: 0;
 
     width:
-        min(
-            91%,
-            535px
+        var(
+            --hero-circulo-ancho
         );
 
     aspect-ratio: 1;
@@ -649,6 +661,8 @@ img {
 
 
 .hero__tarjeta div {
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
 
@@ -684,12 +698,46 @@ img {
 
 .hero__tarjeta--superior {
     top: 11%;
-    right: -12%;
+
+    left: auto;
+
+    right:
+        max(
+            0px,
+            calc(
+                (
+                    100%
+                    -
+                    var(--hero-circulo-ancho)
+                )
+                /
+                2
+                -
+                var(--hero-tarjeta-solape)
+            )
+        );
 }
 
 
 .hero__tarjeta--inferior {
-    left: -12%;
+    right: auto;
+
+    left:
+        max(
+            0px,
+            calc(
+                (
+                    100%
+                    -
+                    var(--hero-circulo-ancho)
+                )
+                /
+                2
+                -
+                var(--hero-tarjeta-solape)
+            )
+        );
+
     bottom: 9%;
 }
 
@@ -2294,15 +2342,14 @@ img {
 
     .hero__visual {
         min-height: 680px;
-    }
 
-
-    .hero__circulo {
-        width:
+        --hero-circulo-ancho:
             min(
                 88%,
                 600px
             );
+
+        --hero-tarjeta-solape: 54px;
     }
 
 
@@ -2312,6 +2359,57 @@ img {
                 84%,
                 560px
             );
+    }
+
+
+    /* =====================================================
+       TARJETAS FLOTANTES HERO
+       Posicionadas respecto del centro del círculo.
+    ===================================================== */
+
+    .hero__tarjeta--superior {
+        top: 13%;
+
+        left: auto;
+
+        right:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+    }
+
+
+    .hero__tarjeta--inferior {
+        right: auto;
+
+        left:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+
+        bottom: 11%;
     }
 
 
@@ -2412,15 +2510,14 @@ img {
 
     .hero__visual {
         min-height: 760px;
-    }
 
-
-    .hero__circulo {
-        width:
+        --hero-circulo-ancho:
             min(
                 86%,
                 680px
             );
+
+        --hero-tarjeta-solape: 58px;
     }
 
 
@@ -2430,6 +2527,52 @@ img {
                 80%,
                 630px
             );
+    }
+
+
+    .hero__tarjeta--superior {
+        top: 14%;
+
+        left: auto;
+
+        right:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+    }
+
+
+    .hero__tarjeta--inferior {
+        right: auto;
+
+        left:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+
+        bottom: 12%;
     }
 
 
@@ -2523,6 +2666,54 @@ img {
 
     .hero__visual {
         min-height: 800px;
+
+        --hero-tarjeta-solape: 60px;
+    }
+
+
+    .hero__tarjeta--superior {
+        top: 15%;
+
+        left: auto;
+
+        right:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+    }
+
+
+    .hero__tarjeta--inferior {
+        right: auto;
+
+        left:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+
+        bottom: 13%;
     }
 
 
@@ -2568,15 +2759,14 @@ img {
 
     .hero__visual {
         min-height: 900px;
-    }
 
-
-    .hero__circulo {
-        width:
+        --hero-circulo-ancho:
             min(
                 78%,
                 760px
             );
+
+        --hero-tarjeta-solape: 64px;
     }
 
 
@@ -2586,6 +2776,52 @@ img {
                 74%,
                 700px
             );
+    }
+
+
+    .hero__tarjeta--superior {
+        top: 16%;
+
+        left: auto;
+
+        right:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+    }
+
+
+    .hero__tarjeta--inferior {
+        right: auto;
+
+        left:
+            max(
+                0px,
+                calc(
+                    (
+                        100%
+                        -
+                        var(--hero-circulo-ancho)
+                    )
+                    /
+                    2
+                    -
+                    var(--hero-tarjeta-solape)
+                )
+            );
+
+        bottom: 14%;
     }
 
 
@@ -2623,12 +2859,14 @@ img {
 @media (max-width: 1350px) {
 
     .hero__tarjeta--superior {
-        right: -4%;
+        left: auto;
+        right: 0;
     }
 
 
     .hero__tarjeta--inferior {
-        left: -4%;
+        right: auto;
+        left: 0;
     }
 
 }
@@ -2651,12 +2889,16 @@ img {
 
     .hero__tarjeta--superior {
         top: 9%;
+
+        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
+        right: auto;
         left: 0;
+
         bottom: 7%;
     }
 
@@ -2742,12 +2984,16 @@ img {
 
     .hero__tarjeta--superior {
         top: 5%;
+
+        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
+        right: auto;
         left: 0;
+
         bottom: 4%;
     }
 
@@ -2935,12 +3181,16 @@ img {
 
     .hero__tarjeta--superior {
         top: 7%;
+
+        left: auto;
         right: 2%;
     }
 
 
     .hero__tarjeta--inferior {
+        right: auto;
         left: 2%;
+
         bottom: 5%;
     }
 
@@ -3157,12 +3407,16 @@ img {
 
     .hero__tarjeta--superior {
         top: 1%;
+
+        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
+        right: auto;
         left: 0;
+
         bottom: 1%;
     }
 
@@ -3403,12 +3657,16 @@ img {
 
     .hero__tarjeta--superior {
         top: 0;
+
+        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
+        right: auto;
         left: 0;
+
         bottom: 0;
     }
 

@@ -1,16 +1,17 @@
 """
 Django settings for config project.
 
-Configuración de PRODUCCIÓN para:
+Configuración de DESARROLLO para:
 
-- https://audex.cl
-- https://www.audex.cl
-- PostgreSQL / MySQL mediante variables de entorno.
-- Mercado Pago.
-- Webpay / Transbank.
-- Nubox.
+- http://localhost:8000
+- http://127.0.0.1:8000
+- SQLite por defecto.
+- PostgreSQL / MySQL opcional mediante variables de entorno.
+- Mercado Pago en desarrollo.
+- Webpay / Transbank en integración.
+- Nubox UAT.
 - Google Allauth.
-- Resend API para correos transaccionales.
+- Resend API para probar correos transaccionales reales.
 - WhiteNoise para archivos estáticos.
 - Verificación obligatoria de correo electrónico.
 """
@@ -94,7 +95,7 @@ def env_list(
 
 DEBUG = env_bool(
     "DEBUG",
-    False,
+    True,
 )
 
 
@@ -110,17 +111,9 @@ DJANGO_SECRET_KEY = os.getenv(
 
 if not DJANGO_SECRET_KEY:
 
-    if DEBUG:
-
-        DJANGO_SECRET_KEY = (
-            "django-insecure-clave-temporal-solo-desarrollo-local"
-        )
-
-    else:
-
-        raise RuntimeError(
-            "DJANGO_SECRET_KEY debe estar configurada en producción."
-        )
+    DJANGO_SECRET_KEY = (
+        "django-insecure-clave-temporal-solo-desarrollo-local"
+    )
 
 
 SECRET_KEY = DJANGO_SECRET_KEY
@@ -132,58 +125,29 @@ SECRET_KEY = DJANGO_SECRET_KEY
 
 SITE_URL = os.getenv(
     "SITE_URL",
-    "https://audex.cl",
+    "http://localhost:8000",
 ).strip().rstrip("/")
 
 
 ALLOWED_HOSTS = env_list(
     "ALLOWED_HOSTS",
-    "audex.cl,www.audex.cl",
+    "localhost,127.0.0.1",
 )
 
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     (
-        "https://audex.cl,"
-        "https://www.audex.cl"
+        "http://localhost:8000,"
+        "http://127.0.0.1:8000"
     ),
 )
 
 
-# Dominios opcionales entregados por algunos proveedores de hosting.
-# Se agregan automáticamente si existen como variables de entorno.
-for hosting_domain_env in (
-    "RAILWAY_PUBLIC_DOMAIN",
-    "RENDER_EXTERNAL_HOSTNAME",
-):
-
-    hosting_domain = os.getenv(
-        hosting_domain_env,
-        "",
-    ).strip()
-
-    if (
-        hosting_domain
-        and hosting_domain not in ALLOWED_HOSTS
-    ):
-        ALLOWED_HOSTS.append(
-            hosting_domain
-        )
-
-    if hosting_domain:
-
-        hosting_origin = (
-            f"https://{hosting_domain}"
-        )
-
-        if (
-            hosting_origin
-            not in CSRF_TRUSTED_ORIGINS
-        ):
-            CSRF_TRUSTED_ORIGINS.append(
-                hosting_origin
-            )
+# Si utilizas ngrok, Cloudflare Tunnel u otro túnel durante
+# desarrollo, puedes poner su URL en SITE_URL o en
+# MERCADOPAGO_NOTIFICATION_URL y se registrará automáticamente
+# más adelante mediante registrar_url_publica_django().
 
 
 # =============================================================================
@@ -539,15 +503,11 @@ STORAGES = {
 }
 
 
-WHITENOISE_AUTOREFRESH = DEBUG
+WHITENOISE_AUTOREFRESH = True
 
-WHITENOISE_USE_FINDERS = DEBUG
+WHITENOISE_USE_FINDERS = True
 
-WHITENOISE_MAX_AGE = (
-    0
-    if DEBUG
-    else 60 * 60 * 24 * 365
-)
+WHITENOISE_MAX_AGE = 0
 
 
 # =============================================================================
@@ -610,7 +570,7 @@ MERCADOPAGO_API_URL = os.getenv(
 
 
 # =============================================================================
-# URL LOCAL
+# URL BASE DE DESARROLLO
 # =============================================================================
 
 SITE_URL = SITE_URL.rstrip("/")
@@ -835,17 +795,23 @@ ANYMAIL = {
 
 
 # =============================================================================
-# CORREO DJANGO / ALLAUTH
+# CORREO DJANGO / ALLAUTH - DESARROLLO
 # =============================================================================
 #
-# Por defecto utiliza Resend mediante django-anymail.
+# En desarrollo utilizamos Resend por defecto para poder probar
+# correos reales de:
 #
-# Si alguna vez quieres volver temporalmente al backend de consola,
-# puedes definir en .env:
+# - registro,
+# - confirmación de cuenta,
+# - recuperación de contraseña,
+# - compras y notificaciones.
+#
+# Si temporalmente quieres imprimir los correos solo en consola,
+# define en .env:
 #
 # EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 #
-# Para envíos reales:
+# Para probar envíos reales mediante Resend:
 #
 # EMAIL_BACKEND=anymail.backends.resend.EmailBackend
 # =============================================================================
@@ -1059,45 +1025,28 @@ SESSION_COOKIE_SAMESITE = "Lax"
 
 
 # =============================================================================
-# SEGURIDAD PRODUCCIÓN
+# SEGURIDAD LOCAL
 # =============================================================================
 
-SECURE_SSL_REDIRECT = env_bool(
-    "SECURE_SSL_REDIRECT",
-    not DEBUG,
-)
+# En desarrollo local NO forzamos HTTPS.
+# Esto evita redirecciones hacia https://localhost:8000.
+
+SECURE_SSL_REDIRECT = False
 
 
-SESSION_COOKIE_SECURE = env_bool(
-    "SESSION_COOKIE_SECURE",
-    not DEBUG,
-)
+SESSION_COOKIE_SECURE = False
 
 
-CSRF_COOKIE_SECURE = env_bool(
-    "CSRF_COOKIE_SECURE",
-    not DEBUG,
-)
+CSRF_COOKIE_SECURE = False
 
 
-SECURE_HSTS_SECONDS = int(
-    os.getenv(
-        "SECURE_HSTS_SECONDS",
-        "3600" if not DEBUG else "0",
-    )
-)
+SECURE_HSTS_SECONDS = 0
 
 
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool(
-    "SECURE_HSTS_INCLUDE_SUBDOMAINS",
-    False,
-)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
 
-SECURE_HSTS_PRELOAD = env_bool(
-    "SECURE_HSTS_PRELOAD",
-    False,
-)
+SECURE_HSTS_PRELOAD = False
 
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
