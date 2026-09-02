@@ -2222,6 +2222,10 @@ Finalizar compra | Audex
        VALIDAR TELÉFONO ANTES DE ENVIAR
     ========================================================== */
 
+/* =========================================================
+   VALIDAR TELÉFONO ANTES DE ENVIAR
+========================================================== */
+
     if (
         formulario
         &&
@@ -2239,9 +2243,18 @@ Finalizar compra | Audex
 
 
                 /*
-                 * Deben existir exactamente
-                 * 9 dígitos nacionales.
-                 */
+                * Chile:
+                *
+                * El usuario escribe solamente
+                * los 9 dígitos nacionales.
+                *
+                * Ejemplo:
+                *
+                * 912345678
+                *
+                * El +56 es solamente visual
+                * y NO se envía dentro del input.
+                */
 
                 if (
                     digitos.length !== 9
@@ -2249,22 +2262,22 @@ Finalizar compra | Audex
 
                     evento.preventDefault();
 
-
                     telefonoInput.setCustomValidity(
                         "Ingresa un número de teléfono válido de 9 dígitos."
                     );
 
-
                     telefonoInput.reportValidity();
 
-
                     telefonoInput.focus();
-
 
                     return;
 
                 }
 
+
+                /*
+                * Limpiar cualquier error anterior.
+                */
 
                 telefonoInput.setCustomValidity(
                     ""
@@ -2272,57 +2285,22 @@ Finalizar compra | Audex
 
 
                 /*
-                 * Justo antes del POST agregamos
-                 * el código de país.
-                 *
-                 * Django recibirá:
-                 *
-                 * +56912345678
-                 */
+                * MUY IMPORTANTE:
+                *
+                * Django recibe exactamente
+                * los 9 dígitos nacionales.
+                *
+                * No agregamos +56 aquí.
+                */
 
                 telefonoInput.value =
-                    PREFIJO_TELEFONO
-                    +
                     digitos;
-
-
-                /*
-                 * Si otro script cancela el envío
-                 * (por ejemplo, porque procesa el
-                 * formulario con JavaScript), dejamos
-                 * nuevamente solo los 9 dígitos en la
-                 * parte visible después de que todos
-                 * los listeners hayan leído el valor.
-                 */
-
-                setTimeout(
-                    function () {
-
-                        if (
-                            document.contains(
-                                formulario
-                            )
-                            &&
-                            telefonoInput.value.startsWith(
-                                PREFIJO_TELEFONO
-                            )
-                        ) {
-
-                            telefonoInput.value =
-                                digitos;
-
-                        }
-
-                    },
-                    0
-                );
 
             },
             true
         );
 
     }
-
 
     /* =========================================================
        FORMATO MONETARIO CHILENO
