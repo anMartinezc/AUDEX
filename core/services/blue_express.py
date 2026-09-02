@@ -349,7 +349,7 @@ def obtener_tarifa_blue_express(
             )
         )
 
-    if costo <= 0:
+    if costo == 0:
         raise ValueError(
             (
                 "La tarifa Blue Express "
