@@ -115,10 +115,8 @@ main {
 }
 
 .contenedor {
-    width: min(
-        1480px,
-        calc(100% - 64px)
-    );
+    width: calc(100% - 64px);
+    max-width: 1480px;
 
     margin-inline: auto;
 }
@@ -4074,10 +4072,8 @@ main {
 @media (min-width: 1500px) {
 
     .contenedor {
-        width: min(
-            1480px,
-            calc(100% - 96px)
-        );
+        width: calc(100% - 96px);
+        max-width: 1800px;
     }
 
     .header__contenido {
@@ -4182,10 +4178,15 @@ main {
 @media (min-width: 1900px) {
 
     .contenedor {
-        width: min(
-            1720px,
-            calc(100% - 128px)
+        width: calc(
+            100% - clamp(
+                128px,
+                7vw,
+                220px
+            )
         );
+
+        max-width: 2400px;
     }
 
     .header__contenido {
@@ -4385,6 +4386,40 @@ main {
 
         width: 49px;
         height: 49px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MONITORES 2K / 2560+
+========================================================= */
+
+@media (min-width: 2560px) {
+
+    .contenedor {
+        width: calc(100% - 160px);
+        max-width: 2400px;
+    }
+
+    .header__contenido {
+        gap: 48px;
+    }
+
+    .beneficios__grid {
+        gap: 26px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MONITORES 4K
+========================================================= */
+
+@media (min-width: 3200px) {
+
+    .contenedor {
+        width: calc(100% - 240px);
+        max-width: 3400px;
     }
 }
 

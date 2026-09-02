@@ -9,7 +9,7 @@
 {% block extra_css %}
 <link
     rel="stylesheet"
-    href="{% static 'core/css/inicio.css' %}"
+    href="{% static 'core/css/inicio.css' %}?v=2"
 >
 {% endblock %}
 
@@ -20,7 +20,7 @@
 ===================================================== -->
 <section class="hero" id="inicio">
 
-    <div class="contenedor hero__contenido">
+    <div class="contenedor inicio-contenedor hero__contenido">
 
         <!-- =================================================
              TEXTO
@@ -185,7 +185,7 @@
     aria-label="Beneficios de comprar en Audex"
 >
 
-    <div class="contenedor beneficios__grid">
+    <div class="contenedor inicio-contenedor beneficios__grid">
 
 
         <!-- =================================================
@@ -309,7 +309,7 @@
     id="earfun"
 >
 
-    <div class="contenedor marca-earfun__contenido">
+    <div class="contenedor inicio-contenedor marca-earfun__contenido">
 
 
         <!-- =================================================
@@ -472,7 +472,7 @@
     id="productos-destacados"
 >
 
-    <div class="contenedor">
+    <div class="contenedor inicio-contenedor">
 
 
         <!-- =================================================
@@ -665,14 +665,22 @@
 
                         <div class="producto-destacado__acciones">
 
-                     
+                            <a
+                                href="{% url 'core:producto_detalle' producto.id %}"
+                                class="producto-destacado__ver-producto"
+                            >
+                                Ver producto
+
+                                <i class="bi bi-box-arrow-up-right"></i>
+
+                            </a>
 
 
                             <a
                                 href="{% url 'core:productos' %}?categoria={{ categoria.slug }}"
                                 class="producto-destacado__ver-mas"
                             >
-                                Ver más
+                                Ver categoría
 
                                 <i class="bi bi-arrow-right"></i>
 
