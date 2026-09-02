@@ -161,6 +161,9 @@ INSTALLED_APPS = [
     # Proyecto
     "core.apps.CoreConfig",
 
+    # Correo transaccional
+    "anymail",
+
     # Django Allauth
     "allauth",
     "allauth.account",
@@ -729,19 +732,6 @@ RESEND_FROM_CONTACTO = os.getenv(
 
 
 # =============================================================================
-# CORREO DJANGO / ALLAUTH - LOCAL
-# =============================================================================
-
-EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND",
-    (
-        "django.core.mail.backends."
-        "console.EmailBackend"
-    ),
-)
-
-
-# =============================================================================
 # DIRECCIONES AUDEX
 # =============================================================================
 
@@ -770,19 +760,58 @@ EMAIL_NO_REPLY = os.getenv(
 
 
 # =============================================================================
-# REMITENTE POR DEFECTO
+# REMITENTES POR DEFECTO
 # =============================================================================
 
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
-    f"Audex <{EMAIL_NO_REPLY}>",
+    RESEND_FROM_NO_REPLY,
 ).strip()
 
 
 SERVER_EMAIL = os.getenv(
     "SERVER_EMAIL",
-    f"Audex <{EMAIL_NO_REPLY}>",
+    RESEND_FROM_NO_REPLY,
 ).strip()
+
+
+# =============================================================================
+# ANYMAIL / RESEND
+# =============================================================================
+
+ANYMAIL = {
+    "RESEND_API_KEY": RESEND_API_KEY,
+}
+
+
+# =============================================================================
+# CORREO DJANGO / ALLAUTH
+# =============================================================================
+#
+# Por defecto utiliza Resend mediante django-anymail.
+#
+# Si alguna vez quieres volver temporalmente al backend de consola,
+# puedes definir en .env:
+#
+# EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+#
+# Para envíos reales:
+#
+# EMAIL_BACKEND=anymail.backends.resend.EmailBackend
+# =============================================================================
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "anymail.backends.resend.EmailBackend",
+).strip()
+
+
+EMAIL_TIMEOUT = int(
+    os.getenv(
+        "EMAIL_TIMEOUT",
+        "20",
+    )
+)
 
 
 # =============================================================================
@@ -821,6 +850,13 @@ LOGOUT_REDIRECT_URL = "core:inicio"
 # =============================================================================
 # ALLAUTH
 # =============================================================================
+
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = (
+    "https"
+    if SITE_URL.startswith("https://")
+    else "http"
+)
+
 
 ACCOUNT_SIGNUP_FIELDS = [
     "email*",
@@ -1077,4 +1113,3 @@ try:
 except (TypeError, ValueError):
 
     NUBOX_TIMEOUT = 20
-    
