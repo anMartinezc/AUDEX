@@ -151,12 +151,13 @@
         -0.04em;
 }
 
+
 .buscar-pedido > p {
-    max-width: 520px;
+    max-width: 540px;
 
     margin:
         17px auto
-        28px;
+        30px;
 
     color:
         var(--color-gris);
@@ -167,6 +168,14 @@
 }
 
 
+.buscar-pedido > p strong {
+    color:
+        var(--color-gris-claro);
+
+    font-weight: 800;
+}
+
+
 /* =========================================================
    FORMULARIO
 ========================================================= */
@@ -174,10 +183,15 @@
 .buscar-pedido__form {
     display: grid;
 
-    gap: 17px;
+    gap: 18px;
 
     text-align: left;
 }
+
+
+/* =========================================================
+   CAMPO
+========================================================= */
 
 .campo {
     display: grid;
@@ -185,13 +199,18 @@
     gap: 8px;
 }
 
+
 .campo label {
     color:
         var(--color-gris-claro);
 
     font-size: 0.72rem;
+
     font-weight: 800;
+
+    line-height: 1.3;
 }
+
 
 .campo input,
 .campo select,
@@ -231,6 +250,7 @@
         background var(--transicion);
 }
 
+
 .campo textarea {
     min-height: 110px;
 
@@ -240,6 +260,7 @@
 
     resize: vertical;
 }
+
 
 .campo input:focus,
 .campo select:focus,
@@ -268,9 +289,108 @@
         );
 }
 
+
 .campo input::placeholder {
     color:
         var(--color-gris);
+}
+
+
+/* =========================================================
+   TEXTO DE AYUDA DEL CAMPO
+========================================================= */
+
+.campo__ayuda {
+    margin:
+        1px
+        2px
+        0;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.70rem;
+
+    font-weight: 500;
+
+    line-height: 1.55;
+}
+
+
+.campo__ayuda strong {
+    color:
+        var(--color-gris-claro);
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   AVISO DE SEGURIDAD
+========================================================= */
+
+.buscar-pedido__seguridad {
+    width: 100%;
+
+    padding:
+        11px
+        13px;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 9px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.70rem;
+
+    font-weight: 500;
+
+    line-height: 1.5;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.14
+        );
+
+    border-radius: 10px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+}
+
+
+.buscar-pedido__seguridad i {
+    flex:
+        0
+        0
+        auto;
+
+    margin-top: 1px;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.86rem;
+
+    line-height: 1.2;
+}
+
+
+.buscar-pedido__seguridad span {
+    min-width: 0;
 }
 
 
@@ -288,8 +408,11 @@
 
     font-size: 0.72rem;
 
+    line-height: 1.5;
+
     list-style: none;
 }
+
 
 .form-error {
     padding:
@@ -317,24 +440,53 @@
 }
 
 
+.form-error p {
+    margin: 0;
+}
+
+
+.form-error p + p {
+    margin-top: 5px;
+}
+
+
+.campo .errorlist {
+    margin-top: 1px;
+}
+
+
+/* =========================================================
+   BOTÓN COMPLETO
+========================================================= */
+
+.boton--completo {
+    width: 100%;
+}
+
+
 /* =========================================================
    CABECERA DE SEGUIMIENTO
 ========================================================= */
 
 .seguimiento-cabecera {
     margin-top: 18px;
+
     margin-bottom: 30px;
 
     display: flex;
+
     align-items: flex-end;
+
     justify-content: space-between;
 
     gap: 30px;
 }
 
+
 .seguimiento-cabecera > div {
     min-width: 0;
 }
+
 
 .seguimiento-cabecera h1 {
     margin-top: 15px;
@@ -361,6 +513,7 @@
         anywhere;
 }
 
+
 .seguimiento-cabecera p {
     margin-top: 12px;
 
@@ -385,7 +538,9 @@
         14px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     gap: 6px;
@@ -394,6 +549,7 @@
         var(--color-azul-claro);
 
     font-size: 0.7rem;
+
     font-weight: 900;
 
     line-height: 1;
@@ -564,6 +720,7 @@
     align-items: start;
 }
 
+
 .seguimiento-lateral {
     min-width: 0;
 
@@ -622,6 +779,7 @@
         );
 }
 
+
 .seguimiento-tarjeta h2 {
     margin-bottom: 22px;
 
@@ -630,10 +788,12 @@
         sans-serif;
 
     font-size: 1.15rem;
+
     font-weight: 800;
 
     line-height: 1.2;
 }
+
 
 .seguimiento-tarjeta > p {
     margin: 0;
@@ -655,6 +815,7 @@
     display: grid;
 }
 
+
 .timeline-paso {
     position: relative;
 
@@ -674,12 +835,14 @@
         opacity var(--transicion);
 }
 
+
 .timeline-paso:not(:last-child)::after {
     content: "";
 
     position: absolute;
 
     top: 50px;
+
     left: 24px;
 
     width: 2px;
@@ -693,14 +856,18 @@
         var(--borde);
 }
 
+
 .timeline-paso__icono {
     position: relative;
+
     z-index: 2;
 
     width: 50px;
+
     height: 50px;
 
     display: grid;
+
     place-items: center;
 
     color:
@@ -718,6 +885,7 @@
         var(--color-fondo-secundario);
 }
 
+
 .timeline-paso strong {
     display: block;
 
@@ -727,8 +895,10 @@
         var(--color-blanco);
 
     font-size: 0.8rem;
+
     font-weight: 800;
 }
+
 
 .timeline-paso p {
     max-width: 540px;
@@ -742,6 +912,7 @@
 
     line-height: 1.55;
 }
+
 
 .timeline-paso time {
     display: inline-block;
@@ -762,6 +933,7 @@
 .timeline-paso--completado {
     opacity: 1;
 }
+
 
 .timeline-paso--completado
 .timeline-paso__icono {
@@ -785,6 +957,7 @@
         );
 }
 
+
 .timeline-paso--completado:not(:last-child)::after {
     background:
         rgba(
@@ -803,6 +976,7 @@
 .timeline-paso--activo {
     opacity: 1;
 }
+
 
 .timeline-paso--activo
 .timeline-paso__icono {
@@ -832,6 +1006,7 @@
             0.045
         );
 }
+
 
 .timeline-paso--activo strong {
     color:
@@ -863,11 +1038,6 @@
 
     display: grid;
 
-    /*
-     * Miniatura pequeña
-     * + información
-     * + precio
-     */
     grid-template-columns:
         64px
         minmax(0, 1fr)
@@ -877,16 +1047,14 @@
 
     gap: 13px;
 
-    /*
-     * NO agregamos border aquí.
-     * El único separador estará antes del total.
-     */
     border: 0;
 }
+
 
 .seguimiento-producto:first-child {
     padding-top: 0;
 }
+
 
 .seguimiento-producto:last-child {
     padding-bottom: 2px;
@@ -899,17 +1067,21 @@
 
 .seguimiento-producto__imagen {
     width: 64px;
+
     height: 64px;
 
     min-width: 64px;
+
     max-width: 64px;
 
     min-height: 64px;
+
     max-height: 64px;
 
     overflow: hidden;
 
     display: grid;
+
     place-items: center;
 
     border:
@@ -928,20 +1100,17 @@
 }
 
 
-/*
- * Estas reglas llevan !important porque es posible
- * que estilos globales de producto tengan width:100%.
- * Aquí impedimos que la foto vuelva a crecer.
- */
-
 .seguimiento-producto__imagen img {
     width: 100% !important;
+
     height: 100% !important;
 
     min-width: 0 !important;
+
     min-height: 0 !important;
 
     max-width: 64px !important;
+
     max-height: 64px !important;
 
     display: block;
@@ -949,6 +1118,7 @@
     padding: 5px;
 
     object-fit: contain !important;
+
     object-position: center;
 
     border: 0;
@@ -964,9 +1134,11 @@
 
 .seguimiento-producto__sin-imagen {
     width: 100%;
+
     height: 100%;
 
     display: grid;
+
     place-items: center;
 
     color:
@@ -992,6 +1164,7 @@
     min-width: 0;
 
     display: flex;
+
     flex-direction: column;
 
     align-items: flex-start;
@@ -1011,6 +1184,7 @@
         var(--color-gris-claro);
 
     font-size: 0.75rem;
+
     font-weight: 700;
 
     line-height: 1.35;
@@ -1020,7 +1194,7 @@
 
 
 /* =========================================================
-   CANTIDAD × 2
+   CANTIDAD
 ========================================================= */
 
 .seguimiento-producto__cantidad {
@@ -1033,13 +1207,16 @@
         8px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     color:
         var(--color-azul-claro);
 
     font-size: 0.66rem;
+
     font-weight: 900;
 
     line-height: 1;
@@ -1078,6 +1255,7 @@
         var(--color-blanco);
 
     font-size: 0.77rem;
+
     font-weight: 900;
 
     white-space: nowrap;
@@ -1112,32 +1290,35 @@
     padding-top: 20px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 18px;
 
-    /*
-     * ÚNICO SEPARADOR ENTRE PRODUCTOS Y TOTAL.
-     */
     border-top:
         1px solid
         var(--borde);
 }
+
 
 .seguimiento-total span {
     color:
         var(--color-gris-claro);
 
     font-size: 0.8rem;
+
     font-weight: 800;
 }
+
 
 .seguimiento-total strong {
     color:
         var(--color-azul-claro);
 
     font-size: 1.35rem;
+
     font-weight: 900;
 
     white-space: nowrap;
@@ -1151,10 +1332,6 @@
 .seguimiento-direccion {
     display: grid;
 
-    /*
-     * El icono ocupa una columna pequeña y queda
-     * alineado con la primera línea del texto.
-     */
     grid-template-columns:
         26px
         minmax(0, 1fr);
@@ -1171,17 +1348,20 @@
 
 .seguimiento-direccion > i {
     width: 26px;
+
     height: 26px;
 
     margin-top: 1px;
 
     display: grid;
+
     place-items: center;
 
     color:
         var(--color-azul-claro);
 
     font-size: 1rem;
+
     line-height: 1;
 
     border:
@@ -1226,15 +1406,6 @@
 
 
 /* =========================================================
-   BOTÓN COMPLETO
-========================================================= */
-
-.boton--completo {
-    width: 100%;
-}
-
-
-/* =========================================================
    RESPONSIVE TABLET
 ========================================================= */
 
@@ -1266,7 +1437,9 @@
     }
 
 
-    /* BUSCADOR */
+    /* =====================================================
+       BUSCADOR
+    ====================================================== */
 
     .buscar-pedido {
         margin-top: 15px;
@@ -1276,15 +1449,55 @@
             24px;
     }
 
+
     .buscar-pedido__icono {
         width: 72px;
+
         height: 72px;
+
+        margin-bottom: 20px;
 
         font-size: 1.7rem;
     }
 
 
-    /* CABECERA */
+    .buscar-pedido > p {
+        margin-bottom: 25px;
+
+        font-size: 0.80rem;
+
+        line-height: 1.6;
+    }
+
+
+    /* =====================================================
+       FORMULARIO
+    ====================================================== */
+
+    .buscar-pedido__form {
+        gap: 16px;
+    }
+
+
+    .campo__ayuda {
+        font-size: 0.68rem;
+
+        line-height: 1.5;
+    }
+
+
+    .buscar-pedido__seguridad {
+        padding:
+            10px
+            12px;
+
+        font-size: 0.68rem;
+    }
+
+
+    /* =====================================================
+       CABECERA
+    ====================================================== */
 
     .seguimiento-cabecera {
         align-items: flex-start;
@@ -1293,6 +1506,7 @@
 
         gap: 18px;
     }
+
 
     .seguimiento-cabecera h1 {
         font-size:
@@ -1304,7 +1518,9 @@
     }
 
 
-    /* TARJETAS */
+    /* =====================================================
+       TARJETAS
+    ====================================================== */
 
     .seguimiento-tarjeta {
         padding:
@@ -1313,7 +1529,9 @@
     }
 
 
-    /* PRODUCTO */
+    /* =====================================================
+       PRODUCTO
+    ====================================================== */
 
     .seguimiento-producto {
         grid-template-columns:
@@ -1324,19 +1542,25 @@
         gap: 11px;
     }
 
+
     .seguimiento-producto__imagen {
         width: 58px;
+
         height: 58px;
 
         min-width: 58px;
+
         max-width: 58px;
 
         min-height: 58px;
+
         max-height: 58px;
     }
 
+
     .seguimiento-producto__imagen img {
         max-width: 58px !important;
+
         max-height: 58px !important;
     }
 
@@ -1351,13 +1575,16 @@
     max-width: 480px
 ) {
 
-    /* BUSCADOR */
+    /* =====================================================
+       BUSCADOR
+    ====================================================== */
 
     .buscar-pedido {
         padding:
             32px
             18px;
     }
+
 
     .buscar-pedido h1 {
         font-size:
@@ -1369,7 +1596,81 @@
     }
 
 
-    /* TIMELINE */
+    .buscar-pedido > p {
+        margin:
+            15px auto
+            23px;
+
+        font-size: 0.76rem;
+
+        line-height: 1.55;
+    }
+
+
+    /* =====================================================
+       CAMPOS
+    ====================================================== */
+
+    .campo {
+        gap: 7px;
+    }
+
+
+    .campo label {
+        font-size: 0.70rem;
+    }
+
+
+    .campo input,
+    .campo select,
+    .campo textarea {
+        min-height: 47px;
+
+        padding:
+            0
+            13px;
+    }
+
+
+    /* =====================================================
+       TEXTO AYUDA RUT
+    ====================================================== */
+
+    .campo__ayuda {
+        margin:
+            0
+            1px;
+
+        font-size: 0.65rem;
+
+        line-height: 1.45;
+    }
+
+
+    /* =====================================================
+       SEGURIDAD
+    ====================================================== */
+
+    .buscar-pedido__seguridad {
+        padding:
+            10px;
+
+        gap: 8px;
+
+        font-size: 0.65rem;
+
+        line-height: 1.45;
+    }
+
+
+    .buscar-pedido__seguridad i {
+        font-size: 0.8rem;
+    }
+
+
+    /* =====================================================
+       TIMELINE
+    ====================================================== */
 
     .timeline-paso {
         grid-template-columns:
@@ -1379,18 +1680,24 @@
         gap: 12px;
     }
 
+
     .timeline-paso__icono {
         width: 44px;
+
         height: 44px;
     }
 
+
     .timeline-paso:not(:last-child)::after {
         top: 44px;
+
         left: 21px;
     }
 
 
-    /* PRODUCTO */
+    /* =====================================================
+       PRODUCTO
+    ====================================================== */
 
     .seguimiento-producto {
         grid-template-columns:
@@ -1403,29 +1710,37 @@
         gap: 10px;
     }
 
+
     .seguimiento-producto__imagen {
         width: 52px;
+
         height: 52px;
 
         min-width: 52px;
+
         max-width: 52px;
 
         min-height: 52px;
+
         max-height: 52px;
 
         border-radius: 10px;
     }
 
+
     .seguimiento-producto__imagen img {
         max-width: 52px !important;
+
         max-height: 52px !important;
 
         padding: 4px;
     }
 
+
     .seguimiento-producto__nombre {
         font-size: 0.7rem;
     }
+
 
     .seguimiento-producto__cantidad {
         min-height: 22px;
@@ -1437,12 +1752,15 @@
         font-size: 0.62rem;
     }
 
+
     .seguimiento-producto__precio {
         font-size: 0.7rem;
     }
 
 
-    /* TOTAL */
+    /* =====================================================
+       TOTAL
+    ====================================================== */
 
     .seguimiento-total {
         margin-top: 13px;
@@ -1450,12 +1768,15 @@
         padding-top: 17px;
     }
 
+
     .seguimiento-total strong {
         font-size: 1.18rem;
     }
 
 
-    /* DIRECCIÓN */
+    /* =====================================================
+       DIRECCIÓN
+    ====================================================== */
 
     .seguimiento-direccion {
         grid-template-columns:
@@ -1465,14 +1786,17 @@
         gap: 9px;
     }
 
+
     .seguimiento-direccion > i {
         width: 24px;
+
         height: 24px;
 
         font-size: 0.9rem;
 
         border-radius: 7px;
     }
+
 
     .seguimiento-direccion p {
         font-size: 0.72rem;

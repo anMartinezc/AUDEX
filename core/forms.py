@@ -1386,9 +1386,8 @@ class CheckoutForm(
 
 
 
-
-
 class BuscarPedidoForm(forms.Form):
+
     numero = forms.CharField(
         label="Número de pedido",
         max_length=20,
@@ -1401,7 +1400,23 @@ class BuscarPedidoForm(forms.Form):
         ),
     )
 
+    rut = forms.CharField(
+        label="RUT utilizado en la compra",
+        max_length=12,
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "Ejemplo: 12.345.678-9",
+                "autocomplete": "off",
+                "spellcheck": "false",
+                "inputmode": "text",
+                "maxlength": "12",
+                "class": "js-rut",
+            }
+        ),
+    )
+
     def clean_numero(self):
+
         numero = (
             self.cleaned_data["numero"]
             .strip()
@@ -1415,7 +1430,101 @@ class BuscarPedidoForm(forms.Form):
 
         return numero
 
+    def clean_rut(self):
 
+        rut = (
+            self.cleaned_data["rut"]
+            .strip()
+            .upper()
+            .replace(".", "")
+            .replace(" ", "")
+        )
+
+        if "-" not in rut:
+            raise forms.ValidationError(
+                "Ingresa un RUT válido."
+            )
+
+        cuerpo, dv = rut.rsplit(
+            "-",
+            1,
+        )
+
+        # =========================================================
+        # ESTRUCTURA
+        # =========================================================
+
+        if not cuerpo.isdigit():
+            raise forms.ValidationError(
+                "Ingresa un RUT válido."
+            )
+
+        # RUT chileno: cuerpo máximo de 8 dígitos
+        if len(cuerpo) > 8:
+            raise forms.ValidationError(
+                "El RUT ingresado tiene demasiados dígitos."
+            )
+
+        if not dv or len(dv) != 1:
+            raise forms.ValidationError(
+                "Ingresa un RUT válido."
+            )
+
+        if not (
+            dv.isdigit()
+            or dv == "K"
+        ):
+            raise forms.ValidationError(
+                "Ingresa un RUT válido."
+            )
+
+        # =========================================================
+        # VALIDAR DÍGITO VERIFICADOR
+        # =========================================================
+
+        suma = 0
+        multiplicador = 2
+
+        for digito in reversed(cuerpo):
+
+            suma += (
+                int(digito)
+                * multiplicador
+            )
+
+            multiplicador += 1
+
+            if multiplicador > 7:
+                multiplicador = 2
+
+        resto = (
+            11
+            - (
+                suma % 11
+            )
+        )
+
+        if resto == 11:
+            dv_correcto = "0"
+
+        elif resto == 10:
+            dv_correcto = "K"
+
+        else:
+            dv_correcto = str(
+                resto
+            )
+
+        if dv != dv_correcto:
+            raise forms.ValidationError(
+                "El RUT ingresado no es válido."
+            )
+
+        # =========================================================
+        # DEVOLVER NORMALIZADO
+        # =========================================================
+
+        return f"{cuerpo}-{dv}"
     
 class ActualizarEstadoPedidoForm(forms.Form):
     nuevo_estado = forms.ChoiceField(

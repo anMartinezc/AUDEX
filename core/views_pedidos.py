@@ -89,6 +89,36 @@ def _queryset_pedidos():
 # ==========================================================================
 # FUNCIONES AUXILIARES DE SEGUIMIENTO
 # ==========================================================================
+def _normalizar_rut(
+    rut,
+) -> str:
+    """
+    Normaliza un RUT para comparaciones.
+
+    Ejemplos:
+
+    12.345.678-9 -> 12345678-9
+    12345678-9   -> 12345678-9
+    12 345 678-9 -> 12345678-9
+    """
+
+    return (
+        str(
+            rut
+            or ""
+        )
+        .strip()
+        .upper()
+        .replace(
+            ".",
+            "",
+        )
+        .replace(
+            " ",
+            "",
+        )
+    )
+
 
 def _normalizar_numero_pedido(
     numero,
@@ -499,7 +529,6 @@ def mis_compras(request):
 # SEGUIMIENTO PÚBLICO POR NÚMERO DE PEDIDO
 # ==========================================================================
 
-
 @require_http_methods([
     "GET",
     "POST",
@@ -509,24 +538,21 @@ def seguimiento_pedido(
     numero=None,
 ):
     """
-    Seguimiento público de pedidos.
+    Seguimiento seguro de pedidos.
 
-    Flujo:
+    Reglas:
 
-    1. Si la URL contiene un número de pedido:
-       /seguimiento/AUD-XXXXXXXX/
+    - Administradores pueden consultar cualquier pedido.
+    - Un usuario autenticado puede consultar sus propios pedidos.
+    - Un pedido previamente autorizado en la sesión puede visualizarse.
+    - Para compras como invitado se exige:
 
-       Se busca y muestra directamente el pedido.
+        número de pedido
+        +
+        RUT del pedido
 
-    2. Si no existe número en la URL:
-       /seguimiento/
-
-       Se muestra el formulario para buscar el pedido.
-
-    3. El formulario puede buscar por número de pedido.
-
-    No es necesario iniciar sesión ni ingresar nuevamente
-    datos cuando el número del pedido ya viene en la URL.
+    - Conocer únicamente el número del pedido NO autoriza
+      el acceso.
     """
 
     # =========================================================================
@@ -537,132 +563,74 @@ def seguimiento_pedido(
     timeline = []
 
     # =========================================================================
-    # ACCESO DIRECTO POR URL
+    # NÚMERO RECIBIDO DESDE URL
     # =========================================================================
+
+    numero_url = ""
 
     if numero:
 
-        numero_normalizado = (
+        numero_url = (
             _normalizar_numero_pedido(
                 numero
             )
         )
 
-        pedido = (
-            _queryset_pedidos()
-            .filter(
-                numero__iexact=(
-                    numero_normalizado
-                )
-            )
-            .first()
-        )
-
-        # =====================================================================
-        # PEDIDO NO ENCONTRADO
-        # =====================================================================
-
-        if pedido is None:
-
-            messages.warning(
-                request,
-                (
-                    "No encontramos el pedido indicado. "
-                    "Verifica el número e intenta nuevamente."
-                ),
-            )
-
-            form = BuscarPedidoForm(
-                initial={
-                    "numero": (
-                        numero_normalizado
-                    ),
-                }
-            )
-
-        else:
-
-            # =================================================================
-            # AUTORIZAR PEDIDO EN LA SESIÓN
-            # =================================================================
-
-            _autorizar_pedido_en_sesion(
-                request,
-                pedido.numero,
-            )
-
-            # =================================================================
-            # CONSTRUIR TIMELINE
-            # =================================================================
-
-            timeline = construir_timeline(
-                pedido
-            )
-
-            # =================================================================
-            # NO NECESITAMOS FORMULARIO
-            # =================================================================
-
-            form = BuscarPedidoForm()
-
-            # =================================================================
-            # RENDER DIRECTO
-            # =================================================================
-
-            return render(
-                request,
-                "core/seguimiento_pedido.html",
-                {
-                    "pedido": pedido,
-                    "form": form,
-                    "timeline": timeline,
-                },
-            )
-
     # =========================================================================
-    # SIN NÚMERO EN URL
+    # POST
     # =========================================================================
 
-    else:
+    if request.method == "POST":
 
         form = BuscarPedidoForm(
-            request.POST or None
+            request.POST
         )
 
-    # =========================================================================
-    # BÚSQUEDA MANUAL
-    # =========================================================================
-
-    if (
-        request.method == "POST"
-        and form.is_valid()
-    ):
-
         # =====================================================================
-        # NÚMERO
+        # FORMULARIO VÁLIDO
         # =====================================================================
 
-        numero_form = (
-            form.cleaned_data.get(
-                "numero"
+        if form.is_valid():
+
+            # =================================================================
+            # NÚMERO
+            # =================================================================
+
+            numero_form = (
+                form.cleaned_data.get(
+                    "numero"
+                )
+                or ""
             )
-            or ""
-        )
 
-        numero_form = (
-            str(
-                numero_form
+            numero_normalizado = (
+                _normalizar_numero_pedido(
+                    numero_form
+                )
             )
-            .strip()
-        )
 
-        # =====================================================================
-        # VALIDAR
-        # =====================================================================
+            # =================================================================
+            # RUT
+            # =================================================================
 
-        if not numero_form:
+            rut_form = (
+                form.cleaned_data.get(
+                    "rut"
+                )
+                or ""
+            )
 
-            if "numero" in form.fields:
+            rut_normalizado = (
+                _normalizar_rut(
+                    rut_form
+                )
+            )
+
+            # =================================================================
+            # VALIDACIONES BÁSICAS
+            # =================================================================
+
+            if not numero_normalizado:
 
                 form.add_error(
                     "numero",
@@ -672,81 +640,221 @@ def seguimiento_pedido(
                     ),
                 )
 
-            else:
+            elif not rut_normalizado:
 
                 form.add_error(
-                    None,
+                    "rut",
                     (
-                        "No fue posible obtener "
-                        "el número del pedido."
+                        "Ingresa el RUT asociado "
+                        "al pedido."
                     ),
                 )
 
-        else:
+            else:
 
-            # =================================================================
-            # NORMALIZAR
-            # =================================================================
+                # =============================================================
+                # BUSCAR PEDIDO
+                # =============================================================
 
-            numero_normalizado = (
-                _normalizar_numero_pedido(
-                    numero_form
+                pedido_encontrado = (
+                    _queryset_pedidos()
+                    .filter(
+                        numero__iexact=(
+                            numero_normalizado
+                        )
+                    )
+                    .first()
                 )
-            )
 
-            # =================================================================
-            # BUSCAR
-            # =================================================================
+                # =============================================================
+                # VALIDACIÓN SEGURA
+                # =============================================================
+                #
+                # No indicamos si falló el número o el RUT.
+                #
+                # Así evitamos revelar si un número de pedido existe.
+                # =============================================================
 
-            pedido = (
+                if pedido_encontrado is None:
+
+                    form.add_error(
+                        None,
+                        (
+                            "No pudimos validar los datos "
+                            "del pedido. Revisa el número "
+                            "y el RUT ingresados."
+                        ),
+                    )
+
+                else:
+
+                    # =========================================================
+                    # RUT GUARDADO EN PEDIDO
+                    # =========================================================
+
+                    rut_pedido = (
+                        _normalizar_rut(
+                            pedido_encontrado.rut
+                        )
+                    )
+
+                    # =========================================================
+                    # VALIDAR RUT
+                    # =========================================================
+
+                    if (
+                        not rut_pedido
+                        or rut_normalizado
+                        != rut_pedido
+                    ):
+
+                        form.add_error(
+                            None,
+                            (
+                                "No pudimos validar los datos "
+                                "del pedido. Revisa el número "
+                                "y el RUT ingresados."
+                            ),
+                        )
+
+                    else:
+
+                        # =====================================================
+                        # AUTORIZAR PEDIDO EN SESIÓN
+                        # =====================================================
+                        #
+                        # IMPORTANTE:
+                        #
+                        # Solamente llegamos aquí después
+                        # de comprobar número + RUT.
+                        # =====================================================
+
+                        _autorizar_pedido_en_sesion(
+                            request,
+                            pedido_encontrado.numero,
+                        )
+
+                        # =====================================================
+                        # REDIRECCIÓN
+                        # =====================================================
+
+                        return redirect(
+                            "core:seguimiento_pedido_numero",
+                            numero=(
+                                pedido_encontrado.numero
+                            ),
+                        )
+
+    # =========================================================================
+    # GET
+    # =========================================================================
+
+    else:
+
+        # =====================================================================
+        # URL CON NÚMERO DE PEDIDO
+        # =====================================================================
+
+        if numero_url:
+
+            pedido_encontrado = (
                 _queryset_pedidos()
                 .filter(
                     numero__iexact=(
-                        numero_normalizado
+                        numero_url
                     )
                 )
                 .first()
             )
 
             # =================================================================
-            # NO ENCONTRADO
+            # PEDIDO EXISTENTE
             # =================================================================
 
-            if pedido is None:
+            if pedido_encontrado:
 
-                form.add_error(
-                    "numero",
-                    (
-                        "No encontramos un pedido "
-                        "con ese número."
-                    ),
-                )
+                # =============================================================
+                # YA TIENE AUTORIZACIÓN
+                # =============================================================
+                #
+                # Puede ocurrir porque:
+                #
+                # - es administrador;
+                # - pertenece a la cuenta autenticada;
+                # - previamente validó número + RUT.
+                # =============================================================
 
-            # =================================================================
-            # ENCONTRADO
-            # =================================================================
-
-            else:
-
-                _autorizar_pedido_en_sesion(
+                if _usuario_puede_ver(
                     request,
-                    pedido.numero,
-                )
+                    pedido_encontrado,
+                ):
 
-                return redirect(
-                    "core:seguimiento_pedido_numero",
-                    numero=pedido.numero,
-                )
+                    pedido = (
+                        pedido_encontrado
+                    )
+
+                    timeline = (
+                        construir_timeline(
+                            pedido
+                        )
+                    )
+
+                    form = (
+                        BuscarPedidoForm()
+                    )
+
+                    return render(
+                        request,
+                        (
+                            "core/"
+                            "seguimiento_pedido.html"
+                        ),
+                        {
+                            "pedido": pedido,
+                            "form": form,
+                            "timeline": timeline,
+                        },
+                    )
+
+            # =================================================================
+            # NO AUTORIZADO TODAVÍA
+            # =================================================================
+            #
+            # Aunque el pedido exista, NO mostramos
+            # ninguna información.
+            #
+            # Solamente precargamos el número
+            # para que ingrese el RUT.
+            # =================================================================
+
+            form = BuscarPedidoForm(
+                initial={
+                    "numero": (
+                        numero_url
+                    ),
+                }
+            )
+
+        # =====================================================================
+        # URL SIN NÚMERO
+        # =====================================================================
+
+        else:
+
+            form = (
+                BuscarPedidoForm()
+            )
 
     # =========================================================================
-    # TIMELINE
+    # SEGURIDAD
+    # =========================================================================
+    #
+    # Nunca dejamos un pedido cargado en contexto
+    # si todavía no fue autorizado.
     # =========================================================================
 
-    if pedido:
-
-        timeline = construir_timeline(
-            pedido
-        )
+    pedido = None
+    timeline = []
 
     # =========================================================================
     # RENDER
@@ -761,6 +869,7 @@ def seguimiento_pedido(
             "timeline": timeline,
         },
     )
+
 
 
 # ==========================================================================

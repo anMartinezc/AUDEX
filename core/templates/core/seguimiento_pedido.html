@@ -46,7 +46,8 @@
 
 
                 <p>
-                    Ingresa el número de tu pedido
+                    Ingresa el número de tu pedido y el
+                    <strong>RUT utilizado al realizar la compra</strong>
                     para consultar su estado y seguimiento.
                 </p>
 
@@ -59,11 +60,21 @@
                     {% csrf_token %}
 
 
+                    <!-- =============================================
+                         ERRORES GENERALES
+                    ============================================== -->
+
                     {% if form.non_field_errors %}
 
                         <div class="form-error">
 
-                            {{ form.non_field_errors }}
+                            {% for error in form.non_field_errors %}
+
+                                <p>
+                                    {{ error }}
+                                </p>
+
+                            {% endfor %}
 
                         </div>
 
@@ -86,7 +97,88 @@
                         {{ form.numero }}
 
 
-                        {{ form.numero.errors }}
+                        {% if form.numero.errors %}
+
+                            <div class="form-error">
+
+                                {% for error in form.numero.errors %}
+
+                                    <p>
+                                        {{ error }}
+                                    </p>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- =============================================
+                         RUT UTILIZADO EN LA COMPRA
+                    ============================================== -->
+
+                    <div class="campo">
+
+                        <label for="{{ form.rut.id_for_label }}">
+
+                            {{ form.rut.label }}
+
+                        </label>
+
+
+                        {{ form.rut }}
+
+
+                        <!-- =========================================
+                             TEXTO DE AYUDA
+                        ========================================== -->
+
+                        <p class="campo__ayuda">
+
+                            Debes ingresar el
+                            <strong>
+                                mismo RUT que utilizaste al realizar
+                                la compra de este producto.
+                            </strong>
+
+                        </p>
+
+
+                        {% if form.rut.errors %}
+
+                            <div class="form-error">
+
+                                {% for error in form.rut.errors %}
+
+                                    <p>
+                                        {{ error }}
+                                    </p>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- =============================================
+                         AVISO DE SEGURIDAD
+                    ============================================== -->
+
+                    <div class="buscar-pedido__seguridad">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <span>
+                            Por seguridad, verificaremos que el
+                            número de pedido y el RUT correspondan
+                            a la misma compra.
+                        </span>
 
                     </div>
 
@@ -421,5 +513,239 @@
     </div>
 
 </section>
+
+
+<!-- =============================================================
+     FORMATEADOR AUTOMÁTICO DE RUT
+============================================================== -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // =========================================================
+    // OBTENER CAMPO RUT
+    // =========================================================
+
+    const campoRut =
+        document.getElementById("id_rut")
+        || document.querySelector(".js-rut");
+
+
+    // =========================================================
+    // SI EL FORMULARIO NO ESTÁ PRESENTE
+    // =========================================================
+
+    if (!campoRut) {
+        return;
+    }
+
+
+    // =========================================================
+    // CONFIGURACIÓN
+    // =========================================================
+
+    campoRut.setAttribute(
+        "maxlength",
+        "12"
+    );
+
+    campoRut.setAttribute(
+        "autocomplete",
+        "off"
+    );
+
+    campoRut.setAttribute(
+        "spellcheck",
+        "false"
+    );
+
+
+    // =========================================================
+    // FORMATEAR RUT
+    // =========================================================
+
+    function formatearRut(valor) {
+
+        // -----------------------------------------------------
+        // SABER SI EL ÚLTIMO CARÁCTER INGRESADO ES K
+        // -----------------------------------------------------
+
+        const terminaEnK = /k$/i.test(
+            valor.trim()
+        );
+
+
+        // -----------------------------------------------------
+        // ELIMINAR PUNTOS, GUIONES, ESPACIOS Y OTROS CARACTERES
+        // -----------------------------------------------------
+
+        let limpio = valor
+            .replace(
+                /[^0-9kK]/g,
+                ""
+            )
+            .toUpperCase();
+
+
+        // -----------------------------------------------------
+        // LA K SOLO PUEDE SER DÍGITO VERIFICADOR
+        // -----------------------------------------------------
+
+        limpio = limpio.replace(
+            /K/g,
+            ""
+        );
+
+
+        // -----------------------------------------------------
+        // MÁXIMO 9 CARACTERES SIN FORMATO
+        //
+        // 8 dígitos de cuerpo
+        // +
+        // 1 dígito verificador
+        // -----------------------------------------------------
+
+        if (terminaEnK) {
+
+            limpio = limpio.slice(
+                0,
+                8
+            );
+
+            limpio += "K";
+
+        } else {
+
+            limpio = limpio.slice(
+                0,
+                9
+            );
+
+        }
+
+
+        // -----------------------------------------------------
+        // VACÍO
+        // -----------------------------------------------------
+
+        if (!limpio) {
+            return "";
+        }
+
+
+        // -----------------------------------------------------
+        // UN SOLO CARÁCTER
+        // -----------------------------------------------------
+
+        if (limpio.length === 1) {
+            return limpio;
+        }
+
+
+        // -----------------------------------------------------
+        // SEPARAR CUERPO Y DÍGITO VERIFICADOR
+        // -----------------------------------------------------
+
+        const dv = limpio.slice(
+            -1
+        );
+
+        let cuerpo = limpio.slice(
+            0,
+            -1
+        );
+
+
+        // -----------------------------------------------------
+        // EL CUERPO SOLO PUEDE CONTENER NÚMEROS
+        // -----------------------------------------------------
+
+        cuerpo = cuerpo.replace(
+            /\D/g,
+            ""
+        );
+
+
+        // -----------------------------------------------------
+        // MÁXIMO 8 DÍGITOS EN EL CUERPO
+        // -----------------------------------------------------
+
+        cuerpo = cuerpo.slice(
+            0,
+            8
+        );
+
+
+        // -----------------------------------------------------
+        // AGREGAR PUNTOS
+        //
+        // 12345678
+        //
+        // pasa a:
+        //
+        // 12.345.678
+        // -----------------------------------------------------
+
+        cuerpo = cuerpo.replace(
+            /\B(?=(\d{3})+(?!\d))/g,
+            "."
+        );
+
+
+        // -----------------------------------------------------
+        // RESULTADO
+        // -----------------------------------------------------
+
+        return (
+            cuerpo
+            + "-"
+            + dv
+        );
+    }
+
+
+    // =========================================================
+    // AL ESCRIBIR
+    // =========================================================
+
+    campoRut.addEventListener(
+        "input",
+        function () {
+
+            campoRut.value = (
+                formatearRut(
+                    campoRut.value
+                )
+            );
+
+        }
+    );
+
+
+    // =========================================================
+    // AL PEGAR / AUTOCOMPLETAR
+    // =========================================================
+    //
+    // Si llega un valor sin formato:
+    //
+    // 123456789
+    //
+    // se transforma en:
+    //
+    // 12.345.678-9
+    // =========================================================
+
+    if (campoRut.value) {
+
+        campoRut.value = (
+            formatearRut(
+                campoRut.value
+            )
+        );
+
+    }
+
+});
+</script>
 
 {% endblock %}

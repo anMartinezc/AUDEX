@@ -1,5 +1,8 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    UserPassesTestMixin,
+)
 from django.db.models import Case, DecimalField, F, Q, When
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -114,7 +117,11 @@ logger = logging.getLogger(__name__)
 
 
 
-class AdministradorProductosMixin(UserPassesTestMixin):
+
+class AdministradorProductosMixin(
+    LoginRequiredMixin,
+    UserPassesTestMixin,
+):  
     raise_exception = True
 
     def test_func(self):
