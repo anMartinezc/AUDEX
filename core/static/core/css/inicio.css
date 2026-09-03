@@ -576,6 +576,8 @@ img {
 
     z-index: 5;
 
+    box-sizing: border-box;
+
     display: flex;
     align-items: center;
 
@@ -2853,20 +2855,41 @@ img {
 
 
 /* =========================================================
-   RESPONSIVE - 1350px
+   RESPONSIVE - ESCRITORIO INTERMEDIO
+   1201px a 1499px
+
+   Corrección visual de las tarjetas flotantes:
+   evita que queden pegadas a los bordes de la pantalla
+   en producción y las mantiene más cerca del círculo.
 ========================================================= */
 
-@media (max-width: 1350px) {
+@media (min-width: 1201px) and (max-width: 1499px) {
 
     .hero__tarjeta--superior {
+        top: 11%;
+
         left: auto;
-        right: 0;
+
+        right:
+            clamp(
+                34px,
+                4vw,
+                58px
+            );
     }
 
 
     .hero__tarjeta--inferior {
         right: auto;
-        left: 0;
+
+        left:
+            clamp(
+                34px,
+                4vw,
+                58px
+            );
+
+        bottom: 9%;
     }
 
 }
