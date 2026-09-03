@@ -6,42 +6,70 @@
     Audex | Descubre EarFun en Chile
 {% endblock %}
 
+
 {% block extra_css %}
+
 <link
     rel="stylesheet"
-    href="{% static 'core/css/inicio.css' %}?v=2"
+    href="{% static 'core/css/inicio.css' %}?v=7"
 >
+
 {% endblock %}
 
+
 {% block content %}
+
 
 <!-- =====================================================
      HERO PRINCIPAL
 ===================================================== -->
-<section class="hero" id="inicio">
 
-    <div class="contenedor inicio-contenedor hero__contenido">
+<section
+    class="hero"
+    id="inicio"
+>
+
+    <div class="inicio-contenedor hero__contenido">
+
 
         <!-- =================================================
              TEXTO
         ================================================== -->
+
         <div class="hero__texto">
 
             <span class="hero__etiqueta">
+
                 <i class="bi bi-stars"></i>
+
                 Descubre EarFun
+
             </span>
 
+
             <h1>
+
                 Una nueva forma
-                <span>de escuchar.</span>
+
+                <span>
+                    de escuchar.
+                </span>
+
             </h1>
 
+
             <p>
+
                 Descubre EarFun en Audex: tecnología de audio inalámbrico
                 pensada para disfrutar tu música, aislarte del ruido,
                 comunicarte mejor y acompañarte en cada momento del día.
+
             </p>
+
+
+            <!-- =================================================
+                 BOTONES
+            ================================================== -->
 
             <div class="hero__botones">
 
@@ -49,15 +77,21 @@
                     href="{% url 'core:productos' %}"
                     class="boton boton--primario"
                 >
+
                     Ver Productos
+
                     <i class="bi bi-arrow-right"></i>
+
                 </a>
+
 
                 <a
                     href="{% url 'core:nosotros' %}"
                     class="boton boton--secundario"
                 >
+
                     Conoce EarFun
+
                 </a>
 
             </div>
@@ -66,7 +100,11 @@
             <!-- =================================================
                  DATOS DESTACADOS
             ================================================== -->
+
             <div class="hero__datos">
+
+
+                <!-- ANC -->
 
                 <div class="hero__dato">
 
@@ -80,6 +118,9 @@
 
                 </div>
 
+
+                <!-- HI-RES -->
+
                 <div class="hero__dato">
 
                     <strong>
@@ -91,6 +132,9 @@
                     </span>
 
                 </div>
+
+
+                <!-- BLUETOOTH -->
 
                 <div class="hero__dato">
 
@@ -112,12 +156,23 @@
         <!-- =================================================
              VISUAL HERO
         ================================================== -->
+
         <div class="hero__visual">
+
+
+            <!-- =================================================
+                 CÍRCULO
+            ================================================== -->
 
             <div
                 class="hero__circulo"
                 aria-hidden="true"
             ></div>
+
+
+            <!-- =================================================
+                 PRODUCTO
+            ================================================== -->
 
             <div class="hero__producto">
 
@@ -130,8 +185,16 @@
             </div>
 
 
-            <!-- TARJETA SUPERIOR -->
-            <div class="hero__tarjeta hero__tarjeta--superior">
+            <!-- =================================================
+                 TARJETA SUPERIOR
+            ================================================== -->
+
+            <div
+                class="
+                    hero__tarjeta
+                    hero__tarjeta--superior
+                "
+            >
 
                 <i class="bi bi-soundwave"></i>
 
@@ -150,8 +213,16 @@
             </div>
 
 
-            <!-- TARJETA INFERIOR -->
-            <div class="hero__tarjeta hero__tarjeta--inferior">
+            <!-- =================================================
+                 TARJETA INFERIOR
+            ================================================== -->
+
+            <div
+                class="
+                    hero__tarjeta
+                    hero__tarjeta--inferior
+                "
+            >
 
                 <i class="bi bi-earbuds"></i>
 
@@ -180,17 +251,19 @@
 <!-- =====================================================
      BENEFICIOS AUDEX
 ===================================================== -->
+
 <section
     class="beneficios"
     aria-label="Beneficios de comprar en Audex"
 >
 
-    <div class="contenedor inicio-contenedor beneficios__grid">
+    <div class="inicio-contenedor beneficios__grid">
 
 
         <!-- =================================================
              DESPACHO
         ================================================== -->
+
         <article class="beneficio">
 
             <div class="beneficio__icono">
@@ -199,6 +272,7 @@
 
             </div>
 
+
             <div class="beneficio__contenido">
 
                 <h3>
@@ -206,8 +280,10 @@
                 </h3>
 
                 <p>
+
                     Recibe tus productos de forma rápida
                     y segura dentro de Chile.
+
                 </p>
 
             </div>
@@ -218,6 +294,7 @@
         <!-- =================================================
              COMPRA PROTEGIDA
         ================================================== -->
+
         <article class="beneficio">
 
             <div class="beneficio__icono">
@@ -226,6 +303,7 @@
 
             </div>
 
+
             <div class="beneficio__contenido">
 
                 <h3>
@@ -233,8 +311,10 @@
                 </h3>
 
                 <p>
+
                     Pagos seguros y protección durante
                     todo el proceso de compra.
+
                 </p>
 
             </div>
@@ -245,6 +325,7 @@
         <!-- =================================================
              CAMBIOS
         ================================================== -->
+
         <article class="beneficio">
 
             <div class="beneficio__icono">
@@ -253,6 +334,7 @@
 
             </div>
 
+
             <div class="beneficio__contenido">
 
                 <h3>
@@ -260,8 +342,10 @@
                 </h3>
 
                 <p>
+
                     Gestiona cambios y devoluciones
                     de manera sencilla.
+
                 </p>
 
             </div>
@@ -272,6 +356,7 @@
         <!-- =================================================
              ASESORÍA
         ================================================== -->
+
         <article class="beneficio">
 
             <div class="beneficio__icono">
@@ -280,6 +365,7 @@
 
             </div>
 
+
             <div class="beneficio__contenido">
 
                 <h3>
@@ -287,8 +373,10 @@
                 </h3>
 
                 <p>
+
                     Te ayudamos a encontrar el modelo
                     EarFun que mejor se adapte a ti.
+
                 </p>
 
             </div>
@@ -304,17 +392,19 @@
 <!-- =====================================================
      CONOCE EARFUN
 ===================================================== -->
+
 <section
     class="marca-earfun"
     id="earfun"
 >
 
-    <div class="contenedor inicio-contenedor marca-earfun__contenido">
+    <div class="inicio-contenedor marca-earfun__contenido">
 
 
         <!-- =================================================
              IMAGEN
         ================================================== -->
+
         <div class="marca-earfun__visual">
 
             <div class="marca-earfun__imagen">
@@ -327,6 +417,7 @@
 
             </div>
 
+
             <span
                 class="marca-earfun__decoracion"
                 aria-hidden="true"
@@ -338,18 +429,26 @@
         <!-- =================================================
              TEXTO
         ================================================== -->
+
         <div class="marca-earfun__texto">
 
             <span class="etiqueta-seccion">
+
                 Conoce EarFun
+
             </span>
 
+
             <h2>
+
                 Tecnología creada
+
                 <span>
                     para disfrutar el sonido.
                 </span>
+
             </h2>
+
 
             <p class="marca-earfun__intro">
 
@@ -358,6 +457,7 @@
                 para distintos estilos de uso.
 
             </p>
+
 
             <p>
 
@@ -372,10 +472,12 @@
             <!-- =================================================
                  CARACTERÍSTICAS
             ================================================== -->
+
             <div class="marca-earfun__caracteristicas">
 
 
                 <!-- SONIDO -->
+
                 <article class="marca-caracteristica">
 
                     <i class="bi bi-soundwave"></i>
@@ -387,8 +489,10 @@
                         </strong>
 
                         <span>
+
                             Diseñados para disfrutar música,
                             videos y llamadas con claridad.
+
                         </span>
 
                     </div>
@@ -397,6 +501,7 @@
 
 
                 <!-- ANC -->
+
                 <article class="marca-caracteristica">
 
                     <i class="bi bi-volume-mute"></i>
@@ -408,8 +513,10 @@
                         </strong>
 
                         <span>
+
                             Modelos con tecnología ANC para
                             reducir el ruido del entorno.
+
                         </span>
 
                     </div>
@@ -418,6 +525,7 @@
 
 
                 <!-- BATERÍA -->
+
                 <article class="marca-caracteristica">
 
                     <i class="bi bi-battery-charging"></i>
@@ -429,8 +537,10 @@
                         </strong>
 
                         <span>
+
                             Pensados para seguir tu rutina
                             durante horas de reproducción.
+
                         </span>
 
                     </div>
@@ -442,8 +552,13 @@
 
             <a
                 href="{% url 'core:productos' %}"
-                class="boton boton--primario marca-earfun__boton"
+                class="
+                    boton
+                    boton--primario
+                    marca-earfun__boton
+                "
             >
+
                 Descubrir productos EarFun
 
                 <i class="bi bi-arrow-right"></i>
@@ -467,45 +582,58 @@
      1 producto Over Ear
      1 producto Parlantes
 ===================================================== -->
+
 <section
     class="productos-destacados"
     id="productos-destacados"
 >
 
-    <div class="contenedor inicio-contenedor">
+    <div class="inicio-contenedor">
 
 
         <!-- =================================================
              ENCABEZADO
         ================================================== -->
+
         <header class="productos-destacados__encabezado">
 
             <div>
 
                 <span class="etiqueta-seccion">
+
                     Explora EarFun
+
                 </span>
 
+
                 <h2>
+
                     Un producto
+
                     <span>
                         para cada forma de escuchar.
                     </span>
+
                 </h2>
 
             </div>
 
+
             <div class="productos-destacados__encabezado-derecha">
 
                 <p>
+
                     Conoce un modelo destacado de cada una
                     de nuestras principales categorías.
+
                 </p>
+
 
                 <a
                     href="{% url 'core:productos' %}"
                     class="productos-destacados__ver-todos"
                 >
+
                     Ver todos
 
                     <i class="bi bi-arrow-right"></i>
@@ -519,142 +647,84 @@
 
 
         <!-- =================================================
-             GRID DE 4 PRODUCTOS
+             GRID DE PRODUCTOS
         ================================================== -->
-  
 
         <div class="productos-destacados__grid">
 
-    {% for categoria in categorias_inicio %}
 
-        {% with producto=categoria.producto_principal %}
+            {% for categoria in categorias_inicio %}
 
-            <article class="producto-destacado">
-
-                <div class="producto-destacado__media">
-
-                    <span class="producto-destacado__categoria">
-
-                        {% if categoria.nombre == "In Ear" %}
-
-                            <i class="bi bi-earbuds"></i>
-
-                        {% elif categoria.nombre == "Open Ear" %}
-
-                            <i class="bi bi-earbuds"></i>
-
-                        {% elif categoria.nombre == "Over Ear" %}
-
-                            <i class="bi bi-headphones"></i>
-
-                        {% elif categoria.nombre == "Parlantes" %}
-
-                            <i class="bi bi-speaker"></i>
-
-                        {% endif %}
-
-                        {{ categoria.nombre }}
-
-                    </span>
+                {% with producto=categoria.producto_principal %}
 
 
-                    {% if producto and producto.imagen %}
-
-                        <a
-                            href="{% url 'core:producto_detalle' producto.id %}"
-                            class="producto-destacado__imagen-enlace"
-                        >
-
-                            <img
-                                src="{{ producto.imagen.url }}"
-                                alt="{{ producto.nombre }}"
-                                class="producto-destacado__imagen"
-                                loading="lazy"
-                            >
-
-                        </a>
-
-                    {% else %}
-
-                        <div class="producto-destacado__sin-imagen">
-
-                            <i class="bi bi-image"></i>
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
+                    <article class="producto-destacado">
 
 
-                <div class="producto-destacado__contenido">
+                        <!-- =================================================
+                             MEDIA
+                        ================================================== -->
 
-                    {% if producto %}
-
-                        <span class="producto-destacado__marca">
-                            EARFUN
-                        </span>
-
-                        <h3>
-
-                            <a
-                                href="{% url 'core:producto_detalle' producto.id %}"
-                            >
-                                {{ producto.nombre }}
-                            </a>
-
-                        </h3>
+                        <div class="producto-destacado__media">
 
 
-                        {% if producto.descripcion_corta %}
+                            <!-- CATEGORÍA -->
 
-                            <p class="producto-destacado__descripcion">
-
-                                {{ producto.descripcion_corta|truncatechars:90 }}
-
-                            </p>
-
-                        {% elif producto.descripcion %}
-
-                            <p class="producto-destacado__descripcion">
-
-                                {{ producto.descripcion|striptags|truncatechars:90 }}
-
-                            </p>
-
-                        {% endif %}
+                            <span class="producto-destacado__categoria">
 
 
-                        <div class="producto-destacado__precio">
+                                {% if categoria.nombre == "In Ear" %}
 
-                            {% if producto.precio_oferta and producto.precio_oferta < producto.precio %}
+                                    <i class="bi bi-earbuds"></i>
 
-                                <div class="producto-destacado__precio-actual">
 
-                                    ${{ producto.precio_oferta|floatformat:0|intcomma }}
+                                {% elif categoria.nombre == "Open Ear" %}
 
-                                    <span>
-                                        CLP
-                                    </span>
+                                    <i class="bi bi-earbuds"></i>
 
-                                </div>
 
-                                <div class="producto-destacado__precio-anterior">
+                                {% elif categoria.nombre == "Over Ear" %}
 
-                                    ${{ producto.precio|floatformat:0|intcomma }}
-                                    CLP
+                                    <i class="bi bi-headphones"></i>
 
-                                </div>
+
+                                {% elif categoria.nombre == "Parlantes" %}
+
+                                    <i class="bi bi-speaker"></i>
+
+                                {% endif %}
+
+
+                                {{ categoria.nombre }}
+
+                            </span>
+
+
+                            <!-- =================================================
+                                 IMAGEN
+                            ================================================== -->
+
+                            {% if producto and producto.imagen %}
+
+                                <a
+                                    href="{% url 'core:producto_detalle' producto.id %}"
+                                    class="producto-destacado__imagen-enlace"
+                                >
+
+                                    <img
+                                        src="{{ producto.imagen.url }}"
+                                        alt="{{ producto.nombre }}"
+                                        class="producto-destacado__imagen"
+                                        loading="lazy"
+                                    >
+
+                                </a>
 
                             {% else %}
 
-                                <div class="producto-destacado__precio-actual">
+                                <div class="producto-destacado__sin-imagen">
 
-                                    ${{ producto.precio|floatformat:0|intcomma }}
-
-                                    <span>
-                                        CLP
-                                    </span>
+                                    <i class="bi bi-image"></i>
 
                                 </div>
 
@@ -663,69 +733,198 @@
                         </div>
 
 
-                        <div class="producto-destacado__acciones">
+                        <!-- =================================================
+                             CONTENIDO
+                        ================================================== -->
+
+                        <div class="producto-destacado__contenido">
 
 
+                            {% if producto %}
 
-                            <a
-                                href="{% url 'core:productos' %}?categoria={{ categoria.slug }}"
-                                class="producto-destacado__ver-mas"
-                            >
-                                Ver categoría
 
-                                <i class="bi bi-arrow-right"></i>
+                                <!-- MARCA -->
 
-                            </a>
+                                <span class="producto-destacado__marca">
+
+                                    EARFUN
+
+                                </span>
+
+
+                                <!-- NOMBRE -->
+
+                                <h3>
+
+                                    <a
+                                        href="{% url 'core:producto_detalle' producto.id %}"
+                                    >
+
+                                        {{ producto.nombre }}
+
+                                    </a>
+
+                                </h3>
+
+
+                                <!-- =================================================
+                                     DESCRIPCIÓN
+                                ================================================== -->
+
+                                {% if producto.descripcion_corta %}
+
+                                    <p class="producto-destacado__descripcion">
+
+                                        {{ producto.descripcion_corta|truncatechars:90 }}
+
+                                    </p>
+
+
+                                {% elif producto.descripcion %}
+
+                                    <p class="producto-destacado__descripcion">
+
+                                        {{ producto.descripcion|striptags|truncatechars:90 }}
+
+                                    </p>
+
+                                {% endif %}
+
+
+                                <!-- =================================================
+                                     PRECIO
+                                ================================================== -->
+
+                                <div class="producto-destacado__precio">
+
+
+                                    {% if producto.precio_oferta and producto.precio_oferta < producto.precio %}
+
+
+                                        <div class="producto-destacado__precio-actual">
+
+                                            ${{ producto.precio_oferta|floatformat:0|intcomma }}
+
+                                            <span>
+                                                CLP
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="producto-destacado__precio-anterior">
+
+                                            ${{ producto.precio|floatformat:0|intcomma }}
+                                            CLP
+
+                                        </div>
+
+
+                                    {% else %}
+
+
+                                        <div class="producto-destacado__precio-actual">
+
+                                            ${{ producto.precio|floatformat:0|intcomma }}
+
+                                            <span>
+                                                CLP
+                                            </span>
+
+                                        </div>
+
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <!-- =================================================
+                                     ACCIONES
+                                ================================================== -->
+
+                                <div class="producto-destacado__acciones">
+
+                                    <a
+                                        href="{% url 'core:productos' %}?categoria={{ categoria.slug }}"
+                                        class="producto-destacado__ver-mas"
+                                    >
+
+                                        Ver categoría
+
+                                        <i class="bi bi-arrow-right"></i>
+
+                                    </a>
+
+                                </div>
+
+
+                            {% else %}
+
+
+                                <!-- =================================================
+                                     SIN PRODUCTO
+                                ================================================== -->
+
+                                <span class="producto-destacado__marca">
+
+                                    EARFUN
+
+                                </span>
+
+
+                                <h3>
+
+                                    {{ categoria.nombre }}
+
+                                </h3>
+
+
+                                <p class="producto-destacado__descripcion">
+
+                                    No hay productos activos disponibles
+                                    actualmente en esta categoría.
+
+                                </p>
+
+
+                                <a
+                                    href="{% url 'core:productos' %}?categoria={{ categoria.slug }}"
+                                    class="producto-destacado__ver-mas"
+                                >
+
+                                    Ver categoría
+
+                                    <i class="bi bi-arrow-right"></i>
+
+                                </a>
+
+
+                            {% endif %}
 
                         </div>
 
-                    {% else %}
+                    </article>
 
-                        <span class="producto-destacado__marca">
-                            EARFUN
-                        </span>
 
-                        <h3>
-                            {{ categoria.nombre }}
-                        </h3>
+                {% endwith %}
 
-                        <p class="producto-destacado__descripcion">
-                            No hay productos activos disponibles
-                            actualmente en esta categoría.
-                        </p>
+            {% endfor %}
 
-                        <a
-                            href="{% url 'core:productos' %}?categoria={{ categoria.slug }}"
-                            class="producto-destacado__ver-mas"
-                        >
-                            Ver categoría
-
-                            <i class="bi bi-arrow-right"></i>
-
-                        </a>
-
-                    {% endif %}
-
-                </div>
-
-            </article>
-
-        {% endwith %}
-
-    {% endfor %}
-
-</div>
+        </div>
 
 
         <!-- =================================================
              BOTÓN INFERIOR
         ================================================== -->
+
         <div class="productos-destacados__pie">
 
             <a
                 href="{% url 'core:productos' %}"
                 class="boton boton--secundario"
             >
+
                 Explorar todos los productos
 
                 <i class="bi bi-arrow-right"></i>
@@ -737,5 +936,6 @@
     </div>
 
 </section>
+
 
 {% endblock %}
