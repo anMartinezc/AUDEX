@@ -2855,47 +2855,6 @@ img {
 
 
 /* =========================================================
-   RESPONSIVE - ESCRITORIO INTERMEDIO
-   1201px a 1499px
-
-   Corrección visual de las tarjetas flotantes:
-   evita que queden pegadas a los bordes de la pantalla
-   en producción y las mantiene más cerca del círculo.
-========================================================= */
-
-@media (min-width: 1201px) and (max-width: 1499px) {
-
-    .hero__tarjeta--superior {
-        top: 11%;
-
-        left: auto;
-
-        right:
-            clamp(
-                34px,
-                4vw,
-                58px
-            );
-    }
-
-
-    .hero__tarjeta--inferior {
-        right: auto;
-
-        left:
-            clamp(
-                34px,
-                4vw,
-                58px
-            );
-
-        bottom: 9%;
-    }
-
-}
-
-
-/* =========================================================
    RESPONSIVE - 1200px
 ========================================================= */
 
@@ -3785,6 +3744,87 @@ img {
             17px
             17px
             20px;
+    }
+
+}
+
+
+
+
+/* =========================================================
+   POSICIÓN DEFINITIVA — TARJETAS FLOTANTES HERO
+   Objetivo:
+   - Mantener el aspecto visto correctamente en localhost.
+   - Acercar las tarjetas al borde del círculo.
+   - Evitar que en producción se peguen a los extremos.
+   - No modificar móvil ni tablet.
+========================================================= */
+
+@media (min-width: 1201px) {
+
+    .hero__visual {
+        overflow: visible;
+    }
+
+
+    /*
+     * SONIDO DE ALTA CALIDAD
+     * Superior derecha.
+     */
+    .hero__tarjeta--superior {
+        top: 9%;
+
+        left: 78%;
+        right: auto;
+
+        transform:
+            translateX(-50%);
+    }
+
+
+    /*
+     * LISTOS PARA TU RUTINA
+     * Inferior izquierda.
+     */
+    .hero__tarjeta--inferior {
+        left: 22%;
+        right: auto;
+
+        bottom: 7%;
+
+        transform:
+            translateX(-50%);
+    }
+
+
+    /*
+     * Conserva la posición horizontal al hacer hover.
+     */
+    .hero__tarjeta--superior:hover,
+    .hero__tarjeta--inferior:hover {
+        transform:
+            translateX(-50%)
+            translateY(-3px);
+    }
+
+}
+
+
+/* =========================================================
+   ESCRITORIO INTERMEDIO — 1201px A 1499px
+   Se acercan un poco más hacia el centro para asegurar
+   espacio suficiente en columnas más estrechas.
+========================================================= */
+
+@media (min-width: 1201px) and (max-width: 1499px) {
+
+    .hero__tarjeta--superior {
+        left: 76%;
+    }
+
+
+    .hero__tarjeta--inferior {
+        left: 24%;
     }
 
 }
