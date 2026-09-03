@@ -1642,7 +1642,7 @@
         padding:
             22px
             0
-            120px;
+            62px;
     }
 
 
@@ -2287,28 +2287,17 @@
 
     /* =====================================================
        BOTÓN CONTINUAR
-       Siempre visible en teléfono.
+       Permanece dentro del resumen y aparece justo debajo
+       del aviso "Despacho aún no incluido".
     ===================================================== */
 
     .carrito-continuar {
-        position: fixed;
+        position: static;
 
-        z-index: 1450;
-
-        left: 12px;
-        right: 12px;
-
-        bottom:
-            max(
-                12px,
-                env(
-                    safe-area-inset-bottom
-                )
-            );
-
-        width: auto;
-
+        width: 100%;
         min-height: 52px;
+
+        margin-top: 0;
 
         padding:
             0
@@ -2327,29 +2316,27 @@
 
         box-shadow:
             0
-            14px
-            40px
+            12px
+            30px
             rgba(
                 0,
                 0,
                 0,
-                0.42
+                0.24
             ),
             0
-            10px
-            28px
+            8px
+            22px
             rgba(
                 54,
                 169,
                 214,
-                0.3
+                0.22
             );
     }
 
 
     .carrito-continuar--deshabilitado {
-        position: static;
-
         width: 100%;
     }
 
@@ -2389,16 +2376,16 @@
 
     /* =====================================================
        TOAST
-       Se eleva para no quedar detrás del botón fijo.
+       Ya no necesita elevarse porque el botón de continuar
+       dejó de estar fijo en la pantalla.
     ===================================================== */
 
     .carrito-pagina-toast {
         right: 12px;
 
         bottom:
-            calc(
-                78px
-                +
+            max(
+                14px,
                 env(
                     safe-area-inset-bottom
                 )
