@@ -3751,80 +3751,365 @@ img {
 
 
 
+
 /* =========================================================
-   POSICIÓN DEFINITIVA — TARJETAS FLOTANTES HERO
+   SISTEMA RESPONSIVE DEFINITIVO — TARJETAS FLOTANTES HERO
+
    Objetivo:
-   - Mantener el aspecto visto correctamente en localhost.
-   - Acercar las tarjetas al borde del círculo.
-   - Evitar que en producción se peguen a los extremos.
-   - No modificar móvil ni tablet.
+   - Anclar las tarjetas al círculo central.
+   - Evitar que se peguen o salgan por los bordes.
+   - Mantener una posición consistente entre localhost
+     y producción.
+   - Adaptarse a escritorio, notebook, tablet y móvil.
 ========================================================= */
 
-@media (min-width: 1201px) {
+.hero__visual {
+    /*
+     * Valores base.
+     *
+     * --hero-circulo-ancho:
+     * ancho real del círculo usado también para calcular
+     * la posición de las tarjetas.
+     *
+     * --hero-tarjeta-mitad:
+     * aproximadamente la mitad del ancho de cada tarjeta.
+     * Se usa como límite para impedir que salga del visual.
+     *
+     * --hero-tarjeta-entrada:
+     * cuánto entra la tarjeta hacia el interior del círculo.
+     */
+    --hero-circulo-ancho:
+        min(
+            91%,
+            535px
+        );
+
+    --hero-tarjeta-mitad: 128px;
+    --hero-tarjeta-entrada: 105px;
+
+    --hero-tarjeta-top: 11%;
+    --hero-tarjeta-bottom: 9%;
+
+    overflow: visible;
+}
+
+
+/*
+ * El círculo siempre utiliza la misma variable que sirve
+ * para posicionar las tarjetas. De esta forma el cálculo
+ * nunca queda desincronizado con el tamaño visual real.
+ */
+.hero__circulo {
+    width:
+        var(
+            --hero-circulo-ancho
+        );
+}
+
+
+/* =========================================================
+   POSICIÓN BASE
+========================================================= */
+
+.hero__tarjeta--superior {
+    top:
+        var(
+            --hero-tarjeta-top
+        );
+
+    right: auto;
+
+    /*
+     * Posición ideal:
+     * centro del visual
+     * + mitad del círculo
+     * - entrada de la tarjeta.
+     *
+     * min() impide que el centro de la tarjeta se acerque
+     * demasiado al extremo derecho.
+     */
+    left:
+        min(
+            calc(
+                100%
+                -
+                var(--hero-tarjeta-mitad)
+                -
+                4px
+            ),
+            calc(
+                50%
+                +
+                (
+                    var(--hero-circulo-ancho)
+                    /
+                    2
+                )
+                -
+                var(--hero-tarjeta-entrada)
+            )
+        );
+
+    transform:
+        translateX(-50%);
+}
+
+
+.hero__tarjeta--inferior {
+    right: auto;
+
+    /*
+     * Posición simétrica respecto de la tarjeta superior.
+     *
+     * max() impide que el centro de la tarjeta se acerque
+     * demasiado al extremo izquierdo.
+     */
+    left:
+        max(
+            calc(
+                var(--hero-tarjeta-mitad)
+                +
+                4px
+            ),
+            calc(
+                50%
+                -
+                (
+                    var(--hero-circulo-ancho)
+                    /
+                    2
+                )
+                +
+                var(--hero-tarjeta-entrada)
+            )
+        );
+
+    bottom:
+        var(
+            --hero-tarjeta-bottom
+        );
+
+    transform:
+        translateX(-50%);
+}
+
+
+/*
+ * Conserva translateX(-50%) durante el hover.
+ * Sin esto, la tarjeta saltaría horizontalmente.
+ */
+.hero__tarjeta--superior:hover,
+.hero__tarjeta--inferior:hover {
+    transform:
+        translateX(-50%)
+        translateY(-3px);
+}
+
+
+/* =========================================================
+   NOTEBOOK / ESCRITORIO MEDIANO
+   861px — 1200px
+========================================================= */
+
+@media (min-width: 861px) and (max-width: 1200px) {
 
     .hero__visual {
-        overflow: visible;
-    }
-
-
-    /*
-     * SONIDO DE ALTA CALIDAD
-     * Superior derecha.
-     */
-    .hero__tarjeta--superior {
-        top: 9%;
-
-        left: 78%;
-        right: auto;
-
-        transform:
-            translateX(-50%);
-    }
-
-
-    /*
-     * LISTOS PARA TU RUTINA
-     * Inferior izquierda.
-     */
-    .hero__tarjeta--inferior {
-        left: 22%;
-        right: auto;
-
-        bottom: 7%;
-
-        transform:
-            translateX(-50%);
-    }
-
-
-    /*
-     * Conserva la posición horizontal al hacer hover.
-     */
-    .hero__tarjeta--superior:hover,
-    .hero__tarjeta--inferior:hover {
-        transform:
-            translateX(-50%)
-            translateY(-3px);
+        --hero-tarjeta-top: 9%;
+        --hero-tarjeta-bottom: 7%;
     }
 
 }
 
 
 /* =========================================================
-   ESCRITORIO INTERMEDIO — 1201px A 1499px
-   Se acercan un poco más hacia el centro para asegurar
-   espacio suficiente en columnas más estrechas.
+   NOTEBOOK MÁS ESTRECHO
+   861px — 1100px
 ========================================================= */
 
-@media (min-width: 1201px) and (max-width: 1499px) {
+@media (min-width: 861px) and (max-width: 1100px) {
 
-    .hero__tarjeta--superior {
-        left: 76%;
+    .hero__visual {
+        --hero-circulo-ancho:
+            min(
+                82%,
+                475px
+            );
+
+        --hero-tarjeta-mitad: 110px;
+        --hero-tarjeta-entrada: 90px;
+
+        --hero-tarjeta-top: 5%;
+        --hero-tarjeta-bottom: 4%;
     }
 
+}
 
-    .hero__tarjeta--inferior {
-        left: 24%;
+
+/* =========================================================
+   TABLET
+   621px — 860px
+========================================================= */
+
+@media (min-width: 621px) and (max-width: 860px) {
+
+    .hero__visual {
+        --hero-circulo-ancho:
+            min(
+                72%,
+                470px
+            );
+
+        --hero-tarjeta-mitad: 110px;
+        --hero-tarjeta-entrada: 90px;
+
+        --hero-tarjeta-top: 7%;
+        --hero-tarjeta-bottom: 5%;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL
+   481px — 620px
+========================================================= */
+
+@media (min-width: 481px) and (max-width: 620px) {
+
+    .hero__visual {
+        --hero-circulo-ancho: 90%;
+
+        --hero-tarjeta-mitad: 85px;
+        --hero-tarjeta-entrada: 72px;
+
+        --hero-tarjeta-top: 1%;
+        --hero-tarjeta-bottom: 1%;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL PEQUEÑO
+   381px — 480px
+========================================================= */
+
+@media (min-width: 381px) and (max-width: 480px) {
+
+    .hero__visual {
+        --hero-circulo-ancho: 94%;
+
+        --hero-tarjeta-mitad: 73px;
+        --hero-tarjeta-entrada: 66px;
+
+        --hero-tarjeta-top: 0%;
+        --hero-tarjeta-bottom: 0%;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL MUY PEQUEÑO
+   Hasta 380px
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .hero__visual {
+        --hero-circulo-ancho: 94%;
+
+        --hero-tarjeta-mitad: 66px;
+        --hero-tarjeta-entrada: 62px;
+
+        --hero-tarjeta-top: 2%;
+        --hero-tarjeta-bottom: 2%;
+    }
+
+}
+
+
+/* =========================================================
+   PANTALLAS GRANDES
+   1500px+
+========================================================= */
+
+@media (min-width: 1500px) {
+
+    .hero__visual {
+        --hero-circulo-ancho:
+            min(
+                88%,
+                600px
+            );
+
+        --hero-tarjeta-mitad: 128px;
+        --hero-tarjeta-entrada: 108px;
+
+        --hero-tarjeta-top: 13%;
+        --hero-tarjeta-bottom: 11%;
+    }
+
+}
+
+
+/* =========================================================
+   PANTALLAS MUY GRANDES / 2K
+   1900px+
+========================================================= */
+
+@media (min-width: 1900px) {
+
+    .hero__visual {
+        --hero-circulo-ancho:
+            min(
+                86%,
+                680px
+            );
+
+        --hero-tarjeta-entrada: 112px;
+
+        --hero-tarjeta-top: 14%;
+        --hero-tarjeta-bottom: 12%;
+    }
+
+}
+
+
+/* =========================================================
+   MONITORES 2560+
+========================================================= */
+
+@media (min-width: 2560px) {
+
+    .hero__visual {
+        --hero-tarjeta-entrada: 114px;
+
+        --hero-tarjeta-top: 15%;
+        --hero-tarjeta-bottom: 13%;
+    }
+
+}
+
+
+/* =========================================================
+   MONITORES 4K
+   3200px+
+========================================================= */
+
+@media (min-width: 3200px) {
+
+    .hero__visual {
+        --hero-circulo-ancho:
+            min(
+                78%,
+                760px
+            );
+
+        --hero-tarjeta-entrada: 118px;
+
+        --hero-tarjeta-top: 16%;
+        --hero-tarjeta-bottom: 14%;
     }
 
 }
