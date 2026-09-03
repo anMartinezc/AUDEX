@@ -792,14 +792,14 @@
 /* =========================================================
    GRILLA
    4 PRODUCTOS POR FILA EN ESCRITORIO
-   ÚLTIMA FILA SIEMPRE CENTRADA
 
-   IMPORTANTE:
-   La cabecera de cada categoría y la grilla comparten
-   exactamente el mismo ancho máximo. De esta forma:
-   - el título queda alineado con la primera card;
-   - el contador queda alineado con la cuarta card;
-   - las cards permanecen centradas.
+   COMPORTAMIENTO:
+   - El bloque completo permanece centrado.
+   - Los productos siempre comienzan desde la izquierda.
+   - Si una categoría tiene 1, 2 o 3 productos, ocupan
+     las primeras columnas y no se centran individualmente.
+   - El título y el contador comparten el mismo ancho
+     de referencia que la grilla.
 ========================================================= */
 
 .grupo-productos__cabecera,
@@ -812,38 +812,28 @@
 
 
 .productos-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(
+                0,
+                340px
+            )
+        );
+
     align-items: stretch;
-    justify-content: center;
+
+    justify-content: start;
 
     gap: 28px;
 }
 
 
-/*
-   Escritorio:
-   exactamente 4 cards por fila.
-
-   1444px =
-   4 cards de 340px
-   + 3 espacios de 28px.
-*/
 .productos-grid > .producto-card {
-    flex:
-        0
-        1
-        calc(
-            (
-                100%
-                -
-                84px
-            )
-            /
-            4
-        );
-
-    max-width: 340px;
+    width: 100%;
+    max-width: none;
 }
 
 
@@ -2086,7 +2076,7 @@ li:nth-child(n + 3) {
 
 /* =========================================================
    RESPONSIVE — MONITORES GRANDES / 2K+
-   4 CARDS CENTRADAS
+   4 CARDS, BLOQUE CENTRADO Y CONTENIDO A LA IZQUIERDA
 ========================================================= */
 
 @media (min-width: 1900px) {
@@ -2098,23 +2088,16 @@ li:nth-child(n + 3) {
 
 
     .productos-grid {
-        gap: 30px;
-    }
-
-
-    .productos-grid > .producto-card {
-        flex-basis:
-            calc(
-                (
-                    100%
-                    -
-                    90px
+        grid-template-columns:
+            repeat(
+                4,
+                minmax(
+                    0,
+                    370px
                 )
-                /
-                4
             );
 
-        max-width: 370px;
+        gap: 30px;
     }
 
 }
@@ -2167,19 +2150,16 @@ li:nth-child(n + 3) {
 
 
     .productos-grid {
-        gap: 22px;
-    }
-
-
-    .productos-grid > .producto-card {
-        flex-basis:
-            calc(
-                33.333%
-                -
-                14.667px
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(
+                    0,
+                    350px
+                )
             );
 
-        max-width: 350px;
+        gap: 22px;
     }
 
 
@@ -2205,19 +2185,16 @@ li:nth-child(n + 3) {
 
 
     .productos-grid {
-        gap: 18px;
-    }
-
-
-    .productos-grid > .producto-card {
-        flex-basis:
-            calc(
-                50%
-                -
-                9px
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    360px
+                )
             );
 
-        max-width: 360px;
+        gap: 18px;
     }
 
 
@@ -2312,28 +2289,22 @@ li:nth-child(n + 3) {
 
     .productos-grid {
         max-width: none;
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
+        gap: 14px;
     }
 
 
     .productos-catalogo {
         gap: 42px;
-    }
-
-
-    .productos-grid {
-        gap: 14px;
-    }
-
-
-    .productos-grid > .producto-card {
-        flex-basis:
-            calc(
-                50%
-                -
-                7px
-            );
-
-        max-width: none;
     }
 
 
@@ -2519,29 +2490,24 @@ li:nth-child(n + 3) {
 
     /*
        Dos cards por fila.
-       justify-content:center mantiene centrada
-       una última card si la cantidad es impar.
+       Si queda una sola card, comienza desde
+       la columna izquierda en vez de centrarse.
     */
     .productos-grid {
-        justify-content: center;
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
+        justify-content: start;
 
         gap:
             12px
             10px;
-    }
-
-
-    .productos-grid > .producto-card {
-        flex:
-            0
-            1
-            calc(
-                50%
-                -
-                5px
-            );
-
-        max-width: none;
     }
 
 
@@ -2886,19 +2852,18 @@ li:nth-child(n + 3) {
 @media (max-width: 420px) {
 
     .productos-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
         gap:
             9px
             8px;
-    }
-
-
-    .productos-grid > .producto-card {
-        flex-basis:
-            calc(
-                50%
-                -
-                4px
-            );
     }
 
 
