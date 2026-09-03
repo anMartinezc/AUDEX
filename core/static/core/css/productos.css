@@ -791,22 +791,59 @@
 
 /* =========================================================
    GRILLA
+   4 PRODUCTOS POR FILA EN ESCRITORIO
+   ÚLTIMA FILA SIEMPRE CENTRADA
+
+   IMPORTANTE:
+   La cabecera de cada categoría y la grilla comparten
+   exactamente el mismo ancho máximo. De esta forma:
+   - el título queda alineado con la primera card;
+   - el contador queda alineado con la cuarta card;
+   - las cards permanecen centradas.
 ========================================================= */
 
+.grupo-productos__cabecera,
 .productos-grid {
-    display: grid;
+    width: 100%;
+    max-width: 1444px;
 
-    grid-template-columns:
-        repeat(
-            auto-fill,
-            minmax(280px, 340px)
+    margin-inline: auto;
+}
+
+
+.productos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
+
+    gap: 28px;
+}
+
+
+/*
+   Escritorio:
+   exactamente 4 cards por fila.
+
+   1444px =
+   4 cards de 340px
+   + 3 espacios de 28px.
+*/
+.productos-grid > .producto-card {
+    flex:
+        0
+        1
+        calc(
+            (
+                100%
+                -
+                84px
+            )
+            /
+            4
         );
 
-    align-items: stretch;
-
-    justify-content: start;
-
-    gap: 24px;
+    max-width: 340px;
 }
 
 
@@ -992,6 +1029,125 @@
 
     box-shadow:
         0 10px 25px rgba(54, 169, 214, 0.24);
+}
+
+
+/* =========================================================
+   PRODUCTO OCULTO — SOLO ADMINISTRADOR
+========================================================= */
+
+.producto-card--oculto {
+    border-style: dashed;
+
+    border-color:
+        rgba(
+            255,
+            196,
+            73,
+            0.58
+        );
+
+    background:
+        linear-gradient(
+            155deg,
+            rgba(255, 196, 73, 0.06),
+            rgba(255, 255, 255, 0.018) 46%
+        ),
+        var(--color-fondo-secundario);
+}
+
+
+.producto-card--oculto:hover {
+    border-color:
+        rgba(
+            255,
+            208,
+            98,
+            0.85
+        );
+}
+
+
+.producto-card--oculto
+.producto-card__imagen-fondo img {
+    filter:
+        grayscale(0.38)
+        saturate(0.72)
+        brightness(0.9);
+}
+
+
+.producto-card--oculto:hover
+.producto-card__imagen-fondo img {
+    filter:
+        grayscale(0.22)
+        saturate(0.82)
+        brightness(0.96);
+}
+
+
+.producto-card__oculto {
+    min-height: 30px;
+
+    padding:
+        0
+        10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    color: #ffe092;
+
+    font-size: 0.6rem;
+    font-weight: 900;
+
+    line-height: 1;
+
+    letter-spacing: 0.04em;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            208,
+            98,
+            0.34
+        );
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            50,
+            35,
+            8,
+            0.9
+        );
+
+    box-shadow:
+        0
+        8px
+        24px
+        rgba(
+            0,
+            0,
+            0,
+            0.24
+        );
+}
+
+
+.producto-card__oculto i {
+    flex: 0 0 auto;
+
+    font-size: 0.72rem;
 }
 
 
@@ -1929,7 +2085,45 @@ li:nth-child(n + 3) {
 
 
 /* =========================================================
+   RESPONSIVE — MONITORES GRANDES / 2K+
+   4 CARDS CENTRADAS
+========================================================= */
+
+@media (min-width: 1900px) {
+
+    .grupo-productos__cabecera,
+    .productos-grid {
+        max-width: 1570px;
+    }
+
+
+    .productos-grid {
+        gap: 30px;
+    }
+
+
+    .productos-grid > .producto-card {
+        flex-basis:
+            calc(
+                (
+                    100%
+                    -
+                    90px
+                )
+                /
+                4
+            );
+
+        max-width: 370px;
+    }
+
+}
+
+
+/* =========================================================
    RESPONSIVE GRANDE
+   HASTA 1180px
+   3 PRODUCTOS POR FILA
 ========================================================= */
 
 @media (max-width: 1180px) {
@@ -1940,6 +2134,7 @@ li:nth-child(n + 3) {
         flex-direction: column;
     }
 
+
     .gestion-catalogo {
         width: 100%;
 
@@ -1947,39 +2142,89 @@ li:nth-child(n + 3) {
         max-width: 680px;
     }
 
+
     .productos-herramientas {
         grid-template-columns:
             1fr
             1fr;
     }
 
+
     .productos-buscador {
         grid-column: 1 / -1;
     }
 
+
     .boton-aplicar-filtros {
         width: 100%;
     }
+
+
+    .grupo-productos__cabecera,
+    .productos-grid {
+        max-width: 1094px;
+    }
+
+
+    .productos-grid {
+        gap: 22px;
+    }
+
+
+    .productos-grid > .producto-card {
+        flex-basis:
+            calc(
+                33.333%
+                -
+                14.667px
+            );
+
+        max-width: 350px;
+    }
+
+
+    .producto-card {
+        min-height: 575px;
+    }
+
 }
 
 
 /* =========================================================
    TABLET
+   HASTA 900px
+   2 PRODUCTOS POR FILA
 ========================================================= */
 
-@media (max-width: 1000px) {
+@media (max-width: 900px) {
+
+    .grupo-productos__cabecera,
+    .productos-grid {
+        max-width: 738px;
+    }
+
 
     .productos-grid {
-        grid-template-columns:
-            repeat(
-                auto-fill,
-                minmax(270px, 1fr)
-            );
+        gap: 18px;
     }
 
-    .producto-card {
-        min-height: 585px;
+
+    .productos-grid > .producto-card {
+        flex-basis:
+            calc(
+                50%
+                -
+                9px
+            );
+
+        max-width: 360px;
     }
+
+
+    .producto-card {
+        min-height: 560px;
+    }
+
 }
 
 
@@ -1990,30 +2235,42 @@ li:nth-child(n + 3) {
 @media (max-width: 700px) {
 
     .productos-seccion {
-        padding: 52px 0 80px;
+        padding:
+            52px
+            0
+            80px;
     }
+
 
     .productos-cabecera {
         margin-bottom: 26px;
 
-        padding: 2.25rem 0 1.75rem;
+        padding:
+            2.25rem
+            0
+            1.75rem;
     }
+
 
     .productos-cabecera__texto h1 {
         font-size: 2.4rem;
     }
 
+
     .gestion-catalogo {
         padding: 17px;
     }
+
 
     .gestion-catalogo__acciones {
         grid-template-columns: 1fr;
     }
 
+
     .gestion-catalogo__boton {
         width: 100%;
     }
+
 
     .productos-herramientas {
         padding: 14px;
@@ -2021,14 +2278,17 @@ li:nth-child(n + 3) {
         grid-template-columns: 1fr;
     }
 
+
     .productos-buscador {
         grid-column: auto;
     }
+
 
     .filtro-select,
     .boton-aplicar-filtros {
         width: 100%;
     }
+
 
     .productos-resultados {
         align-items: flex-start;
@@ -2038,7 +2298,10 @@ li:nth-child(n + 3) {
         gap: 8px;
     }
 
+
     .grupo-productos__cabecera {
+        max-width: none;
+
         align-items: flex-start;
 
         flex-direction: column;
@@ -2046,9 +2309,33 @@ li:nth-child(n + 3) {
         gap: 10px;
     }
 
+
     .productos-grid {
-        grid-template-columns: 1fr;
+        max-width: none;
     }
+
+
+    .productos-catalogo {
+        gap: 42px;
+    }
+
+
+    .productos-grid {
+        gap: 14px;
+    }
+
+
+    .productos-grid > .producto-card {
+        flex-basis:
+            calc(
+                50%
+                -
+                7px
+            );
+
+        max-width: none;
+    }
+
 
     .producto-card {
         min-height: 0;
@@ -2056,134 +2343,614 @@ li:nth-child(n + 3) {
         height: auto;
     }
 
+
     .producto-card__pie {
-        margin-top: 14px;
+        margin-top: 12px;
     }
+
 
     .producto-card__precio {
         min-height: 0;
     }
+
 }
 
 
 /* =========================================================
-   MÓVIL
+   MÓVIL ECOMMERCE
+   HASTA 620px
+   2 CARDS COMPACTAS POR FILA
 ========================================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 620px) {
+
+    .productos-seccion {
+        padding:
+            38px
+            0
+            62px;
+    }
+
+
+    .productos-cabecera {
+        margin-bottom: 20px;
+
+        padding:
+            1.5rem
+            0
+            1.1rem;
+    }
+
+
+    .productos-cabecera__texto .etiqueta-seccion {
+        margin-bottom: 11px;
+    }
+
 
     .productos-cabecera__texto h1 {
-        font-size: 2rem;
+        margin:
+            0.75rem
+            0
+            0.55rem;
+
+        font-size:
+            clamp(
+                1.9rem,
+                9vw,
+                2.35rem
+            );
     }
 
-    .gestion-catalogo__titulo {
-        align-items: flex-start;
+
+    .productos-cabecera__texto p {
+        font-size: 0.82rem;
+
+        line-height: 1.5;
     }
+
+
+    .productos-herramientas {
+        padding: 10px;
+
+        gap: 8px;
+
+        border-radius: 16px;
+    }
+
+
+    .productos-buscador,
+    .filtro-select,
+    .boton-aplicar-filtros {
+        min-height: 50px;
+    }
+
+
+    .productos-buscador {
+        padding-inline: 13px;
+    }
+
+
+    .filtro-select {
+        padding:
+            6px
+            37px
+            6px
+            10px;
+    }
+
+
+    .filtro-select__icono {
+        width: 30px;
+        height: 30px;
+
+        flex-basis: 30px;
+    }
+
+
+    .categorias-rapidas {
+        margin-top: 13px;
+
+        gap: 7px;
+    }
+
 
     .categoria-rapida {
-        min-height: 36px;
+        min-height: 34px;
 
-        padding-inline: 13px;
+        padding-inline: 12px;
 
-        font-size: 0.68rem;
+        font-size: 0.64rem;
     }
+
+
+    .productos-resultados {
+        margin:
+            18px
+            0
+            12px;
+
+        font-size: 0.76rem;
+    }
+
+
+    .productos-catalogo {
+        gap: 34px;
+    }
+
+
+    .grupo-productos__cabecera {
+        margin-bottom: 13px;
+
+        padding-bottom: 11px;
+    }
+
+
+    .grupo-productos__linea {
+        width: 4px;
+        height: 34px;
+
+        flex-basis: 4px;
+    }
+
+
+    .grupo-productos__titulo {
+        gap: 10px;
+    }
+
+
+    .grupo-productos__titulo > div > span {
+        font-size: 0.54rem;
+    }
+
 
     .grupo-productos__titulo h2 {
-        font-size: 1.55rem;
+        font-size: 1.35rem;
     }
 
+
     .grupo-productos__cantidad {
-        font-size: 0.62rem;
+        padding:
+            5px
+            8px;
+
+        font-size: 0.56rem;
     }
+
+
+    /*
+       Dos cards por fila.
+       justify-content:center mantiene centrada
+       una última card si la cantidad es impar.
+    */
+    .productos-grid {
+        justify-content: center;
+
+        gap:
+            12px
+            10px;
+    }
+
+
+    .productos-grid > .producto-card {
+        flex:
+            0
+            1
+            calc(
+                50%
+                -
+                5px
+            );
+
+        max-width: none;
+    }
+
 
     .producto-card {
         min-height: 0;
 
-        border-radius: 20px;
-    }
+        height: auto;
 
-    .producto-card__media {
-        aspect-ratio: 5 / 4;
-
-        padding: 9px;
-    }
-
-    .producto-card__imagen,
-    .producto-card__imagen-fondo {
         border-radius: 15px;
     }
 
-    .producto-card__imagen-fondo {
-        padding: 7px;
+
+    .producto-card:hover {
+        transform:
+            translateY(-3px);
     }
+
+
+    /* =====================================================
+       IMAGEN COMPACTA
+    ===================================================== */
+
+    .producto-card__media {
+        aspect-ratio: 1 / 1;
+
+        padding: 6px;
+    }
+
+
+    .producto-card__imagen,
+    .producto-card__imagen-fondo {
+        border-radius: 11px;
+    }
+
+
+    .producto-card__imagen-fondo {
+        padding: 5px;
+    }
+
 
     .producto-card__imagen-fondo img {
-        width: 95%;
-        height: 95%;
+        width: 96%;
+        height: 96%;
 
-        max-width: 95%;
-        max-height: 95%;
+        max-width: 96%;
+        max-height: 96%;
     }
 
-    .producto-card__contenido {
-        padding: 17px 18px 18px;
+
+    .producto-card__imagen--default {
+        width: 68% !important;
+        height: 68% !important;
+
+        max-width: 68% !important;
+        max-height: 68% !important;
     }
 
-    .producto-card__titulo,
-    .producto-card__descripcion,
-    .producto-card__caracteristicas,
-    .producto-card__precio {
-        min-height: 0;
-    }
 
-    .producto-card__acciones {
-        grid-template-columns: 1fr;
-    }
-
-    .producto-card__admin {
-        top: 13px;
-        right: 13px;
-    }
-
-    .producto-card__admin a {
-        width: 38px;
-        height: 38px;
-    }
-
-    .producto-card__oferta {
-        width: 60px;
-        height: 60px;
-    }
+    /* =====================================================
+       BADGES
+    ===================================================== */
 
     .producto-card__badges {
-        top: 13px;
-        left: 13px;
+        top: 7px;
+        left: 7px;
+
+        flex-direction: column;
+
+        gap: 4px;
     }
+
+
+    .producto-card__oferta {
+        width: 46px;
+        height: 46px;
+
+        border-width: 1px;
+    }
+
+
+    .producto-card__oferta strong {
+        font-size: 0.73rem;
+    }
+
+
+    .producto-card__oferta small {
+        margin-top: 2px;
+
+        font-size: 0.4rem;
+    }
+
+
+    .producto-card__etiqueta {
+        padding:
+            5px
+            7px;
+
+        gap: 4px;
+
+        font-size: 0.5rem;
+    }
+
+
+    .producto-card__oculto {
+        min-height: 23px;
+
+        max-width: 118px;
+
+        padding:
+            0
+            7px;
+
+        gap: 4px;
+
+        font-size: 0.47rem;
+
+        white-space: normal;
+    }
+
+
+    .producto-card__oculto i {
+        font-size: 0.58rem;
+    }
+
+
+    /* =====================================================
+       ADMIN
+    ===================================================== */
+
+    .producto-card__admin {
+        top: 7px;
+        right: 7px;
+
+        gap: 4px;
+    }
+
+
+    .producto-card__admin a {
+        width: 29px;
+        height: 29px;
+
+        font-size: 0.7rem;
+    }
+
+
+    /* =====================================================
+       FAVORITO
+    ===================================================== */
 
     .producto-card__favorito,
     .boton-favorito {
-        right: 14px;
-        bottom: 14px;
+        right: 7px;
+        bottom: 7px;
 
-        width: 42px;
-        height: 42px;
+        width: 32px;
+        height: 32px;
+
+        font-size: 0.78rem;
     }
 
-    .producto-card__imagen--default {
-        width: 72% !important;
-        height: 72% !important;
 
-        max-width: 72% !important;
-        max-height: 72% !important;
+    /* =====================================================
+       CONTENIDO COMPACTO
+    ===================================================== */
+
+    .producto-card__contenido {
+        padding:
+            10px
+            10px
+            11px;
     }
+
+
+    .producto-card__encabezado {
+        min-height: 20px;
+
+        gap: 4px;
+    }
+
+
+    .producto-card__categoria {
+        max-width: 62%;
+
+        overflow: hidden;
+
+        font-size: 0.52rem;
+
+        letter-spacing: 0.04em;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+
+
+    .estado-stock {
+        padding:
+            4px
+            5px;
+
+        gap: 3px;
+
+        font-size: 0.46rem;
+
+        letter-spacing: 0;
+    }
+
+
+    .estado-stock i {
+        font-size: 0.55rem;
+    }
+
+
+    .producto-card__titulo {
+        margin-top: 6px;
+
+        font-size: 0.79rem;
+
+        line-height: 1.25;
+
+        -webkit-line-clamp: 2;
+    }
+
+
+    /*
+       En móvil eliminamos información secundaria.
+       La imagen, nombre, disponibilidad y precio
+       quedan como foco principal.
+    */
+    .producto-card__descripcion,
+    .producto-card__caracteristicas {
+        display: none;
+    }
+
+
+    .producto-card__pie {
+        margin-top: 7px;
+
+        padding-top: 6px;
+    }
+
+
+    .producto-card__precio {
+        min-height: 0;
+
+        padding-top: 7px;
+    }
+
+
+    .precio__anterior {
+        font-size: 0.56rem;
+    }
+
+
+    .precio--oferta strong,
+    .precio--normal strong {
+        margin-top: 2px;
+
+        font-size:
+            clamp(
+                0.9rem,
+                4.4vw,
+                1.08rem
+            );
+
+        line-height: 1.08;
+    }
+
+
+    .precio--oferta small,
+    .precio--normal > span {
+        font-size: 0.52rem;
+    }
+
+
+    /*
+       El detalle sigue disponible tocando
+       la imagen o el nombre del producto.
+       Se oculta el botón secundario para reducir
+       mucho la altura de la card.
+    */
+    .boton-detalle {
+        display: none;
+    }
+
+
+    .producto-card__acciones {
+        margin-top: 7px;
+
+        grid-template-columns: 1fr;
+
+        gap: 0;
+    }
+
+
+    .agregar-carrito {
+        min-height: 36px;
+
+        padding:
+            0
+            7px;
+
+        gap: 5px;
+
+        font-size: 0.62rem;
+
+        border-radius: 9px;
+    }
+
+
+    /*
+       El administrador ya cuenta con los botones
+       editar / eliminar sobre la imagen.
+       No necesita un botón "Solo clientes"
+       ocupando espacio en móvil.
+    */
+    .agregar-carrito--bloqueado {
+        display: none;
+    }
+
 
     .favoritos-aviso {
-        right: 14px;
-        bottom: 16px;
+        right: 12px;
+        bottom: 14px;
 
         max-width:
-            calc(100% - 28px);
+            calc(
+                100%
+                -
+                24px
+            );
     }
+
+}
+
+
+/* =========================================================
+   MÓVIL PEQUEÑO
+   HASTA 420px
+========================================================= */
+
+@media (max-width: 420px) {
+
+    .productos-grid {
+        gap:
+            9px
+            8px;
+    }
+
+
+    .productos-grid > .producto-card {
+        flex-basis:
+            calc(
+                50%
+                -
+                4px
+            );
+    }
+
+
+    .producto-card__contenido {
+        padding:
+            9px
+            8px
+            10px;
+    }
+
+
+    .producto-card__categoria {
+        max-width: 100%;
+
+        font-size: 0.49rem;
+    }
+
+
+    /*
+       En pantallas muy angostas dejamos solo
+       el nombre de categoría en el encabezado.
+       El stock sigue disponible al entrar al producto.
+    */
+    .estado-stock {
+        display: none;
+    }
+
+
+    .producto-card__titulo {
+        font-size: 0.74rem;
+    }
+
+
+    .precio--oferta strong,
+    .precio--normal strong {
+        font-size: 0.88rem;
+    }
+
+
+    .producto-card__oculto {
+        max-width: 100px;
+
+        font-size: 0.43rem;
+    }
+
+
+    .agregar-carrito {
+        min-height: 34px;
+
+        font-size: 0.58rem;
+    }
+
 }
 
 
@@ -2203,4 +2970,4 @@ li:nth-child(n + 3) {
 
         transition: none;
     }
-}
+}   

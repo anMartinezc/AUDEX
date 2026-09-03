@@ -183,67 +183,201 @@ def inicio(request):
 
 
 
-
 @ensure_csrf_cookie
 def productos(request):
+
+    # =========================================================
+    # PERMISOS
+    # =========================================================
+
+    puede_administrar = (
+        es_administrador_productos(
+            request.user
+        )
+    )
+
+
+    # =========================================================
+    # PRODUCTOS
+    # =========================================================
+
     productos_queryset = (
         Producto.objects
+        .select_related(
+            "categoria"
+        )
         .filter(
-            activo=True,
             categoria__activa=True,
         )
-        .select_related("categoria")
     )
 
-    categorias = (
-        Categoria.objects
-        .filter(
-            activa=True,
-            productos__activo=True,
+
+    # =========================================================
+    # VISIBILIDAD DE PRODUCTOS
+    # =========================================================
+
+    if not puede_administrar:
+
+        # -----------------------------------------------------
+        # CLIENTES
+        #
+        # Solo pueden ver productos publicados / activos.
+        # -----------------------------------------------------
+
+        productos_queryset = (
+            productos_queryset
+            .filter(
+                activo=True,
+            )
         )
-        .distinct()
-        .order_by(
+
+
+    # =========================================================
+    # CATEGORÍAS
+    # =========================================================
+
+    if puede_administrar:
+
+        # -----------------------------------------------------
+        # ADMINISTRADOR
+        #
+        # Puede ver categorías que tengan productos,
+        # incluso si todos sus productos están ocultos.
+        # -----------------------------------------------------
+
+        categorias = (
+            Categoria.objects
+            .filter(
+                activa=True,
+                productos__isnull=False,
+            )
+            .distinct()
+            .order_by(
+                "orden",
+                "nombre",
+            )
+        )
+
+    else:
+
+        # -----------------------------------------------------
+        # CLIENTES
+        #
+        # Solo se muestran categorías que tengan al menos
+        # un producto activo.
+        # -----------------------------------------------------
+
+        categorias = (
+            Categoria.objects
+            .filter(
+                activa=True,
+                productos__activo=True,
+            )
+            .distinct()
+            .order_by(
+                "orden",
+                "nombre",
+            )
+        )
+
+
+    # =========================================================
+    # PARÁMETROS DE FILTRO
+    # =========================================================
+
+    busqueda = (
+        request.GET.get(
+            "q",
+            "",
+        )
+        .strip()
+    )
+
+    categoria_slug = (
+        request.GET.get(
+            "categoria",
+            "",
+        )
+        .strip()
+    )
+
+    orden = (
+        request.GET.get(
             "orden",
-            "nombre",
+            "destacados",
         )
+        .strip()
     )
 
-    busqueda = request.GET.get("q", "").strip()
-    categoria_slug = request.GET.get(
-        "categoria",
-        "",
-    ).strip()
-    orden = request.GET.get(
-        "orden",
-        "destacados",
-    )
+
+    # =========================================================
+    # BÚSQUEDA
+    # =========================================================
 
     if busqueda:
-        productos_queryset = productos_queryset.filter(
-            Q(nombre__icontains=busqueda)
-            | Q(descripcion_corta__icontains=busqueda)
-            | Q(descripcion__icontains=busqueda)
-            | Q(caracteristica_1__icontains=busqueda)
-            | Q(caracteristica_2__icontains=busqueda)
-            | Q(caracteristica_3__icontains=busqueda)
+
+        productos_queryset = (
+            productos_queryset
+            .filter(
+                Q(
+                    nombre__icontains=busqueda
+                )
+                | Q(
+                    descripcion_corta__icontains=busqueda
+                )
+                | Q(
+                    descripcion__icontains=busqueda
+                )
+                | Q(
+                    caracteristica_1__icontains=busqueda
+                )
+                | Q(
+                    caracteristica_2__icontains=busqueda
+                )
+                | Q(
+                    caracteristica_3__icontains=busqueda
+                )
+            )
         )
 
+
+    # =========================================================
+    # FILTRO POR CATEGORÍA
+    # =========================================================
+
     if categoria_slug:
+
         productos_queryset = (
-            productos_queryset.filter(
+            productos_queryset
+            .filter(
                 categoria__slug=categoria_slug
             )
         )
 
+
+    # =========================================================
+    # PRECIO EFECTIVO PARA ORDENAMIENTO
+    # =========================================================
+
     productos_queryset = (
-        productos_queryset.annotate(
+        productos_queryset
+        .annotate(
             precio_orden=Case(
+
                 When(
                     precio_oferta__isnull=False,
-                    precio_oferta__lt=F("precio"),
-                    then=F("precio_oferta"),
+                    precio_oferta__lt=F(
+                        "precio"
+                    ),
+                    then=F(
+                        "precio_oferta"
+                    ),
                 ),
-                default=F("precio"),
+
+                default=F(
+                    "precio"
+                ),
+
                 output_field=DecimalField(
                     max_digits=12,
                     decimal_places=0,
@@ -252,9 +386,16 @@ def productos(request):
         )
     )
 
+
+    # =========================================================
+    # ORDENAMIENTO
+    # =========================================================
+
     if orden == "menor":
+
         productos_queryset = (
-            productos_queryset.order_by(
+            productos_queryset
+            .order_by(
                 "categoria__orden",
                 "categoria__nombre",
                 "precio_orden",
@@ -262,9 +403,12 @@ def productos(request):
             )
         )
 
+
     elif orden == "mayor":
+
         productos_queryset = (
-            productos_queryset.order_by(
+            productos_queryset
+            .order_by(
                 "categoria__orden",
                 "categoria__nombre",
                 "-precio_orden",
@@ -272,18 +416,24 @@ def productos(request):
             )
         )
 
+
     elif orden == "nombre":
+
         productos_queryset = (
-            productos_queryset.order_by(
+            productos_queryset
+            .order_by(
                 "categoria__orden",
                 "categoria__nombre",
                 "nombre",
             )
         )
 
+
     else:
+
         productos_queryset = (
-            productos_queryset.order_by(
+            productos_queryset
+            .order_by(
                 "categoria__orden",
                 "categoria__nombre",
                 "-destacado",
@@ -291,28 +441,45 @@ def productos(request):
             )
         )
 
+
+    # =========================================================
+    # CONTEXTO
+    # =========================================================
+
     contexto = {
-        "productos": productos_queryset,
-        "categorias": categorias,
-        "cantidad_productos": productos_queryset.count(),
-        "busqueda": busqueda,
-        "categoria_actual": categoria_slug,
-        "orden_actual": orden,
-        "puede_administrar": (
-            es_administrador_productos(
-                request.user
-            )
-        ),
+
+        "productos":
+            productos_queryset,
+
+        "categorias":
+            categorias,
+
+        "cantidad_productos":
+            productos_queryset.count(),
+
+        "busqueda":
+            busqueda,
+
+        "categoria_actual":
+            categoria_slug,
+
+        "orden_actual":
+            orden,
+
+        "puede_administrar":
+            puede_administrar,
     }
+
+
+    # =========================================================
+    # RENDER
+    # =========================================================
 
     return render(
         request,
         "core/productos.html",
         contexto,
     )
-
-
-
 
 
 @ensure_csrf_cookie
@@ -12172,4 +12339,48 @@ def politica_cookies(request):
     return render(
         request,
         "core/legal/politica_cookies.html",
+    )
+
+
+
+
+
+# =============================================================================
+# ERRORES HTTP
+# =============================================================================
+
+
+def error_404(
+    request,
+    exception,
+):
+    """
+    Página personalizada para errores 404.
+
+    Se muestra cuando el usuario intenta acceder
+    a una URL que no existe.
+    """
+
+    return render(
+        request,
+        "core/errores/404.html",
+        status=404,
+    )
+
+
+
+def error_500(
+    request,
+):
+    """
+    Página personalizada para errores 500.
+
+    Se muestra cuando ocurre un error interno
+    inesperado en el servidor.
+    """
+
+    return render(
+        request,
+        "core/errores/500.html",
+        status=500,
     )

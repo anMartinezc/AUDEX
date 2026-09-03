@@ -1,0 +1,370 @@
+/* =========================================================
+   AUDEX — PÁGINAS DE ERROR
+   404 / 500
+========================================================= */
+
+
+.error-pagina {
+    position: relative;
+
+    min-height:
+        calc(
+            100vh
+            -
+            160px
+        );
+
+    padding:
+        clamp(
+            80px,
+            10vw,
+            140px
+        )
+        0;
+
+    display: flex;
+    align-items: center;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            rgba(
+                54,
+                169,
+                214,
+                0.12
+            ),
+            transparent 38%
+        );
+}
+
+
+/* =========================================================
+   CONTENEDOR
+========================================================= */
+
+.error-pagina__contenedor {
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.error-pagina__contenido {
+    position: relative;
+
+    width: 100%;
+    max-width: 760px;
+
+    margin-inline: auto;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   CÓDIGO GRANDE
+========================================================= */
+
+.error-pagina__codigo {
+    position: absolute;
+
+    z-index: -1;
+
+    top: 45%;
+    left: 50%;
+
+    color:
+        rgba(
+            131,
+            216,
+            243,
+            0.055
+        );
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size:
+        clamp(
+            10rem,
+            25vw,
+            19rem
+        );
+
+    font-weight: 900;
+
+    line-height: 0.75;
+
+    letter-spacing: -0.08em;
+
+    transform:
+        translate(
+            -50%,
+            -50%
+        );
+
+    pointer-events: none;
+
+    user-select: none;
+}
+
+
+/* =========================================================
+   ICONO
+========================================================= */
+
+.error-pagina__icono {
+    width: 76px;
+    height: 76px;
+
+    margin:
+        0
+        auto
+        25px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(
+            --color-azul-claro
+        );
+
+    font-size: 1.8rem;
+
+    border:
+        1px solid
+        rgba(
+            131,
+            216,
+            243,
+            0.25
+        );
+
+    border-radius: 50%;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.09
+        );
+
+    box-shadow:
+        0
+        18px
+        45px
+        rgba(
+            54,
+            169,
+            214,
+            0.12
+        );
+}
+
+
+/* =========================================================
+   ETIQUETA
+========================================================= */
+
+.error-pagina__etiqueta {
+    display: inline-flex;
+    align-items: center;
+
+    margin-bottom: 18px;
+
+    padding:
+        8px
+        13px;
+
+    color:
+        var(
+            --color-azul-claro
+        );
+
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+
+    border:
+        1px solid
+        var(
+            --borde-azul
+        );
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.07
+        );
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.error-pagina h1 {
+    margin: 0;
+
+    color:
+        var(
+            --color-blanco
+        );
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size:
+        clamp(
+            2.3rem,
+            6vw,
+            4.4rem
+        );
+
+    font-weight: 900;
+
+    line-height: 1;
+
+    letter-spacing: -0.05em;
+}
+
+
+.error-pagina h1 span {
+    display: block;
+
+    margin-top: 8px;
+
+    color:
+        var(
+            --color-azul-claro
+        );
+}
+
+
+/* =========================================================
+   DESCRIPCIÓN
+========================================================= */
+
+.error-pagina p {
+    max-width: 600px;
+
+    margin:
+        25px
+        auto
+        0;
+
+    color:
+        var(
+            --color-gris
+        );
+
+    font-size: 0.96rem;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   ACCIONES
+========================================================= */
+
+.error-pagina__acciones {
+    margin-top: 32px;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+}
+
+
+/* =========================================================
+   MÓVIL
+========================================================= */
+
+@media (max-width: 620px) {
+
+    .error-pagina {
+        min-height:
+            calc(
+                100vh
+                -
+                120px
+            );
+
+        padding:
+            65px
+            0;
+    }
+
+
+    .error-pagina__codigo {
+        font-size:
+            clamp(
+                8rem,
+                42vw,
+                12rem
+            );
+    }
+
+
+    .error-pagina__icono {
+        width: 64px;
+        height: 64px;
+
+        margin-bottom: 20px;
+
+        font-size: 1.5rem;
+    }
+
+
+    .error-pagina h1 {
+        font-size:
+            clamp(
+                2rem,
+                11vw,
+                3rem
+            );
+    }
+
+
+    .error-pagina p {
+        font-size: 0.88rem;
+    }
+
+
+    .error-pagina__acciones {
+        flex-direction: column;
+
+        width: 100%;
+    }
+
+
+    .error-pagina__acciones .boton {
+        width: 100%;
+    }
+
+}

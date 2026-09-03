@@ -1,47 +1,33 @@
 """
 URL configuration for config project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
+The `urlpatterns` list routes URLs to views.
 
-Examples:
-
-Function views
-    1. Add an import:
-       from my_app import views
-
-    2. Add a URL to urlpatterns:
-       path('', views.home, name='home')
-
-Class-based views
-    1. Add an import:
-       from other_app.views import Home
-
-    2. Add a URL to urlpatterns:
-       path('', Home.as_view(), name='home')
-
-Including another URLconf
-    1. Import the include() function:
-       from django.urls import include, path
-
-    2. Add a URL to urlpatterns:
-       path('blog/', include('blog.urls'))
+For more information:
+https://docs.djangoproject.com/en/5.2/topics/http/urls/
 """
+
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
 
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.shortcuts import redirect
-from django.templatetags.static import static as static_url
-from django.urls import include, path
-from django.views.generic.base import RedirectView
-from django.conf import settings
-from django.urls import include, path, re_path
+from django.urls import (
+    include,
+    path,
+    re_path,
+)
 from django.views.static import serve
+
 
 # =============================================================================
 # BLOQUEO DE PANTALLAS DE GESTIÓN DE ALLAUTH
 # =============================================================================
+
 
 def bloquear_gestion_correo(request):
     """
@@ -51,7 +37,10 @@ def bloquear_gestion_correo(request):
     La cuenta utiliza un único correo y su administración no se
     expone al cliente.
     """
-    return redirect("/mi-cuenta/perfil/")
+
+    return redirect(
+        "/mi-cuenta/perfil/"
+    )
 
 
 def bloquear_conexiones_sociales(request):
@@ -60,10 +49,14 @@ def bloquear_conexiones_sociales(request):
     de conexiones sociales de django-allauth.
 
     Esto NO desactiva el inicio de sesión con Google.
+
     Solo bloquea la interfaz donde el usuario podría administrar
     o desconectar las cuentas sociales vinculadas.
     """
-    return redirect("/mi-cuenta/perfil/")
+
+    return redirect(
+        "/mi-cuenta/perfil/"
+    )
 
 
 # =============================================================================
@@ -73,7 +66,7 @@ def bloquear_conexiones_sociales(request):
 urlpatterns = [
 
     # =========================================================================
-    # ADMINISTRACIÓN
+    # ADMINISTRACIÓN DJANGO
     # =========================================================================
 
     path(
@@ -88,27 +81,28 @@ urlpatterns = [
 
     path(
         "",
-        include("core.urls"),
+        include(
+            "core.urls"
+        ),
     ),
 
 
- 
-
-
-
-
-
     # =========================================================================
-    # BLOQUEOS DE ALLAUTH
+    # BLOQUEOS DE DJANGO ALLAUTH
     # =========================================================================
     #
     # IMPORTANTE:
     #
     # Estas rutas deben estar ANTES de:
     #
-    #     path("accounts/", include("allauth.urls"))
+    #     path(
+    #         "accounts/",
+    #         include("allauth.urls"),
+    #     )
     #
-    # De esta forma Django encuentra primero nuestros bloqueos.
+    # De esta forma Django encuentra primero nuestras rutas
+    # personalizadas y evita mostrar las pantallas de gestión
+    # que no queremos exponer al cliente.
     #
     # =========================================================================
 
@@ -139,9 +133,10 @@ urlpatterns = [
     # DJANGO ALLAUTH
     # =========================================================================
     #
-    # Se mantienen disponibles las funciones necesarias:
+    # Se mantienen disponibles:
     #
     # - Registro.
+    # - Inicio de sesión.
     # - Confirmación de correo.
     # - Login social con Google.
     # - Recuperación de contraseña.
@@ -153,13 +148,50 @@ urlpatterns = [
 
     path(
         "accounts/",
-        include("allauth.urls"),
+        include(
+            "allauth.urls"
+        ),
     ),
+
 ]
 
 
 # =============================================================================
+# HANDLERS DE ERRORES PERSONALIZADOS
+# =============================================================================
+#
+# IMPORTANTE:
+#
+# Django utiliza estos handlers cuando:
+#
+#     DEBUG = False
+#
+# Con DEBUG = True Django muestra sus páginas técnicas de error
+# y no utiliza normalmente estas páginas personalizadas.
+#
+# Las vistas correspondientes deben existir en:
+#
+#     core/views.py
+#
+# =============================================================================
+
+
+handler404 = (
+    "core.views.error_404"
+)
+
+
+handler500 = (
+    "core.views.error_500"
+)
+
+
+# =============================================================================
 # ARCHIVOS MEDIA EN DESARROLLO
+# =============================================================================
+#
+# Durante desarrollo Django puede servir directamente los archivos MEDIA.
+#
 # =============================================================================
 
 if settings.DEBUG:
@@ -170,13 +202,29 @@ if settings.DEBUG:
     )
 
 
+# =============================================================================
+# ARCHIVOS MEDIA
+# =============================================================================
+#
+# Se conserva esta ruta porque ya formaba parte de la configuración
+# actual del proyecto.
+#
+# Permite resolver URLs bajo /media/.
+#
+# Si posteriormente el hosting/CDN se encarga directamente de MEDIA,
+# este bloque puede eliminarse.
+#
+# =============================================================================
 
 urlpatterns += [
+
     re_path(
         r"^media/(?P<path>.*)$",
         serve,
         {
-            "document_root": settings.MEDIA_ROOT,
+            "document_root":
+                settings.MEDIA_ROOT,
         },
     ),
+
 ]

@@ -1,0 +1,92 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+
+{% block title %}
+Página no encontrada | Audex
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/errores.css' %}?v=1"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="error-pagina">
+
+    <div class="contenedor error-pagina__contenedor">
+
+        <div class="error-pagina__contenido">
+
+            <span class="error-pagina__codigo">
+                404
+            </span>
+
+            <div class="error-pagina__icono">
+
+                <i class="bi bi-compass"></i>
+
+            </div>
+
+            <span class="error-pagina__etiqueta">
+
+                Página no encontrada
+
+            </span>
+
+            <h1>
+
+                Parece que esta página
+                <span>no está disponible.</span>
+
+            </h1>
+
+            <p>
+
+                La dirección que intentaste visitar puede haber cambiado,
+                haber sido eliminada o simplemente no existir.
+
+            </p>
+
+
+            <div class="error-pagina__acciones">
+
+                <a
+                    href="{% url 'core:inicio' %}"
+                    class="boton boton--primario"
+                >
+
+                    <i class="bi bi-house"></i>
+
+                    Volver al inicio
+
+                </a>
+
+
+                <a
+                    href="{% url 'core:productos' %}"
+                    class="boton boton--secundario"
+                >
+
+                    Ver productos
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
