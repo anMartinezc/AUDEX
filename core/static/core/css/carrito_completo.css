@@ -1628,80 +1628,790 @@
 
 /* =========================================================
    RESPONSIVE — MÓVIL
+   CARRITO COMPACTO TIPO ECOMMERCE
 ========================================================= */
 
 @media (max-width: 520px) {
 
+    /* =====================================================
+       PÁGINA
+       Dejamos espacio inferior para el botón fijo.
+    ===================================================== */
+
     .carrito-pagina {
-        padding-bottom: 75px;
+        padding:
+            22px
+            0
+            120px;
     }
+
+
+    /* =====================================================
+       BREADCRUMB
+    ===================================================== */
+
+    .carrito-pagina__breadcrumb {
+        margin-bottom: 14px;
+
+        gap: 6px;
+
+        font-size: 0.66rem;
+    }
+
+
+    /* =====================================================
+       CABECERA
+    ===================================================== */
+
+    .carrito-pagina__cabecera {
+        margin-bottom: 18px;
+
+        gap: 12px;
+    }
+
+
+    .carrito-pagina__cabecera h1 {
+        font-size:
+            clamp(
+                1.85rem,
+                9vw,
+                2.4rem
+            );
+    }
+
+
+    .carrito-pagina__cabecera p {
+        margin-top: 9px;
+
+        font-size: 0.78rem;
+
+        line-height: 1.45;
+    }
+
+
+    .carrito-seguir-comprando {
+        min-height: 40px;
+
+        padding:
+            0
+            12px;
+
+        font-size: 0.68rem;
+
+        border-radius: 10px;
+    }
+
+
+    /* =====================================================
+       PASOS
+       Más compactos para no consumir altura.
+    ===================================================== */
+
+    .carrito-pasos {
+        margin-bottom: 18px;
+
+        padding:
+            12px
+            10px;
+
+        justify-content: space-between;
+
+        gap: 4px;
+
+        overflow: hidden;
+
+        border-radius: 14px;
+    }
+
+
+    .carrito-paso {
+        min-width: 0;
+
+        gap: 5px;
+    }
+
+
+    .carrito-paso > span {
+        width: 28px;
+        height: 28px;
+
+        flex: 0 0 28px;
+
+        font-size: 0.62rem;
+    }
+
+
+    .carrito-paso div {
+        min-width: 0;
+    }
+
+
+    .carrito-paso strong {
+        font-size: 0.6rem;
+    }
+
+
+    .carrito-paso small {
+        display: none;
+    }
+
+
+    .carrito-pasos__linea {
+        min-width: 14px;
+        width: 22px;
+
+        margin:
+            0
+            3px;
+    }
+
+
+    /* =====================================================
+       GRID PRINCIPAL
+    ===================================================== */
+
+    .carrito-pagina__grid {
+        display: block;
+    }
+
+
+    /* =====================================================
+       LISTADO
+    ===================================================== */
+
+    .carrito-listado {
+        position: static;
+
+        max-height: none;
+
+        display: block;
+
+        overflow: visible;
+
+        border-radius: 0;
+    }
+
 
     .carrito-listado__encabezado {
-        padding: 16px;
+        min-height: 0;
 
-        align-items: flex-start;
-        flex-direction: column;
+        padding:
+            12px
+            13px;
+
+        flex-direction: row;
+        align-items: center;
+
+        gap: 10px;
+
+        border-radius:
+            14px
+            14px
+            0
+            0;
     }
+
+
+    .carrito-listado__encabezado h2 {
+        font-size: 1rem;
+    }
+
+
+    .carrito-listado__encabezado span {
+        margin-top: 2px;
+
+        font-size: 0.61rem;
+    }
+
+
+    .carrito-pagina-vaciar {
+        flex: 0 0 auto;
+
+        padding:
+            7px
+            8px;
+
+        gap: 5px;
+
+        font-size: 0.6rem;
+    }
+
 
     .carrito-listado__productos {
-        padding: 0 16px;
+        padding:
+            0
+            12px;
+
+        overflow: visible;
     }
+
+
+    /* =====================================================
+       PRODUCTO
+       Card horizontal y mucho más compacta.
+    ===================================================== */
 
     .carrito-producto {
-        grid-template-columns: 1fr;
+        padding:
+            13px
+            0;
+
+        grid-template-columns:
+            92px
+            minmax(
+                0,
+                1fr
+            );
+
+        align-items: start;
+
+        gap: 11px;
     }
+
+
+    /* =====================================================
+       IMAGEN
+       Siempre completa.
+    ===================================================== */
 
     .carrito-producto__imagen {
-        width: 100%;
-        height: 240px;
+        width: 92px;
+        height: 92px;
+
+        min-width: 92px;
+        min-height: 92px;
+
+        padding: 6px;
+
+        align-self: start;
+
+        overflow: hidden;
+
+        border-radius: 12px;
+
+        background:
+            radial-gradient(
+                circle at 50% 45%,
+                #ffffff 0%,
+                #f6f9fa 62%,
+                #edf3f5 100%
+            );
     }
 
+
+    .carrito-producto__imagen img {
+        width: 100%;
+        height: 100%;
+
+        max-width: 100%;
+        max-height: 100%;
+
+        object-fit: contain !important;
+        object-position: center !important;
+
+        transform: none !important;
+    }
+
+
+    .carrito-producto__imagen:hover img {
+        transform: none !important;
+    }
+
+
+    .carrito-producto__imagen > i {
+        font-size: 1.6rem;
+    }
+
+
+    /* =====================================================
+       INFORMACIÓN
+    ===================================================== */
+
+    .carrito-producto__informacion {
+        min-width: 0;
+
+        display: block;
+    }
+
+
     .carrito-producto__superior {
+        position: relative;
+
+        display: block;
+    }
+
+
+    .carrito-producto__superior > div {
+        min-width: 0;
+    }
+
+
+    /* =====================================================
+       ETIQUETAS
+    ===================================================== */
+
+    .carrito-producto__etiquetas {
+        padding-right: 28px;
+
+        gap: 4px;
+    }
+
+
+    .carrito-producto__categoria {
+        font-size: 0.5rem;
+    }
+
+
+    .carrito-producto__oferta,
+    .carrito-producto__porcentaje {
+        min-height: 18px;
+
+        padding:
+            2px
+            6px;
+
+        font-size: 0.45rem;
+    }
+
+
+    /* =====================================================
+       NOMBRE
+    ===================================================== */
+
+    .carrito-producto h3 {
+        margin-top: 5px;
+
+        padding-right: 28px;
+
+        font-size: 0.78rem;
+
+        line-height: 1.22;
+
+        display: -webkit-box;
+
+        overflow: hidden;
+
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+
+        line-clamp: 2;
+    }
+
+
+    /* =====================================================
+       ELIMINAR
+    ===================================================== */
+
+    .carrito-producto__eliminar {
+        position: absolute;
+
+        top: -2px;
+        right: 0;
+
+        width: 27px;
+        height: 27px;
+
+        font-size: 0.65rem;
+    }
+
+
+    /* =====================================================
+       PRECIO UNITARIO
+    ===================================================== */
+
+    .carrito-producto__precio-unitario {
+        margin-top: 5px;
+
+        gap: 5px;
+    }
+
+
+    .carrito-producto__unitario,
+    .carrito-producto__precio-original {
+        font-size: 0.56rem;
+    }
+
+
+    .carrito-producto__precio-oferta {
+        font-size: 0.76rem;
+    }
+
+
+    /* =====================================================
+       PARTE INFERIOR
+       Cantidad y total en una sola línea.
+    ===================================================== */
+
+    .carrito-producto__inferior {
+        margin-top: 9px;
+
+        display: grid;
+
+        grid-template-columns:
+            auto
+            minmax(
+                0,
+                1fr
+            );
+
+        align-items: end;
+
+        gap: 9px;
+    }
+
+
+    .carrito-producto__cantidad > span,
+    .carrito-producto__total > span {
+        margin-bottom: 4px;
+
+        font-size: 0.49rem;
+    }
+
+
+    /* =====================================================
+       CANTIDAD
+    ===================================================== */
+
+    .carrito-producto__cantidad > div {
+        grid-template-columns:
+            29px
+            34px
+            29px;
+
+        border-radius: 9px;
+    }
+
+
+    .carrito-producto__cantidad button {
+        width: 29px;
+        height: 29px;
+
+        font-size: 0.63rem;
+    }
+
+
+    .carrito-producto__cantidad strong {
+        min-height: 29px;
+
+        font-size: 0.68rem;
+    }
+
+
+    /*
+       Ocultamos el texto largo de stock.
+       El control de cantidad sigue respetando
+       el stock mediante el atributo disabled.
+    */
+    .carrito-producto__cantidad small {
+        display: none;
+    }
+
+
+    /* =====================================================
+       TOTAL
+    ===================================================== */
+
+    .carrito-producto__total {
+        min-width: 0;
+
+        text-align: right;
+    }
+
+
+    .carrito-producto__total-original {
+        margin-bottom: 1px;
+
+        font-size: 0.52rem;
+    }
+
+
+    .carrito-producto__total > strong {
+        font-size: 0.9rem;
+
+        line-height: 1.05;
+    }
+
+
+    .carrito-producto__ahorro {
+        margin-top: 2px;
+
+        font-size: 0.5rem;
+    }
+
+
+    /* =====================================================
+       BENEFICIOS
+       Ya aparecen en otras zonas del sitio.
+       En móvil los ocultamos para acortar el carrito.
+    ===================================================== */
+
+    .carrito-listado__beneficios {
+        display: none;
+    }
+
+
+    /* =====================================================
+       RESUMEN
+       Sigue disponible debajo del listado.
+    ===================================================== */
+
+    .carrito-resumen {
+        position: static;
+
+        margin-top: 18px;
+
+        padding:
+            17px
+            16px;
+
+        overflow: visible;
+
+        border-radius: 16px;
+    }
+
+
+    .carrito-resumen__titulo {
+        padding-bottom: 13px;
+    }
+
+
+    .carrito-resumen__titulo h2 {
+        font-size: 1.1rem;
+    }
+
+
+    .carrito-resumen__productos {
+        padding:
+            12px
+            0;
+    }
+
+
+    .carrito-resumen-producto {
+        padding:
+            9px
+            0;
+
+        column-gap: 8px;
+    }
+
+
+    .carrito-resumen-producto__nombre {
+        max-width: 180px;
+
+        font-size: 0.68rem;
+    }
+
+
+    .carrito-resumen-producto__cantidad {
+        min-width: 24px;
+        height: 20px;
+
+        padding:
+            0
+            6px;
+
+        font-size: 0.55rem;
+    }
+
+
+    .carrito-resumen-producto__total {
+        min-width: 58px;
+    }
+
+
+    .carrito-resumen-producto__total strong {
+        font-size: 0.68rem;
+    }
+
+
+    .carrito-resumen__valores {
+        padding:
+            14px
+            0;
+
         gap: 10px;
     }
 
-    .carrito-producto__inferior {
-        margin-top: 18px;
-    }
-
-    .carrito-resumen {
-        padding: 20px;
-    }
-
-    .carrito-resumen-producto {
-        grid-template-columns:
-            minmax(0, 1fr)
-            auto;
-
-        column-gap: 10px;
-    }
-
-    .carrito-resumen-producto__nombre {
-        max-width: 190px;
-    }
-
-    .carrito-resumen-producto__total {
-        min-width: 62px;
-    }
 
     .carrito-resumen__fila {
-        gap: 14px;
+        gap: 10px;
+
+        font-size: 0.66rem;
     }
+
+
+    .carrito-resumen__descuento-info small,
+    .carrito-resumen__despacho-info small {
+        font-size: 0.5rem;
+    }
+
 
     .carrito-resumen__total {
-        gap: 14px;
+        padding:
+            16px
+            0;
+
+        gap: 10px;
     }
+
+
+    .carrito-resumen__total span {
+        font-size: 0.75rem;
+    }
+
 
     .carrito-resumen__total > strong {
-        font-size: 1.35rem;
+        font-size: 1.2rem;
     }
 
+
+    .carrito-resumen__aviso-despacho {
+        margin-bottom: 12px;
+
+        padding:
+            10px
+            11px;
+    }
+
+
+    .carrito-resumen__aviso-despacho strong {
+        font-size: 0.6rem;
+    }
+
+
+    .carrito-resumen__aviso-despacho span {
+        font-size: 0.52rem;
+    }
+
+
+    /* =====================================================
+       BOTÓN CONTINUAR
+       Siempre visible en teléfono.
+    ===================================================== */
+
+    .carrito-continuar {
+        position: fixed;
+
+        z-index: 1450;
+
+        left: 12px;
+        right: 12px;
+
+        bottom:
+            max(
+                12px,
+                env(
+                    safe-area-inset-bottom
+                )
+            );
+
+        width: auto;
+
+        min-height: 52px;
+
+        padding:
+            0
+            17px;
+
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.16
+            );
+
+        border-radius: 14px;
+
+        box-shadow:
+            0
+            14px
+            40px
+            rgba(
+                0,
+                0,
+                0,
+                0.42
+            ),
+            0
+            10px
+            28px
+            rgba(
+                54,
+                169,
+                214,
+                0.3
+            );
+    }
+
+
+    .carrito-continuar--deshabilitado {
+        position: static;
+
+        width: 100%;
+    }
+
+
+    /* =====================================================
+       TEXTOS SECUNDARIOS DEL RESUMEN
+    ===================================================== */
+
+    .carrito-resumen__iva {
+        margin-top: 10px;
+
+        font-size: 0.53rem;
+    }
+
+
+    .carrito-resumen__seguridad {
+        font-size: 0.53rem;
+    }
+
+
+    .carrito-resumen__pagos {
+        margin-top: 13px;
+
+        padding-top: 12px;
+    }
+
+
+    .carrito-resumen__pagos > span {
+        font-size: 0.55rem;
+    }
+
+
+    .carrito-resumen__pagos div {
+        font-size: 1rem;
+    }
+
+
+    /* =====================================================
+       TOAST
+       Se eleva para no quedar detrás del botón fijo.
+    ===================================================== */
+
     .carrito-pagina-toast {
-        right: 14px;
-        bottom: 14px;
+        right: 12px;
+
+        bottom:
+            calc(
+                78px
+                +
+                env(
+                    safe-area-inset-bottom
+                )
+            );
 
         min-width: 0;
-        width: calc(100% - 28px);
+
+        width:
+            calc(
+                100%
+                -
+                24px
+            );
     }
 
 }
