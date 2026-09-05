@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from unfold.admin import ModelAdmin, TabularInline
+
 from .models import (
     CarritoUsuario,
     Categoria,
@@ -18,11 +20,27 @@ from .models import (
 
 
 # ============================================================
+# CONFIGURACIÓN BASE AUDEX + DJANGO UNFOLD
+# ============================================================
+
+class AudexModelAdmin(ModelAdmin):
+    """
+    Configuración visual común para todos los modelos
+    administrados por AUDEX.
+    """
+
+    list_fullwidth = True
+    list_filter_submit = True
+    warn_unsaved_form = True
+    change_form_show_cancel_button = True
+
+
+# ============================================================
 # CATEGORÍAS
 # ============================================================
 
 @admin.register(Categoria)
-class CategoriaAdmin(admin.ModelAdmin):
+class CategoriaAdmin(AudexModelAdmin):
     list_display = (
         "nombre",
         "activa",
@@ -59,7 +77,7 @@ class CategoriaAdmin(admin.ModelAdmin):
 # IMÁGENES DE PRODUCTOS
 # ============================================================
 
-class ProductoImagenInline(admin.TabularInline):
+class ProductoImagenInline(TabularInline):
     model = ProductoImagen
 
     extra = 1
@@ -77,7 +95,7 @@ class ProductoImagenInline(admin.TabularInline):
 
 
 @admin.register(ProductoImagen)
-class ProductoImagenAdmin(admin.ModelAdmin):
+class ProductoImagenAdmin(AudexModelAdmin):
     list_display = (
         "producto",
         "orden",
@@ -115,7 +133,7 @@ class ProductoImagenAdmin(admin.ModelAdmin):
 # ============================================================
 
 @admin.register(Producto)
-class ProductoAdmin(admin.ModelAdmin):
+class ProductoAdmin(AudexModelAdmin):
     list_display = (
         "nombre",
         "categoria",
@@ -311,8 +329,10 @@ class ProductoAdmin(admin.ModelAdmin):
 # ÍTEMS DE PEDIDO
 # ============================================================
 
-class PedidoItemInline(admin.TabularInline):
+class PedidoItemInline(TabularInline):
     model = PedidoItem
+
+    tab = True
 
     extra = 0
 
@@ -341,7 +361,7 @@ class PedidoItemInline(admin.TabularInline):
 
 
 @admin.register(PedidoItem)
-class PedidoItemAdmin(admin.ModelAdmin):
+class PedidoItemAdmin(AudexModelAdmin):
     list_display = (
         "pedido",
         "nombre_producto",
@@ -401,9 +421,11 @@ class PedidoItemAdmin(admin.ModelAdmin):
 # ============================================================
 
 class PedidoHistorialEstadoInline(
-    admin.TabularInline
+    TabularInline
 ):
     model = PedidoHistorialEstado
+
+    tab = True
 
     extra = 0
 
@@ -436,7 +458,7 @@ class PedidoHistorialEstadoInline(
 # ============================================================
 
 @admin.register(Pedido)
-class PedidoAdmin(admin.ModelAdmin):
+class PedidoAdmin(AudexModelAdmin):
     list_display = (
         "numero",
         "nombre_cliente_admin",
@@ -763,7 +785,7 @@ class PedidoAdmin(admin.ModelAdmin):
 
 @admin.register(PedidoHistorialEstado)
 class PedidoHistorialEstadoAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "pedido",
@@ -826,7 +848,7 @@ class PedidoHistorialEstadoAdmin(
 
 @admin.register(CodigoDescuento)
 class CodigoDescuentoAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "codigo",
@@ -1010,7 +1032,7 @@ class CodigoDescuentoAdmin(
 
 @admin.register(MetaFidelidad)
 class MetaFidelidadAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "nombre",
@@ -1153,7 +1175,7 @@ class MetaFidelidadAdmin(
 
 @admin.register(SaldoFidelidad)
 class SaldoFidelidadAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "usuario",
@@ -1206,7 +1228,7 @@ class SaldoFidelidadAdmin(
 
 @admin.register(UsoCodigoDescuento)
 class UsoCodigoDescuentoAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "codigo",
@@ -1284,7 +1306,7 @@ class UsoCodigoDescuentoAdmin(
 
 @admin.register(CorreoPedido)
 class CorreoPedidoAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "pedido",
@@ -1349,7 +1371,7 @@ class CorreoPedidoAdmin(
 
 @admin.register(CarritoUsuario)
 class CarritoUsuarioAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "usuario",
@@ -1380,7 +1402,7 @@ class CarritoUsuarioAdmin(
 
 @admin.register(Favorito)
 class FavoritoAdmin(
-    admin.ModelAdmin
+    AudexModelAdmin
 ):
     list_display = (
         "usuario",
