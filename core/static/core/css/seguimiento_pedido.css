@@ -829,7 +829,7 @@
 
     gap: 15px;
 
-    opacity: 0.36;
+    opacity: 0.30;
 
     transition:
         opacity var(--transicion);
@@ -854,6 +854,9 @@
 
     background:
         var(--borde);
+
+    transition:
+        background var(--transicion);
 }
 
 
@@ -883,6 +886,12 @@
 
     background:
         var(--color-fondo-secundario);
+
+    transition:
+        color var(--transicion),
+        border-color var(--transicion),
+        background var(--transicion),
+        box-shadow var(--transicion);
 }
 
 
@@ -897,6 +906,9 @@
     font-size: 0.8rem;
 
     font-weight: 800;
+
+    transition:
+        color var(--transicion);
 }
 
 
@@ -937,9 +949,11 @@
 
 .timeline-paso--completado
 .timeline-paso__icono {
-    color: #041017;
+    color:
+        #041017;
 
-    border-color: transparent;
+    border-color:
+        transparent;
 
     background:
         var(--color-azul-claro);
@@ -953,7 +967,7 @@
             54,
             169,
             214,
-            0.055
+            0.05
         );
 }
 
@@ -964,14 +978,20 @@
             54,
             169,
             214,
-            0.55
+            0.62
         );
 }
 
 
 /* =========================================================
-   TIMELINE ACTIVO
+   TIMELINE ACTUAL
 ========================================================= */
+/*
+ * La etapa ACTUAL queda completamente celeste.
+ *
+ * Se diferencia de una etapa completada mediante
+ * un halo un poco más marcado.
+ */
 
 .timeline-paso--activo {
     opacity: 1;
@@ -979,6 +999,81 @@
 
 
 .timeline-paso--activo
+.timeline-paso__icono {
+    color:
+        #041017;
+
+    border-color:
+        transparent;
+
+    background:
+        var(--color-azul-claro);
+
+    box-shadow:
+        0
+        0
+        0
+        5px
+        rgba(
+            54,
+            169,
+            214,
+            0.10
+        ),
+        0
+        0
+        22px
+        rgba(
+            54,
+            169,
+            214,
+            0.10
+        );
+}
+
+
+.timeline-paso--activo strong {
+    color:
+        var(--color-azul-claro);
+}
+
+
+.timeline-paso--activo:not(:last-child)::after {
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.62
+        );
+}
+
+
+/* =========================================================
+   PRÓXIMA ETAPA
+========================================================= */
+/*
+ * La etapa inmediatamente posterior a la actual
+ * aparece delineada en celeste.
+ *
+ * También cubre el caso en que no exista una etapa
+ * marcada como "activo", pero haya pasos completados.
+ */
+
+.timeline-paso--activo
++
+.timeline-paso:not(
+    .timeline-paso--completado
+) {
+    opacity: 0.78;
+}
+
+
+.timeline-paso--activo
++
+.timeline-paso:not(
+    .timeline-paso--completado
+)
 .timeline-paso__icono {
     color:
         var(--color-azul-claro);
@@ -991,26 +1086,90 @@
             54,
             169,
             214,
-            0.08
+            0.055
         );
 
     box-shadow:
         0
         0
         0
-        5px
+        4px
         rgba(
             54,
             169,
             214,
-            0.045
+            0.035
         );
 }
 
 
-.timeline-paso--activo strong {
+.timeline-paso--activo
++
+.timeline-paso:not(
+    .timeline-paso--completado
+)
+strong {
+    color:
+        var(--color-gris-claro);
+}
+
+
+/*
+ * Si el backend tiene todos los pasos anteriores
+ * completados pero ninguno marcado como activo,
+ * destacamos igualmente el primer paso pendiente.
+ *
+ * Ejemplo:
+ *
+ * Pedido recibido     ✓
+ * Pago confirmado     ✓
+ * En preparación      borde celeste
+ */
+
+.timeline-paso--completado
++
+.timeline-paso:not(
+    .timeline-paso--completado
+):not(
+    .timeline-paso--activo
+) {
+    opacity: 0.78;
+}
+
+
+.timeline-paso--completado
++
+.timeline-paso:not(
+    .timeline-paso--completado
+):not(
+    .timeline-paso--activo
+)
+.timeline-paso__icono {
     color:
         var(--color-azul-claro);
+
+    border-color:
+        var(--color-azul-claro);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.055
+        );
+
+    box-shadow:
+        0
+        0
+        0
+        4px
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
 }
 
 
@@ -1406,6 +1565,205 @@
 
 
 /* =========================================================
+   BOLETA ELECTRÓNICA
+========================================================= */
+
+.seguimiento-boleta {
+    width: 100%;
+
+    display: grid;
+
+    gap: 18px;
+}
+
+
+/* =========================================================
+   ESTADO BOLETA
+========================================================= */
+
+.seguimiento-boleta__estado {
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        44px
+        minmax(0, 1fr);
+
+    align-items: start;
+
+    gap: 13px;
+}
+
+
+/* =========================================================
+   ICONO BOLETA
+========================================================= */
+
+.seguimiento-boleta__icono {
+    width: 44px;
+
+    height: 44px;
+
+    display: grid;
+
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1.05rem;
+
+    line-height: 1;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.20
+        );
+
+    border-radius: 12px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.07
+        );
+
+    box-shadow:
+        0
+        0
+        18px
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+}
+
+
+/* =========================================================
+   INFORMACIÓN BOLETA
+========================================================= */
+
+.seguimiento-boleta__info {
+    min-width: 0;
+
+    padding-top: 1px;
+}
+
+
+.seguimiento-boleta__info strong {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.80rem;
+
+    font-weight: 800;
+
+    line-height: 1.35;
+}
+
+
+.seguimiento-boleta__info span {
+    display: block;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.71rem;
+
+    font-weight: 500;
+
+    line-height: 1.55;
+
+    overflow-wrap:
+        anywhere;
+}
+
+
+/* =========================================================
+   BOLETA PENDIENTE
+========================================================= */
+
+.seguimiento-boleta--pendiente
+.seguimiento-boleta__icono {
+    color:
+        #f4c95d;
+
+    border-color:
+        rgba(
+            244,
+            201,
+            93,
+            0.18
+        );
+
+    background:
+        rgba(
+            244,
+            201,
+            93,
+            0.07
+        );
+
+    box-shadow:
+        0
+        0
+        18px
+        rgba(
+            244,
+            201,
+            93,
+            0.025
+        );
+}
+
+
+.seguimiento-boleta--pendiente
+.seguimiento-boleta__info strong {
+    color:
+        var(--color-gris-claro);
+}
+
+
+/* =========================================================
+   BOTÓN DESCARGAR BOLETA
+========================================================= */
+
+.seguimiento-boleta
+.boton {
+    min-height: 46px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    text-align: center;
+}
+
+
+.seguimiento-boleta
+.boton i {
+    font-size: 0.95rem;
+}
+
+
+/* =========================================================
    RESPONSIVE TABLET
 ========================================================= */
 
@@ -1562,6 +1920,33 @@
         max-width: 58px !important;
 
         max-height: 58px !important;
+    }
+
+
+    /* =====================================================
+       BOLETA
+    ====================================================== */
+
+    .seguimiento-boleta {
+        gap: 16px;
+    }
+
+
+    .seguimiento-boleta__estado {
+        grid-template-columns:
+            42px
+            minmax(0, 1fr);
+
+        gap: 12px;
+    }
+
+
+    .seguimiento-boleta__icono {
+        width: 42px;
+
+        height: 42px;
+
+        border-radius: 11px;
     }
 
 }
@@ -1800,6 +2185,59 @@
 
     .seguimiento-direccion p {
         font-size: 0.72rem;
+    }
+
+
+    /* =====================================================
+       BOLETA
+    ====================================================== */
+
+    .seguimiento-boleta {
+        gap: 14px;
+    }
+
+
+    .seguimiento-boleta__estado {
+        grid-template-columns:
+            38px
+            minmax(0, 1fr);
+
+        gap: 10px;
+    }
+
+
+    .seguimiento-boleta__icono {
+        width: 38px;
+
+        height: 38px;
+
+        font-size: 0.92rem;
+
+        border-radius: 10px;
+    }
+
+
+    .seguimiento-boleta__info strong {
+        margin-bottom: 4px;
+
+        font-size: 0.74rem;
+
+        line-height: 1.35;
+    }
+
+
+    .seguimiento-boleta__info span {
+        font-size: 0.67rem;
+
+        line-height: 1.5;
+    }
+
+
+    .seguimiento-boleta
+    .boton {
+        min-height: 44px;
+
+        font-size: 0.74rem;
     }
 
 }

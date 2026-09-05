@@ -18,6 +18,7 @@
         80px;
 }
 
+
 .detalle-admin > .contenedor {
     position: relative;
 
@@ -33,6 +34,7 @@
     margin-bottom: 30px;
 
     display: inline-flex;
+
     align-items: center;
 
     gap: 8px;
@@ -41,12 +43,14 @@
         var(--color-gris-claro);
 
     font-size: 0.74rem;
+
     font-weight: 800;
 
     transition:
         color var(--transicion),
         transform var(--transicion);
 }
+
 
 .detalle-admin .gestion-volver:hover {
     color:
@@ -65,15 +69,19 @@
     margin-bottom: 28px;
 
     display: flex;
+
     align-items: flex-end;
+
     justify-content: space-between;
 
     gap: 30px;
 }
 
+
 .detalle-admin__cabecera > div:first-child {
     min-width: 0;
 }
+
 
 .detalle-admin__cabecera h1 {
     margin-top: 17px;
@@ -100,6 +108,7 @@
         anywhere;
 }
 
+
 .detalle-admin__cabecera p {
     margin-top: 12px;
 
@@ -116,13 +125,16 @@
 
 .detalle-admin__cabecera-estado {
     display: flex;
+
     align-items: center;
+
     justify-content: flex-end;
 
     flex-wrap: wrap;
 
     gap: 10px;
 }
+
 
 .detalle-admin__pago {
     min-height: 38px;
@@ -132,7 +144,9 @@
         14px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     gap: 7px;
@@ -141,6 +155,7 @@
         var(--color-gris-claro);
 
     font-size: 0.72rem;
+
     font-weight: 800;
 
     border:
@@ -157,6 +172,7 @@
             0.02
         );
 }
+
 
 .detalle-admin__pago--ok {
     color: #72e49d;
@@ -194,6 +210,7 @@
 
     align-items: start;
 }
+
 
 .detalle-admin__principal,
 .detalle-admin__lateral {
@@ -263,15 +280,19 @@
     margin-bottom: 22px;
 
     display: flex;
+
     align-items: flex-start;
+
     justify-content: space-between;
 
     gap: 20px;
 }
 
+
 .detalle-admin__seccion-cabecera > div {
     min-width: 0;
 }
+
 
 .detalle-admin__eyebrow {
     display: block;
@@ -282,12 +303,14 @@
         var(--color-azul-claro);
 
     font-size: 0.65rem;
+
     font-weight: 900;
 
     letter-spacing: 0.1em;
 
     text-transform: uppercase;
 }
+
 
 .detalle-admin__seccion-cabecera h2,
 .detalle-admin__lateral .seguimiento-tarjeta h2 {
@@ -298,10 +321,12 @@
         sans-serif;
 
     font-size: 1.18rem;
+
     font-weight: 800;
 
     line-height: 1.2;
 }
+
 
 .detalle-admin__contador {
     min-width: max-content;
@@ -314,6 +339,7 @@
         var(--color-gris-claro);
 
     font-size: 0.67rem;
+
     font-weight: 800;
 
     border:
@@ -342,6 +368,7 @@
     gap: 0;
 }
 
+
 .detalle-admin .seguimiento-producto {
     min-width: 0;
 
@@ -350,7 +377,9 @@
         0;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 20px;
@@ -360,9 +389,11 @@
         var(--borde);
 }
 
+
 .detalle-admin .seguimiento-producto:first-child {
     padding-top: 0;
 }
+
 
 .detalle-admin .seguimiento-producto:last-child {
     border-bottom: 0;
@@ -379,6 +410,7 @@
     flex: 1;
 
     display: flex;
+
     align-items: center;
 
     gap: 14px;
@@ -387,14 +419,15 @@
 
 /* =========================================================
    IMAGEN PRODUCTO
-   IMPORTANTE: limita la imagen para que no crezca
 ========================================================= */
 
 .seguimiento-producto__imagen {
     width: 66px;
+
     height: 66px;
 
     min-width: 66px;
+
     max-width: 66px;
 
     flex:
@@ -405,6 +438,7 @@
     overflow: hidden;
 
     display: grid;
+
     place-items: center;
 
     border:
@@ -423,13 +457,13 @@
 }
 
 
-/* MUY IMPORTANTE */
-
 .seguimiento-producto__imagen img {
     width: 100% !important;
+
     height: 100% !important;
 
     max-width: 66px !important;
+
     max-height: 66px !important;
 
     display: block;
@@ -442,7 +476,8 @@
 
     border: 0;
 
-    background: #ffffff;
+    background:
+        #ffffff;
 }
 
 
@@ -452,9 +487,11 @@
 
 .seguimiento-producto__sin-imagen {
     width: 100%;
+
     height: 100%;
 
     display: grid;
+
     place-items: center;
 
     color:
@@ -482,10 +519,12 @@
     flex: 1;
 
     display: flex;
+
     flex-direction: column;
 
     gap: 6px;
 }
+
 
 .seguimiento-producto__nombre {
     display: block;
@@ -494,6 +533,7 @@
         var(--color-blanco);
 
     font-size: 0.83rem;
+
     font-weight: 800;
 
     line-height: 1.35;
@@ -502,8 +542,10 @@
         anywhere;
 }
 
+
 .seguimiento-producto__info small {
     display: flex;
+
     align-items: center;
 
     gap: 6px;
@@ -514,12 +556,14 @@
     font-size: 0.67rem;
 }
 
+
 .seguimiento-producto__info small strong {
     color:
         var(--color-azul-claro);
 
     font-weight: 900;
 }
+
 
 .seguimiento-producto__sku {
     color:
@@ -545,6 +589,7 @@
         var(--color-blanco);
 
     font-size: 0.85rem;
+
     font-weight: 900;
 }
 
@@ -559,7 +604,9 @@
     padding-top: 20px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 20px;
@@ -569,19 +616,23 @@
         var(--borde);
 }
 
+
 .detalle-admin .seguimiento-total span {
     color:
         var(--color-gris-claro);
 
     font-size: 0.84rem;
+
     font-weight: 800;
 }
+
 
 .detalle-admin .seguimiento-total strong {
     color:
         var(--color-azul-claro);
 
     font-size: 1.45rem;
+
     font-weight: 900;
 }
 
@@ -600,7 +651,9 @@
         11px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     gap: 6px;
@@ -608,6 +661,7 @@
     color: #f4c95d;
 
     font-size: 0.66rem;
+
     font-weight: 900;
 
     border:
@@ -630,6 +684,7 @@
         );
 }
 
+
 .detalle-admin__documento-estado--ok {
     color: #72e49d;
 
@@ -649,6 +704,7 @@
             0.07
         );
 }
+
 
 .detalle-admin__documento-estado--error {
     color: #ff9098;
@@ -709,11 +765,14 @@
         );
 }
 
+
 .detalle-admin__boleta-icono {
     width: 52px;
+
     height: 52px;
 
     display: grid;
+
     place-items: center;
 
     color:
@@ -750,10 +809,12 @@
     min-width: 0;
 
     display: flex;
+
     flex-direction: column;
 
     gap: 4px;
 }
+
 
 .detalle-admin__boleta-info > span {
     color:
@@ -762,16 +823,19 @@
     font-size: 0.65rem;
 }
 
+
 .detalle-admin__boleta-info > strong {
     color:
         var(--color-blanco);
 
     font-size: 0.82rem;
+
     font-weight: 900;
 
     overflow-wrap:
         anywhere;
 }
+
 
 .detalle-admin__boleta-info > small {
     color:
@@ -787,13 +851,16 @@
 
 .detalle-admin__boleta-acciones {
     display: flex;
+
     align-items: center;
+
     justify-content: flex-end;
 
     flex-wrap: wrap;
 
     gap: 9px;
 }
+
 
 .detalle-admin__boleta-acciones .boton {
     min-height: 42px;
@@ -803,12 +870,15 @@
         14px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     gap: 7px;
 
     font-size: 0.68rem;
+
     font-weight: 900;
 }
 
@@ -822,6 +892,7 @@
     padding: 18px;
 
     display: flex;
+
     align-items: center;
 
     gap: 15px;
@@ -846,6 +917,7 @@
         );
 }
 
+
 .detalle-admin__boleta-pendiente strong,
 .detalle-admin__boleta-bloqueada strong {
     color:
@@ -853,6 +925,7 @@
 
     font-size: 0.78rem;
 }
+
 
 .detalle-admin__boleta-pendiente p,
 .detalle-admin__boleta-bloqueada p {
@@ -883,6 +956,7 @@
             0.02
         );
 }
+
 
 .detalle-admin__boleta-bloqueada > i {
     color:
@@ -927,11 +1001,14 @@
         );
 }
 
+
 .detalle-admin__boleta-error > div:first-child {
     width: 42px;
+
     height: 42px;
 
     display: grid;
+
     place-items: center;
 
     color: #ff9098;
@@ -947,11 +1024,13 @@
         );
 }
 
+
 .detalle-admin__boleta-error strong {
     color: #ffb0b6;
 
     font-size: 0.78rem;
 }
+
 
 .detalle-admin__boleta-error p {
     margin-top: 5px;
@@ -964,19 +1043,23 @@
     line-height: 1.5;
 }
 
+
 .detalle-admin__boleta-error details {
     margin-top: 12px;
 }
+
 
 .detalle-admin__boleta-error summary {
     color:
         var(--color-gris-claro);
 
     font-size: 0.68rem;
+
     font-weight: 800;
 
     cursor: pointer;
 }
+
 
 .detalle-admin__boleta-error pre {
     max-width: 100%;
@@ -992,6 +1075,7 @@
     font-size: 0.62rem;
 
     white-space: pre-wrap;
+
     overflow-wrap: anywhere;
 
     border-radius: 10px;
@@ -1015,6 +1099,7 @@
     padding: 23px;
 }
 
+
 .detalle-admin__lateral
 .seguimiento-tarjeta
 > h2 {
@@ -1034,19 +1119,23 @@
     gap: 16px;
 }
 
+
 .detalle-admin .campo {
     display: grid;
 
     gap: 8px;
 }
 
+
 .detalle-admin .campo label {
     color:
         var(--color-gris-claro);
 
     font-size: 0.7rem;
+
     font-weight: 800;
 }
+
 
 .detalle-admin .campo select,
 .detalle-admin .campo textarea,
@@ -1083,11 +1172,13 @@
         box-shadow var(--transicion);
 }
 
+
 .detalle-admin .campo textarea {
     min-height: 105px;
 
     resize: vertical;
 }
+
 
 .detalle-admin .campo select:focus,
 .detalle-admin .campo textarea:focus,
@@ -1119,6 +1210,7 @@
     padding: 16px;
 
     display: flex;
+
     align-items: flex-start;
 
     gap: 12px;
@@ -1146,11 +1238,13 @@
         );
 }
 
+
 .detalle-admin__cerrado > i {
     color: #72e49d;
 
     font-size: 1.1rem;
 }
+
 
 .detalle-admin__cerrado p {
     margin: 0;
@@ -1171,6 +1265,7 @@
     gap: 0;
 }
 
+
 .detalle-admin__datos > div {
     min-width: 0;
 
@@ -1179,7 +1274,9 @@
         0;
 
     display: flex;
+
     align-items: flex-start;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -1194,15 +1291,18 @@
         );
 }
 
+
 .detalle-admin__datos > div:first-child {
     padding-top: 0;
 }
+
 
 .detalle-admin__datos > div:last-child {
     padding-bottom: 0;
 
     border-bottom: 0;
 }
+
 
 .detalle-admin__datos > div > span {
     flex-shrink: 0;
@@ -1213,6 +1313,7 @@
     font-size: 0.67rem;
 }
 
+
 .detalle-admin__datos > div > strong {
     min-width: 0;
 
@@ -1220,6 +1321,7 @@
         var(--color-blanco);
 
     font-size: 0.7rem;
+
     font-weight: 800;
 
     text-align: right;
@@ -1227,8 +1329,10 @@
     overflow-wrap: anywhere;
 }
 
+
 .detalle-admin__dato-ok {
     display: inline-flex;
+
     align-items: center;
 
     gap: 5px;
@@ -1243,10 +1347,12 @@
 
 .detalle-admin__direccion {
     display: flex;
+
     align-items: flex-start;
 
     gap: 11px;
 }
+
 
 .detalle-admin__direccion > i {
     margin-top: 2px;
@@ -1259,6 +1365,7 @@
     font-size: 1rem;
 }
 
+
 .detalle-admin__direccion p {
     margin: 0;
 
@@ -1270,12 +1377,14 @@
     line-height: 1.65;
 }
 
+
 .detalle-admin__referencia {
     margin-top: 15px;
 
     padding: 11px;
 
     display: flex;
+
     align-items: flex-start;
 
     gap: 8px;
@@ -1302,6 +1411,7 @@
         );
 }
 
+
 .detalle-admin__referencia i {
     color:
         var(--color-azul-claro);
@@ -1309,37 +1419,215 @@
 
 
 /* =========================================================
-   HISTORIAL
+   TIMELINE / TRAZABILIDAD
+   MISMO ESTILO DEL SEGUIMIENTO DEL CLIENTE
 ========================================================= */
 
-.detalle-admin .historial-estados {
+.detalle-admin .timeline-pedido {
     display: grid;
+
+    width: 100%;
 }
 
-.detalle-admin .historial-estado {
+
+/* =========================================================
+   ETAPA BASE
+========================================================= */
+
+.detalle-admin .timeline-paso {
     position: relative;
 
-    padding:
-        0
-        0
-        25px
-        28px;
+    min-height: 102px;
+
+    display: grid;
+
+    grid-template-columns:
+        50px
+        minmax(0, 1fr);
+
+    gap: 15px;
+
+    opacity: 0.30;
+
+    transition:
+        opacity var(--transicion);
 }
 
-.detalle-admin .historial-estado:last-child {
-    padding-bottom: 0;
-}
 
-.detalle-admin .historial-estado__punto {
+/* =========================================================
+   LÍNEA VERTICAL
+========================================================= */
+
+.detalle-admin
+.timeline-paso:not(:last-child)::after {
+    content: "";
+
     position: absolute;
 
-    top: 4px;
-    left: 0;
+    top: 50px;
 
-    width: 12px;
-    height: 12px;
+    left: 24px;
+
+    width: 2px;
+
+    height:
+        calc(
+            100% - 44px
+        );
+
+    background:
+        var(--borde);
+
+    transition:
+        background var(--transicion);
+}
+
+
+/* =========================================================
+   ICONO DE LA ETAPA
+========================================================= */
+
+.detalle-admin .timeline-paso__icono {
+    position: relative;
+
+    z-index: 2;
+
+    width: 50px;
+
+    height: 50px;
+
+    display: grid;
+
+    place-items: center;
+
+    color:
+        var(--color-gris);
+
+    font-size: 1rem;
+
+    line-height: 1;
+
+    border:
+        1px solid
+        var(--borde);
 
     border-radius: 50%;
+
+    background:
+        var(--color-fondo-secundario);
+
+    transition:
+        color var(--transicion),
+        border-color var(--transicion),
+        background var(--transicion),
+        box-shadow var(--transicion);
+}
+
+
+.detalle-admin
+.timeline-paso__icono i {
+    display: block;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.detalle-admin .timeline-paso__contenido {
+    min-width: 0;
+
+    padding-top: 1px;
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.detalle-admin
+.timeline-paso__contenido strong {
+    display: block;
+
+    padding-top: 2px;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.8rem;
+
+    font-weight: 800;
+
+    line-height: 1.35;
+
+    transition:
+        color var(--transicion);
+}
+
+
+/* =========================================================
+   DESCRIPCIÓN
+========================================================= */
+
+.detalle-admin
+.timeline-paso__contenido p {
+    max-width: 540px;
+
+    margin:
+        6px
+        0
+        0;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.71rem;
+
+    font-weight: 500;
+
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   FECHA
+========================================================= */
+
+.detalle-admin
+.timeline-paso__contenido time {
+    display: inline-block;
+
+    margin-top: 7px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.65rem;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   ETAPA COMPLETADA
+========================================================= */
+
+.detalle-admin
+.timeline-paso--completado {
+    opacity: 1;
+}
+
+
+.detalle-admin
+.timeline-paso--completado
+.timeline-paso__icono {
+    color:
+        #041017;
+
+    border-color:
+        transparent;
 
     background:
         var(--color-azul-claro);
@@ -1353,58 +1641,214 @@
             54,
             169,
             214,
-            0.06
+            0.05
         );
 }
+
+
+/* =========================================================
+   LÍNEA COMPLETADA
+========================================================= */
 
 .detalle-admin
-.historial-estado:not(:last-child)::before {
-    content: "";
-
-    position: absolute;
-
-    top: 16px;
-    left: 5px;
-
-    width: 1px;
-
-    height:
-        calc(
-            100% - 10px
+.timeline-paso--completado:not(:last-child)::after {
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.62
         );
+}
+
+
+/* =========================================================
+   ETAPA ACTUAL
+========================================================= */
+/*
+   La etapa actual también queda completamente celeste.
+
+   Se diferencia de las anteriores por un halo más marcado.
+========================================================= */
+
+.detalle-admin
+.timeline-paso--activo {
+    opacity: 1;
+}
+
+
+.detalle-admin
+.timeline-paso--activo
+.timeline-paso__icono {
+    color:
+        #041017;
+
+    border-color:
+        transparent;
 
     background:
-        var(--borde);
+        var(--color-azul-claro);
+
+    box-shadow:
+        0
+        0
+        0
+        5px
+        rgba(
+            54,
+            169,
+            214,
+            0.10
+        ),
+        0
+        0
+        22px
+        rgba(
+            54,
+            169,
+            214,
+            0.10
+        );
 }
 
-.detalle-admin .historial-estado strong {
-    color:
-        var(--color-blanco);
 
-    font-size: 0.78rem;
+.detalle-admin
+.timeline-paso--activo
+.timeline-paso__contenido strong {
+    color:
+        var(--color-azul-claro);
 }
 
-.detalle-admin .historial-estado time,
-.detalle-admin .historial-estado small {
-    display: block;
 
-    margin-top: 5px;
-
-    color:
-        var(--color-gris);
-
-    font-size: 0.65rem;
+.detalle-admin
+.timeline-paso--activo:not(:last-child)::after {
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.62
+        );
 }
 
-.detalle-admin .historial-estado p {
-    margin-top: 8px;
 
+/* =========================================================
+   SIGUIENTE ETAPA
+========================================================= */
+/*
+   La etapa inmediatamente posterior a la actual
+   queda con borde celeste.
+
+   De esta manera:
+
+   COMPLETADO  = círculo celeste
+   ACTUAL      = círculo celeste + halo
+   SIGUIENTE   = círculo oscuro con borde celeste
+   RESTO       = apagadas
+========================================================= */
+
+.detalle-admin
+.timeline-paso--activo
++
+.timeline-paso:not(
+    .timeline-paso--completado
+) {
+    opacity: 0.78;
+}
+
+
+.detalle-admin
+.timeline-paso--activo
++
+.timeline-paso:not(
+    .timeline-paso--completado
+)
+.timeline-paso__icono {
     color:
-        var(--color-gris-claro);
+        var(--color-azul-claro);
 
-    font-size: 0.7rem;
+    border-color:
+        var(--color-azul-claro);
 
-    line-height: 1.5;
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.055
+        );
+
+    box-shadow:
+        0
+        0
+        0
+        4px
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+}
+
+
+/* =========================================================
+   SIGUIENTE ETAPA CUANDO NO EXISTE ACTIVO
+========================================================= */
+/*
+   En algunos estados el backend puede dejar todos
+   los anteriores como completados sin marcar explícitamente
+   un paso activo.
+
+   En ese caso destacamos el primer pendiente.
+========================================================= */
+
+.detalle-admin
+.timeline-paso--completado
++
+.timeline-paso:not(
+    .timeline-paso--completado
+):not(
+    .timeline-paso--activo
+) {
+    opacity: 0.78;
+}
+
+
+.detalle-admin
+.timeline-paso--completado
++
+.timeline-paso:not(
+    .timeline-paso--completado
+):not(
+    .timeline-paso--activo
+)
+.timeline-paso__icono {
+    color:
+        var(--color-azul-claro);
+
+    border-color:
+        var(--color-azul-claro);
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.055
+        );
+
+    box-shadow:
+        0
+        0
+        0
+        4px
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
 }
 
 
@@ -1422,11 +1866,13 @@
             minmax(280px, 0.55fr);
     }
 
+
     .detalle-admin__boleta {
         grid-template-columns:
             52px
             minmax(0, 1fr);
     }
+
 
     .detalle-admin__boleta-acciones {
         grid-column:
@@ -1454,6 +1900,7 @@
             1fr;
     }
 
+
     .detalle-admin__cabecera {
         align-items:
             flex-start;
@@ -1478,7 +1925,9 @@
     }
 
 
-    /* CABECERA */
+    /* =====================================================
+       CABECERA
+    ====================================================== */
 
     .detalle-admin__cabecera {
         align-items:
@@ -1490,10 +1939,12 @@
         gap: 18px;
     }
 
+
     .detalle-admin__cabecera-estado {
         justify-content:
             flex-start;
     }
+
 
     .detalle-admin__cabecera h1 {
         font-size:
@@ -1505,7 +1956,9 @@
     }
 
 
-    /* TARJETAS */
+    /* =====================================================
+       TARJETAS
+    ====================================================== */
 
     .detalle-admin
     .seguimiento-tarjeta {
@@ -1515,7 +1968,9 @@
     }
 
 
-    /* PRODUCTOS */
+    /* =====================================================
+       PRODUCTOS
+    ====================================================== */
 
     .detalle-admin
     .seguimiento-producto {
@@ -1525,37 +1980,47 @@
         gap: 12px;
     }
 
+
     .seguimiento-producto__contenido {
         gap: 11px;
     }
 
+
     .seguimiento-producto__imagen {
         width: 56px;
+
         height: 56px;
 
         min-width: 56px;
+
         max-width: 56px;
 
         flex-basis: 56px;
     }
 
+
     .seguimiento-producto__imagen img {
         max-width: 56px !important;
+
         max-height: 56px !important;
 
         padding: 4px;
     }
 
+
     .seguimiento-producto__nombre {
         font-size: 0.77rem;
     }
+
 
     .seguimiento-producto__precio {
         font-size: 0.77rem;
     }
 
 
-    /* DOCUMENTO */
+    /* =====================================================
+       DOCUMENTO
+    ====================================================== */
 
     .detalle-admin__seccion-cabecera {
         align-items:
@@ -1567,6 +2032,7 @@
         gap: 12px;
     }
 
+
     .detalle-admin__boleta {
         grid-template-columns:
             46px
@@ -1575,10 +2041,13 @@
         padding: 15px;
     }
 
+
     .detalle-admin__boleta-icono {
         width: 46px;
+
         height: 46px;
     }
+
 
     .detalle-admin__boleta-acciones {
         grid-column:
@@ -1595,13 +2064,16 @@
             stretch;
     }
 
+
     .detalle-admin__boleta-acciones
     .boton {
         width: 100%;
     }
 
 
-    /* DATOS */
+    /* =====================================================
+       DATOS
+    ====================================================== */
 
     .detalle-admin__datos > div {
         flex-direction:
@@ -1610,10 +2082,68 @@
         gap: 5px;
     }
 
+
     .detalle-admin__datos
     > div
     > strong {
         text-align: left;
+    }
+
+
+    /* =====================================================
+       TIMELINE
+    ====================================================== */
+
+    .detalle-admin
+    .timeline-paso {
+        min-height: 96px;
+
+        grid-template-columns:
+            46px
+            minmax(0, 1fr);
+
+        gap: 13px;
+    }
+
+
+    .detalle-admin
+    .timeline-paso__icono {
+        width: 46px;
+
+        height: 46px;
+
+        font-size: 0.95rem;
+    }
+
+
+    .detalle-admin
+    .timeline-paso:not(:last-child)::after {
+        top: 46px;
+
+        left: 22px;
+
+        height:
+            calc(
+                100% - 40px
+            );
+    }
+
+
+    .detalle-admin
+    .timeline-paso__contenido strong {
+        font-size: 0.77rem;
+    }
+
+
+    .detalle-admin
+    .timeline-paso__contenido p {
+        font-size: 0.69rem;
+    }
+
+
+    .detalle-admin
+    .timeline-paso__contenido time {
+        font-size: 0.63rem;
     }
 
 }
@@ -1633,28 +2163,98 @@
             flex-start;
     }
 
+
     .seguimiento-producto__imagen {
         width: 50px;
+
         height: 50px;
 
         min-width: 50px;
+
         max-width: 50px;
 
         flex-basis: 50px;
     }
 
+
     .seguimiento-producto__imagen img {
         max-width: 50px !important;
+
         max-height: 50px !important;
     }
+
 
     .seguimiento-producto__precio {
         margin-top: 3px;
     }
 
+
     .detalle-admin
     .seguimiento-total strong {
         font-size: 1.2rem;
+    }
+
+
+    /* =====================================================
+       TIMELINE
+    ====================================================== */
+
+    .detalle-admin
+    .timeline-paso {
+        min-height: 91px;
+
+        grid-template-columns:
+            42px
+            minmax(0, 1fr);
+
+        gap: 11px;
+    }
+
+
+    .detalle-admin
+    .timeline-paso__icono {
+        width: 42px;
+
+        height: 42px;
+
+        font-size: 0.88rem;
+    }
+
+
+    .detalle-admin
+    .timeline-paso:not(:last-child)::after {
+        top: 42px;
+
+        left: 20px;
+
+        height:
+            calc(
+                100% - 36px
+            );
+    }
+
+
+    .detalle-admin
+    .timeline-paso__contenido strong {
+        font-size: 0.73rem;
+    }
+
+
+    .detalle-admin
+    .timeline-paso__contenido p {
+        margin-top: 5px;
+
+        font-size: 0.66rem;
+
+        line-height: 1.5;
+    }
+
+
+    .detalle-admin
+    .timeline-paso__contenido time {
+        margin-top: 6px;
+
+        font-size: 0.61rem;
     }
 
 }

@@ -593,22 +593,6 @@ Compra confirmada | Audex
                             </div>
 
 
-                            {% if pedido.webpay_authorization_code %}
-
-                                <div class="pago-datos__fila">
-
-                                    <span>
-                                        Autorización
-                                    </span>
-
-                                    <strong>
-                                        {{ pedido.webpay_authorization_code }}
-                                    </strong>
-
-                                </div>
-
-                            {% endif %}
-
 
                             <div class="pago-datos__fila">
 
@@ -699,7 +683,6 @@ Compra confirmada | Audex
         <!-- =====================================================
              DOCUMENTOS DE LA COMPRA
         ====================================================== -->
-
         <article
             id="nubox-documento"
             class="pago-tarjeta"
@@ -729,25 +712,16 @@ Compra confirmada | Audex
                         margin-bottom: 8px;
                     "
                 >
-                    Tus documentos
+                    BOLETA ELECTRÓNICA
                 </h2>
 
-                <p
-                    style="
-                        margin: 0;
-                        color: var(--color-gris-claro);
-                        line-height: 1.6;
-                    "
-                >
-                    La boleta electrónica se actualizará
-                    automáticamente apenas Nubox termine su emisión.
-                </p>
+               
 
             </div>
 
 
             <!-- =================================================
-                 BOLETA ELECTRÓNICA NUBOX
+                BOLETA ELECTRÓNICA
             ================================================== -->
 
             <div
@@ -758,7 +732,7 @@ Compra confirmada | Audex
                 {% if pedido.nubox_disponible %}
 
                     <!-- =============================================
-                         BOLETA EMITIDA
+                        BOLETA DISPONIBLE
                     ============================================== -->
 
                     <div
@@ -812,7 +786,7 @@ Compra confirmada | Audex
                                         font-size: 1.05rem;
                                     "
                                 >
-                                    Boleta electrónica emitida
+                                    Boleta electrónica disponible
                                 </strong>
 
                                 <span
@@ -830,27 +804,11 @@ Compra confirmada | Audex
 
                                     {% else %}
 
-                                        Documento tributario disponible
+                                        Tu documento ya está disponible.
 
                                     {% endif %}
 
                                 </span>
-
-
-                                {% if pedido.nubox_document_id %}
-
-                                    <small
-                                        style="
-                                            display: block;
-                                            margin-top: 5px;
-                                            color: var(--color-gris-claro);
-                                        "
-                                    >
-                                        ID Nubox:
-                                        {{ pedido.nubox_document_id }}
-                                    </small>
-
-                                {% endif %}
 
                             </div>
 
@@ -866,6 +824,7 @@ Compra confirmada | Audex
                                 rel="noopener"
                             >
                                 <i class="bi bi-download"></i>
+
                                 Descargar boleta
                             </a>
 
@@ -895,86 +854,57 @@ Compra confirmada | Audex
                 {% elif pedido.nubox_tiene_error %}
 
                     <!-- =============================================
-                         ERROR / INCIDENCIA TEMPORAL
+                        BOLETA NO EMITIDA DE INMEDIATO
                     ============================================== -->
 
                     <div
                         style="
                             display: flex;
                             align-items: center;
-                            justify-content: space-between;
-                            gap: 22px;
+                            gap: 18px;
                             padding: 24px 30px;
-                            flex-wrap: wrap;
                         "
                     >
 
                         <div
                             style="
-                                display: flex;
-                                align-items: center;
-                                gap: 18px;
+                                width: 52px;
+                                height: 52px;
+                                flex: 0 0 52px;
+                                display: grid;
+                                place-items: center;
+                                border-radius: 14px;
+                                background: rgba(244, 201, 93, 0.10);
+                                color: #f4c95d;
+                                font-size: 1.3rem;
                             "
                         >
-
-                            <div
-                                style="
-                                    width: 52px;
-                                    height: 52px;
-                                    flex: 0 0 52px;
-                                    display: grid;
-                                    place-items: center;
-                                    border-radius: 14px;
-                                    background: rgba(244, 201, 93, 0.10);
-                                    color: #f4c95d;
-                                    font-size: 1.3rem;
-                                "
-                            >
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-
-                            <div>
-
-                                <strong
-                                    style="
-                                        display: block;
-                                        margin-bottom: 5px;
-                                    "
-                                >
-                                    Boleta temporalmente no disponible
-                                </strong>
-
-                                <span
-                                    data-nubox-estado
-                                    style="
-                                        color: var(--color-gris-claro);
-                                    "
-                                >
-                                    Estamos intentando actualizar el
-                                    documento electrónico de tu compra.
-                                </span>
-
-                            </div>
-
+                            <i class="bi bi-clock-history"></i>
                         </div>
 
 
-                        <span
-                            data-nubox-indicador
-                            style="
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 8px;
-                                color: var(--color-gris-claro);
-                                font-size: .9rem;
-                            "
-                        >
-                            <i
-                                class="bi bi-arrow-repeat"
-                                aria-hidden="true"
-                            ></i>
-                            Reintentando automáticamente
-                        </span>
+                        <div>
+
+                            <strong
+                                style="
+                                    display: block;
+                                    margin-bottom: 5px;
+                                "
+                            >
+                                Tu boleta estará disponible en breve
+                            </strong>
+
+                            <span
+                                data-nubox-estado
+                                style="
+                                    color: var(--color-gris-claro);
+                                "
+                            >
+                                La enviaremos a tu correo y también podrás
+                                descargarla desde este sitio.
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -982,97 +912,57 @@ Compra confirmada | Audex
                 {% elif pedido.nubox_en_proceso %}
 
                     <!-- =============================================
-                         DOCUMENTO RECIBIDO POR NUBOX
+                        BOLETA EN PROCESO
                     ============================================== -->
 
                     <div
                         style="
                             display: flex;
                             align-items: center;
-                            justify-content: space-between;
-                            gap: 22px;
+                            gap: 18px;
                             padding: 24px 30px;
-                            flex-wrap: wrap;
                         "
                     >
 
                         <div
                             style="
-                                display: flex;
-                                align-items: center;
-                                gap: 18px;
+                                width: 52px;
+                                height: 52px;
+                                flex: 0 0 52px;
+                                display: grid;
+                                place-items: center;
+                                border-radius: 14px;
+                                background: rgba(244, 201, 93, 0.10);
+                                color: #f4c95d;
+                                font-size: 1.3rem;
                             "
                         >
-
-                            <div
-                                style="
-                                    width: 52px;
-                                    height: 52px;
-                                    flex: 0 0 52px;
-                                    display: grid;
-                                    place-items: center;
-                                    border-radius: 14px;
-                                    background: rgba(244, 201, 93, 0.10);
-                                    color: #f4c95d;
-                                    font-size: 1.3rem;
-                                "
-                            >
-                                <i class="bi bi-hourglass-split"></i>
-                            </div>
-
-                            <div>
-
-                                <strong
-                                    style="
-                                        display: block;
-                                        margin-bottom: 5px;
-                                    "
-                                >
-                                    Boleta electrónica en procesamiento
-                                </strong>
-
-                                <span
-                                    data-nubox-estado
-                                    style="
-                                        color: var(--color-gris-claro);
-                                    "
-                                >
-
-                                    {% if pedido.nubox_estado %}
-
-                                        Estado:
-                                        {{ pedido.nubox_estado }}
-
-                                    {% else %}
-
-                                        Nubox recibió el documento y
-                                        está procesando su emisión.
-
-                                    {% endif %}
-
-                                </span>
-
-                            </div>
-
+                            <i class="bi bi-hourglass-split"></i>
                         </div>
 
 
-                        <span
-                            data-nubox-indicador
-                            style="
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 8px;
-                                color: var(--color-gris-claro);
-                                font-size: .9rem;
-                            "
-                        >
-                            <i
-                                class="bi bi-arrow-repeat"
-                                aria-hidden="true"
-                            ></i>
-                            Actualizando automáticamente
-                        </span>
+                        <div>
+
+                            <strong
+                                style="
+                                    display: block;
+                                    margin-bottom: 5px;
+                                "
+                            >
+                                Tu boleta estará disponible en breve
+                            </strong>
+
+                            <span
+                                data-nubox-estado
+                                style="
+                                    color: var(--color-gris-claro);
+                                "
+                            >
+                                La enviaremos a tu correo y también podrás
+                                descargarla desde este sitio.
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -1080,86 +970,57 @@ Compra confirmada | Audex
                 {% else %}
 
                     <!-- =============================================
-                         BOLETA TODAVÍA EN PREPARACIÓN
+                        BOLETA EN PREPARACIÓN
                     ============================================== -->
 
                     <div
                         style="
                             display: flex;
                             align-items: center;
-                            justify-content: space-between;
-                            gap: 22px;
+                            gap: 18px;
                             padding: 24px 30px;
-                            flex-wrap: wrap;
                         "
                     >
 
                         <div
                             style="
-                                display: flex;
-                                align-items: center;
-                                gap: 18px;
+                                width: 52px;
+                                height: 52px;
+                                flex: 0 0 52px;
+                                display: grid;
+                                place-items: center;
+                                border-radius: 14px;
+                                background: rgba(244, 201, 93, 0.10);
+                                color: #f4c95d;
+                                font-size: 1.3rem;
                             "
                         >
-
-                            <div
-                                style="
-                                    width: 52px;
-                                    height: 52px;
-                                    flex: 0 0 52px;
-                                    display: grid;
-                                    place-items: center;
-                                    border-radius: 14px;
-                                    background: rgba(244, 201, 93, 0.10);
-                                    color: #f4c95d;
-                                    font-size: 1.3rem;
-                                "
-                            >
-                                <i class="bi bi-hourglass-split"></i>
-                            </div>
-
-                            <div>
-
-                                <strong
-                                    style="
-                                        display: block;
-                                        margin-bottom: 5px;
-                                    "
-                                >
-                                    Boleta electrónica en preparación
-                                </strong>
-
-                                <span
-                                    data-nubox-estado
-                                    style="
-                                        color: var(--color-gris-claro);
-                                    "
-                                >
-                                    Estamos preparando el documento
-                                    electrónico de tu compra.
-                                </span>
-
-                            </div>
-
+                            <i class="bi bi-hourglass-split"></i>
                         </div>
 
 
-                        <span
-                            data-nubox-indicador
-                            style="
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 8px;
-                                color: var(--color-gris-claro);
-                                font-size: .9rem;
-                            "
-                        >
-                            <i
-                                class="bi bi-arrow-repeat"
-                                aria-hidden="true"
-                            ></i>
-                            Esperando respuesta de Nubox
-                        </span>
+                        <div>
+
+                            <strong
+                                style="
+                                    display: block;
+                                    margin-bottom: 5px;
+                                "
+                            >
+                                Tu boleta estará disponible en breve
+                            </strong>
+
+                            <span
+                                data-nubox-estado
+                                style="
+                                    color: var(--color-gris-claro);
+                                "
+                            >
+                                La enviaremos a tu correo y también podrás
+                                descargarla desde este sitio.
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -1168,8 +1029,6 @@ Compra confirmada | Audex
             </div>
 
         </article>
-
-
         <!-- =====================================================
              DIRECCIÓN DE DESPACHO
         ====================================================== -->

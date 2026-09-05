@@ -86,6 +86,60 @@ def _queryset_pedidos():
     )
 
 
+
+
+def _queryset_panel_pedidos():
+    """
+    Queryset liviano para el panel administrativo.
+
+    Solo carga lo necesario para dibujar las tarjetas:
+
+    - pedido;
+    - usuario;
+    - items;
+    - producto de cada item.
+
+    No precarga historial porque el tablero general
+    no lo utiliza.
+    """
+
+    return (
+        Pedido.objects
+        .select_related(
+            "usuario",
+        )
+        .prefetch_related(
+            "items__producto",
+        )
+    )
+
+
+def _queryset_detalle_pedido():
+    """
+    Queryset optimizado para el detalle administrativo.
+
+    Carga:
+
+    - usuario;
+    - items y productos;
+    - historial y usuario asociado a cada cambio.
+
+    IMPORTANTE:
+
+    No realiza llamadas externas.
+    Nubox se consulta después mediante polling AJAX.
+    """
+
+    return (
+        Pedido.objects
+        .select_related(
+            "usuario",
+        )
+        .prefetch_related(
+            "items__producto",
+            "historial_estados__usuario",
+        )
+    )
 # ==========================================================================
 # FUNCIONES AUXILIARES DE SEGUIMIENTO
 # ==========================================================================
@@ -529,6 +583,8 @@ def mis_compras(request):
 # SEGUIMIENTO PÚBLICO POR NÚMERO DE PEDIDO
 # ==========================================================================
 
+
+
 @require_http_methods([
     "GET",
     "POST",
@@ -540,27 +596,396 @@ def seguimiento_pedido(
     """
     Seguimiento seguro de pedidos.
 
-    Reglas:
+    MODOS DE ACCESO:
 
-    - Administradores pueden consultar cualquier pedido.
-    - Un usuario autenticado puede consultar sus propios pedidos.
-    - Un pedido previamente autorizado en la sesión puede visualizarse.
-    - Para compras como invitado se exige:
+    1. USUARIO LOGUEADO
+       - Puede acceder directamente a sus propios pedidos.
+       - No necesita ingresar RUT nuevamente.
 
-        número de pedido
-        +
-        RUT del pedido
+    2. USUARIO NO LOGUEADO / INVITADO
+       - Debe ingresar:
+            número de pedido
+            +
+            RUT utilizado en la compra.
+       - Una vez validados ambos datos, el pedido queda
+         autorizado temporalmente en la sesión.
 
-    - Conocer únicamente el número del pedido NO autoriza
-      el acceso.
+    3. ADMINISTRADOR
+       - Puede consultar cualquier pedido.
+
+    SEGURIDAD:
+
+    - Conocer solamente el número de pedido no autoriza
+      a un invitado a visualizarlo.
+    - La descarga de la boleta utiliza un endpoint protegido.
     """
 
     # =========================================================================
-    # VARIABLES
+    # VARIABLES GENERALES
     # =========================================================================
 
     pedido = None
     timeline = []
+
+    pago_confirmado = False
+
+    boleta_disponible = False
+    boleta_descarga_url = None
+
+
+    # =========================================================================
+    # PREPARAR PEDIDO AUTORIZADO
+    # =========================================================================
+
+    def preparar_pedido(
+        pedido_actual,
+    ):
+        """
+        Prepara toda la información que verá el cliente.
+
+        Incluye:
+
+        - timeline;
+        - paso "Pago confirmado";
+        - estado real del pago;
+        - disponibilidad de boleta;
+        - URL segura para descargar la boleta.
+        """
+
+        # =====================================================================
+        # REFRESCAR DESDE BASE DE DATOS
+        # =====================================================================
+
+        pedido_actual.refresh_from_db()
+
+
+        # =====================================================================
+        # CONFIRMACIÓN REAL DEL PAGO
+        # =====================================================================
+        #
+        # No asumimos que está pagado solamente porque
+        # exista el pedido.
+        #
+        # Ambos valores deben confirmar el pago.
+        # =====================================================================
+
+        pago_aprobado = bool(
+            pedido_actual.pagado
+            and pedido_actual.estado_pago
+            == Pedido.EstadoPago.APROBADO
+        )
+
+
+        # =====================================================================
+        # TIMELINE ORIGINAL
+        # =====================================================================
+
+        timeline_actual = list(
+            construir_timeline(
+                pedido_actual
+            )
+            or []
+        )
+
+
+        # =====================================================================
+        # AGREGAR "PAGO CONFIRMADO"
+        # =====================================================================
+
+        if pago_aprobado:
+
+            # =================================================================
+            # COMPROBAR SI YA EXISTE
+            # =================================================================
+
+            existe_pago_confirmado = any(
+                (
+                    isinstance(
+                        paso,
+                        dict,
+                    )
+                    and str(
+                        paso.get(
+                            "titulo",
+                            "",
+                        )
+                    )
+                    .strip()
+                    .lower()
+                    == "pago confirmado"
+                )
+                for paso
+                in timeline_actual
+            )
+
+
+            if not existe_pago_confirmado:
+
+                # =============================================================
+                # POSICIÓN POR DEFECTO
+                # =============================================================
+                #
+                # Normalmente irá:
+                #
+                # 1. Pedido recibido
+                # 2. Pago confirmado
+                # =============================================================
+
+                indice_pago = 1
+
+
+                # =============================================================
+                # BUSCAR "PEDIDO RECIBIDO"
+                # =============================================================
+
+                for indice, paso in enumerate(
+                    timeline_actual
+                ):
+
+                    if not isinstance(
+                        paso,
+                        dict,
+                    ):
+                        continue
+
+
+                    titulo = (
+                        str(
+                            paso.get(
+                                "titulo",
+                                "",
+                            )
+                        )
+                        .strip()
+                        .lower()
+                    )
+
+
+                    if titulo == "pedido recibido":
+
+                        # =====================================================
+                        # PEDIDO RECIBIDO YA ESTÁ COMPLETADO
+                        # =====================================================
+
+                        paso[
+                            "completado"
+                        ] = True
+
+                        paso[
+                            "activo"
+                        ] = False
+
+
+                        # =====================================================
+                        # INSERTAR PAGO JUSTO DESPUÉS
+                        # =====================================================
+
+                        indice_pago = (
+                            indice
+                            + 1
+                        )
+
+                        break
+
+
+                # =============================================================
+                # PASO PAGO CONFIRMADO
+                # =============================================================
+                #
+                # IMPORTANTE:
+                #
+                # Este paso solamente existe cuando:
+                #
+                #     pagado=True
+                #
+                # y:
+                #
+                #     estado_pago=APROBADO
+                #
+                # Por lo tanto siempre debe mostrarse como
+                # COMPLETADO y nunca como paso activo.
+                # =============================================================
+
+                paso_pago = {
+
+                    "icono": (
+                        "bi-credit-card-check"
+                    ),
+
+                    "titulo": (
+                        "Pago confirmado"
+                    ),
+
+                    "descripcion": (
+                        "El pago fue confirmado "
+                        "correctamente."
+                    ),
+
+                    # No inventamos una fecha de pago.
+                    # Si más adelante agregas un campo
+                    # específico, puedes utilizarlo aquí.
+                    "fecha": None,
+
+                    "completado": True,
+
+                    "activo": False,
+                }
+
+
+                # =============================================================
+                # INSERTAR EN TIMELINE
+                # =============================================================
+
+                timeline_actual.insert(
+                    indice_pago,
+                    paso_pago,
+                )
+
+
+        # =====================================================================
+        # BOLETA DISPONIBLE
+        # =====================================================================
+        #
+        # Solamente habilitamos la descarga cuando:
+        #
+        # - el pago fue aprobado;
+        # - existe documento;
+        # - la boleta está marcada como emitida.
+        # =====================================================================
+
+        boleta_lista = bool(
+            pago_aprobado
+            and pedido_actual.nubox_document_id
+            and pedido_actual.nubox_emitido
+        )
+
+
+        # =====================================================================
+        # URL SEGURA DE DESCARGA
+        # =====================================================================
+        #
+        # IMPORTANTE:
+        #
+        # No enviamos directamente al cliente una URL interna
+        # del proveedor.
+        #
+        # Utilizamos:
+        #
+        #     descargar_boleta_nubox
+        #
+        # Ese endpoint vuelve a comprobar:
+        #
+        # - autorización del pedido;
+        # - pago aprobado;
+        # - disponibilidad de la boleta.
+        #
+        # Por lo tanto funciona tanto para:
+        #
+        # - usuario autenticado dueño del pedido;
+        # - invitado autorizado previamente con RUT.
+        # =====================================================================
+
+        descarga_url = None
+
+        if boleta_lista:
+
+            descarga_url = reverse(
+                "core:descargar_boleta_nubox",
+                kwargs={
+                    "numero": (
+                        pedido_actual.numero
+                    ),
+                },
+            )
+
+
+        # =====================================================================
+        # RETORNO
+        # =====================================================================
+
+        return {
+            "pedido": (
+                pedido_actual
+            ),
+
+            "timeline": (
+                timeline_actual
+            ),
+
+            "pago_confirmado": (
+                pago_aprobado
+            ),
+
+            "boleta_disponible": (
+                boleta_lista
+            ),
+
+            "boleta_descarga_url": (
+                descarga_url
+            ),
+        }
+
+
+    # =========================================================================
+    # RENDERIZAR PEDIDO AUTORIZADO
+    # =========================================================================
+
+    def renderizar_pedido(
+        pedido_actual,
+    ):
+        """
+        Renderiza un pedido después de comprobar
+        que el usuario está autorizado.
+        """
+
+        datos = preparar_pedido(
+            pedido_actual
+        )
+
+        form = (
+            BuscarPedidoForm()
+        )
+
+        return render(
+            request,
+            "core/seguimiento_pedido.html",
+            {
+                "pedido": (
+                    datos[
+                        "pedido"
+                    ]
+                ),
+
+                "form": (
+                    form
+                ),
+
+                "timeline": (
+                    datos[
+                        "timeline"
+                    ]
+                ),
+
+                "pago_confirmado": (
+                    datos[
+                        "pago_confirmado"
+                    ]
+                ),
+
+                "boleta_disponible": (
+                    datos[
+                        "boleta_disponible"
+                    ]
+                ),
+
+                "boleta_descarga_url": (
+                    datos[
+                        "boleta_descarga_url"
+                    ]
+                ),
+            },
+        )
+
 
     # =========================================================================
     # NÚMERO RECIBIDO DESDE URL
@@ -576,15 +1001,109 @@ def seguimiento_pedido(
             )
         )
 
+
     # =========================================================================
     # POST
+    # =========================================================================
+    #
+    # Principalmente utilizado por clientes invitados
+    # que buscan el pedido mediante número + RUT.
+    #
+    # También permitimos que un usuario autenticado
+    # acceda a SU pedido sin tener que volver a ingresar
+    # el RUT.
     # =========================================================================
 
     if request.method == "POST":
 
+        # =====================================================================
+        # NÚMERO ENVIADO
+        # =====================================================================
+
+        numero_post = (
+            request.POST.get(
+                "numero",
+                "",
+            )
+        )
+
+        numero_post = (
+            _normalizar_numero_pedido(
+                numero_post
+            )
+        )
+
+
+        # =====================================================================
+        # USUARIO AUTENTICADO
+        # =====================================================================
+        #
+        # Antes de exigir número + RUT comprobamos si
+        # el pedido pertenece al usuario autenticado.
+        # =====================================================================
+
+        if (
+            request.user.is_authenticated
+            and numero_post
+        ):
+
+            pedido_usuario = (
+                _queryset_pedidos()
+                .filter(
+                    numero__iexact=(
+                        numero_post
+                    )
+                )
+                .first()
+            )
+
+
+            if pedido_usuario:
+
+                # =============================================================
+                # ADMINISTRADOR
+                # =============================================================
+
+                es_admin = bool(
+                    request.user.is_staff
+                )
+
+
+                # =============================================================
+                # DUEÑO DEL PEDIDO
+                # =============================================================
+
+                es_propietario = bool(
+                    pedido_usuario.usuario_id
+                    == request.user.id
+                )
+
+
+                # =============================================================
+                # ACCESO AUTOMÁTICO
+                # =============================================================
+
+                if (
+                    es_admin
+                    or es_propietario
+                ):
+
+                    return redirect(
+                        "core:seguimiento_pedido_numero",
+                        numero=(
+                            pedido_usuario.numero
+                        ),
+                    )
+
+
+        # =====================================================================
+        # INVITADO / VALIDACIÓN NÚMERO + RUT
+        # =====================================================================
+
         form = BuscarPedidoForm(
             request.POST
         )
+
 
         # =====================================================================
         # FORMULARIO VÁLIDO
@@ -609,6 +1128,7 @@ def seguimiento_pedido(
                 )
             )
 
+
             # =================================================================
             # RUT
             # =================================================================
@@ -626,8 +1146,9 @@ def seguimiento_pedido(
                 )
             )
 
+
             # =================================================================
-            # VALIDACIONES BÁSICAS
+            # VALIDACIONES
             # =================================================================
 
             if not numero_normalizado:
@@ -640,6 +1161,7 @@ def seguimiento_pedido(
                     ),
                 )
 
+
             elif not rut_normalizado:
 
                 form.add_error(
@@ -649,6 +1171,7 @@ def seguimiento_pedido(
                         "al pedido."
                     ),
                 )
+
 
             else:
 
@@ -666,13 +1189,17 @@ def seguimiento_pedido(
                     .first()
                 )
 
+
                 # =============================================================
-                # VALIDACIÓN SEGURA
+                # PEDIDO NO ENCONTRADO
                 # =============================================================
                 #
-                # No indicamos si falló el número o el RUT.
+                # El mensaje es deliberadamente genérico.
                 #
-                # Así evitamos revelar si un número de pedido existe.
+                # No revelamos si fue incorrecto:
+                #
+                # - el número;
+                # - el RUT.
                 # =============================================================
 
                 if pedido_encontrado is None:
@@ -686,10 +1213,11 @@ def seguimiento_pedido(
                         ),
                     )
 
+
                 else:
 
                     # =========================================================
-                    # RUT GUARDADO EN PEDIDO
+                    # RUT GUARDADO
                     # =========================================================
 
                     rut_pedido = (
@@ -698,8 +1226,9 @@ def seguimiento_pedido(
                         )
                     )
 
+
                     # =========================================================
-                    # VALIDAR RUT
+                    # COMPARAR RUT
                     # =========================================================
 
                     if (
@@ -717,16 +1246,11 @@ def seguimiento_pedido(
                             ),
                         )
 
+
                     else:
 
                         # =====================================================
-                        # AUTORIZAR PEDIDO EN SESIÓN
-                        # =====================================================
-                        #
-                        # IMPORTANTE:
-                        #
-                        # Solamente llegamos aquí después
-                        # de comprobar número + RUT.
+                        # INVITADO VALIDADO CORRECTAMENTE
                         # =====================================================
 
                         _autorizar_pedido_en_sesion(
@@ -734,8 +1258,9 @@ def seguimiento_pedido(
                             pedido_encontrado.numero,
                         )
 
+
                         # =====================================================
-                        # REDIRECCIÓN
+                        # REDIRECCIONAR A SEGUIMIENTO
                         # =====================================================
 
                         return redirect(
@@ -745,6 +1270,7 @@ def seguimiento_pedido(
                             ),
                         )
 
+
     # =========================================================================
     # GET
     # =========================================================================
@@ -753,6 +1279,14 @@ def seguimiento_pedido(
 
         # =====================================================================
         # URL CON NÚMERO DE PEDIDO
+        # =====================================================================
+        #
+        # Ejemplo:
+        #
+        # /seguimiento/AUD-XXXXXXXX/
+        #
+        # Aquí un usuario autenticado puede entrar
+        # directamente desde "Mis compras".
         # =====================================================================
 
         if numero_url:
@@ -767,6 +1301,7 @@ def seguimiento_pedido(
                 .first()
             )
 
+
             # =================================================================
             # PEDIDO EXISTENTE
             # =================================================================
@@ -774,14 +1309,14 @@ def seguimiento_pedido(
             if pedido_encontrado:
 
                 # =============================================================
-                # YA TIENE AUTORIZACIÓN
+                # COMPROBAR ACCESO
                 # =============================================================
                 #
-                # Puede ocurrir porque:
+                # _usuario_puede_ver() permite:
                 #
-                # - es administrador;
-                # - pertenece a la cuenta autenticada;
-                # - previamente validó número + RUT.
+                # - staff;
+                # - usuario dueño del pedido;
+                # - invitado previamente validado por número + RUT.
                 # =============================================================
 
                 if _usuario_puede_ver(
@@ -789,42 +1324,21 @@ def seguimiento_pedido(
                     pedido_encontrado,
                 ):
 
-                    pedido = (
+                    return renderizar_pedido(
                         pedido_encontrado
                     )
 
-                    timeline = (
-                        construir_timeline(
-                            pedido
-                        )
-                    )
-
-                    form = (
-                        BuscarPedidoForm()
-                    )
-
-                    return render(
-                        request,
-                        (
-                            "core/"
-                            "seguimiento_pedido.html"
-                        ),
-                        {
-                            "pedido": pedido,
-                            "form": form,
-                            "timeline": timeline,
-                        },
-                    )
 
             # =================================================================
-            # NO AUTORIZADO TODAVÍA
+            # NO AUTORIZADO
             # =================================================================
             #
-            # Aunque el pedido exista, NO mostramos
-            # ninguna información.
+            # Si un invitado solamente conoce la URL:
             #
-            # Solamente precargamos el número
-            # para que ingrese el RUT.
+            # NO mostramos el pedido.
+            #
+            # Precargamos solamente el número para que
+            # deba ingresar el RUT de la compra.
             # =================================================================
 
             form = BuscarPedidoForm(
@@ -834,6 +1348,7 @@ def seguimiento_pedido(
                     ),
                 }
             )
+
 
         # =====================================================================
         # URL SIN NÚMERO
@@ -845,28 +1360,55 @@ def seguimiento_pedido(
                 BuscarPedidoForm()
             )
 
+
     # =========================================================================
     # SEGURIDAD
     # =========================================================================
     #
-    # Nunca dejamos un pedido cargado en contexto
-    # si todavía no fue autorizado.
+    # Si llegamos hasta aquí todavía no existe
+    # autorización para mostrar un pedido.
     # =========================================================================
 
     pedido = None
     timeline = []
 
+    pago_confirmado = False
+
+    boleta_disponible = False
+    boleta_descarga_url = None
+
+
     # =========================================================================
-    # RENDER
+    # RENDER BUSCADOR
     # =========================================================================
 
     return render(
         request,
         "core/seguimiento_pedido.html",
         {
-            "pedido": pedido,
-            "form": form,
-            "timeline": timeline,
+            "pedido": (
+                pedido
+            ),
+
+            "form": (
+                form
+            ),
+
+            "timeline": (
+                timeline
+            ),
+
+            "pago_confirmado": (
+                pago_confirmado
+            ),
+
+            "boleta_disponible": (
+                boleta_disponible
+            ),
+
+            "boleta_descarga_url": (
+                boleta_descarga_url
+            ),
         },
     )
 
@@ -876,41 +1418,22 @@ def seguimiento_pedido(
 # PANEL ADMINISTRATIVO DE PEDIDOS
 # ==========================================================================
 
-
 @staff_member_required
 def panel_pedidos(request):
     """
-    Panel administrativo de pedidos.
+    Panel administrativo de pedidos optimizado.
 
-    El tablero principal muestra exclusivamente ventas
-    cuyo pago fue confirmado.
+    REGLAS:
 
-    Además:
-
-    - sincroniza automáticamente una cantidad limitada
-      de documentos Nubox pendientes;
-    - evita mantener boletas marcadas como pendientes
-      cuando Nubox ya terminó su emisión;
-    - no vuelve a emitir documentos;
-    - solamente consulta documentos que ya poseen
-      nubox_document_id.
+    - El tablero operativo muestra únicamente ventas pagadas.
+    - La bandeja "Pagos pendientes" muestra solamente pedidos
+      CREADOS durante las últimas 48 horas.
+    - Los pendientes anteriores a 48 horas no se muestran.
+    - La carga inicial NO consulta Nubox.
+    - Nubox se actualiza mediante polling AJAX después de que
+      el HTML ya fue mostrado.
+    - ?actualizar_panel=1 continúa siendo una consulta liviana.
     """
-
-    # =========================================================================
-    # QUERYSET BASE
-    # =========================================================================
-
-    pedidos = (
-        _queryset_pedidos()
-        .annotate(
-            total_unidades=Sum(
-                "items__cantidad"
-            ),
-        )
-        .order_by(
-            "-actualizado",
-        )
-    )
 
     # =========================================================================
     # BUSCADOR
@@ -923,6 +1446,25 @@ def panel_pedidos(request):
         )
         .strip()
     )
+
+
+    # =========================================================================
+    # QUERYSET BASE LIVIANO
+    # =========================================================================
+
+    pedidos = (
+        _queryset_panel_pedidos()
+        .annotate(
+            total_unidades=Sum(
+                "items__cantidad"
+            ),
+        )
+    )
+
+
+    # =========================================================================
+    # BÚSQUEDA
+    # =========================================================================
 
     if busqueda:
 
@@ -944,6 +1486,16 @@ def panel_pedidos(request):
             )
         )
 
+
+    # =========================================================================
+    # ORDEN GENERAL
+    # =========================================================================
+
+    pedidos = pedidos.order_by(
+        "-actualizado",
+    )
+
+
     # =========================================================================
     # VENTAS CONFIRMADAS
     # =========================================================================
@@ -957,106 +1509,99 @@ def panel_pedidos(request):
         )
     )
 
-    # =========================================================================
-    # SINCRONIZACIÓN AUTOMÁTICA NUBOX
-    # =========================================================================
-    #
-    # Importante:
-    #
-    # - Solo consultamos documentos que Nubox ya recibió.
-    # - No volvemos a emitir ninguna boleta.
-    # - Procesamos una cantidad limitada para no hacer
-    #   lenta la carga del panel.
-    # - Evitamos volver a consultar documentos recién
-    #   sincronizados.
-    # =========================================================================
-
-    limite_sincronizacion_nubox = (
-        timezone.now()
-        - timedelta(
-            seconds=15
-        )
-    )
-
-    documentos_nubox_pendientes = (
-        Pedido.objects
-        .filter(
-            pagado=True,
-            estado_pago=(
-                Pedido.EstadoPago.APROBADO
-            ),
-            nubox_emitido=False,
-            nubox_document_id__isnull=False,
-            actualizado__lt=(
-                limite_sincronizacion_nubox
-            ),
-        )
-        .exclude(
-            nubox_document_id=""
-        )
-        .order_by(
-            "actualizado",
-        )[:10]
-    )
-
-    for pedido_nubox in (
-        documentos_nubox_pendientes
-    ):
-
-        try:
-
-            sincronizar_estado_nubox(
-                pedido_nubox
-            )
-
-        except NuboxError:
-
-            # El panel administrativo no debe
-            # dejar de cargar si Nubox está
-            # temporalmente no disponible.
-            pass
-
-        except Exception:
-
-            # Mismo criterio:
-            # un problema externo de Nubox no
-            # debe romper el panel completo.
-            pass
 
     # =========================================================================
-    # TODOS LOS PAGOS PENDIENTES
+    # LÍMITE DE 48 HORAS
     # =========================================================================
 
-    pendientes_pago_todos = (
-        pedidos.filter(
-            pagado=False,
-            estado_pago__in=[
-                Pedido.EstadoPago.PENDIENTE,
-                Pedido.EstadoPago.INICIADO,
-            ],
-        )
-    )
-
-    # =========================================================================
-    # LÍMITE DE VISIBILIDAD
-    # =========================================================================
-
-    limite_pendientes_visibles = (
+    limite_pendientes = (
         timezone.now()
         - timedelta(
             hours=48
         )
     )
 
+
     # =========================================================================
-    # PAGOS PENDIENTES VISIBLES
+    # ALERTA GLOBAL DE PAGOS PENDIENTES - ÚLTIMAS 48 HORAS
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # Esta consulta es INDEPENDIENTE de:
+    #
+    # - la bandeja abierta;
+    # - el buscador;
+    # - la paginación;
+    # - haber hecho clic previamente en la alerta.
+    #
+    # Mientras exista al menos un pedido:
+    #
+    #     pagado=False
+    #     estado_pago=PENDIENTE/INICIADO
+    #     creado dentro de las últimas 48 horas
+    #
+    # la alerta seguirá apareciendo.
+    #
+    # Después de 48 horas desde pedido.creado desaparecerá
+    # automáticamente del panel.
+    # =========================================================================
+
+    pendientes_alerta_48h = (
+        Pedido.objects
+        .filter(
+            pagado=False,
+            estado_pago__in=[
+                Pedido.EstadoPago.PENDIENTE,
+                Pedido.EstadoPago.INICIADO,
+            ],
+            creado__gte=(
+                limite_pendientes
+            ),
+        )
+    )
+
+
+    # =========================================================================
+    # BANDEJA DE PAGOS PENDIENTES - ÚLTIMAS 48 HORAS
+    # =========================================================================
+    #
+    # Esta sí parte del queryset del panel para conservar:
+    #
+    # - búsqueda;
+    # - productos precargados;
+    # - total_unidades.
+    #
+    # Al entrar desde la alerta sin búsqueda muestra todos
+    # los pendientes creados en las últimas 48 horas.
     # =========================================================================
 
     pendientes_pago = (
-        pendientes_pago_todos
+        pedidos.filter(
+            pagado=False,
+            estado_pago__in=[
+                Pedido.EstadoPago.PENDIENTE,
+                Pedido.EstadoPago.INICIADO,
+            ],
+            creado__gte=(
+                limite_pendientes
+            ),
+        )
+        .order_by(
+            "-creado",
+        )
+    )
+
+
+    # =========================================================================
+    # NUEVOS
+    # =========================================================================
+
+    nuevos = (
+        ventas_confirmadas
         .filter(
-            actualizado__gte=(
-                limite_pendientes_visibles
+            estado=(
+                Pedido.EstadoPedido.CONFIRMADO
             ),
         )
         .order_by(
@@ -1064,59 +1609,66 @@ def panel_pedidos(request):
         )
     )
 
-    # =========================================================================
-    # PAGOS PENDIENTES EXPIRADOS
-    # =========================================================================
-
-    pendientes_pago_expirados = (
-        pendientes_pago_todos
-        .filter(
-            actualizado__lt=(
-                limite_pendientes_visibles
-            ),
-        )
-    )
 
     # =========================================================================
-    # BANDEJAS OPERATIVAS
+    # EN OPERACIÓN
     # =========================================================================
-
-    nuevos = (
-        ventas_confirmadas.filter(
-            estado=(
-                Pedido.EstadoPedido.CONFIRMADO
-            ),
-        )
-    )
 
     operacion = (
-        ventas_confirmadas.filter(
+        ventas_confirmadas
+        .filter(
             estado__in=[
                 Pedido.EstadoPedido.PREPARACION,
                 Pedido.EstadoPedido.LISTO,
             ],
         )
+        .order_by(
+            "-actualizado",
+        )
     )
 
+
+    # =========================================================================
+    # EN DESPACHO
+    # =========================================================================
+
     despacho = (
-        ventas_confirmadas.filter(
+        ventas_confirmadas
+        .filter(
             estado=(
                 Pedido.EstadoPedido.ENVIADO
             ),
         )
+        .order_by(
+            "-actualizado",
+        )
     )
 
+
+    # =========================================================================
+    # FINALIZADOS
+    # =========================================================================
+
     finalizados = (
-        ventas_confirmadas.filter(
+        ventas_confirmadas
+        .filter(
             estado__in=[
                 Pedido.EstadoPedido.ENTREGADO,
                 Pedido.EstadoPedido.CANCELADO,
             ],
         )
+        .order_by(
+            "-actualizado",
+        )
     )
 
+
     # =========================================================================
-    # NUBOX
+    # BOLETAS PENDIENTES
+    # =========================================================================
+    #
+    # Solo se consulta nuestra base de datos.
+    # NO se llama Nubox durante el render.
     # =========================================================================
 
     boletas_pendientes = (
@@ -1133,6 +1685,7 @@ def panel_pedidos(request):
         )
     )
 
+
     # =========================================================================
     # QUERYSETS DISPONIBLES
     # =========================================================================
@@ -1146,31 +1699,6 @@ def panel_pedidos(request):
         "boletas": boletas_pendientes,
     }
 
-    # =========================================================================
-    # NOMBRES
-    # =========================================================================
-
-    bandejas_nombres = {
-        "nuevos": "Nuevos",
-        "operacion": "En operación",
-        "despacho": "En despacho",
-        "finalizados": "Finalizados",
-        "pendientes": "Pagos pendientes",
-        "boletas": "Boletas pendientes",
-    }
-
-    # =========================================================================
-    # ICONOS
-    # =========================================================================
-
-    bandejas_iconos = {
-        "nuevos": "bi-bag-check",
-        "operacion": "bi-box-seam",
-        "despacho": "bi-truck",
-        "finalizados": "bi-check2-circle",
-        "pendientes": "bi-clock-history",
-        "boletas": "bi-receipt-cutoff",
-    }
 
     # =========================================================================
     # CONTADORES
@@ -1182,29 +1710,237 @@ def panel_pedidos(request):
         in bandejas_querysets.items()
     }
 
+
     # =========================================================================
-    # PAGOS PENDIENTES
+    # PAGOS PENDIENTES - ALERTA GLOBAL 48 HORAS
     # =========================================================================
+    #
+    # El contador NO depende de filtros visuales.
+    #
+    # Por eso la alerta no desaparece al:
+    #
+    # - abrir la bandeja;
+    # - volver al tablero;
+    # - navegar por otras bandejas.
+    # =========================================================================
+
+    total_pendientes_recientes = (
+        pendientes_alerta_48h.count()
+    )
 
     total_pendientes_pago = (
-        pendientes_pago.count()
+        total_pendientes_recientes
     )
 
-    # =========================================================================
-    # HISTÓRICOS EXPIRADOS
-    # =========================================================================
+    # No mostramos historial de pendientes anteriores a 48 horas.
+    total_pendientes_expirados = 0
 
-    total_pendientes_expirados = (
-        pendientes_pago_expirados.count()
-    )
 
     # =========================================================================
-    # NUBOX
+    # BOLETAS
     # =========================================================================
 
     total_boletas_pendientes = (
-        boletas_pendientes.count()
+        totales[
+            "boletas"
+        ]
     )
+
+
+    # =========================================================================
+    # ÚLTIMA ACTUALIZACIÓN
+    # =========================================================================
+
+    ultima_actualizacion = (
+        pedidos
+        .values_list(
+            "actualizado",
+            flat=True,
+        )
+        .first()
+    )
+
+
+    # =========================================================================
+    # VERSIÓN DEL TABLERO
+    # =========================================================================
+
+    version_panel = "|".join(
+        [
+            (
+                ultima_actualizacion.isoformat()
+                if ultima_actualizacion
+                else ""
+            ),
+
+            str(
+                totales[
+                    "nuevos"
+                ]
+            ),
+
+            str(
+                totales[
+                    "operacion"
+                ]
+            ),
+
+            str(
+                totales[
+                    "despacho"
+                ]
+            ),
+
+            str(
+                totales[
+                    "finalizados"
+                ]
+            ),
+
+            str(
+                total_pendientes_pago
+            ),
+
+            str(
+                total_boletas_pendientes
+            ),
+        ]
+    )
+
+
+    # =========================================================================
+    # CONSULTA LIVIANA DEL FRONTEND
+    # =========================================================================
+
+    if (
+        request.GET.get(
+            "actualizar_panel"
+        )
+        == "1"
+    ):
+
+        response = JsonResponse(
+            {
+                "ok": True,
+
+                "version": (
+                    version_panel
+                ),
+
+                "ultima_actualizacion": (
+                    ultima_actualizacion.isoformat()
+                    if ultima_actualizacion
+                    else None
+                ),
+
+                "totales": {
+                    "nuevos": (
+                        totales[
+                            "nuevos"
+                        ]
+                    ),
+
+                    "operacion": (
+                        totales[
+                            "operacion"
+                        ]
+                    ),
+
+                    "despacho": (
+                        totales[
+                            "despacho"
+                        ]
+                    ),
+
+                    "finalizados": (
+                        totales[
+                            "finalizados"
+                        ]
+                    ),
+
+                    "pendientes": (
+                        total_pendientes_pago
+                    ),
+
+                    "pendientes_recientes": (
+                        total_pendientes_recientes
+                    ),
+
+                    "boletas": (
+                        total_boletas_pendientes
+                    ),
+                },
+            }
+        )
+
+        response[
+            "Cache-Control"
+        ] = "no-store"
+
+        return response
+
+
+    # =========================================================================
+    # NOMBRES DE BANDEJAS
+    # =========================================================================
+
+    bandejas_nombres = {
+        "nuevos": (
+            "Nuevos"
+        ),
+
+        "operacion": (
+            "En operación"
+        ),
+
+        "despacho": (
+            "En despacho"
+        ),
+
+        "finalizados": (
+            "Finalizados"
+        ),
+
+        "pendientes": (
+            "Pagos pendientes"
+        ),
+
+        "boletas": (
+            "Boletas pendientes"
+        ),
+    }
+
+
+    # =========================================================================
+    # ICONOS
+    # =========================================================================
+
+    bandejas_iconos = {
+        "nuevos": (
+            "bi-bag-check"
+        ),
+
+        "operacion": (
+            "bi-box-seam"
+        ),
+
+        "despacho": (
+            "bi-truck"
+        ),
+
+        "finalizados": (
+            "bi-check2-circle"
+        ),
+
+        "pendientes": (
+            "bi-clock-history"
+        ),
+
+        "boletas": (
+            "bi-receipt-cutoff"
+        ),
+    }
+
 
     # =========================================================================
     # BANDEJA SOLICITADA
@@ -1219,13 +1955,20 @@ def panel_pedidos(request):
         .lower()
     )
 
+
     mostrar_bandeja = (
         bandeja_actual
         in bandejas_querysets
     )
 
+
     page_obj = None
     titulo_bandeja = ""
+
+
+    # =========================================================================
+    # PAGINACIÓN
+    # =========================================================================
 
     if mostrar_bandeja:
 
@@ -1240,10 +1983,12 @@ def panel_pedidos(request):
             PEDIDOS_POR_PAGINA_ADMIN,
         )
 
-        page_obj = paginador.get_page(
-            request.GET.get(
-                "page",
-                1,
+        page_obj = (
+            paginador.get_page(
+                request.GET.get(
+                    "page",
+                    1,
+                )
             )
         )
 
@@ -1253,61 +1998,78 @@ def panel_pedidos(request):
             ]
         )
 
+
     # =========================================================================
     # TARJETAS DEL TABLERO
+    # =========================================================================
+    #
+    # Si estamos viendo una bandeja completa no evaluamos
+    # también las cuatro columnas del tablero.
     # =========================================================================
 
     bandejas = []
 
-    claves_tablero = [
-        "nuevos",
-        "operacion",
-        "despacho",
-        "finalizados",
-    ]
 
-    for clave in claves_tablero:
+    if not mostrar_bandeja:
 
-        queryset = (
-            bandejas_querysets[
-                clave
-            ]
-        )
+        claves_tablero = [
+            "nuevos",
+            "operacion",
+            "despacho",
+            "finalizados",
+        ]
 
-        total = (
-            totales[
-                clave
-            ]
-        )
 
-        bandejas.append(
-            {
-                "clave": clave,
+        for clave in claves_tablero:
 
-                "nombre": (
-                    bandejas_nombres[
+            queryset = (
+                bandejas_querysets[
+                    clave
+                ]
+            )
+
+            total = (
+                totales[
+                    clave
+                ]
+            )
+
+
+            bandejas.append(
+                {
+                    "clave": (
                         clave
-                    ]
-                ),
+                    ),
 
-                "icono": (
-                    bandejas_iconos[
-                        clave
-                    ]
-                ),
+                    "nombre": (
+                        bandejas_nombres[
+                            clave
+                        ]
+                    ),
 
-                "total": total,
+                    "icono": (
+                        bandejas_iconos[
+                            clave
+                        ]
+                    ),
 
-                "pedidos": queryset[
-                    :PEDIDOS_VISIBLES_POR_BANDEJA
-                ],
+                    "total": (
+                        total
+                    ),
 
-                "hay_mas": (
-                    total
-                    > PEDIDOS_VISIBLES_POR_BANDEJA
-                ),
-            }
-        )
+                    "pedidos": (
+                        queryset[
+                            :PEDIDOS_VISIBLES_POR_BANDEJA
+                        ]
+                    ),
+
+                    "hay_mas": (
+                        total
+                        > PEDIDOS_VISIBLES_POR_BANDEJA
+                    ),
+                }
+            )
+
 
     # =========================================================================
     # CONTEXTO
@@ -1317,15 +2079,13 @@ def panel_pedidos(request):
         request,
         "core/gestion/panel_pedidos.html",
         {
-            # =============================================================
-            # TABLERO
-            # =============================================================
+            "bandejas": (
+                bandejas
+            ),
 
-            "bandejas": bandejas,
-
-            # =============================================================
-            # BANDEJA COMPLETA
-            # =============================================================
+            "version_panel": (
+                version_panel
+            ),
 
             "bandeja_actual": (
                 bandeja_actual
@@ -1343,53 +2103,45 @@ def panel_pedidos(request):
                 page_obj
             ),
 
-            # =============================================================
-            # BUSCADOR
-            # =============================================================
-
             "busqueda": (
                 busqueda
             ),
 
-            # =============================================================
-            # CONTADORES
-            # =============================================================
-
             "total_principal": (
-                totales["nuevos"]
+                totales[
+                    "nuevos"
+                ]
             ),
 
             "total_operacion": (
-                totales["operacion"]
+                totales[
+                    "operacion"
+                ]
             ),
 
             "total_despacho": (
-                totales["despacho"]
+                totales[
+                    "despacho"
+                ]
             ),
 
             "total_cerrados": (
-                totales["finalizados"]
+                totales[
+                    "finalizados"
+                ]
             ),
-
-            # =============================================================
-            # PAGOS PENDIENTES
-            # =============================================================
 
             "total_pendientes_pago": (
                 total_pendientes_pago
             ),
 
             "total_pendientes_recientes": (
-                total_pendientes_pago
+                total_pendientes_recientes
             ),
 
             "total_pendientes_expirados": (
                 total_pendientes_expirados
             ),
-
-            # =============================================================
-            # NUBOX
-            # =============================================================
 
             "total_boletas_pendientes": (
                 total_boletas_pendientes
@@ -1399,170 +2151,158 @@ def panel_pedidos(request):
             # COMPATIBILIDAD
             # =============================================================
 
-            "principal": nuevos[
-                :PEDIDOS_VISIBLES_POR_BANDEJA
-            ],
+            "principal": (
+                nuevos[
+                    :PEDIDOS_VISIBLES_POR_BANDEJA
+                ]
+                if not mostrar_bandeja
+                else []
+            ),
 
-            "operacion": operacion[
-                :PEDIDOS_VISIBLES_POR_BANDEJA
-            ],
+            "operacion": (
+                operacion[
+                    :PEDIDOS_VISIBLES_POR_BANDEJA
+                ]
+                if not mostrar_bandeja
+                else []
+            ),
 
-            "despacho": despacho[
-                :PEDIDOS_VISIBLES_POR_BANDEJA
-            ],
+            "despacho": (
+                despacho[
+                    :PEDIDOS_VISIBLES_POR_BANDEJA
+                ]
+                if not mostrar_bandeja
+                else []
+            ),
 
-            "cerrados": finalizados[
-                :PEDIDOS_VISIBLES_POR_BANDEJA
-            ],
+            "cerrados": (
+                finalizados[
+                    :PEDIDOS_VISIBLES_POR_BANDEJA
+                ]
+                if not mostrar_bandeja
+                else []
+            ),
         },
     )
-
-
 
 # ==========================================================================
 # DETALLE Y ADMINISTRACIÓN DE UN PEDIDO
 # ==========================================================================
-
-
-
 
 @staff_member_required
 @require_http_methods([
     "GET",
     "POST",
 ])
-
-
 def panel_pedido_detalle(
     request,
     numero,
 ):
     """
-    Detalle administrativo de un pedido pagado.
+    Detalle administrativo optimizado de un pedido.
 
-    Permite:
+    REGLAS:
 
-    - revisar productos;
-    - consultar cliente y despacho;
-    - revisar información del pago;
-    - consultar automáticamente el estado Nubox;
-    - consultar el folio Nubox;
-    - revisar errores de emisión;
-    - revisar historial;
-    - avanzar el estado operativo;
-    - revisar la trazabilidad completa del pedido.
+    1. PEDIDO PAGADO
+       - Puede avanzar de estado operativo.
+       - Puede mostrar/descargar la boleta cuando esté disponible.
 
-    IMPORTANTE:
+    2. PEDIDO PENDIENTE DE PAGO
+       - Puede abrirse desde el panel administrativo.
+       - NO puede avanzar de estado.
+       - NO consulta Nubox.
 
-    Esta vista solamente permite acceder a pedidos
-    que estén marcados como pagados en la base de datos.
+    3. RENDIMIENTO
+       - La carga inicial NO llama sincronizar_estado_nubox().
+       - No se realizan refresh_from_db() redundantes.
+       - Nubox se consulta después mediante el polling AJAX
+         de estado_boleta_nubox().
+       - Un timeout de Nubox no bloquea la visualización
+         inicial del detalle.
 
-    Nubox:
-
-    Si el pedido ya posee nubox_document_id
-    pero todavía no está marcado como emitido,
-    al abrir el detalle administrativo se consulta
-    nuevamente el estado directamente en Nubox.
-
-    Esta consulta NO vuelve a emitir la boleta.
+    4. El acceso sigue siendo exclusivo para staff.
     """
 
     # =========================================================================
     # NORMALIZAR NÚMERO
     # =========================================================================
 
-    numero = _normalizar_numero_pedido(
-        numero
+    numero = (
+        _normalizar_numero_pedido(
+            numero
+        )
     )
 
+
     # =========================================================================
-    # PEDIDO
+    # OBTENER PEDIDO
     # =========================================================================
     #
-    # IMPORTANTE:
+    # Precarga usuario, productos e historial.
     #
-    # El campo real existente en Pedido es:
-    #
-    #     pagado
-    #
-    # No usamos:
-    #
-    #     pago_aprobado
-    #
-    # porque pago_aprobado no es un campo consultable
-    # directamente mediante QuerySet.
+    # No realiza llamadas externas.
     # =========================================================================
 
     pedido = get_object_or_404(
-        _queryset_pedidos(),
+        _queryset_detalle_pedido(),
         numero__iexact=numero,
-        pagado=True,
     )
 
-    # =========================================================================
-    # REFRESCAR PEDIDO
-    # =========================================================================
-
-    pedido.refresh_from_db()
 
     # =========================================================================
-    # SINCRONIZAR NUBOX
+    # ESTADO REAL DEL PAGO
+    # =========================================================================
+
+    pago_aprobado = bool(
+        pedido.pagado
+        and pedido.estado_pago
+        == Pedido.EstadoPago.APROBADO
+    )
+
+
+    # =========================================================================
+    # PAGO PENDIENTE
+    # =========================================================================
+
+    es_pago_pendiente = bool(
+        not pedido.pagado
+        and pedido.estado_pago
+        in [
+            Pedido.EstadoPago.PENDIENTE,
+            Pedido.EstadoPago.INICIADO,
+        ]
+    )
+
+
+    # =========================================================================
+    # PUEDE AVANZAR
+    # =========================================================================
+
+    puede_avanzar_estado = (
+        pago_aprobado
+    )
+
+
+    # =========================================================================
+    # IMPORTANTE: NUBOX NO SE SINCRONIZA AQUÍ
     # =========================================================================
     #
-    # Solo consultamos:
+    # Antes esta vista llamaba a:
     #
-    # - pedidos pagados;
-    # - que ya poseen document_id;
-    # - que todavía no aparecen como emitidos.
+    #     sincronizar_estado_nubox(pedido)
     #
-    # sincronizar_estado_nubox() únicamente consulta
-    # el documento existente.
+    # durante cada GET.
     #
-    # NO vuelve a emitir la boleta.
+    # Si Nubox demoraba 20 segundos, el detalle demoraba
+    # esos mismos 20 segundos en abrir.
+    #
+    # Ahora:
+    #
+    # 1. Django renderiza inmediatamente con los datos de BD.
+    # 2. El JavaScript llama a estado_boleta_nubox().
+    # 3. Si la boleta cambia, el frontend actualiza/recarga.
     # =========================================================================
 
-    if (
-        request.method == "GET"
-        and pedido.pagado
-        and pedido.nubox_document_id
-        and not pedido.nubox_emitido
-    ):
-
-        try:
-
-            sincronizar_estado_nubox(
-                pedido
-            )
-
-        except NuboxError as error:
-
-            logger.warning(
-                (
-                    "No fue posible sincronizar "
-                    "Nubox desde detalle admin. "
-                    "Pedido=%s Error=%s"
-                ),
-                pedido.numero,
-                error,
-            )
-
-        except Exception as error:
-
-            logger.exception(
-                (
-                    "Error inesperado sincronizando "
-                    "Nubox desde detalle admin. "
-                    "Pedido=%s Error=%s"
-                ),
-                pedido.numero,
-                error,
-            )
-
-        # =====================================================================
-        # RECARGAR PEDIDO DESPUÉS DE NUBOX
-        # =====================================================================
-
-        pedido.refresh_from_db()
 
     # =========================================================================
     # FORMULARIO
@@ -1573,128 +2313,147 @@ def panel_pedido_detalle(
         pedido=pedido,
     )
 
+
     # =========================================================================
-    # ACTUALIZAR ESTADO OPERATIVO
+    # POST - ACTUALIZAR ESTADO
     # =========================================================================
 
-    if (
-        request.method == "POST"
-        and form.is_valid()
-    ):
+    if request.method == "POST":
 
-        nuevo_estado = (
-            form.cleaned_data[
-                "nuevo_estado"
-            ]
-        )
+        # =====================================================================
+        # IMPEDIR AVANCE SIN PAGO
+        # =====================================================================
 
-        comentario = (
-            form.cleaned_data.get(
-                "comentario",
-                "",
-            )
-            or ""
-        ).strip()
-
-        try:
-
-            pedido_actualizado = (
-                cambiar_estado_pedido(
-                    pedido=pedido,
-                    nuevo_estado=nuevo_estado,
-                    comentario=comentario,
-                    usuario=request.user,
-                )
-            )
-
-        except ValidationError as error:
-
-            errores = getattr(
-                error,
-                "messages",
-                [
-                    str(error),
-                ],
-            )
-
-            for mensaje_error in errores:
-
-                form.add_error(
-                    None,
-                    mensaje_error,
-                )
-
-        except Exception as error:
-
-            logger.exception(
-                (
-                    "Error inesperado actualizando "
-                    "estado operativo del pedido. "
-                    "Pedido=%s Estado=%s Error=%s"
-                ),
-                pedido.numero,
-                nuevo_estado,
-                error,
-            )
+        if not pago_aprobado:
 
             form.add_error(
                 None,
                 (
-                    "No fue posible actualizar el estado "
-                    "del pedido. Intenta nuevamente."
+                    "Este pedido todavía no tiene el pago "
+                    "confirmado. No puede avanzar de estado."
                 ),
             )
 
-        else:
 
-            messages.success(
-                request,
-                (
-                    "El pedido "
-                    f"{pedido_actualizado.numero} "
-                    "fue actualizado correctamente."
-                ),
+        # =====================================================================
+        # FORMULARIO VÁLIDO
+        # =====================================================================
+
+        elif form.is_valid():
+
+            nuevo_estado = (
+                form.cleaned_data[
+                    "nuevo_estado"
+                ]
             )
 
-            return redirect(
-                "core:panel_pedido_detalle",
-                numero=(
-                    pedido_actualizado.numero
-                ),
-            )
+            comentario = (
+                form.cleaned_data.get(
+                    "comentario",
+                    "",
+                )
+                or ""
+            ).strip()
 
-    # =========================================================================
-    # REFRESCAR ANTES DE TRAZABILIDAD
-    # =========================================================================
 
-    pedido.refresh_from_db()
+            try:
+
+                pedido_actualizado = (
+                    cambiar_estado_pedido(
+                        pedido=pedido,
+                        nuevo_estado=nuevo_estado,
+                        comentario=comentario,
+                        usuario=request.user,
+                    )
+                )
+
+
+            except ValidationError as error:
+
+                errores = getattr(
+                    error,
+                    "messages",
+                    [
+                        str(error),
+                    ],
+                )
+
+                for mensaje_error in errores:
+
+                    form.add_error(
+                        None,
+                        mensaje_error,
+                    )
+
+
+            except Exception as error:
+
+                logger.exception(
+                    (
+                        "Error inesperado actualizando "
+                        "estado operativo del pedido. "
+                        "Pedido=%s Estado=%s Error=%s"
+                    ),
+                    pedido.numero,
+                    nuevo_estado,
+                    error,
+                )
+
+                form.add_error(
+                    None,
+                    (
+                        "No fue posible actualizar el estado "
+                        "del pedido. Intenta nuevamente."
+                    ),
+                )
+
+
+            else:
+
+                messages.success(
+                    request,
+                    (
+                        "El pedido "
+                        f"{pedido_actualizado.numero} "
+                        "fue actualizado correctamente."
+                    ),
+                )
+
+                return redirect(
+                    "core:panel_pedido_detalle",
+                    numero=(
+                        pedido_actualizado.numero
+                    ),
+                )
+
 
     # =========================================================================
     # HISTORIAL
     # =========================================================================
 
-    historial = (
-        pedido.historial_estados
-        .select_related(
-            "usuario",
-        )
-        .all()
+    historial = list(
+        pedido.historial_estados.all()
     )
+
 
     # =========================================================================
     # TIMELINE
     # =========================================================================
 
-    timeline = construir_timeline(
-        pedido
+    timeline = (
+        construir_timeline(
+            pedido
+        )
+        or []
     )
+
 
     # =========================================================================
     # DIAGNÓSTICO
     # =========================================================================
 
     if (
-        pedido.pagado
+        pago_aprobado
         and not timeline
     ):
 
@@ -1710,6 +2469,7 @@ def panel_pedido_detalle(
             pedido.estado_pago,
         )
 
+
     # =========================================================================
     # RENDER
     # =========================================================================
@@ -1718,15 +2478,35 @@ def panel_pedido_detalle(
         request,
         "core/gestion/panel_pedido_detalle.html",
         {
-            "pedido": pedido,
-            "form": form,
-            "timeline": timeline,
-            "historial": historial,
+            "pedido": (
+                pedido
+            ),
+
+            "form": (
+                form
+            ),
+
+            "timeline": (
+                timeline
+            ),
+
+            "historial": (
+                historial
+            ),
+
+            "pago_aprobado": (
+                pago_aprobado
+            ),
+
+            "es_pago_pendiente": (
+                es_pago_pendiente
+            ),
+
+            "puede_avanzar_estado": (
+                puede_avanzar_estado
+            ),
         },
     )
-
-
-
 
 
 @require_http_methods(["GET"])

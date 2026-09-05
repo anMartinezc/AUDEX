@@ -113,7 +113,7 @@ Gestión de pedidos | Audex
             <!-- NUEVOS -->
 
             <a
-                href="?bandeja=nuevos"
+                href="{% url 'core:panel_pedidos' %}?bandeja=nuevos"
                 class="
                     gestion-resumen__tarjeta
                     {% if bandeja_actual == 'nuevos' %}
@@ -136,7 +136,7 @@ Gestión de pedidos | Audex
             <!-- OPERACIÓN -->
 
             <a
-                href="?bandeja=operacion"
+                href="{% url 'core:panel_pedidos' %}?bandeja=operacion"
                 class="
                     gestion-resumen__tarjeta
                     {% if bandeja_actual == 'operacion' %}
@@ -159,7 +159,7 @@ Gestión de pedidos | Audex
             <!-- DESPACHO -->
 
             <a
-                href="?bandeja=despacho"
+                href="{% url 'core:panel_pedidos' %}?bandeja=despacho"
                 class="
                     gestion-resumen__tarjeta
                     {% if bandeja_actual == 'despacho' %}
@@ -182,7 +182,7 @@ Gestión de pedidos | Audex
             <!-- FINALIZADOS -->
 
             <a
-                href="?bandeja=finalizados"
+                href="{% url 'core:panel_pedidos' %}?bandeja=finalizados"
                 class="
                     gestion-resumen__tarjeta
                     {% if bandeja_actual == 'finalizados' %}
@@ -212,13 +212,13 @@ Gestión de pedidos | Audex
 
 
             <!-- =================================================
-                 PAGOS PENDIENTES RECIENTES
+                 PAGOS PENDIENTES - ÚLTIMAS 48 HORAS
             ================================================== -->
 
             {% if total_pendientes_recientes > 0 %}
 
                 <a
-                    href="?bandeja=pendientes"
+                    href="{% url 'core:panel_pedidos' %}?bandeja=pendientes"
                     class="
                         gestion-pendientes
                         gestion-pendientes--atencion
@@ -242,62 +242,14 @@ Gestión de pedidos | Audex
 
                             pendiente{{ total_pendientes_recientes|pluralize }}
 
-                            reciente{{ total_pendientes_recientes|pluralize }}
-
                         </strong>
 
 
                         <span>
-
-                            Intentos de pago con actividad
+                            Pedido{{ total_pendientes_recientes|pluralize }}
+                            pendiente{{ total_pendientes_recientes|pluralize }}
+                            de pago creado{{ total_pendientes_recientes|pluralize }}
                             durante las últimas 48 horas.
-
-                            {% if total_pendientes_pago > total_pendientes_recientes %}
-
-                                Hay {{ total_pendientes_pago }}
-                                pendientes en el histórico.
-
-                            {% endif %}
-
-                        </span>
-
-                    </div>
-
-
-                    <i class="bi bi-arrow-right"></i>
-
-                </a>
-
-
-            {% elif total_pendientes_pago > 0 %}
-
-                <a
-                    href="?bandeja=pendientes"
-                    class="gestion-pendientes"
-                >
-
-                    <div class="gestion-pendientes__icono">
-
-                        <i class="bi bi-archive"></i>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-                            Historial de pagos pendientes
-                        </strong>
-
-
-                        <span>
-
-                            Existen
-                            {{ total_pendientes_pago }}
-                            intentos pendientes históricos,
-                            pero ninguno tuvo actividad
-                            durante las últimas 48 horas.
-
                         </span>
 
                     </div>
@@ -317,7 +269,7 @@ Gestión de pedidos | Audex
             {% if total_boletas_pendientes > 0 %}
 
                 <a
-                    href="?bandeja=boletas"
+                    href="{% url 'core:panel_pedidos' %}?bandeja=boletas"
                     class="gestion-pendientes"
                 >
 
@@ -362,7 +314,7 @@ Gestión de pedidos | Audex
              BANDEJA COMPLETA
         ====================================================== -->
 
-        {% if mostrar_bandeja and page_obj %}
+        {% if mostrar_bandeja %}
 
             <section class="gestion-listado">
 
@@ -603,11 +555,11 @@ Gestión de pedidos | Audex
                                 <div class="pedido-admin-fila__fecha">
 
                                     <span>
-                                        Actualizado
+                                        Recibido
                                     </span>
 
                                     <strong>
-                                        {{ pedido.actualizado|date:"d/m/Y H:i" }}
+                                        {{ pedido.creado|date:"d/m/Y H:i" }}
                                     </strong>
 
                                 </div>
@@ -1021,18 +973,20 @@ Gestión de pedidos | Audex
 
                                         <!-- PIE -->
 
-                                        <footer>
+                                    <footer>
 
-                                            <time>
-                                                {{ pedido.actualizado|date:"d/m H:i" }}
-                                            </time>
+                                        <time
+                                            datetime="{{ pedido.creado|date:'c' }}"
+                                            title="Pedido recibido el {{ pedido.creado|date:'d/m/Y H:i' }}"
+                                        >
+                                            {{ pedido.creado|date:"d/m H:i" }}
+                                        </time>
 
+                                        <strong>
+                                            ${{ pedido.total|floatformat:0|intcomma }} CLP
+                                        </strong>
 
-                                            <strong>
-                                                ${{ pedido.total|floatformat:0|intcomma }} CLP
-                                            </strong>
-
-                                        </footer>
+                                    </footer>
 
                                     </a>
 
@@ -1114,7 +1068,10 @@ Gestión de pedidos | Audex
                                     {% elif pedido.nubox_tiene_error %}
 
                                         <span
-                                            class="tarjeta-pedido-admin__boleta pedido-admin-boleta--error"
+                                            class="
+                                                tarjeta-pedido-admin__boleta
+                                                pedido-admin-boleta--error
+                                            "
                                             title="Error de emisión Nubox"
                                         >
 
@@ -1162,7 +1119,7 @@ Gestión de pedidos | Audex
                             <footer class="bandeja-pedidos__pie">
 
                                 <a
-                                    href="?bandeja={{ bandeja.clave }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                                    href="{% url 'core:panel_pedidos' %}?bandeja={{ bandeja.clave }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
                                 >
 
                                     {% if bandeja.hay_mas %}
@@ -1200,119 +1157,206 @@ Gestión de pedidos | Audex
 
 {% endblock %}
 
+
 {% block extra_js %}
 
 <script>
-    document.addEventListener(
-        "DOMContentLoaded",
-        () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-            const pedidos = Array.from(
-                document.querySelectorAll(
-                    "[data-nubox-pedido]"
+        // =========================================================
+        // CONTROL GENERAL
+        // =========================================================
+
+        let paginaRecargando = false;
+
+
+        // =========================================================
+        // =========================================================
+        // ACTUALIZACIÓN AUTOMÁTICA DEL ESTADO DE LOS PEDIDOS
+        // =========================================================
+        // =========================================================
+        //
+        // Este proceso consulta una versión liviana del tablero.
+        //
+        // Cuando un pedido cambia, por ejemplo:
+        //
+        // CONFIRMADO
+        //     -> PREPARACION
+        //
+        // el backend cambia version_panel.
+        //
+        // El navegador detecta la diferencia y recarga
+        // la página una sola vez.
+        //
+        // Esto hace que el pedido se mueva automáticamente:
+        //
+        // CONFIRMADO
+        //     -> Nuevos
+        //
+        // PREPARACION / LISTO
+        //     -> En operación
+        //
+        // ENVIADO
+        //     -> En despacho
+        //
+        // ENTREGADO / CANCELADO
+        //     -> Finalizados
+        //
+        // =========================================================
+
+
+        // =========================================================
+        // VERSIÓN ACTUAL
+        // =========================================================
+
+        let versionPanel = (
+            "{{ version_panel|default:''|escapejs }}"
+        );
+
+
+        // =========================================================
+        // CONFIGURACIÓN
+        // =========================================================
+
+        const INTERVALO_PANEL_MS = 5000;
+        const PRIMERA_CONSULTA_PANEL_MS = 2500;
+
+        let consultaPanelEnCurso = false;
+        let temporizadorPanel = null;
+
+
+        // =========================================================
+        // URL PARA CONSULTA LIVIANA
+        // =========================================================
+        //
+        // Conservamos:
+        //
+        // - bandeja;
+        // - búsqueda;
+        // - página;
+        //
+        // y solamente añadimos:
+        //
+        // actualizar_panel=1
+        // =========================================================
+
+        const crearUrlEstadoPanel = () => {
+
+            const url = new URL(
+                window.location.href
+            );
+
+            url.searchParams.set(
+                "actualizar_panel",
+                "1"
+            );
+
+            return url.toString();
+        };
+
+
+        // =========================================================
+        // ¿USUARIO ESTÁ ESCRIBIENDO?
+        // =========================================================
+
+        const usuarioEstaEscribiendo = () => {
+
+            const activo = (
+                document.activeElement
+            );
+
+            if (!activo) {
+                return false;
+            }
+
+            return (
+                activo.tagName === "INPUT"
+                || activo.tagName === "TEXTAREA"
+                || activo.tagName === "SELECT"
+            );
+        };
+
+
+        // =========================================================
+        // PROGRAMAR SIGUIENTE CONSULTA
+        // =========================================================
+
+        const programarConsultaPanel = (
+            retraso = INTERVALO_PANEL_MS,
+        ) => {
+
+            if (
+                paginaRecargando
+            ) {
+                return;
+            }
+
+
+            if (temporizadorPanel) {
+
+                window.clearTimeout(
+                    temporizadorPanel
+                );
+
+            }
+
+
+            temporizadorPanel = (
+                window.setTimeout(
+                    consultarEstadoPanel,
+                    retraso,
                 )
             );
+        };
 
-            if (!pedidos.length) {
+
+        // =========================================================
+        // CONSULTAR ESTADO GENERAL
+        // =========================================================
+
+        const consultarEstadoPanel = async () => {
+
+            if (
+                paginaRecargando
+                || consultaPanelEnCurso
+            ) {
                 return;
             }
 
 
-            /*
-             * Solo monitorizamos pedidos que:
-             *
-             * - ya poseen nubox_document_id;
-             * - todavía no están emitidos;
-             * - tienen una URL válida para consultar estado.
-             *
-             * IMPORTANTE:
-             *
-             * Este código NO emite ni reemite boletas.
-             * Solo consulta estado_boleta_nubox().
-             */
-            const pendientes = pedidos.filter(
-                (pedido) => {
+            // -----------------------------------------------------
+            // PESTAÑA OCULTA
+            // -----------------------------------------------------
 
-                    const documentId = (
-                        pedido.dataset.nuboxDocumentId || ""
-                    ).trim();
+            if (document.hidden) {
 
-                    const emitido = (
-                        pedido.dataset.nuboxEmitido === "true"
-                    );
+                programarConsultaPanel();
 
-                    const statusUrl = (
-                        pedido.dataset.nuboxStatusUrl || ""
-                    ).trim();
-
-                    return (
-                        Boolean(documentId)
-                        && !emitido
-                        && Boolean(statusUrl)
-                    );
-                },
-            );
-
-
-            if (!pendientes.length) {
                 return;
             }
 
 
-            /*
-             * Panel administrativo:
-             *
-             * 5 segundos evita hacer demasiadas consultas
-             * cuando existen varios pedidos simultáneamente.
-             *
-             * 24 intentos = aproximadamente 2 minutos.
-             */
-            const INTERVALO_MS = 5000;
-            const PRIMERA_CONSULTA_MS = 1500;
-            const MAX_INTENTOS = 24;
+            // -----------------------------------------------------
+            // NO MOLESTAR MIENTRAS SE ESCRIBE EN EL BUSCADOR
+            // -----------------------------------------------------
 
-            let intentos = 0;
-            let consultaEnCurso = false;
-            let detenerPolling = false;
+            if (usuarioEstaEscribiendo()) {
+
+                programarConsultaPanel();
+
+                return;
+            }
 
 
-            const actualizarEstadoVisual = (
-                pedido,
-                estado,
-            ) => {
-
-                if (!estado) {
-                    return;
-                }
-
-                pedido
-                    .querySelectorAll(
-                        "[data-nubox-estado]"
-                    )
-                    .forEach(
-                        (elemento) => {
-
-                            elemento.textContent = estado;
-                        },
-                    );
-            };
+            consultaPanelEnCurso = true;
 
 
-            const consultarPedido = async (
-                pedido,
-            ) => {
-
-                const statusUrl = (
-                    pedido.dataset.nuboxStatusUrl || ""
-                ).trim();
-
-                if (!statusUrl) {
-                    return false;
-                }
-
+            try {
 
                 const response = await fetch(
-                    statusUrl,
+                    crearUrlEstadoPanel(),
                     {
                         method: "GET",
 
@@ -1320,30 +1364,29 @@ Gestión de pedidos | Audex
                             "X-Requested-With": (
                                 "XMLHttpRequest"
                             ),
+
                             "Accept": (
                                 "application/json"
                             ),
                         },
 
                         credentials: "same-origin",
+
                         cache: "no-store",
                     },
                 );
 
 
-                /*
-                 * Si la sesión pierde autorización
-                 * o el pedido ya no existe, dejamos
-                 * de consultar esa tarjeta.
-                 */
+                // -------------------------------------------------
+                // SESIÓN CADUCADA / SIN PERMISO
+                // -------------------------------------------------
+
                 if (
-                    response.status === 403
-                    || response.status === 404
+                    response.status === 401
+                    || response.status === 403
                 ) {
 
-                    pedido.dataset.nuboxEmitido = "true";
-
-                    return false;
+                    return;
                 }
 
 
@@ -1352,178 +1395,595 @@ Gestión de pedidos | Audex
                     throw new Error(
                         `HTTP ${response.status}`
                     );
+
                 }
 
 
-                const data = await response.json();
+                const data = (
+                    await response.json()
+                );
 
-
-                if (data.estado) {
-
-                    actualizarEstadoVisual(
-                        pedido,
-                        data.estado,
-                    );
-                }
-
-
-                /*
-                 * Cuando Nubox confirma la emisión,
-                 * marcamos el pedido y avisamos al
-                 * ciclo principal para recargar.
-                 */
-                if (data.emitido) {
-
-                    pedido.dataset.nuboxEmitido = "true";
-
-                    return true;
-                }
-
-
-                return false;
-            };
-
-
-            const consultarPendientes = async () => {
 
                 if (
-                    detenerPolling
-                    || consultaEnCurso
-                    || document.hidden
+                    !data
+                    || !data.ok
                 ) {
+
                     return;
                 }
 
 
-                consultaEnCurso = true;
-                intentos += 1;
+                const nuevaVersion = (
+                    data.version
+                    || ""
+                );
 
 
-                try {
-
-                    const activos = pendientes.filter(
-                        (pedido) => (
-                            pedido.dataset.nuboxEmitido
-                            !== "true"
-                        ),
-                    );
-
-
-                    if (!activos.length) {
-
-                        detenerPolling = true;
-
-                        return;
-                    }
-
-
-                    const resultados = await Promise.allSettled(
-                        activos.map(
-                            (pedido) => (
-                                consultarPedido(
-                                    pedido
-                                )
-                            ),
-                        ),
-                    );
-
-
-                    const algunaBoletaEmitida = resultados.some(
-                        (resultado) => (
-                            resultado.status === "fulfilled"
-                            && resultado.value === true
-                        ),
-                    );
-
-
-                    /*
-                     * Si al menos una boleta acaba de emitirse,
-                     * recargamos una sola vez.
-                     *
-                     * Así Django vuelve a renderizar:
-                     *
-                     * - folio;
-                     * - nubox_emitido=True;
-                     * - nubox_url_pdf;
-                     * - botón Descargar boleta;
-                     * - contador de boletas pendientes.
-                     */
-                    if (algunaBoletaEmitida) {
-
-                        detenerPolling = true;
-
-                        window.location.reload();
-
-                        return;
-                    }
-
-
-                    resultados.forEach(
-                        (resultado) => {
-
-                            if (
-                                resultado.status === "rejected"
-                            ) {
-
-                                console.warn(
-                                    "No fue posible consultar "
-                                    + "el estado Nubox:",
-                                    resultado.reason,
-                                );
-                            }
-                        },
-                    );
-
-                } finally {
-
-                    consultaEnCurso = false;
-                }
-
+                // -------------------------------------------------
+                // EL TABLERO CAMBIÓ
+                // -------------------------------------------------
 
                 if (
-                    !detenerPolling
-                    && intentos < MAX_INTENTOS
+                    versionPanel
+                    && nuevaVersion
+                    && nuevaVersion !== versionPanel
                 ) {
 
-                    window.setTimeout(
-                        consultarPendientes,
-                        INTERVALO_MS,
-                    );
+                    paginaRecargando = true;
+
+                    window.location.reload();
+
+                    return;
                 }
-            };
 
 
-            /*
-             * No consultamos mientras la pestaña está oculta.
-             * Cuando el administrador vuelve al panel,
-             * se realiza una comprobación casi inmediata.
-             */
-            document.addEventListener(
-                "visibilitychange",
-                () => {
+                // -------------------------------------------------
+                // PRIMERA VERSIÓN
+                // -------------------------------------------------
 
-                    if (
-                        !document.hidden
-                        && !detenerPolling
-                        && intentos < MAX_INTENTOS
-                    ) {
+                if (
+                    nuevaVersion
+                ) {
 
-                        window.setTimeout(
-                            consultarPendientes,
-                            250,
+                    versionPanel = (
+                        nuevaVersion
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "No fue posible comprobar "
+                    + "el estado del panel:",
+                    error,
+                );
+
+            } finally {
+
+                consultaPanelEnCurso = false;
+
+            }
+
+
+            // -----------------------------------------------------
+            // SIGUIENTE CONSULTA
+            // -----------------------------------------------------
+
+            if (!paginaRecargando) {
+
+                programarConsultaPanel();
+
+            }
+        };
+
+
+        // =========================================================
+        // INICIAR MONITOREO DEL PANEL
+        // =========================================================
+
+        programarConsultaPanel(
+            PRIMERA_CONSULTA_PANEL_MS
+        );
+
+
+        // =========================================================
+        // =========================================================
+        // MONITOREO DE BOLETAS
+        // =========================================================
+        // =========================================================
+
+        const pedidos = Array.from(
+            document.querySelectorAll(
+                "[data-nubox-pedido]"
+            )
+        );
+
+
+        // =========================================================
+        // BOLETAS PENDIENTES
+        // =========================================================
+
+        const pendientesNubox = (
+            pedidos.filter(
+                (pedido) => {
+
+                    const documentId = (
+                        pedido.dataset
+                            .nuboxDocumentId
+                        || ""
+                    ).trim();
+
+
+                    const emitido = (
+                        pedido.dataset
+                            .nuboxEmitido
+                        === "true"
+                    );
+
+
+                    const statusUrl = (
+                        pedido.dataset
+                            .nuboxStatusUrl
+                        || ""
+                    ).trim();
+
+
+                    return (
+                        Boolean(
+                            documentId
+                        )
+                        && !emitido
+                        && Boolean(
+                            statusUrl
+                        )
+                    );
+                },
+            )
+        );
+
+
+        // =========================================================
+        // CONFIGURACIÓN NUBOX
+        // =========================================================
+
+        const INTERVALO_NUBOX_MS = 5000;
+        const PRIMERA_CONSULTA_NUBOX_MS = 1500;
+        const MAX_INTENTOS_NUBOX = 24;
+
+        let intentosNubox = 0;
+
+        let consultaNuboxEnCurso = false;
+
+        let detenerNubox = (
+            pendientesNubox.length === 0
+        );
+
+        let temporizadorNubox = null;
+
+
+        // =========================================================
+        // ACTUALIZAR TEXTO VISUAL
+        // =========================================================
+
+        const actualizarEstadoVisualNubox = (
+            pedido,
+            estado,
+        ) => {
+
+            if (!estado) {
+                return;
+            }
+
+
+            pedido
+                .querySelectorAll(
+                    "[data-nubox-estado]"
+                )
+                .forEach(
+                    (elemento) => {
+
+                        elemento.textContent = (
+                            estado
                         );
-                    }
+
+                    },
+                );
+        };
+
+
+        // =========================================================
+        // CONSULTAR UNA BOLETA
+        // =========================================================
+
+        const consultarPedidoNubox = async (
+            pedido,
+        ) => {
+
+            const statusUrl = (
+                pedido.dataset
+                    .nuboxStatusUrl
+                || ""
+            ).trim();
+
+
+            if (!statusUrl) {
+
+                return false;
+
+            }
+
+
+            const response = await fetch(
+                statusUrl,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "X-Requested-With": (
+                            "XMLHttpRequest"
+                        ),
+
+                        "Accept": (
+                            "application/json"
+                        ),
+                    },
+
+                    credentials: (
+                        "same-origin"
+                    ),
+
+                    cache: "no-store",
                 },
             );
 
 
-            window.setTimeout(
-                consultarPendientes,
-                PRIMERA_CONSULTA_MS,
+            // -----------------------------------------------------
+            // YA NO TIENE ACCESO O EL PEDIDO DESAPARECIÓ
+            // -----------------------------------------------------
+
+            if (
+                response.status === 403
+                || response.status === 404
+            ) {
+
+                pedido.dataset.nuboxEmitido = (
+                    "true"
+                );
+
+                return false;
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+
+            const data = (
+                await response.json()
             );
-        },
-    );
+
+
+            // -----------------------------------------------------
+            // ACTUALIZAR ESTADO EN PANTALLA
+            // -----------------------------------------------------
+
+            if (
+                data.estado
+            ) {
+
+                actualizarEstadoVisualNubox(
+                    pedido,
+                    data.estado,
+                );
+
+            }
+
+
+            // -----------------------------------------------------
+            // BOLETA EMITIDA
+            // -----------------------------------------------------
+
+            if (
+                data.emitido
+            ) {
+
+                pedido.dataset.nuboxEmitido = (
+                    "true"
+                );
+
+                return true;
+            }
+
+
+            return false;
+        };
+
+
+        // =========================================================
+        // PROGRAMAR CONSULTA NUBOX
+        // =========================================================
+
+        const programarConsultaNubox = (
+            retraso = INTERVALO_NUBOX_MS,
+        ) => {
+
+            if (
+                paginaRecargando
+                || detenerNubox
+                || intentosNubox >= MAX_INTENTOS_NUBOX
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                temporizadorNubox
+            ) {
+
+                window.clearTimeout(
+                    temporizadorNubox
+                );
+
+            }
+
+
+            temporizadorNubox = (
+                window.setTimeout(
+                    consultarPendientesNubox,
+                    retraso,
+                )
+            );
+        };
+
+
+        // =========================================================
+        // CONSULTAR TODAS LAS BOLETAS PENDIENTES
+        // =========================================================
+
+        const consultarPendientesNubox = async () => {
+
+            if (
+                paginaRecargando
+                || detenerNubox
+                || consultaNuboxEnCurso
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                document.hidden
+            ) {
+
+                programarConsultaNubox();
+
+                return;
+
+            }
+
+
+            consultaNuboxEnCurso = true;
+
+            intentosNubox += 1;
+
+
+            try {
+
+                const activos = (
+                    pendientesNubox.filter(
+                        (pedido) => (
+                            pedido.dataset
+                                .nuboxEmitido
+                            !== "true"
+                        ),
+                    )
+                );
+
+
+                if (
+                    !activos.length
+                ) {
+
+                    detenerNubox = true;
+
+                    return;
+
+                }
+
+
+                const resultados = (
+                    await Promise.allSettled(
+                        activos.map(
+                            (pedido) => (
+                                consultarPedidoNubox(
+                                    pedido
+                                )
+                            ),
+                        ),
+                    )
+                );
+
+
+                const algunaBoletaEmitida = (
+                    resultados.some(
+                        (resultado) => (
+                            resultado.status
+                            === "fulfilled"
+                            && resultado.value
+                            === true
+                        ),
+                    )
+                );
+
+
+                // -------------------------------------------------
+                // UNA BOLETA ACABA DE ESTAR DISPONIBLE
+                // -------------------------------------------------
+
+                if (
+                    algunaBoletaEmitida
+                ) {
+
+                    paginaRecargando = true;
+
+                    detenerNubox = true;
+
+                    window.location.reload();
+
+                    return;
+
+                }
+
+
+                // -------------------------------------------------
+                // LOG DE ERRORES SIN ROMPER EL PANEL
+                // -------------------------------------------------
+
+                resultados.forEach(
+                    (resultado) => {
+
+                        if (
+                            resultado.status
+                            === "rejected"
+                        ) {
+
+                            console.warn(
+                                "No fue posible consultar "
+                                + "el estado de una boleta:",
+                                resultado.reason,
+                            );
+
+                        }
+                    },
+                );
+
+            } finally {
+
+                consultaNuboxEnCurso = false;
+
+            }
+
+
+            // -----------------------------------------------------
+            // SIGUIENTE CONSULTA
+            // -----------------------------------------------------
+
+            programarConsultaNubox();
+        };
+
+
+        // =========================================================
+        // INICIAR NUBOX SOLAMENTE SI HAY PENDIENTES
+        // =========================================================
+
+        if (
+            !detenerNubox
+        ) {
+
+            programarConsultaNubox(
+                PRIMERA_CONSULTA_NUBOX_MS
+            );
+
+        }
+
+
+        // =========================================================
+        // VISIBILIDAD DE LA PESTAÑA
+        // =========================================================
+        //
+        // Al volver al panel comprobamos rápidamente:
+        //
+        // - estado operativo de pedidos;
+        // - boletas pendientes.
+        // =========================================================
+
+        document.addEventListener(
+            "visibilitychange",
+            () => {
+
+                if (
+                    document.hidden
+                    || paginaRecargando
+                ) {
+
+                    return;
+
+                }
+
+
+                // -------------------------------------------------
+                // PEDIDOS
+                // -------------------------------------------------
+
+                programarConsultaPanel(
+                    250
+                );
+
+
+                // -------------------------------------------------
+                // NUBOX
+                // -------------------------------------------------
+
+                if (
+                    !detenerNubox
+                    && intentosNubox
+                    < MAX_INTENTOS_NUBOX
+                ) {
+
+                    programarConsultaNubox(
+                        400
+                    );
+
+                }
+
+            },
+        );
+
+
+        // =========================================================
+        // LIMPIAR TEMPORIZADORES AL SALIR
+        // =========================================================
+
+        window.addEventListener(
+            "pagehide",
+            () => {
+
+                if (
+                    temporizadorPanel
+                ) {
+
+                    window.clearTimeout(
+                        temporizadorPanel
+                    );
+
+                }
+
+
+                if (
+                    temporizadorNubox
+                ) {
+
+                    window.clearTimeout(
+                        temporizadorNubox
+                    );
+
+                }
+
+            },
+        );
+
+    },
+);
 </script>
 
 {% endblock %}
-

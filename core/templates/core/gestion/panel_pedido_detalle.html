@@ -9,7 +9,7 @@
 
     <link
         rel="stylesheet"
-        href="{% static 'core/css/pedidos.css' %}?v=8"
+        href="{% static 'core/css/pedidos.css' %}?v=9"
     >
 
 {% endblock %}
@@ -44,13 +44,18 @@
             <div>
 
                 <span class="etiqueta-seccion">
+
                     <i class="bi bi-box-seam"></i>
+
                     Pedido
+
                 </span>
+
 
                 <h1>
                     {{ pedido.numero }}
                 </h1>
+
 
                 <p>
                     {{ pedido.nombre }}
@@ -72,9 +77,14 @@
                 </span>
 
 
-                {% if pedido.pagado %}
+                {% if pago_aprobado %}
 
-                    <span class="detalle-admin__pago detalle-admin__pago--ok">
+                    <span
+                        class="
+                            detalle-admin__pago
+                            detalle-admin__pago--ok
+                        "
+                    >
 
                         <i class="bi bi-check-circle-fill"></i>
 
@@ -260,7 +270,11 @@
                     <div class="seguimiento-total">
 
                         <span>
-                            Total pagado
+                            {% if pago_aprobado %}
+                                Total pagado
+                            {% else %}
+                                Total del pedido
+                            {% endif %}
                         </span>
 
                         <strong>
@@ -278,10 +292,14 @@
 
                 <article
                     id="nubox-admin-documento"
-                    class="seguimiento-tarjeta detalle-admin__documentos"
+                    class="
+                        seguimiento-tarjeta
+                        detalle-admin__documentos
+                    "
                     data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
                     data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
                     data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
+                    data-pago-aprobado="{{ pago_aprobado|yesno:'true,false' }}"
                 >
 
                     <div class="detalle-admin__seccion-cabecera">
@@ -299,15 +317,32 @@
                         </div>
 
 
-                        {% if pedido.nubox_disponible %}
+                        {% if not pago_aprobado %}
 
-                            <span class="detalle-admin__documento-estado detalle-admin__documento-estado--ok">
+                            <span class="detalle-admin__documento-estado">
+
+                                <i class="bi bi-lock"></i>
+
+                                No disponible
+
+                            </span>
+
+
+                        {% elif pedido.nubox_disponible %}
+
+                            <span
+                                class="
+                                    detalle-admin__documento-estado
+                                    detalle-admin__documento-estado--ok
+                                "
+                            >
 
                                 <i class="bi bi-check-circle-fill"></i>
 
                                 Emitida
 
                             </span>
+
 
                         {% elif pedido.nubox_en_proceso %}
 
@@ -316,6 +351,7 @@
                                 <i class="bi bi-hourglass-split"></i>
 
                                 <span data-nubox-estado>
+
                                     {% if pedido.nubox_estado %}
 
                                         {{ pedido.nubox_estado }}
@@ -325,19 +361,27 @@
                                         Procesando
 
                                     {% endif %}
+
                                 </span>
 
                             </span>
 
+
                         {% elif pedido.nubox_tiene_error %}
 
-                            <span class="detalle-admin__documento-estado detalle-admin__documento-estado--error">
+                            <span
+                                class="
+                                    detalle-admin__documento-estado
+                                    detalle-admin__documento-estado--error
+                                "
+                            >
 
                                 <i class="bi bi-exclamation-triangle-fill"></i>
 
                                 Error
 
                             </span>
+
 
                         {% else %}
 
@@ -354,7 +398,7 @@
                     </div>
 
 
-                    {% if pedido.pagado %}
+                    {% if pago_aprobado %}
 
                         {% if pedido.nubox_disponible %}
 
@@ -427,13 +471,15 @@
 
                                             {% if pedido.nubox_region_codigo %}
 
-                                                región {{ pedido.nubox_region_codigo }}
+                                                región
+                                                {{ pedido.nubox_region_codigo }}
 
                                             {% endif %}
 
                                             {% if pedido.nubox_comuna_codigo %}
 
-                                                / comuna {{ pedido.nubox_comuna_codigo }}
+                                                / comuna
+                                                {{ pedido.nubox_comuna_codigo }}
 
                                             {% endif %}
 
@@ -452,7 +498,10 @@
                                             href="{{ pedido.nubox_url_pdf }}"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            class="boton boton--primario"
+                                            class="
+                                                boton
+                                                boton--primario
+                                            "
                                             title="Descargar boleta electrónica"
                                         >
 
@@ -465,7 +514,10 @@
                                     {% else %}
 
                                         <span
-                                            class="boton boton--secundario"
+                                            class="
+                                                boton
+                                                boton--secundario
+                                            "
                                         >
 
                                             <i class="bi bi-check-circle"></i>
@@ -507,6 +559,7 @@
                                         {% if pedido.nubox_estado %}
 
                                             Estado actual:
+
                                             <span data-nubox-estado>
                                                 {{ pedido.nubox_estado }}
                                             </span>.
@@ -534,13 +587,15 @@
 
                                             {% if pedido.nubox_region_codigo %}
 
-                                                región {{ pedido.nubox_region_codigo }}
+                                                región
+                                                {{ pedido.nubox_region_codigo }}
 
                                             {% endif %}
 
                                             {% if pedido.nubox_comuna_codigo %}
 
-                                                / comuna {{ pedido.nubox_comuna_codigo }}
+                                                / comuna
+                                                {{ pedido.nubox_comuna_codigo }}
 
                                             {% endif %}
 
@@ -555,7 +610,10 @@
 
                                     <a
                                         href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
-                                        class="boton boton--secundario"
+                                        class="
+                                            boton
+                                            boton--secundario
+                                        "
                                         title="Consultar nuevamente el estado en Nubox"
                                     >
 
@@ -603,13 +661,15 @@
 
                                             {% if pedido.nubox_region_codigo %}
 
-                                                región {{ pedido.nubox_region_codigo }}
+                                                región
+                                                {{ pedido.nubox_region_codigo }}
 
                                             {% endif %}
 
                                             {% if pedido.nubox_comuna_codigo %}
 
-                                                / comuna {{ pedido.nubox_comuna_codigo }}
+                                                / comuna
+                                                {{ pedido.nubox_comuna_codigo }}
 
                                             {% endif %}
 
@@ -665,13 +725,15 @@
 
                                             {% if pedido.nubox_region_codigo %}
 
-                                                región {{ pedido.nubox_region_codigo }}
+                                                región
+                                                {{ pedido.nubox_region_codigo }}
 
                                             {% endif %}
 
                                             {% if pedido.nubox_comuna_codigo %}
 
-                                                / comuna {{ pedido.nubox_comuna_codigo }}
+                                                / comuna
+                                                {{ pedido.nubox_comuna_codigo }}
 
                                             {% endif %}
 
@@ -735,175 +797,87 @@
                     </div>
 
 
-                    <div
-                        class="historial-estados"
-                        id="historialPedido"
-                    >
+                    <!-- =============================================
+                         TIMELINE VISUAL
+                    ============================================== -->
 
-                        <!-- =========================================
-                             PEDIDO CREADO
+                    <div class="timeline-pedido">
 
-                             Solo agregamos este hito manualmente
-                             cuando la tabla de historial no posee
-                             movimientos. Así evitamos duplicar el
-                             registro inicial existente.
-                        ========================================== -->
-
-                        {% if not historial %}
+                        {% for paso in timeline %}
 
                             <div
-                                class="historial-estado"
-                                data-fecha="{{ pedido.creado|date:'c' }}"
+                                class="
+                                    timeline-paso
+
+                                    {% if paso.completado %}
+                                        timeline-paso--completado
+                                    {% endif %}
+
+                                    {% if paso.activo %}
+                                        timeline-paso--activo
+                                    {% endif %}
+                                "
                             >
 
-                                <div class="historial-estado__punto"></div>
+                                <!-- =================================
+                                     ICONO DE LA ETAPA
+                                ================================== -->
+
+                                <div class="timeline-paso__icono">
+
+                                    <i
+                                        class="
+                                            bi
+                                            {{ paso.icono }}
+                                        "
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </div>
 
 
-                                <div>
+                                <!-- =================================
+                                     INFORMACIÓN DE LA ETAPA
+                                ================================== -->
+
+                                <div class="timeline-paso__contenido">
 
                                     <strong>
-                                        Pedido creado
+                                        {{ paso.titulo }}
                                     </strong>
-
-
-                                    <time>
-                                        {{ pedido.creado|date:"d/m/Y H:i" }}
-                                    </time>
 
 
                                     <p>
-                                        Pedido creado desde el checkout.
+                                        {{ paso.descripcion }}
                                     </p>
 
-                                </div>
 
-                            </div>
-
-                        {% endif %}
-
-
-                        <!-- =========================================
-                             MOVIMIENTOS OPERATIVOS REGISTRADOS
-                        ========================================== -->
-
-                        {% for movimiento in historial %}
-
-                            <div
-                                class="historial-estado"
-                                data-fecha="{{ movimiento.creado|date:'c' }}"
-                            >
-
-                                <div class="historial-estado__punto"></div>
-
-
-                                <div>
-
-                                    <strong>
-                                        {{ movimiento.get_estado_nuevo_display }}
-                                    </strong>
-
-
-                                    <time>
-                                        {{ movimiento.creado|date:"d/m/Y H:i" }}
-                                    </time>
-
-
-                                    {% if movimiento.comentario %}
-
-                                        <p>
-                                            {{ movimiento.comentario }}
-                                        </p>
-
-                                    {% endif %}
-
-
-                                    {% if movimiento.usuario %}
-
-                                        <small>
-                                            Actualizado por
-                                            {{ movimiento.usuario }}
-                                        </small>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-                        {% endfor %}
-
-
-                        <!-- =========================================
-                             PAGO CONFIRMADO
-
-                             El pago es un hito independiente del
-                             historial operativo. El pedido puede estar
-                             pagado aunque historial_estados solamente
-                             conserve el estado inicial.
-                        ========================================== -->
-
-                        {% if pedido.pagado %}
-
-                            <div
-                                class="historial-estado historial-estado--pago"
-                                data-fecha="{% if pedido.fecha_pago %}{{ pedido.fecha_pago|date:'c' }}{% else %}{{ pedido.actualizado|date:'c' }}{% endif %}"
-                            >
-
-                                <div class="historial-estado__punto"></div>
-
-
-                                <div>
-
-                                    <strong>
-                                        Pago confirmado
-                                    </strong>
-
-
-                                    {% if pedido.fecha_pago %}
+                                    {% if paso.fecha %}
 
                                         <time>
-                                            {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+                                            {{ paso.fecha|date:"d/m/Y H:i" }}
                                         </time>
 
                                     {% endif %}
 
-
-                                    <p>
-                                        Pago aprobado mediante
-                                        {{ pedido.get_metodo_pago_display }}.
-                                    </p>
-
-
-                                    {% if pedido.metodo_pago == "webpay" and pedido.webpay_authorization_code %}
-
-                                        <small>
-                                            Autorización:
-                                            {{ pedido.webpay_authorization_code }}
-                                        </small>
-
-                                    {% elif pedido.metodo_pago == "mercadopago" and pedido.mercadopago_payment_id %}
-
-                                        <small>
-                                            Payment ID:
-                                            {{ pedido.mercadopago_payment_id }}
-                                        </small>
-
-                                    {% endif %}
-
                                 </div>
 
                             </div>
 
-                        {% endif %}
+                        {% empty %}
 
+                            <div class="detalle-admin__cerrado">
 
-                        {% if not historial and not pedido.pagado %}
+                                <i class="bi bi-info-circle"></i>
 
-                            <p>
-                                No existen movimientos registrados.
-                            </p>
+                                <p>
+                                    No existe información de seguimiento
+                                    para este pedido.
+                                </p>
 
-                        {% endif %}
+                            </div>
+
+                        {% endfor %}
 
                     </div>
 
@@ -933,68 +907,101 @@
                     </h2>
 
 
-                    {% if form.nuevo_estado.field.choices %}
+                    {% if puede_avanzar_estado %}
 
-                        <form
-                            method="post"
-                            class="form-admin"
-                        >
+                        {% if form.nuevo_estado.field.choices %}
 
-                            {% csrf_token %}
-
-
-                            {{ form.non_field_errors }}
-
-
-                            <div class="campo">
-
-                                {{ form.nuevo_estado.label_tag }}
-
-                                {{ form.nuevo_estado }}
-
-                                {{ form.nuevo_estado.errors }}
-
-                            </div>
-
-
-                            <div class="campo">
-
-                                {{ form.comentario.label_tag }}
-
-                                {{ form.comentario }}
-
-                                {{ form.comentario.errors }}
-
-                            </div>
-
-
-                            <button
-                                type="submit"
-                                class="
-                                    boton
-                                    boton--primario
-                                    boton--completo
-                                "
+                            <form
+                                method="post"
+                                class="form-admin"
                             >
 
-                                <i class="bi bi-arrow-right-circle"></i>
+                                {% csrf_token %}
 
-                                Actualizar estado
 
-                            </button>
+                                {{ form.non_field_errors }}
 
-                        </form>
+
+                                <div class="campo">
+
+                                    {{ form.nuevo_estado.label_tag }}
+
+                                    {{ form.nuevo_estado }}
+
+                                    {{ form.nuevo_estado.errors }}
+
+                                </div>
+
+
+                                <div class="campo">
+
+                                    {{ form.comentario.label_tag }}
+
+                                    {{ form.comentario }}
+
+                                    {{ form.comentario.errors }}
+
+                                </div>
+
+
+                                <button
+                                    type="submit"
+                                    class="
+                                        boton
+                                        boton--primario
+                                        boton--completo
+                                    "
+                                >
+
+                                    <i class="bi bi-arrow-right-circle"></i>
+
+                                    Actualizar estado
+
+                                </button>
+
+                            </form>
+
+
+                        {% else %}
+
+                            <div class="detalle-admin__cerrado">
+
+                                <i class="bi bi-check2-circle"></i>
+
+                                <p>
+                                    Este pedido se encuentra cerrado
+                                    y no tiene más fases disponibles.
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+
+                    {% elif es_pago_pendiente %}
+
+                        <div class="detalle-admin__cerrado">
+
+                            <i class="bi bi-clock-history"></i>
+
+                            <p>
+                                Este pedido está pendiente de pago.
+                                El proceso del pedido se habilitará
+                                automáticamente cuando el pago sea confirmado.
+                            </p>
+
+                        </div>
 
 
                     {% else %}
 
                         <div class="detalle-admin__cerrado">
 
-                            <i class="bi bi-check2-circle"></i>
+                            <i class="bi bi-lock"></i>
 
                             <p>
-                                Este pedido se encuentra cerrado
-                                y no tiene más fases disponibles.
+                                El pago de este pedido no está confirmado.
+                                No es posible avanzar su estado operativo.
                             </p>
 
                         </div>
@@ -1029,7 +1036,7 @@
 
                             <strong>
 
-                                {% if pedido.pagado %}
+                                {% if pago_aprobado %}
 
                                     <span class="detalle-admin__dato-ok">
 
@@ -1267,13 +1274,15 @@
 
                             {% if pedido.nubox_region_codigo %}
 
-                                región {{ pedido.nubox_region_codigo }}
+                                región
+                                {{ pedido.nubox_region_codigo }}
 
                             {% endif %}
 
                             {% if pedido.nubox_comuna_codigo %}
 
-                                / comuna {{ pedido.nubox_comuna_codigo }}
+                                / comuna
+                                {{ pedido.nubox_comuna_codigo }}
 
                             {% endif %}
 
@@ -1293,64 +1302,8 @@
 
 {% endblock %}
 
+
 {% block extra_js %}
-
-<!-- =========================================================
-     ORDENAR TRAZABILIDAD CRONOLÓGICAMENTE
-========================================================= -->
-
-<script>
-    document.addEventListener(
-        "DOMContentLoaded",
-        () => {
-
-            const historial = document.getElementById(
-                "historialPedido"
-            );
-
-            if (!historial) {
-                return;
-            }
-
-            const movimientos = Array.from(
-                historial.querySelectorAll(
-                    ".historial-estado[data-fecha]"
-                )
-            );
-
-            movimientos.sort(
-                (a, b) => {
-
-                    const fechaA = Date.parse(
-                        a.dataset.fecha || ""
-                    );
-
-                    const fechaB = Date.parse(
-                        b.dataset.fecha || ""
-                    );
-
-                    if (
-                        Number.isNaN(fechaA)
-                        || Number.isNaN(fechaB)
-                    ) {
-                        return 0;
-                    }
-
-                    return fechaA - fechaB;
-                },
-            );
-
-            movimientos.forEach(
-                (movimiento) => {
-                    historial.appendChild(
-                        movimiento
-                    );
-                },
-            );
-        },
-    );
-</script>
-
 
 <!-- =========================================================
      POLLING NUBOX
@@ -1369,17 +1322,26 @@
                 return;
             }
 
+
+            const pagoAprobado = (
+                documento.dataset.pagoAprobado === "true"
+            );
+
+
             const yaEmitido = (
                 documento.dataset.nuboxEmitido === "true"
             );
+
 
             const documentId = (
                 documento.dataset.nuboxDocumentId || ""
             ).trim();
 
+
             const statusUrl = (
                 documento.dataset.nuboxStatusUrl || ""
             ).trim();
+
 
             /*
              * Solo hacemos polling cuando:
@@ -1391,13 +1353,16 @@
              * Si no existe document_id, esta pantalla no
              * intenta volver a emitir la boleta.
              */
+
             if (
-                yaEmitido
+                !pagoAprobado
+                || yaEmitido
                 || !documentId
                 || !statusUrl
             ) {
                 return;
             }
+
 
             let intentos = 0;
 
@@ -1417,15 +1382,19 @@
                     return;
                 }
 
+
                 const elementos = (
                     documento.querySelectorAll(
                         "[data-nubox-estado]"
                     )
                 );
 
+
                 elementos.forEach(
                     (elemento) => {
+
                         elemento.textContent = estado;
+
                     },
                 );
             };
@@ -1441,8 +1410,10 @@
                     return;
                 }
 
+
                 intentos += 1;
                 consultaEnCurso = true;
+
 
                 try {
 
@@ -1455,12 +1426,14 @@
                                 "X-Requested-With": (
                                     "XMLHttpRequest"
                                 ),
+
                                 "Accept": (
                                     "application/json"
                                 ),
                             },
 
                             credentials: "same-origin",
+
                             cache: "no-store",
                         },
                     );
@@ -1475,11 +1448,14 @@
                      *
                      * En ambos casos detenemos el polling.
                      */
+
                     if (
                         response.status === 403
                         || response.status === 404
                     ) {
+
                         detenerPolling = true;
+
                         return;
                     }
 
@@ -1492,10 +1468,14 @@
                     }
 
 
-                    const data = await response.json();
+                    const data = (
+                        await response.json()
+                    );
 
 
-                    if (data.estado) {
+                    if (
+                        data.estado
+                    ) {
 
                         actualizarEstadoVisual(
                             data.estado
@@ -1514,7 +1494,10 @@
                      * - fecha de emisión
                      * - botón de descarga
                      */
-                    if (data.emitido) {
+
+                    if (
+                        data.emitido
+                    ) {
 
                         detenerPolling = true;
 
@@ -1555,6 +1538,7 @@
              * Si el administrador vuelve a esta pestaña,
              * hacemos una consulta inmediata.
              */
+
             document.addEventListener(
                 "visibilitychange",
                 () => {
@@ -1569,6 +1553,7 @@
                             consultarEstadoNubox,
                             250,
                         );
+
                     }
                 },
             );

@@ -9,7 +9,7 @@
 
     <link
         rel="stylesheet"
-        href="{% static 'core/css/seguimiento_pedido.css' %}?v=3"
+        href="{% static 'core/css/seguimiento_pedido.css' %}?v=4"
     >
 
 {% endblock %}
@@ -504,6 +504,137 @@
 
                     </article>
 
+
+                    <!-- =============================================
+                         BOLETA ELECTRÓNICA
+                    ============================================== -->
+
+                    {% if pago_confirmado %}
+
+                        <article class="seguimiento-tarjeta">
+
+                            <h2>
+                                Boleta electrónica
+                            </h2>
+
+
+                            {% if boleta_disponible and boleta_descarga_url %}
+
+                                <!-- =========================================
+                                     BOLETA DISPONIBLE
+                                ========================================== -->
+
+                                <div class="seguimiento-boleta">
+
+                                    <div class="seguimiento-boleta__estado">
+
+                                        <div class="seguimiento-boleta__icono">
+
+                                            <i class="bi bi-receipt"></i>
+
+                                        </div>
+
+
+                                        <div class="seguimiento-boleta__info">
+
+                                            <strong>
+                                                Boleta disponible
+                                            </strong>
+
+
+                                            <span>
+
+                                                {% if pedido.nubox_folio %}
+
+                                                    Boleta N.º
+                                                    {{ pedido.nubox_folio }}
+
+                                                {% else %}
+
+                                                    Tu documento está listo
+                                                    para descargar.
+
+                                                {% endif %}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- =====================================
+                                         DESCARGA SEGURA
+                                    ====================================== -->
+
+                                    <a
+                                        href="{{ boleta_descarga_url }}"
+                                        class="
+                                            boton
+                                            boton--primario
+                                            boton--completo
+                                        "
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+
+                                        <i class="bi bi-download"></i>
+
+                                        Descargar boleta
+
+                                    </a>
+
+                                </div>
+
+
+                            {% else %}
+
+                                <!-- =========================================
+                                     BOLETA TODAVÍA NO DISPONIBLE
+                                ========================================== -->
+
+                                <div
+                                    class="
+                                        seguimiento-boleta
+                                        seguimiento-boleta--pendiente
+                                    "
+                                >
+
+                                    <div class="seguimiento-boleta__estado">
+
+                                        <div class="seguimiento-boleta__icono">
+
+                                            <i class="bi bi-clock-history"></i>
+
+                                        </div>
+
+
+                                        <div class="seguimiento-boleta__info">
+
+                                            <strong>
+                                                Tu boleta estará disponible
+                                                en breve
+                                            </strong>
+
+
+                                            <span>
+                                                La enviaremos a tu correo y
+                                                también podrás descargarla
+                                                desde este sitio.
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                        </article>
+
+                    {% endif %}
+
                 </aside>
 
             </div>
@@ -678,12 +809,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // -----------------------------------------------------
         // AGREGAR PUNTOS
-        //
-        // 12345678
-        //
-        // pasa a:
-        //
-        // 12.345.678
         // -----------------------------------------------------
 
         cuerpo = cuerpo.replace(
@@ -724,15 +849,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // =========================================================
     // AL PEGAR / AUTOCOMPLETAR
-    // =========================================================
-    //
-    // Si llega un valor sin formato:
-    //
-    // 123456789
-    //
-    // se transforma en:
-    //
-    // 12.345.678-9
     // =========================================================
 
     if (campoRut.value) {
