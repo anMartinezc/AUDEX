@@ -15,6 +15,21 @@ Productos | Audex
     href="{% static 'core/css/productos.css' %}?v=13"
 >
 
+<style>
+    .producto-card__admin form {
+        margin: 0;
+        padding: 0;
+        display: contents;
+    }
+
+    .producto-card__admin-eliminar {
+        appearance: none;
+        -webkit-appearance: none;
+        font: inherit;
+        cursor: pointer;
+    }
+</style>
+
 {% endblock %}
 
 
@@ -574,6 +589,10 @@ Productos | Audex
 
                                     <div class="producto-card__admin">
 
+                                        <!-- =================================
+                                             EDITAR
+                                        ================================== -->
+
                                         <a
                                             href="{% url 'core:producto_editar' producto.slug %}"
                                             title="Editar producto"
@@ -585,16 +604,32 @@ Productos | Audex
                                         </a>
 
 
-                                        <a
-                                            href="{% url 'core:producto_eliminar' producto.slug %}"
-                                            class="producto-card__admin-eliminar"
-                                            title="Eliminar producto"
-                                            aria-label="Eliminar {{ producto.nombre }}"
+                                        <!-- =================================
+                                             ELIMINAR
+                                             SWEETALERT + POST
+                                        ================================== -->
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'core:producto_eliminar' producto.slug %}"
+                                            class="js-form-eliminar-producto"
+                                            data-producto-nombre="{{ producto.nombre|escape }}"
                                         >
 
-                                            <i class="bi bi-trash3"></i>
+                                            {% csrf_token %}
 
-                                        </a>
+                                            <button
+                                                type="submit"
+                                                class="producto-card__admin-eliminar"
+                                                title="Eliminar producto"
+                                                aria-label="Eliminar {{ producto.nombre }}"
+                                            >
+
+                                                <i class="bi bi-trash3"></i>
+
+                                            </button>
+
+                                        </form>
 
                                     </div>
 
@@ -1458,6 +1493,140 @@ document.addEventListener(
     }
 );
 
+</script>
+
+
+<!-- =========================================================
+     SWEETALERT2
+========================================================= -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+></script>
+
+
+<!-- =========================================================
+     ELIMINAR PRODUCTO SIN SALIR DE productos.html
+========================================================= -->
+
+<script>
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const formulariosEliminar =
+            document.querySelectorAll(
+                ".js-form-eliminar-producto"
+            );
+
+
+        formulariosEliminar.forEach(
+            function (formulario) {
+
+                formulario.addEventListener(
+                    "submit",
+                    function (event) {
+
+                        // =========================================
+                        // DETENER EL POST HASTA CONFIRMAR
+                        // =========================================
+
+                        event.preventDefault();
+
+
+                        const nombreProducto =
+                            formulario.dataset.productoNombre
+                            || "este producto";
+
+
+                        const botonEliminar =
+                            formulario.querySelector(
+                                "button[type='submit']"
+                            );
+
+
+                        // =========================================
+                        // CONFIRMACIÓN SWEETALERT
+                        // =========================================
+
+                        Swal.fire({
+                            icon: "warning",
+
+                            title:
+                                "¿Eliminar producto?",
+
+                            html:
+                                `
+                                    ¿Estás seguro de eliminar
+                                    <strong>${nombreProducto}</strong>?
+                                    <br><br>
+                                    Esta acción no se puede deshacer.
+                                `,
+
+                            showCancelButton:
+                                true,
+
+                            confirmButtonText:
+                                "Sí, eliminar",
+
+                            cancelButtonText:
+                                "Cancelar",
+
+                            reverseButtons:
+                                true,
+
+                            focusCancel:
+                                true,
+
+                            allowOutsideClick:
+                                false,
+
+                            allowEscapeKey:
+                                true,
+
+                        }).then(
+                            function (resultado) {
+
+                                if (
+                                    !resultado.isConfirmed
+                                ) {
+                                    return;
+                                }
+
+
+                                // =================================
+                                // EVITAR DOBLE ENVÍO
+                                // =================================
+
+                                if (botonEliminar) {
+
+                                    botonEliminar.disabled =
+                                        true;
+
+                                }
+
+
+                                // =================================
+                                // POST REAL A DJANGO
+                                // =================================
+                                //
+                                // submit() nativo no vuelve a disparar
+                                // este listener.
+                                // =================================
+
+                                formulario.submit();
+
+                            }
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
 </script>
 
 {% endblock %}

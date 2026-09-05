@@ -624,22 +624,46 @@ class ProductoEditarView(
 
 
 
-    
 class ProductoEliminarView(
     AdministradorProductosMixin,
     DeleteView,
 ):
     model = Producto
-    template_name = "core/producto_confirmar_eliminar.html"
-    success_url = reverse_lazy("core:productos")
 
-    def form_valid(self, form):
-        messages.success(
-            self.request,
-            "Producto eliminado correctamente.",
+    success_url = reverse_lazy(
+        "core:productos"
+    )
+
+    # =========================================================
+    # SOLO POST
+    # =========================================================
+
+    http_method_names = [
+        "post",
+    ]
+
+    def form_valid(
+        self,
+        form,
+    ):
+        nombre_producto = (
+            self.object.nombre
         )
 
-        return super().form_valid(form)
+        messages.success(
+            self.request,
+            (
+                f'El producto "{nombre_producto}" '
+                "fue eliminado correctamente."
+            ),
+        )
+
+        return super().form_valid(
+            form
+        )
+
+
+
 
 
 class CategoriaCrearView(

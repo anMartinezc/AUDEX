@@ -1390,22 +1390,51 @@
     gap: 8px;
 }
 
-.producto-card__admin a {
+
+/* =========================================================
+   FORMULARIO DE ELIMINACIÓN
+========================================================= */
+
+.producto-card__admin form {
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+}
+
+
+/* =========================================================
+   BOTONES ADMIN
+   EDITAR + ELIMINAR
+========================================================= */
+
+.producto-card__admin a,
+.producto-card__admin button {
     width: 40px;
     height: 40px;
+
+    min-width: 40px;
+    min-height: 40px;
+
+    padding: 0;
 
     display: grid;
     place-items: center;
 
     color: var(--color-blanco);
 
+    font-family: inherit;
     font-size: 0.95rem;
+    line-height: 1;
 
     border:
         1px solid
         rgba(255, 255, 255, 0.15);
 
     border-radius: 50%;
+
+    outline: none;
 
     background: rgba(5, 10, 14, 0.86);
 
@@ -1415,14 +1444,44 @@
     box-shadow:
         0 8px 22px rgba(0, 0, 0, 0.28);
 
+    cursor: pointer;
+
+    appearance: none;
+    -webkit-appearance: none;
+
     transition:
         color 0.25s ease,
         border-color 0.25s ease,
         background 0.25s ease,
-        transform 0.25s ease;
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
-.producto-card__admin a:hover {
+
+/* =========================================================
+   ICONOS ADMIN
+========================================================= */
+
+.producto-card__admin a i,
+.producto-card__admin button i {
+    display: block;
+
+    margin: 0;
+    padding: 0;
+
+    font-size: inherit;
+    line-height: 1;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   HOVER GENERAL
+========================================================= */
+
+.producto-card__admin a:hover,
+.producto-card__admin button:hover {
     color: var(--color-azul-claro);
 
     border-color: var(--color-azul-claro);
@@ -1432,6 +1491,12 @@
     transform: translateY(-3px);
 }
 
+
+/* =========================================================
+   BOTÓN ELIMINAR
+========================================================= */
+
+.producto-card__admin
 .producto-card__admin-eliminar:hover {
     color: #ff7782 !important;
 
@@ -1442,6 +1507,33 @@
     background:
         rgba(90, 20, 28, 0.86)
         !important;
+
+    box-shadow:
+        0
+        10px
+        26px
+        rgba(255, 91, 101, 0.15);
+}
+
+
+/* =========================================================
+   FOCUS ACCESIBLE
+========================================================= */
+
+.producto-card__admin a:focus-visible,
+.producto-card__admin button:focus-visible {
+    border-color: var(--color-azul-claro);
+
+    box-shadow:
+        0
+        0
+        0
+        3px
+        rgba(54, 169, 214, 0.18),
+        0
+        8px
+        22px
+        rgba(0, 0, 0, 0.28);
 }
 
 
@@ -2634,7 +2726,7 @@ li:nth-child(n + 3) {
 
 
     /* =====================================================
-       ADMIN
+       ADMIN MÓVIL
     ===================================================== */
 
     .producto-card__admin {
@@ -2645,9 +2737,13 @@ li:nth-child(n + 3) {
     }
 
 
-    .producto-card__admin a {
+    .producto-card__admin a,
+    .producto-card__admin button {
         width: 29px;
         height: 29px;
+
+        min-width: 29px;
+        min-height: 29px;
 
         font-size: 0.7rem;
     }
