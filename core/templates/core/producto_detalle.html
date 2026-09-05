@@ -455,6 +455,191 @@
 
 
                 <!-- =============================================
+                     COMPRA RÁPIDA
+                     Ubicada justo debajo del precio para evitar
+                     scroll innecesario en PC y móvil.
+                ============================================== -->
+                <div class="detalle-compra">
+
+
+                    <!-- CANTIDAD -->
+                    <div
+                        class="detalle-cantidad"
+                        data-stock="{{ producto.stock }}"
+                    >
+
+                        <span>
+                            Cantidad
+                        </span>
+
+
+                        <div
+                            class="detalle-cantidad__control"
+                            role="group"
+                            aria-label="Seleccionar cantidad"
+                        >
+
+                            <button
+                                type="button"
+                                id="restarCantidad"
+                                aria-label="Disminuir cantidad"
+                                disabled
+                            >
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+
+
+                            <input
+                                type="text"
+                                id="cantidadProducto"
+                                value="1"
+                                inputmode="numeric"
+                                data-min="1"
+                                data-max="{{ producto.stock }}"
+                                readonly
+                                aria-label="Cantidad del producto"
+                            >
+
+
+                            <button
+                                type="button"
+                                id="sumarCantidad"
+                                aria-label="Aumentar cantidad"
+
+                                {% if producto.stock <= 1 or puede_administrar %}
+                                    disabled
+                                {% endif %}
+                            >
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         AGREGAR AL CARRITO
+                    ========================================== -->
+                    {% if puede_administrar %}
+
+                        <button
+                            type="button"
+                            class="
+                                detalle-agregar-carrito
+                                detalle-agregar-carrito--bloqueado
+                            "
+                            disabled
+                            aria-disabled="true"
+                            title="Los administradores no pueden agregar productos al carrito"
+                            aria-label="Agregar al carrito deshabilitado para administradores"
+                        >
+
+                            <i
+                                class="bi bi-lock"
+                                aria-hidden="true"
+                            ></i>
+
+                            <span>
+                                Solo clientes
+                            </span>
+
+                        </button>
+
+                    {% else %}
+
+                        <button
+                            type="button"
+                            class="detalle-agregar-carrito"
+                            id="agregarCarritoDetalle"
+                            data-producto-id="{{ producto.id }}"
+                            data-producto="{{ producto.nombre|escape }}"
+                            data-stock="{{ producto.stock }}"
+                            data-cantidad="1"
+                            data-procesando="false"
+                            aria-label="Agregar {{ producto.nombre|escape }} al carrito"
+
+                            {% if producto.stock <= 0 %}
+                                disabled
+                                aria-disabled="true"
+                            {% else %}
+                                aria-disabled="false"
+                            {% endif %}
+                        >
+
+                            <i class="bi bi-bag-plus"></i>
+
+                            <span>
+                                Agregar al carrito
+                            </span>
+
+                        </button>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         FAVORITOS
+                    ========================================== -->
+                    {% if puede_administrar %}
+
+                        <button
+                            type="button"
+                            class="
+                                detalle-favorito
+                                detalle-favorito--bloqueado
+                            "
+                            disabled
+                            aria-disabled="true"
+                            title="Los administradores no pueden guardar productos en favoritos"
+                            aria-label="Favoritos deshabilitados para administradores"
+                        >
+
+                            <i
+                                class="bi bi-lock"
+                                aria-hidden="true"
+                            ></i>
+
+                            <span>
+                                Solo clientes
+                            </span>
+
+                        </button>
+
+                    {% else %}
+
+                        <button
+                            type="button"
+                            class="
+                                detalle-favorito
+                                js-favorito
+                            "
+                            id="favoritoDetalle"
+                            data-producto-id="{{ producto.id }}"
+                            data-url-estado="{% url 'core:favoritos_estado' %}"
+                            data-url-alternar="{% url 'core:favorito_alternar' %}"
+                            aria-label="Guardar {{ producto.nombre }} en favoritos"
+                            aria-pressed="false"
+                            title="Guardar en favoritos"
+                        >
+
+                            <i
+                                class="bi bi-heart"
+                                aria-hidden="true"
+                            ></i>
+
+                            <span class="js-favorito-texto">
+                                Guardar en favoritos
+                            </span>
+
+                        </button>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- =============================================
                      CARACTERÍSTICAS PRINCIPALES
                 ============================================== -->
                 {% if producto.caracteristica_1 or producto.caracteristica_2 or producto.caracteristica_3 or producto.autonomia_horas or producto.bluetooth or producto.resistencia_agua or producto.cancelacion_ruido %}
@@ -738,187 +923,6 @@
                 </div>
 
 
-                <!-- =============================================
-                     COMPRA
-                ============================================== -->
-                <div class="detalle-compra">
-
-
-                    <!-- CANTIDAD -->
-                    <div
-                        class="detalle-cantidad"
-                        data-stock="{{ producto.stock }}"
-                    >
-
-                        <span>
-                            Cantidad
-                        </span>
-
-
-                        <div
-                            class="detalle-cantidad__control"
-                            role="group"
-                            aria-label="Seleccionar cantidad"
-                        >
-
-                            <button
-                                type="button"
-                                id="restarCantidad"
-                                aria-label="Disminuir cantidad"
-                                disabled
-                            >
-                                <i class="bi bi-dash-lg"></i>
-                            </button>
-
-
-                            <input
-                                type="text"
-                                id="cantidadProducto"
-                                value="1"
-                                inputmode="numeric"
-                                data-min="1"
-                                data-max="{{ producto.stock }}"
-                                readonly
-                                aria-label="Cantidad del producto"
-                            >
-
-
-                            <button
-                                type="button"
-                                id="sumarCantidad"
-                                aria-label="Aumentar cantidad"
-
-                                {% if producto.stock <= 1 or puede_administrar %}
-                                    disabled
-                                {% endif %}
-                            >
-                                <i class="bi bi-plus-lg"></i>
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- =========================================
-                         AGREGAR AL CARRITO
-                    ========================================== -->
-                    {% if puede_administrar %}
-
-                        <button
-                            type="button"
-                            class="
-                                detalle-agregar-carrito
-                                detalle-agregar-carrito--bloqueado
-                            "
-                            disabled
-                            aria-disabled="true"
-                            title="Los administradores no pueden agregar productos al carrito"
-                            aria-label="Agregar al carrito deshabilitado para administradores"
-                        >
-
-                            <i
-                                class="bi bi-lock"
-                                aria-hidden="true"
-                            ></i>
-
-                            <span>
-                                Solo clientes
-                            </span>
-
-                        </button>
-
-                    {% else %}
-
-                        <button
-                            type="button"
-                            class="detalle-agregar-carrito"
-                            id="agregarCarritoDetalle"
-                            data-producto-id="{{ producto.id }}"
-                            data-producto="{{ producto.nombre|escape }}"
-                            data-stock="{{ producto.stock }}"
-                            data-cantidad="1"
-                            data-procesando="false"
-                            aria-label="Agregar {{ producto.nombre|escape }} al carrito"
-
-                            {% if producto.stock <= 0 %}
-                                disabled
-                                aria-disabled="true"
-                            {% else %}
-                                aria-disabled="false"
-                            {% endif %}
-                        >
-
-                            <i class="bi bi-bag-plus"></i>
-
-                            <span>
-                                Agregar al carrito
-                            </span>
-
-                        </button>
-
-                    {% endif %}
-
-
-                    <!-- =========================================
-                         FAVORITOS
-                    ========================================== -->
-                    {% if puede_administrar %}
-
-                        <button
-                            type="button"
-                            class="
-                                detalle-favorito
-                                detalle-favorito--bloqueado
-                            "
-                            disabled
-                            aria-disabled="true"
-                            title="Los administradores no pueden guardar productos en favoritos"
-                            aria-label="Favoritos deshabilitados para administradores"
-                        >
-
-                            <i
-                                class="bi bi-lock"
-                                aria-hidden="true"
-                            ></i>
-
-                            <span>
-                                Solo clientes
-                            </span>
-
-                        </button>
-
-                    {% else %}
-
-                        <button
-                            type="button"
-                            class="
-                                detalle-favorito
-                                js-favorito
-                            "
-                            id="favoritoDetalle"
-                            data-producto-id="{{ producto.id }}"
-                            data-url-estado="{% url 'core:favoritos_estado' %}"
-                            data-url-alternar="{% url 'core:favorito_alternar' %}"
-                            aria-label="Guardar {{ producto.nombre }} en favoritos"
-                            aria-pressed="false"
-                            title="Guardar en favoritos"
-                        >
-
-                            <i
-                                class="bi bi-heart"
-                                aria-hidden="true"
-                            ></i>
-
-                            <span class="js-favorito-texto">
-                                Guardar en favoritos
-                            </span>
-
-                        </button>
-
-                    {% endif %}
-
-                </div>
 
 
                 <!-- =============================================
@@ -1097,7 +1101,7 @@
 
 {% block extra_js %}
 
-<script src="{% static 'core/js/producto_detalle.js' %}?v=2"></script>
+<script src="{% static 'core/js/producto_detalle.js' %}?v=3"></script>
 <script src="{% static 'core/js/favoritos.js' %}?v=1"></script>
 
 {% endblock %}
