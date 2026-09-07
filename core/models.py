@@ -95,7 +95,25 @@ class Categoria(models.Model):
             **kwargs,
         )
 
+
+
+
 class Producto(models.Model):
+
+    # =========================================================
+    # TALLAS DE ENVÍO
+    # =========================================================
+
+    class TallaEnvio(models.TextChoices):
+        XS = "XS", "XS"
+        S = "S", "S"
+        M = "M", "M"
+        L = "L", "L"
+
+    # =========================================================
+    # INFORMACIÓN PRINCIPAL
+    # =========================================================
+
     categoria = models.ForeignKey(
         Categoria,
         on_delete=models.PROTECT,
@@ -127,6 +145,7 @@ class Producto(models.Model):
     # =========================================================
     # IMAGEN PRINCIPAL
     # =========================================================
+
     imagen = models.ImageField(
         upload_to="productos/principales/",
         blank=True,
@@ -146,6 +165,7 @@ class Producto(models.Model):
     # =========================================================
     # PRECIO
     # =========================================================
+
     precio = models.DecimalField(
         max_digits=12,
         decimal_places=0,
@@ -163,6 +183,7 @@ class Producto(models.Model):
     # =========================================================
     # STOCK
     # =========================================================
+
     stock = models.PositiveIntegerField(
         default=0,
         verbose_name="Stock",
@@ -174,8 +195,26 @@ class Producto(models.Model):
     )
 
     # =========================================================
+    # ENVÍO
+    # =========================================================
+
+    talla_envio_minima = models.CharField(
+        max_length=2,
+        choices=TallaEnvio.choices,
+        blank=True,
+        default="",
+        verbose_name="Talla mínima de envío",
+        help_text=(
+            "Configuración administrativa. "
+            "Déjalo vacío para utilizar el cálculo "
+            "automático según la cantidad del carrito."
+        ),
+    )
+
+    # =========================================================
     # CARACTERÍSTICAS
     # =========================================================
+
     caracteristica_1 = models.CharField(
         max_length=120,
         verbose_name="Característica 1",
@@ -219,6 +258,7 @@ class Producto(models.Model):
     # =========================================================
     # ESTADO
     # =========================================================
+
     destacado = models.BooleanField(
         default=False,
         verbose_name="Producto destacado",
@@ -252,6 +292,7 @@ class Producto(models.Model):
     # =========================================================
     # VALIDACIONES
     # =========================================================
+
     def clean(self):
         super().clean()
 
@@ -307,6 +348,7 @@ class Producto(models.Model):
     # =========================================================
     # GUARDADO
     # =========================================================
+
     def save(self, *args, **kwargs):
         if not self.slug:
             slug_base = slugify(
@@ -344,13 +386,13 @@ class Producto(models.Model):
     # =========================================================
     # PRECIOS
     # =========================================================
+
     @property
     def en_oferta(self):
         return (
             self.precio_oferta is not None
             and self.precio_oferta > 0
-            and self.precio_oferta
-            < self.precio
+            and self.precio_oferta < self.precio
         )
 
     @property
@@ -381,18 +423,13 @@ class Producto(models.Model):
     # =========================================================
     # IMÁGENES
     # =========================================================
+
     @property
     def imagen_mostrable(self):
-        """
-        Devuelve la imagen principal del producto.
-
-        Prioridad:
-        1. Imagen cargada localmente.
-        2. URL externa.
-        """
         if self.imagen:
             try:
                 return self.imagen.url
+
             except ValueError:
                 pass
 
@@ -400,9 +437,6 @@ class Producto(models.Model):
 
     @property
     def tiene_galeria(self):
-        """
-        Indica si el producto tiene imágenes adicionales.
-        """
         if not self.pk:
             return False
 
@@ -410,10 +444,6 @@ class Producto(models.Model):
 
     @property
     def cantidad_imagenes(self):
-        """
-        Cantidad total considerando imagen principal
-        más imágenes adicionales.
-        """
         cantidad = 0
 
         if self.imagen_mostrable:
@@ -427,6 +457,7 @@ class Producto(models.Model):
     # =========================================================
     # STOCK
     # =========================================================
+
     @property
     def stock_disponible(self):
         return max(
@@ -443,8 +474,19 @@ class Producto(models.Model):
         )
 
     # =========================================================
+    # ENVÍO
+    # =========================================================
+
+    @property
+    def tiene_talla_envio_especial(self):
+        return bool(
+            self.talla_envio_minima
+        )
+
+    # =========================================================
     # URL
     # =========================================================
+
     def get_absolute_url(self):
         return reverse(
             "core:producto_detalle",
@@ -454,9 +496,168 @@ class Producto(models.Model):
         )
 
 
+
 # =============================================================
-# GALERÍA DE IMÁGENES DEL PRODUCTO
+# REGLAS ESPECIALES DE ENVÍO POR PRODUCTO
 # =============================================================
+
+
+class ReglaEnvioProducto(models.Model):
+
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        related_name="reglas_envio",
+        verbose_name="Producto",
+    )
+
+    cantidad_desde = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(20),
+        ],
+        verbose_name="Cantidad desde",
+        help_text=(
+            "Cantidad mínima de unidades de este producto "
+            "para aplicar la regla."
+        ),
+    )
+
+    cantidad_hasta = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(20),
+        ],
+        verbose_name="Cantidad hasta",
+        help_text=(
+            "Cantidad máxima de unidades de este producto "
+            "para aplicar la regla."
+        ),
+    )
+
+    talla = models.CharField(
+        max_length=2,
+        choices=Producto.TallaEnvio.choices,
+        verbose_name="Talla de envío",
+    )
+
+    activa = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="Regla activa",
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    actualizado = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Regla especial de envío"
+        verbose_name_plural = "Reglas especiales de envío"
+
+        ordering = [
+            "producto",
+            "cantidad_desde",
+            "cantidad_hasta",
+        ]
+
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(
+                    cantidad_hasta__gte=models.F(
+                        "cantidad_desde"
+                    ),
+                ),
+                name="regla_envio_rango_valido",
+            ),
+
+            models.UniqueConstraint(
+                fields=[
+                    "producto",
+                    "cantidad_desde",
+                    "cantidad_hasta",
+                ],
+                name="regla_envio_producto_rango_unico",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.producto.nombre} · "
+            f"{self.cantidad_desde}-"
+            f"{self.cantidad_hasta} unidades "
+            f"→ {self.talla}"
+        )
+
+    def clean(self):
+        super().clean()
+
+        errores = {}
+
+        if (
+            self.cantidad_desde
+            and self.cantidad_hasta
+            and self.cantidad_hasta
+            < self.cantidad_desde
+        ):
+            errores["cantidad_hasta"] = (
+                "La cantidad final no puede ser "
+                "menor que la cantidad inicial."
+            )
+
+        # Evitar reglas que se crucen.
+        if (
+            self.producto_id
+            and self.cantidad_desde
+            and self.cantidad_hasta
+            and self.activa
+        ):
+            reglas_superpuestas = (
+                ReglaEnvioProducto.objects
+                .filter(
+                    producto_id=self.producto_id,
+                    activa=True,
+                    cantidad_desde__lte=self.cantidad_hasta,
+                    cantidad_hasta__gte=self.cantidad_desde,
+                )
+            )
+
+            if self.pk:
+                reglas_superpuestas = (
+                    reglas_superpuestas.exclude(
+                        pk=self.pk
+                    )
+                )
+
+            if reglas_superpuestas.exists():
+                errores["cantidad_desde"] = (
+                    "Ya existe una regla activa que "
+                    "se cruza con este rango."
+                )
+
+        if errores:
+            raise ValidationError(
+                errores
+            )
+
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ):
+        self.full_clean()
+
+        return super().save(
+            *args,
+            **kwargs,
+        )
+
+
+
 class ProductoImagen(models.Model):
     producto = models.ForeignKey(
         Producto,
@@ -529,6 +730,97 @@ class ProductoImagen(models.Model):
                 return ""
 
         return ""
+
+
+
+
+
+class TarifaBlueExpress(models.Model):
+
+    class Zona(models.TextChoices):
+        SANTIAGO = (
+            "SANTIAGO",
+            "Santiago",
+        )
+
+        CENTRO = (
+            "CENTRO",
+            "Zona centro",
+        )
+
+        EXTREMO = (
+            "EXTREMO",
+            "Zona extrema",
+        )
+
+    class Talla(models.TextChoices):
+        XS = "XS", "XS"
+        S = "S", "S"
+        M = "M", "M"
+        L = "L", "L"
+
+    zona = models.CharField(
+        max_length=20,
+        choices=Zona.choices,
+        db_index=True,
+        verbose_name="Zona",
+    )
+
+    talla = models.CharField(
+        max_length=2,
+        choices=Talla.choices,
+        db_index=True,
+        verbose_name="Talla",
+    )
+
+    precio = models.PositiveIntegerField(
+        verbose_name="Precio de envío",
+        help_text=(
+            "Valor del despacho en pesos chilenos."
+        ),
+    )
+
+    activa = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="Tarifa activa",
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    actualizado = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Tarifa Blue Express"
+        verbose_name_plural = "Tarifas Blue Express"
+
+        ordering = [
+            "zona",
+            "talla",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "zona",
+                    "talla",
+                ],
+                name=(
+                    "blueexpress_zona_talla_unica"
+                ),
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.get_zona_display()} · "
+            f"{self.talla} · "
+            f"${self.precio:,}"
+        )
 
 class Pedido(models.Model):
     # -------------------------------------------------------------------------

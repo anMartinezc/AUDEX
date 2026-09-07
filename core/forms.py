@@ -4,15 +4,9 @@ from django import forms
 from django.core.exceptions import ValidationError
 from .models import *
 from django.forms import inlineformset_factory
-from core.services.flujo_pedidos import (
-    estados_permitidos,
-)
+from core.services.flujo_pedidos import *
+from .models import *
 
-from .models import (
-    Categoria,
-    Pedido,
-    Producto,
-)
 
 class ProductoForm(forms.ModelForm):
     class Meta:
@@ -41,22 +35,30 @@ class ProductoForm(forms.ModelForm):
 
         widgets = {
             "categoria": forms.Select(
-                attrs={"class": "campo-formulario"}
+                attrs={
+                    "class": "campo-formulario",
+                }
             ),
+
             "nombre": forms.TextInput(
                 attrs={
                     "class": "campo-formulario",
-                    "placeholder": "Ejemplo: EarFun Air Pro 4",
+                    "placeholder": (
+                        "Ejemplo: EarFun Air Pro 4"
+                    ),
                 }
             ),
+
             "descripcion_corta": forms.TextInput(
                 attrs={
                     "class": "campo-formulario",
                     "placeholder": (
-                        "Resumen breve para la tarjeta del producto"
+                        "Resumen breve para la tarjeta "
+                        "del producto"
                     ),
                 }
             ),
+
             "descripcion": forms.Textarea(
                 attrs={
                     "class": "campo-formulario",
@@ -66,18 +68,21 @@ class ProductoForm(forms.ModelForm):
                     ),
                 }
             ),
+
             "imagen": forms.ClearableFileInput(
                 attrs={
                     "class": "campo-formulario",
                     "accept": "image/*",
                 }
             ),
+
             "imagen_url": forms.URLInput(
                 attrs={
                     "class": "campo-formulario",
                     "placeholder": "https://...",
                 }
             ),
+
             "precio": forms.NumberInput(
                 attrs={
                     "class": "campo-formulario",
@@ -85,6 +90,7 @@ class ProductoForm(forms.ModelForm):
                     "step": 1,
                 }
             ),
+
             "precio_oferta": forms.NumberInput(
                 attrs={
                     "class": "campo-formulario",
@@ -93,42 +99,57 @@ class ProductoForm(forms.ModelForm):
                     "placeholder": "Opcional",
                 }
             ),
+
             "stock": forms.NumberInput(
                 attrs={
                     "class": "campo-formulario",
                     "min": 0,
+                    "step": 1,
                 }
             ),
+
             "caracteristica_1": forms.TextInput(
                 attrs={
                     "class": "campo-formulario",
-                    "placeholder": "Ejemplo: Cancelación activa de ruido",
+                    "placeholder": (
+                        "Ejemplo: Cancelación activa de ruido"
+                    ),
                 }
             ),
+
             "caracteristica_2": forms.TextInput(
                 attrs={
                     "class": "campo-formulario",
-                    "placeholder": "Ejemplo: Audio Hi-Res",
+                    "placeholder": (
+                        "Ejemplo: Audio Hi-Res"
+                    ),
                 }
             ),
+
             "caracteristica_3": forms.TextInput(
                 attrs={
                     "class": "campo-formulario",
-                    "placeholder": "Ejemplo: Hasta 52 horas",
+                    "placeholder": (
+                        "Ejemplo: Hasta 52 horas"
+                    ),
                 }
             ),
+
             "autonomia_horas": forms.NumberInput(
                 attrs={
                     "class": "campo-formulario",
                     "min": 0,
+                    "step": 1,
                 }
             ),
+
             "bluetooth": forms.TextInput(
                 attrs={
                     "class": "campo-formulario",
                     "placeholder": "Ejemplo: 5.4",
                 }
             ),
+
             "resistencia_agua": forms.TextInput(
                 attrs={
                     "class": "campo-formulario",
@@ -137,6 +158,97 @@ class ProductoForm(forms.ModelForm):
             ),
         }
 
+
+# =============================================================================
+# REGLAS ESPECIALES DE ENVÍO
+# =============================================================================
+
+
+class ReglaEnvioProductoForm(
+    forms.ModelForm
+):
+    class Meta:
+        model = ReglaEnvioProducto
+
+        fields = [
+            "cantidad_desde",
+            "cantidad_hasta",
+            "talla",
+            "activa",
+        ]
+
+        widgets = {
+            "cantidad_desde": (
+                forms.NumberInput(
+                    attrs={
+                        "class": "campo-formulario",
+                        "min": 1,
+                        "max": 20,
+                        "step": 1,
+                        "placeholder": "Desde",
+                    }
+                )
+            ),
+
+            "cantidad_hasta": (
+                forms.NumberInput(
+                    attrs={
+                        "class": "campo-formulario",
+                        "min": 1,
+                        "max": 20,
+                        "step": 1,
+                        "placeholder": "Hasta",
+                    }
+                )
+            ),
+
+            "talla": forms.Select(
+                attrs={
+                    "class": "campo-formulario",
+                }
+            ),
+
+            "activa": forms.CheckboxInput(
+                attrs={
+                    "class": (
+                        "campo-formulario-checkbox"
+                    ),
+                }
+            ),
+        }
+
+        labels = {
+            "cantidad_desde": (
+                "Desde"
+            ),
+            "cantidad_hasta": (
+                "Hasta"
+            ),
+            "talla": (
+                "Talla de envío"
+            ),
+            "activa": (
+                "Regla activa"
+            ),
+        }
+
+
+# =============================================================================
+# FORMSET DE REGLAS DE ENVÍO
+# =============================================================================
+
+
+ReglaEnvioProductoFormSet = (
+    inlineformset_factory(
+        Producto,
+        ReglaEnvioProducto,
+        form=ReglaEnvioProductoForm,
+        extra=3,
+        can_delete=True,
+        min_num=0,
+        validate_min=False,
+    )
+)
 
 class CategoriaForm(forms.ModelForm):
     class Meta:

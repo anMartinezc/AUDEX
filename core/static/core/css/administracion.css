@@ -24,7 +24,6 @@
 
 .administracion__encabezado {
     max-width: 720px;
-
     margin-bottom: 42px;
 }
 
@@ -82,7 +81,7 @@
     display: flex;
     flex-direction: column;
 
-    gap: 24px;
+    gap: 28px;
 }
 
 
@@ -93,7 +92,7 @@
 .grupo-formulario {
     width: 100%;
 
-    padding: 32px;
+    padding: 34px;
 
     box-sizing: border-box;
 
@@ -112,12 +111,12 @@
 }
 
 .grupo-formulario__titulo {
-    margin-bottom: 28px;
+    margin-bottom: 30px;
 
     display: flex;
     align-items: center;
 
-    gap: 15px;
+    gap: 16px;
 }
 
 .grupo-formulario__titulo > i {
@@ -127,7 +126,6 @@
     flex-shrink: 0;
 
     display: grid;
-
     place-items: center;
 
     color:
@@ -167,13 +165,36 @@
 
 .grupo-formulario__titulo p {
     margin:
-        4px 0 0;
+        5px 0 0;
 
     color: var(--color-gris);
 
     font-size: 0.78rem;
 
-    line-height: 1.5;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   SUBSECCIONES DENTRO DE UN MISMO GRUPO
+========================================================= */
+
+.grupo-formulario
+>
+.grupo-formulario__titulo
+~
+.grupo-formulario__titulo {
+    margin-top: 42px;
+    padding-top: 34px;
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
 }
 
 
@@ -192,7 +213,7 @@
             minmax(0, 1fr)
         );
 
-    gap: 20px;
+    gap: 22px;
 }
 
 .formulario-grid--tres {
@@ -201,6 +222,8 @@
             3,
             minmax(0, 1fr)
         );
+
+    gap: 20px;
 }
 
 
@@ -213,12 +236,12 @@
 
     min-width: 0;
 
-    margin-bottom: 22px;
+    margin-bottom: 24px;
 
     display: flex;
     flex-direction: column;
 
-    gap: 8px;
+    gap: 9px;
 }
 
 .campo-contenedor label {
@@ -234,6 +257,48 @@
 
 .campo-obligatorio {
     color: #ff6f7b;
+}
+
+
+/* =========================================================
+   CAMPO FORMULARIO MANUAL
+========================================================= */
+
+div.campo-formulario {
+    width: 100%;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+
+    box-sizing: border-box;
+}
+
+.campo-formulario__label {
+    display: block;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.76rem;
+
+    font-weight: 750;
+
+    line-height: 1.4;
+}
+
+.campo-formulario__ayuda {
+    display: block;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.66rem;
+
+    line-height: 1.5;
 }
 
 
@@ -512,7 +577,7 @@ input[type="file"].campo-formulario::file-selector-button {
 
     align-items: stretch;
 
-    gap: 26px;
+    gap: 28px;
 }
 
 
@@ -810,7 +875,7 @@ input[type="file"].campo-formulario::file-selector-button {
 
     justify-content: center;
 
-    gap: 16px;
+    gap: 18px;
 }
 
 
@@ -1462,7 +1527,6 @@ input:checked
     flex-shrink: 0;
 
     display: grid;
-
     place-items: center;
 
     color:
@@ -1504,21 +1568,21 @@ input:checked
 
 
 /* =========================================================
-   AYUDA
+   AYUDA / INFORMACIÓN
 ========================================================= */
 
 .formulario-ayuda {
     width: 100%;
 
-    margin-top: 18px;
+    margin-top: 20px;
 
     padding:
-        13px 15px;
+        16px 18px;
 
     display: flex;
     align-items: flex-start;
 
-    gap: 10px;
+    gap: 12px;
 
     box-sizing: border-box;
 
@@ -1534,7 +1598,7 @@ input:checked
             0.12
         );
 
-    border-radius: 12px;
+    border-radius: 13px;
 
     background:
         rgba(
@@ -1553,15 +1617,15 @@ input:checked
     color:
         var(--color-azul-claro);
 
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
 .formulario-ayuda p {
     margin: 0;
 
-    font-size: 0.72rem;
+    font-size: 0.74rem;
 
-    line-height: 1.6;
+    line-height: 1.75;
 }
 
 .formulario-ayuda strong {
@@ -1589,7 +1653,7 @@ input:checked
             minmax(0, 1fr)
         );
 
-    gap: 18px;
+    gap: 20px;
 }
 
 
@@ -1602,7 +1666,9 @@ input:checked
 
     min-width: 0;
 
-    padding: 18px;
+    padding: 20px;
+
+    box-sizing: border-box;
 
     border:
         1px solid
@@ -1643,7 +1709,8 @@ input:checked
 
     transition:
         border-color 0.25s ease,
-        box-shadow 0.25s ease;
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
 }
 
 .galeria-producto-formulario__item:hover {
@@ -1683,7 +1750,7 @@ input:checked
 .galeria-producto-formulario__encabezado {
     min-height: 30px;
 
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 
     display: flex;
     align-items: center;
@@ -1696,7 +1763,7 @@ input:checked
     display: flex;
     align-items: center;
 
-    gap: 8px;
+    gap: 9px;
 
     color:
         var(--color-blanco);
@@ -1842,7 +1909,7 @@ input:checked
     display: flex;
     flex-direction: column;
 
-    gap: 7px;
+    gap: 8px;
 
     box-sizing: border-box;
 
@@ -1867,7 +1934,7 @@ input:checked
     color:
         var(--color-gris-claro);
 
-    font-size: 0.72rem;
+    font-size: 0.74rem;
 
     font-weight: 700;
 }
@@ -1881,9 +1948,9 @@ input:checked
     color:
         var(--color-gris);
 
-    font-size: 0.62rem;
+    font-size: 0.64rem;
 
-    line-height: 1.45;
+    line-height: 1.5;
 }
 
 .galeria-producto-formulario
@@ -1907,10 +1974,10 @@ input:checked
 
     min-width: 0;
 
-    min-height: 44px;
+    min-height: 48px;
 
     padding:
-        10px 12px;
+        11px 13px;
 
     box-sizing: border-box;
 
@@ -1919,7 +1986,7 @@ input:checked
 
     font-family: inherit;
 
-    font-size: 0.78rem;
+    font-size: 0.8rem;
 
     border:
         1px solid
@@ -1930,7 +1997,7 @@ input:checked
             0.1
         );
 
-    border-radius: 10px;
+    border-radius: 11px;
 
     outline: none;
 
@@ -2091,9 +2158,6 @@ input[type="file"]:hover::file-selector-button {
         );
 }
 
-
-/* Safari */
-
 .galeria-producto-formulario
 input[type="file"]::-webkit-file-upload-button {
     min-height: 36px;
@@ -2136,12 +2200,13 @@ input[type="file"]::-webkit-file-upload-button {
 
 
 /* =========================================================
-   GRID GALERÍA
+   GRID GALERÍA DE IMÁGENES
 ========================================================= */
 
+.grupo-formulario--galeria
 .galeria-producto-formulario
 .formulario-grid {
-    margin-top: 14px;
+    margin-top: 16px;
 
     grid-template-columns:
         minmax(
@@ -2153,18 +2218,448 @@ input[type="file"]::-webkit-file-upload-button {
             0.7fr
         );
 
-    gap: 12px;
+    gap: 14px;
 }
 
 
 /* =========================================================
-   ELIMINAR GALERÍA
+   LOGÍSTICA Y DESPACHO
+========================================================= */
+
+/*
+   La sección de logística tiene varios títulos internos.
+   :has() permite aplicar estos estilos únicamente al bloque
+   que contiene el icono del camión.
+*/
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+) {
+    padding:
+        38px 36px;
+
+    background:
+        linear-gradient(
+            150deg,
+            rgba(
+                54,
+                169,
+                214,
+                0.035
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.012
+            )
+        );
+}
+
+
+/* =========================================================
+   AYUDAS DE LOGÍSTICA
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.formulario-ayuda {
+    margin-top: 24px;
+
+    padding:
+        18px 20px;
+
+    gap: 14px;
+
+    border-color:
+        rgba(
+            54,
+            169,
+            214,
+            0.16
+        );
+
+    border-radius: 14px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.045
+        );
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.formulario-ayuda > i {
+    width: 30px;
+    height: 30px;
+
+    margin-top: 0;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    font-size: 0.9rem;
+
+    border-radius: 9px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.09
+        );
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.formulario-ayuda p {
+    font-size: 0.75rem;
+
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   TARJETAS XS / S / M
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+>
+.formulario-grid--tres {
+    gap: 18px;
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+>
+.formulario-grid--tres
+>
+.formulario-ayuda {
+    min-height: 100px;
+
+    margin-top: 0;
+
+    align-items: center;
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+>
+.formulario-grid--tres
+>
+.formulario-ayuda p {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   LISTADO REGLAS DE ENVÍO
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+>
+.galeria-producto-formulario {
+    margin-top: 24px;
+
+    grid-template-columns:
+        minmax(
+            0,
+            1fr
+        );
+
+    gap: 22px;
+}
+
+
+/* =========================================================
+   CARD REGLA ENVÍO
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario__item {
+    padding:
+        26px 26px 24px;
+
+    border-color:
+        rgba(
+            54,
+            169,
+            214,
+            0.15
+        );
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                7,
+                16,
+                22,
+                0.98
+            ),
+            rgba(
+                3,
+                9,
+                13,
+                0.96
+            )
+        );
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario__item:hover {
+    border-color:
+        rgba(
+            54,
+            169,
+            214,
+            0.36
+        );
+}
+
+
+/* =========================================================
+   ENCABEZADO REGLA
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario__encabezado {
+    margin-bottom: 24px;
+
+    padding-bottom: 18px;
+
+    border-bottom:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.065
+        );
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario__numero {
+    font-size: 0.88rem;
+}
+
+
+/* =========================================================
+   GRID DESDE / HASTA / TALLA
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+.formulario-grid--tres {
+    margin-top: 0;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(
+                150px,
+                1fr
+            )
+        );
+
+    gap: 22px;
+}
+
+
+/* =========================================================
+   CAMPOS REGLAS DE ENVÍO
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+.campo-formulario {
+    gap: 10px;
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+.campo-formulario__label {
+    color:
+        var(--color-blanco);
+
+    font-size: 0.76rem;
+
+    font-weight: 800;
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+.campo-formulario__ayuda {
+    min-height: 30px;
+
+    margin-top: 1px;
+
+    font-size: 0.64rem;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   INPUTS REGLAS
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+input[type="number"],
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+select {
+    min-height: 54px;
+
+    padding:
+        0 15px;
+
+    font-size: 0.88rem;
+
+    font-weight: 650;
+
+    border-color:
+        rgba(
+            255,
+            255,
+            255,
+            0.12
+        );
+
+    border-radius: 12px;
+
+    background:
+        rgba(
+            2,
+            8,
+            12,
+            0.92
+        );
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+input[type="number"]:hover,
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario
+select:hover {
+    border-color:
+        rgba(
+            54,
+            169,
+            214,
+            0.38
+        );
+}
+
+
+/* =========================================================
+   REGLA ACTIVA
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario__item
+>
+.opciones-formulario {
+    margin-top: 24px;
+
+    padding-top: 20px;
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.06
+        );
+}
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario__item
+>
+.opciones-formulario
+label {
+    min-height: 46px;
+
+    padding:
+        0 16px;
+}
+
+
+/* =========================================================
+   RESUMEN DE REGLA
+========================================================= */
+
+.grupo-formulario:has(
+    > .grupo-formulario__titulo .bi-truck
+)
+.galeria-producto-formulario__item
+>
+.formulario-ayuda {
+    margin-top: 20px;
+}
+
+
+/* =========================================================
+   ELIMINAR GALERÍA / REGLA
 ========================================================= */
 
 .galeria-producto-formulario__eliminar {
-    margin-top: 16px;
+    margin-top: 20px;
 
-    padding-top: 14px;
+    padding-top: 16px;
 
     border-top:
         1px solid
@@ -2227,7 +2722,11 @@ input[type="checkbox"] {
     grid-column:
         1 / -1;
 
-    min-height: 150px;
+    min-height: 160px;
+
+    padding: 24px;
+
+    box-sizing: border-box;
 
     display: flex;
     flex-direction: column;
@@ -2235,7 +2734,7 @@ input[type="checkbox"] {
     align-items: center;
     justify-content: center;
 
-    gap: 9px;
+    gap: 10px;
 
     color:
         var(--color-gris);
@@ -2272,9 +2771,13 @@ input[type="checkbox"] {
 }
 
 .galeria-producto-formulario__vacia p {
+    max-width: 520px;
+
     margin: 0;
 
     font-size: 0.75rem;
+
+    line-height: 1.6;
 }
 
 
@@ -2286,7 +2789,7 @@ input[type="checkbox"] {
     display: flex;
     flex-wrap: wrap;
 
-    gap: 12px;
+    gap: 14px;
 }
 
 .opciones-formulario label {
@@ -2364,7 +2867,7 @@ input[type="checkbox"] {
 ========================================================= */
 
 .formulario-acciones {
-    padding-top: 8px;
+    padding-top: 12px;
 
     display: flex;
     align-items: center;
@@ -2537,12 +3040,30 @@ input[type="checkbox"] {
         max-height: 330px;
     }
 
+    .grupo-formulario--galeria
     .galeria-producto-formulario {
         grid-template-columns: 1fr;
     }
 
     .galeria-producto-formulario__preview {
         height: 240px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario
+    .formulario-grid--tres {
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(
+                    130px,
+                    1fr
+                )
+            );
+
+        gap: 16px;
     }
 
 }
@@ -2556,7 +3077,6 @@ input[type="checkbox"] {
 
     .administracion {
         padding-top: 65px;
-
         padding-bottom: 80px;
     }
 
@@ -2571,10 +3091,26 @@ input[type="checkbox"] {
         border-radius: 18px;
     }
 
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    ) {
+        padding:
+            26px 18px;
+    }
+
     .grupo-formulario__titulo {
         align-items: flex-start;
 
-        margin-bottom: 22px;
+        margin-bottom: 24px;
+    }
+
+    .grupo-formulario
+    >
+    .grupo-formulario__titulo
+    ~
+    .grupo-formulario__titulo {
+        margin-top: 34px;
+        padding-top: 28px;
     }
 
     .grupo-formulario__titulo > i {
@@ -2586,6 +3122,7 @@ input[type="checkbox"] {
 
     .formulario-grid,
     .formulario-grid--tres,
+    .grupo-formulario--galeria
     .galeria-producto-formulario
     .formulario-grid {
         grid-template-columns: 1fr;
@@ -2614,15 +3151,72 @@ input[type="checkbox"] {
     .galeria-producto-formulario {
         grid-template-columns: 1fr;
 
-        gap: 14px;
+        gap: 16px;
     }
 
     .galeria-producto-formulario__item {
-        padding: 14px;
+        padding: 16px;
     }
 
     .galeria-producto-formulario__preview {
         height: 210px;
+    }
+
+    /* =============================================
+       LOGÍSTICA TABLET / MÓVIL
+    ============================================== */
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    >
+    .formulario-grid--tres {
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    >
+    .formulario-grid--tres
+    >
+    .formulario-ayuda {
+        min-height: auto;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario
+    .formulario-grid--tres {
+        grid-template-columns: 1fr;
+
+        gap: 20px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario__item {
+        padding:
+            22px 18px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario__encabezado {
+        margin-bottom: 22px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario
+    .campo-formulario__ayuda {
+        min-height: 0;
     }
 
     .opciones-formulario {
@@ -2672,6 +3266,22 @@ input[type="checkbox"] {
     .grupo-formulario {
         padding:
             20px 14px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    ) {
+        padding:
+            22px 14px;
+    }
+
+    .grupo-formulario
+    >
+    .grupo-formulario__titulo
+    ~
+    .grupo-formulario__titulo {
+        margin-top: 30px;
+        padding-top: 24px;
     }
 
     .imagen-principal-editor__preview {
@@ -2731,7 +3341,48 @@ input[type="checkbox"] {
     }
 
     .formulario-ayuda {
-        padding: 12px;
+        padding:
+            14px 13px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .formulario-ayuda {
+        padding:
+            15px 14px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .formulario-ayuda p {
+        font-size: 0.7rem;
+
+        line-height: 1.7;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario__item {
+        padding:
+            18px 14px;
+    }
+
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario
+    input[type="number"],
+    .grupo-formulario:has(
+        > .grupo-formulario__titulo .bi-truck
+    )
+    .galeria-producto-formulario
+    select {
+        min-height: 52px;
+
+        font-size: 0.84rem;
     }
 
 }

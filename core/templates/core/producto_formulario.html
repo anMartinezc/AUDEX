@@ -49,8 +49,8 @@ Nuevo producto
             </h1>
 
             <p>
-                Completa la información que se mostrará
-                en el catálogo de Audex.
+                Administra la información comercial,
+                visual y logística del producto.
             </p>
 
         </div>
@@ -96,6 +96,20 @@ Nuevo producto
 
 
             <!-- =================================================
+                 MANAGEMENT FORM DE REGLAS DE ENVÍO
+            ================================================== -->
+            {{ reglas_envio_formset.management_form }}
+
+            {% if reglas_envio_formset.non_form_errors %}
+
+                <div class="errores-formulario">
+                    {{ reglas_envio_formset.non_form_errors }}
+                </div>
+
+            {% endif %}
+
+
+            <!-- =================================================
                  INFORMACIÓN PRINCIPAL
             ================================================== -->
             <section class="grupo-formulario">
@@ -111,7 +125,8 @@ Nuevo producto
                         </h2>
 
                         <p>
-                            Nombre, categoría y descripción.
+                            Nombre, categoría y descripción
+                            comercial del producto.
                         </p>
 
                     </div>
@@ -156,8 +171,8 @@ Nuevo producto
                         </h2>
 
                         <p>
-                            Esta será la imagen utilizada como portada
-                            en el catálogo, carrito y detalle del producto.
+                            Imagen utilizada como portada en el catálogo,
+                            carrito y detalle del producto.
                         </p>
 
                     </div>
@@ -316,11 +331,6 @@ Nuevo producto
                             </div>
 
 
-                            <!--
-                                Renderizado manual del input para evitar
-                                el bloque desordenado "Actualmente / Limpiar /
-                                Modificar" que genera ClearableFileInput.
-                            -->
                             <div class="imagen-principal-file">
 
                                 <input
@@ -525,9 +535,6 @@ Nuevo producto
                             {{ imagen_form.id }}
 
 
-                            <!-- =================================
-                                 ENCABEZADO
-                            ================================== -->
                             <div class="galeria-producto-formulario__encabezado">
 
                                 <div class="galeria-producto-formulario__numero">
@@ -556,9 +563,6 @@ Nuevo producto
                             </div>
 
 
-                            <!-- =================================
-                                 PREVISUALIZACIÓN
-                            ================================== -->
                             {% if imagen_form.instance.pk and imagen_form.instance.imagen %}
 
                                 <div class="galeria-producto-formulario__preview">
@@ -591,9 +595,6 @@ Nuevo producto
                             {% endif %}
 
 
-                            <!-- =================================
-                                 ERRORES
-                            ================================== -->
                             {% if imagen_form.non_field_errors %}
 
                                 <div class="errores-formulario">
@@ -603,9 +604,6 @@ Nuevo producto
                             {% endif %}
 
 
-                            <!-- =================================
-                                 IMAGEN
-                            ================================== -->
                             <div class="campo-formulario">
 
                                 <label
@@ -636,9 +634,6 @@ Nuevo producto
                             </div>
 
 
-                            <!-- =================================
-                                 TEXTO ALT + ORDEN
-                            ================================== -->
                             <div class="formulario-grid">
 
                                 <div class="campo-formulario">
@@ -703,9 +698,6 @@ Nuevo producto
                             </div>
 
 
-                            <!-- =================================
-                                 ELIMINAR
-                            ================================== -->
                             {% if imagen_form.instance.pk and imagen_form.DELETE %}
 
                                 <div class="galeria-producto-formulario__eliminar">
@@ -781,8 +773,8 @@ Nuevo producto
                         </h2>
 
                         <p>
-                            Deja el precio oferta vacío
-                            cuando no exista descuento.
+                            Administra el precio normal,
+                            precio de oferta y stock disponible.
                         </p>
 
                     </div>
@@ -805,6 +797,617 @@ Nuevo producto
 
                 </div>
 
+
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-info-circle"></i>
+
+                    <p>
+                        Deja
+                        <strong>Precio oferta</strong>
+                        vacío cuando el producto no tenga
+                        un descuento activo.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 LOGÍSTICA Y DESPACHO
+            ================================================== -->
+            <section class="grupo-formulario">
+
+                <div class="grupo-formulario__titulo">
+
+                    <i class="bi bi-truck"></i>
+
+                    <div>
+
+                        <h2>
+                            Logística y despacho
+                        </h2>
+
+                        <p>
+                            Define reglas especiales únicamente
+                            cuando las dimensiones del producto
+                            requieren un paquete mayor.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     IMPORTANTE
+                ============================================== -->
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-shield-check"></i>
+
+                    <p>
+                        Esta configuración es
+                        <strong>exclusivamente administrativa</strong>.
+
+                        El cliente no selecciona XS, S, M o L.
+                        Audex determina automáticamente la talla
+                        y muestra únicamente el costo final
+                        del despacho.
+                    </p>
+
+                </div>
+
+
+                <!-- =============================================
+                     CÁLCULO AUTOMÁTICO GENERAL
+                ============================================== -->
+                <div class="grupo-formulario__titulo">
+
+                    <i class="bi bi-calculator"></i>
+
+                    <div>
+
+                        <h2>
+                            Cálculo automático normal
+                        </h2>
+
+                        <p>
+                            Si no agregas ninguna regla especial,
+                            Audex utilizará estas cantidades.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="
+                        formulario-grid
+                        formulario-grid--tres
+                    "
+                >
+
+                    <div class="formulario-ayuda">
+
+                        <i class="bi bi-box"></i>
+
+                        <p>
+                            <strong>1–2 unidades</strong>
+                            <br>
+                            Talla XS
+                        </p>
+
+                    </div>
+
+
+                    <div class="formulario-ayuda">
+
+                        <i class="bi bi-box"></i>
+
+                        <p>
+                            <strong>3–5 unidades</strong>
+                            <br>
+                            Talla S
+                        </p>
+
+                    </div>
+
+
+                    <div class="formulario-ayuda">
+
+                        <i class="bi bi-box-seam"></i>
+
+                        <p>
+                            <strong>6–10 unidades</strong>
+                            <br>
+                            Talla M
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-box-seam-fill"></i>
+
+                    <p>
+                        <strong>
+                            11–20 unidades = talla L
+                        </strong>
+
+                        <br>
+
+                        Para más de 20 unidades se debe
+                        manejar la condición definida
+                        por el sistema de despacho.
+                    </p>
+
+                </div>
+
+
+                <!-- =============================================
+                     REGLAS ESPECIALES
+                ============================================== -->
+                <div class="grupo-formulario__titulo">
+
+                    <i class="bi bi-diagram-3"></i>
+
+                    <div>
+
+                        <h2>
+                            Reglas especiales por cantidad
+                        </h2>
+
+                        <p>
+                            Las cantidades se refieren exclusivamente
+                            a unidades de este producto.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     CÓMO FUNCIONAN DESDE Y HASTA
+                ============================================== -->
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-lightbulb"></i>
+
+                    <p>
+                        <strong>
+                            Cómo completar una regla:
+                        </strong>
+
+                        <br><br>
+
+                        <strong>Desde</strong>
+                        indica la primera cantidad de unidades
+                        a la que se aplica la regla.
+
+                        <br>
+
+                        <strong>Hasta</strong>
+                        indica la última cantidad incluida.
+
+                        <br>
+
+                        <strong>Talla</strong>
+                        indica el paquete mínimo requerido.
+
+                        <br><br>
+
+                        Ejemplo:
+                        <strong>
+                            Desde 2 · Hasta 2 · Talla L
+                        </strong>
+
+                        significa:
+
+                        <strong>
+                            si el cliente compra exactamente
+                            2 unidades de este producto,
+                            se requiere talla L.
+                        </strong>
+                    </p>
+
+                </div>
+
+
+                <!-- =============================================
+                     LISTADO DE REGLAS
+                ============================================== -->
+                <div class="galeria-producto-formulario">
+
+                    {% for regla_form in reglas_envio_formset %}
+
+                        <article
+                            class="
+                                galeria-producto-formulario__item
+
+                                {% if regla_form.instance.pk %}
+                                    galeria-producto-formulario__item--existente
+                                {% endif %}
+                            "
+                        >
+
+                            {{ regla_form.id }}
+
+
+                            <!-- =================================
+                                 ENCABEZADO
+                            ================================== -->
+                            <div class="galeria-producto-formulario__encabezado">
+
+                                <div class="galeria-producto-formulario__numero">
+
+                                    <i class="bi bi-box-seam"></i>
+
+                                    <span>
+
+                                        {% if regla_form.instance.pk %}
+                                            Regla de envío
+                                        {% else %}
+                                            Nueva regla
+                                        {% endif %}
+
+                                    </span>
+
+                                </div>
+
+
+                                {% if regla_form.instance.pk %}
+
+                                    <span class="galeria-producto-formulario__estado">
+                                        Guardada
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- =================================
+                                 ERRORES GENERALES
+                            ================================== -->
+                            {% if regla_form.non_field_errors %}
+
+                                <div class="errores-formulario">
+                                    {{ regla_form.non_field_errors }}
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- =================================
+                                 CAMPOS DE LA REGLA
+                            ================================== -->
+                            <div
+                                class="
+                                    formulario-grid
+                                    formulario-grid--tres
+                                "
+                            >
+
+
+                                <!-- =============================
+                                     CANTIDAD DESDE
+                                ============================== -->
+                                <div class="campo-formulario">
+
+                                    <label
+                                        for="{{ regla_form.cantidad_desde.id_for_label }}"
+                                        class="campo-formulario__label"
+                                    >
+                                        Cantidad desde
+                                    </label>
+
+                                    {{ regla_form.cantidad_desde }}
+
+                                    <small class="campo-formulario__ayuda">
+                                        Primera cantidad incluida.
+                                    </small>
+
+                                    {% if regla_form.cantidad_desde.errors %}
+
+                                        <div class="campo-formulario__errores">
+                                            {{ regla_form.cantidad_desde.errors }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <!-- =============================
+                                     CANTIDAD HASTA
+                                ============================== -->
+                                <div class="campo-formulario">
+
+                                    <label
+                                        for="{{ regla_form.cantidad_hasta.id_for_label }}"
+                                        class="campo-formulario__label"
+                                    >
+                                        Cantidad hasta
+                                    </label>
+
+                                    {{ regla_form.cantidad_hasta }}
+
+                                    <small class="campo-formulario__ayuda">
+                                        Última cantidad incluida.
+                                    </small>
+
+                                    {% if regla_form.cantidad_hasta.errors %}
+
+                                        <div class="campo-formulario__errores">
+                                            {{ regla_form.cantidad_hasta.errors }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <!-- =============================
+                                     TALLA
+                                ============================== -->
+                                <div class="campo-formulario">
+
+                                    <label
+                                        for="{{ regla_form.talla.id_for_label }}"
+                                        class="campo-formulario__label"
+                                    >
+                                        Talla requerida
+                                    </label>
+
+                                    {{ regla_form.talla }}
+
+                                    <small class="campo-formulario__ayuda">
+                                        XS, S, M o L.
+                                    </small>
+
+                                    {% if regla_form.talla.errors %}
+
+                                        <div class="campo-formulario__errores">
+                                            {{ regla_form.talla.errors }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =================================
+                                 ACTIVA
+                            ================================== -->
+                            <div class="opciones-formulario">
+
+                                <label>
+
+                                    {{ regla_form.activa }}
+
+                                    <span>
+                                        Regla activa
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+
+                            {% if regla_form.activa.errors %}
+
+                                <div class="campo-formulario__errores">
+                                    {{ regla_form.activa.errors }}
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- =================================
+                                 RESUMEN REGLA GUARDADA
+                            ================================== -->
+                            {% if regla_form.instance.pk %}
+
+                                <div class="formulario-ayuda">
+
+                                    <i class="bi bi-arrow-right-circle"></i>
+
+                                    <p>
+                                        Esta regla aplica desde
+
+                                        <strong>
+                                            {{ regla_form.instance.cantidad_desde }}
+                                        </strong>
+
+                                        hasta
+
+                                        <strong>
+                                            {{ regla_form.instance.cantidad_hasta }}
+                                        </strong>
+
+                                        unidades de este producto
+                                        y requiere talla
+
+                                        <strong>
+                                            {{ regla_form.instance.talla }}
+                                        </strong>.
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- =================================
+                                 ELIMINAR
+                            ================================== -->
+                            {% if regla_form.instance.pk and regla_form.DELETE %}
+
+                                <div class="galeria-producto-formulario__eliminar">
+
+                                    <label
+                                        for="{{ regla_form.DELETE.id_for_label }}"
+                                        class="galeria-producto-formulario__eliminar-label"
+                                    >
+
+                                        {{ regla_form.DELETE }}
+
+                                        <span>
+                                            <i class="bi bi-trash3"></i>
+                                            Eliminar esta regla
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+                            {% endif %}
+
+                        </article>
+
+
+                    {% empty %}
+
+                        <div class="galeria-producto-formulario__vacia">
+
+                            <i class="bi bi-calculator"></i>
+
+                            <p>
+                                No existen reglas especiales.
+                                Se utilizará el cálculo automático
+                                normal de Audex.
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- =============================================
+                     EJEMPLO PARLANTE
+                ============================================== -->
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-speaker"></i>
+
+                    <p>
+                        <strong>
+                            Ejemplo para un parlante grande
+                        </strong>
+
+                        <br><br>
+
+                        Si una unidad necesita talla M:
+
+                        <br>
+
+                        <strong>
+                            Desde 1 · Hasta 1 · M
+                        </strong>
+
+                        <br><br>
+
+                        Si dos unidades necesitan talla L:
+
+                        <br>
+
+                        <strong>
+                            Desde 2 · Hasta 2 · L
+                        </strong>
+
+                        <br><br>
+
+                        Si entre tres y cinco unidades
+                        necesitan talla L:
+
+                        <br>
+
+                        <strong>
+                            Desde 3 · Hasta 5 · L
+                        </strong>
+                    </p>
+
+                </div>
+
+
+                <!-- =============================================
+                     PRODUCTOS NORMALES
+                ============================================== -->
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    <p>
+                        <strong>
+                            ¿El producto utiliza el despacho normal?
+                        </strong>
+
+                        <br><br>
+
+                        Entonces no completes ninguna regla.
+
+                        Audex utilizará automáticamente:
+
+                        <strong>
+                            1–2 = XS,
+                            3–5 = S,
+                            6–10 = M,
+                            11–20 = L.
+                        </strong>
+                    </p>
+
+                </div>
+
+
+                <!-- =============================================
+                     REGLA DE SEGURIDAD
+                ============================================== -->
+                <div class="formulario-ayuda">
+
+                    <i class="bi bi-shield-check"></i>
+
+                    <p>
+                        <strong>
+                            Audex siempre utilizará la talla mayor.
+                        </strong>
+
+                        <br><br>
+
+                        Las reglas especiales nunca deben reducir
+                        la talla determinada automáticamente
+                        por el carrito.
+
+                        Por ejemplo:
+
+                        <br>
+
+                        cálculo general =
+                        <strong>S</strong>
+
+                        <br>
+
+                        regla especial =
+                        <strong>L</strong>
+
+                        <br>
+
+                        resultado final =
+                        <strong>L</strong>.
+                    </p>
+
+                </div>
+
             </section>
 
 
@@ -824,8 +1427,8 @@ Nuevo producto
                         </h2>
 
                         <p>
-                            Estas características aparecerán
-                            en la tarjeta.
+                            Información técnica que aparecerá
+                            en la tarjeta y detalle del producto.
                         </p>
 
                     </div>
@@ -874,7 +1477,8 @@ Nuevo producto
                         </h2>
 
                         <p>
-                            Visibilidad y condiciones especiales.
+                            Visibilidad y condiciones especiales
+                            del producto.
                         </p>
 
                     </div>

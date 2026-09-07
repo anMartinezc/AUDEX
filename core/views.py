@@ -523,6 +523,9 @@ def producto_detalle(request, slug):
         contexto,
     )
 
+
+
+
 class ProductoCrearView(
     AdministradorProductosMixin,
     CreateView,
@@ -532,34 +535,127 @@ class ProductoCrearView(
     template_name = "core/producto_formulario.html"
     success_url = reverse_lazy("core:productos")
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    # =========================================================
+    # CONTEXTO
+    # =========================================================
+
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(
+            **kwargs
+        )
 
         if self.request.method == "POST":
-            context["imagenes_formset"] = ProductoImagenFormSet(
-                self.request.POST,
-                self.request.FILES,
+
+            # -------------------------------------------------
+            # IMÁGENES
+            # -------------------------------------------------
+
+            context["imagenes_formset"] = (
+                ProductoImagenFormSet(
+                    self.request.POST,
+                    self.request.FILES,
+                )
             )
+
+            # -------------------------------------------------
+            # REGLAS DE ENVÍO
+            # -------------------------------------------------
+
+            context["reglas_envio_formset"] = (
+                ReglaEnvioProductoFormSet(
+                    self.request.POST,
+                )
+            )
+
         else:
-            context["imagenes_formset"] = ProductoImagenFormSet()
+
+            # -------------------------------------------------
+            # IMÁGENES
+            # -------------------------------------------------
+
+            context["imagenes_formset"] = (
+                ProductoImagenFormSet()
+            )
+
+            # -------------------------------------------------
+            # REGLAS DE ENVÍO
+            # -------------------------------------------------
+
+            context["reglas_envio_formset"] = (
+                ReglaEnvioProductoFormSet()
+            )
 
         return context
 
+    # =========================================================
+    # GUARDAR PRODUCTO
+    # =========================================================
+
     @transaction.atomic
-    def form_valid(self, form):
+    def form_valid(
+        self,
+        form,
+    ):
         context = self.get_context_data()
 
-        imagenes_formset = context[
-            "imagenes_formset"
-        ]
+        imagenes_formset = (
+            context["imagenes_formset"]
+        )
+
+        reglas_envio_formset = (
+            context["reglas_envio_formset"]
+        )
+
+        # =====================================================
+        # VALIDAR IMÁGENES
+        # =====================================================
 
         if not imagenes_formset.is_valid():
-            return self.form_invalid(form)
+            return self.form_invalid(
+                form
+            )
+
+        # =====================================================
+        # VALIDAR REGLAS DE ENVÍO
+        # =====================================================
+
+        if not reglas_envio_formset.is_valid():
+            return self.form_invalid(
+                form
+            )
+
+        # =====================================================
+        # GUARDAR PRODUCTO
+        # =====================================================
 
         self.object = form.save()
 
-        imagenes_formset.instance = self.object
+        # =====================================================
+        # GUARDAR IMÁGENES
+        # =====================================================
+
+        imagenes_formset.instance = (
+            self.object
+        )
+
         imagenes_formset.save()
+
+        # =====================================================
+        # GUARDAR REGLAS DE ENVÍO
+        # =====================================================
+
+        reglas_envio_formset.instance = (
+            self.object
+        )
+
+        reglas_envio_formset.save()
+
+        # =====================================================
+        # MENSAJE
+        # =====================================================
 
         messages.success(
             self.request,
@@ -571,6 +667,8 @@ class ProductoCrearView(
         )
 
 
+
+
 class ProductoEditarView(
     AdministradorProductosMixin,
     UpdateView,
@@ -580,49 +678,153 @@ class ProductoEditarView(
     template_name = "core/producto_formulario.html"
     success_url = reverse_lazy("core:productos")
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    # =========================================================
+    # CONTEXTO
+    # =========================================================
+
+    def get_context_data(
+        self,
+        **kwargs,
+    ):
+        context = super().get_context_data(
+            **kwargs
+        )
+
+        # =====================================================
+        # POST
+        # =====================================================
 
         if self.request.method == "POST":
-            context["imagenes_formset"] = ProductoImagenFormSet(
-                self.request.POST,
-                self.request.FILES,
-                instance=self.object,
+
+            # -------------------------------------------------
+            # IMÁGENES DEL PRODUCTO
+            # -------------------------------------------------
+
+            context["imagenes_formset"] = (
+                ProductoImagenFormSet(
+                    self.request.POST,
+                    self.request.FILES,
+                    instance=self.object,
+                )
             )
+
+            # -------------------------------------------------
+            # REGLAS ESPECIALES DE ENVÍO
+            # -------------------------------------------------
+
+            context["reglas_envio_formset"] = (
+                ReglaEnvioProductoFormSet(
+                    self.request.POST,
+                    instance=self.object,
+                )
+            )
+
+        # =====================================================
+        # GET
+        # =====================================================
+
         else:
-            context["imagenes_formset"] = ProductoImagenFormSet(
-                instance=self.object,
+
+            # -------------------------------------------------
+            # IMÁGENES EXISTENTES
+            # -------------------------------------------------
+
+            context["imagenes_formset"] = (
+                ProductoImagenFormSet(
+                    instance=self.object,
+                )
+            )
+
+            # -------------------------------------------------
+            # REGLAS DE ENVÍO EXISTENTES
+            # -------------------------------------------------
+
+            context["reglas_envio_formset"] = (
+                ReglaEnvioProductoFormSet(
+                    instance=self.object,
+                )
             )
 
         return context
 
+    # =========================================================
+    # GUARDAR CAMBIOS
+    # =========================================================
+
     @transaction.atomic
-    def form_valid(self, form):
+    def form_valid(
+        self,
+        form,
+    ):
         context = self.get_context_data()
 
-        imagenes_formset = context[
-            "imagenes_formset"
-        ]
+        imagenes_formset = (
+            context["imagenes_formset"]
+        )
+
+        reglas_envio_formset = (
+            context["reglas_envio_formset"]
+        )
+
+        # =====================================================
+        # VALIDAR IMÁGENES
+        # =====================================================
 
         if not imagenes_formset.is_valid():
-            return self.form_invalid(form)
+            return self.form_invalid(
+                form
+            )
+
+        # =====================================================
+        # VALIDAR REGLAS DE ENVÍO
+        # =====================================================
+
+        if not reglas_envio_formset.is_valid():
+            return self.form_invalid(
+                form
+            )
+
+        # =====================================================
+        # GUARDAR PRODUCTO
+        # =====================================================
 
         self.object = form.save()
 
-        imagenes_formset.instance = self.object
+        # =====================================================
+        # GUARDAR IMÁGENES
+        # =====================================================
+
+        imagenes_formset.instance = (
+            self.object
+        )
+
         imagenes_formset.save()
+
+        # =====================================================
+        # GUARDAR REGLAS DE ENVÍO
+        # =====================================================
+
+        reglas_envio_formset.instance = (
+            self.object
+        )
+
+        reglas_envio_formset.save()
+
+        # =====================================================
+        # MENSAJE
+        # =====================================================
 
         messages.success(
             self.request,
-            "Producto actualizado correctamente.",
+            (
+                "Producto, imágenes y reglas "
+                "de envío actualizados correctamente."
+            ),
         )
 
         return HttpResponseRedirect(
             self.get_success_url()
         )
-
-
-
 
 class ProductoEliminarView(
     AdministradorProductosMixin,
@@ -2037,7 +2239,6 @@ def nosotros(request):
 
 
 
-
 def _serializar_carrito(request):
     carrito = _obtener_carrito(
         request
@@ -2050,27 +2251,46 @@ def _serializar_carrito(request):
     ids_productos = []
 
     for producto_id in carrito.keys():
+
         try:
+
             ids_productos.append(
-                int(producto_id)
+                int(
+                    producto_id
+                )
             )
+
         except (
             TypeError,
             ValueError,
         ):
+
             continue
 
     # =========================================================================
     # PRODUCTOS
     # =========================================================================
+    #
+    # Obtenemos solamente productos activos.
+    #
+    # producto_id será enviado explícitamente en cada item serializado
+    # para que otros servicios, especialmente Blue Express, puedan
+    # identificar correctamente el producto y consultar sus reglas
+    # especiales de despacho.
+    # =========================================================================
 
     productos = {
         producto.id: producto
-        for producto in Producto.objects.filter(
-            id__in=ids_productos,
-            activo=True,
-        ).select_related(
-            "categoria"
+
+        for producto in (
+            Producto.objects
+            .filter(
+                id__in=ids_productos,
+                activo=True,
+            )
+            .select_related(
+                "categoria"
+            )
         )
     }
 
@@ -2107,7 +2327,12 @@ def _serializar_carrito(request):
         datos,
     ) in carrito.items():
 
+        # ---------------------------------------------------------------------
+        # NORMALIZAR ID Y CANTIDAD
+        # ---------------------------------------------------------------------
+
         try:
+
             producto_id = int(
                 producto_id_texto
             )
@@ -2124,7 +2349,12 @@ def _serializar_carrito(request):
             ValueError,
             AttributeError,
         ):
+
             continue
+
+        # ---------------------------------------------------------------------
+        # PRODUCTO
+        # ---------------------------------------------------------------------
 
         producto = productos.get(
             producto_id
@@ -2142,12 +2372,32 @@ def _serializar_carrito(request):
             cantidad,
         )
 
-        if producto.stock <= 0:
+        # ---------------------------------------------------------------------
+        # STOCK DISPONIBLE
+        # ---------------------------------------------------------------------
+
+        stock_disponible = max(
+            int(
+                producto.stock
+                or 0
+            )
+            - int(
+                getattr(
+                    producto,
+                    "stock_reservado",
+                    0,
+                )
+                or 0
+            ),
+            0,
+        )
+
+        if stock_disponible <= 0:
             continue
 
         cantidad = min(
             cantidad,
-            producto.stock,
+            stock_disponible,
         )
 
         # ---------------------------------------------------------------------
@@ -2169,13 +2419,17 @@ def _serializar_carrito(request):
         )
 
         # ---------------------------------------------------------------------
-        # TOTAL DE LA LÍNEA
+        # TOTAL ORIGINAL DE LA LÍNEA
         # ---------------------------------------------------------------------
 
         total_original_linea = (
             precio_original
             * cantidad
         )
+
+        # ---------------------------------------------------------------------
+        # TOTAL REAL DE LA LÍNEA
+        # ---------------------------------------------------------------------
 
         total_linea = (
             precio_unitario
@@ -2209,6 +2463,7 @@ def _serializar_carrito(request):
             producto.en_oferta
             and precio_original > 0
         ):
+
             porcentaje_descuento = int(
                 round(
                     (
@@ -2225,7 +2480,9 @@ def _serializar_carrito(request):
         # ACUMULADORES
         # ---------------------------------------------------------------------
 
-        subtotal += total_linea
+        subtotal += (
+            total_linea
+        )
 
         subtotal_precio_lista += (
             total_original_linea
@@ -2240,6 +2497,7 @@ def _serializar_carrito(request):
         )
 
         if producto.en_oferta:
+
             cantidad_productos_con_oferta += (
                 cantidad
             )
@@ -2253,7 +2511,9 @@ def _serializar_carrito(request):
                 producto.id
             )
         ] = {
-            "cantidad": cantidad,
+            "cantidad": (
+                cantidad
+            ),
         }
 
         # ---------------------------------------------------------------------
@@ -2266,7 +2526,34 @@ def _serializar_carrito(request):
                 # IDENTIFICACIÓN
                 # =============================================================
 
-                "id": producto.id,
+                "id": (
+                    producto.id
+                ),
+
+                # -------------------------------------------------------------
+                # IMPORTANTE PARA BLUE EXPRESS
+                # -------------------------------------------------------------
+                #
+                # Se envía explícitamente aunque "id" ya exista.
+                #
+                # De esta forma el servicio de despacho puede identificar
+                # inequívocamente el producto y consultar:
+                #
+                # ReglaEnvioProducto
+                #
+                # Ejemplo:
+                #
+                # producto_id = 8
+                # cantidad    = 1
+                #
+                # regla:
+                # 1 a 2 unidades -> M
+                #
+                # -------------------------------------------------------------
+
+                "producto_id": (
+                    producto.id
+                ),
 
                 "nombre": (
                     producto.nombre
@@ -2284,10 +2571,16 @@ def _serializar_carrito(request):
                 # CANTIDAD / STOCK
                 # =============================================================
 
-                "cantidad": cantidad,
+                "cantidad": (
+                    cantidad
+                ),
 
                 "stock": (
                     producto.stock
+                ),
+
+                "stock_disponible": (
+                    stock_disponible
                 ),
 
                 # =============================================================
@@ -2391,13 +2684,17 @@ def _serializar_carrito(request):
                 ),
 
                 # =============================================================
-                # IMAGEN / URL
+                # IMAGEN
                 # =============================================================
 
                 "imagen": (
                     producto.imagen_mostrable
                     or ""
                 ),
+
+                # =============================================================
+                # URL DETALLE
+                # =============================================================
 
                 "url_detalle": (
                     producto.get_absolute_url()
@@ -2410,6 +2707,7 @@ def _serializar_carrito(request):
     # =========================================================================
 
     if carrito_limpio != carrito:
+
         _guardar_carrito(
             request,
             carrito_limpio,
@@ -2422,6 +2720,7 @@ def _serializar_carrito(request):
     def formatear_pesos(
         valor,
     ):
+
         return (
             f"${int(valor):,}"
             .replace(
@@ -2439,22 +2738,28 @@ def _serializar_carrito(request):
         # ITEMS
         # ---------------------------------------------------------------------
 
-        "items": items,
+        "items": (
+            items
+        ),
 
         # ---------------------------------------------------------------------
-        # CANTIDADES
+        # CANTIDAD TOTAL DE UNIDADES
         # ---------------------------------------------------------------------
 
         "cantidad_total": (
             cantidad_total
         ),
 
+        # ---------------------------------------------------------------------
+        # PRODUCTOS EN OFERTA
+        # ---------------------------------------------------------------------
+
         "cantidad_productos_con_oferta": (
             cantidad_productos_con_oferta
         ),
 
         # ---------------------------------------------------------------------
-        # SUBTOTAL PRECIO LISTA
+        # SUBTOTAL A PRECIO LISTA
         # ---------------------------------------------------------------------
 
         "subtotal_precio_lista": int(
@@ -2504,12 +2809,12 @@ def _serializar_carrito(request):
         # ---------------------------------------------------------------------
 
         "vacio": (
-            len(items) == 0
+            len(
+                items
+            )
+            == 0
         ),
     }
-
-
-
 
 @require_GET
 def carrito_estado(request):
