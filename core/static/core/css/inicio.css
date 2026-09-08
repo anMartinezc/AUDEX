@@ -77,8 +77,7 @@ img {
 
     margin-bottom: 16px;
 
-    color:
-        var(--inicio-celeste);
+    color: var(--inicio-celeste);
 
     font-size: 0.82rem;
     font-weight: 800;
@@ -446,18 +445,13 @@ img {
 
     isolation: isolate;
 
-    /*
-     * Estas variables permiten que las tarjetas flotantes
-     * se posicionen respecto del círculo central y no respecto
-     * del borde de toda la columna.
-     */
     --hero-circulo-ancho:
         min(
             91%,
             535px
         );
 
-    --hero-tarjeta-solape: 56px;
+    overflow: visible;
 }
 
 
@@ -696,51 +690,25 @@ img {
 
 /* =========================================================
    POSICIÓN TARJETAS HERO
+   BASE SEGURA
+
+   Se ubican en los extremos superior derecho
+   e inferior izquierdo para evitar tapar el producto.
 ========================================================= */
 
 .hero__tarjeta--superior {
-    top: 11%;
+    top: 0;
 
     left: auto;
-
-    right:
-        max(
-            0px,
-            calc(
-                (
-                    100%
-                    -
-                    var(--hero-circulo-ancho)
-                )
-                /
-                2
-                -
-                var(--hero-tarjeta-solape)
-            )
-        );
+    right: -8px;
 }
 
 
 .hero__tarjeta--inferior {
     right: auto;
+    left: -8px;
 
-    left:
-        max(
-            0px,
-            calc(
-                (
-                    100%
-                    -
-                    var(--hero-circulo-ancho)
-                )
-                /
-                2
-                -
-                var(--hero-tarjeta-solape)
-            )
-        );
-
-    bottom: 9%;
+    bottom: 0;
 }
 
 
@@ -1187,7 +1155,6 @@ img {
 
 /* =========================================================
    TIPOS EARFUN
-   Compatibilidad con sección anterior
 ========================================================= */
 
 .tipos-earfun {
@@ -1684,9 +1651,6 @@ img {
 
 /* =========================================================
    GRID DE PRODUCTOS DESTACADOS
-
-   ESCRITORIO:
-   4 PRODUCTOS EN UNA SOLA FILA
 ========================================================= */
 
 .productos-destacados__grid {
@@ -1888,9 +1852,6 @@ img {
 
 /* =========================================================
    IMAGEN PRODUCTO DESTACADO
-
-   IMPORTANTE:
-   evita que la imagen ocupe toda la página.
 ========================================================= */
 
 .producto-destacado__imagen {
@@ -2350,8 +2311,6 @@ img {
                 88%,
                 600px
             );
-
-        --hero-tarjeta-solape: 54px;
     }
 
 
@@ -2364,54 +2323,17 @@ img {
     }
 
 
-    /* =====================================================
-       TARJETAS FLOTANTES HERO
-       Posicionadas respecto del centro del círculo.
-    ===================================================== */
-
     .hero__tarjeta--superior {
-        top: 13%;
+        top: 0;
 
-        left: auto;
-
-        right:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
+        right: -12px;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
+        left: -12px;
 
-        left:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
-
-        bottom: 11%;
+        bottom: 0;
     }
 
 
@@ -2518,8 +2440,6 @@ img {
                 86%,
                 680px
             );
-
-        --hero-tarjeta-solape: 58px;
     }
 
 
@@ -2533,48 +2453,16 @@ img {
 
 
     .hero__tarjeta--superior {
-        top: 14%;
+        top: 1%;
 
-        left: auto;
-
-        right:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
+        right: -16px;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
+        left: -16px;
 
-        left:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
-
-        bottom: 12%;
+        bottom: 1%;
     }
 
 
@@ -2668,54 +2556,20 @@ img {
 
     .hero__visual {
         min-height: 800px;
-
-        --hero-tarjeta-solape: 60px;
     }
 
 
     .hero__tarjeta--superior {
-        top: 15%;
+        top: 2%;
 
-        left: auto;
-
-        right:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
+        right: -18px;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
+        left: -18px;
 
-        left:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
-
-        bottom: 13%;
+        bottom: 2%;
     }
 
 
@@ -2767,8 +2621,6 @@ img {
                 78%,
                 760px
             );
-
-        --hero-tarjeta-solape: 64px;
     }
 
 
@@ -2782,48 +2634,16 @@ img {
 
 
     .hero__tarjeta--superior {
-        top: 16%;
+        top: 3%;
 
-        left: auto;
-
-        right:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
+        right: -20px;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
+        left: -20px;
 
-        left:
-            max(
-                0px,
-                calc(
-                    (
-                        100%
-                        -
-                        var(--hero-circulo-ancho)
-                    )
-                    /
-                    2
-                    -
-                    var(--hero-tarjeta-solape)
-                )
-            );
-
-        bottom: 14%;
+        bottom: 3%;
     }
 
 
@@ -2870,24 +2690,18 @@ img {
 
 
     .hero__tarjeta--superior {
-        top: 9%;
+        top: 0;
 
-        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
         left: 0;
 
-        bottom: 7%;
+        bottom: 0;
     }
 
-
-    /* =====================================================
-       PRODUCTOS DESTACADOS
-    ===================================================== */
 
     .productos-destacados__grid {
         gap: 14px;
@@ -2937,11 +2751,8 @@ img {
 
     .hero__visual {
         min-height: 540px;
-    }
 
-
-    .hero__circulo {
-        width:
+        --hero-circulo-ancho:
             min(
                 82%,
                 475px
@@ -2965,18 +2776,16 @@ img {
 
 
     .hero__tarjeta--superior {
-        top: 5%;
+        top: 0;
 
-        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
         left: 0;
 
-        bottom: 4%;
+        bottom: 0;
     }
 
 
@@ -3014,10 +2823,6 @@ img {
         justify-self: center;
     }
 
-
-    /* =====================================================
-       4 PRODUCTOS TODAVÍA EN UNA FILA
-    ===================================================== */
 
     .productos-destacados__grid {
         grid-template-columns:
@@ -3140,11 +2945,8 @@ img {
         min-height: 560px;
 
         margin-inline: auto;
-    }
 
-
-    .hero__circulo {
-        width:
+        --hero-circulo-ancho:
             min(
                 72%,
                 470px
@@ -3162,18 +2964,16 @@ img {
 
 
     .hero__tarjeta--superior {
-        top: 7%;
+        top: 0;
 
-        left: auto;
-        right: 2%;
+        right: 1%;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
-        left: 2%;
+        left: 1%;
 
-        bottom: 5%;
+        bottom: 0;
     }
 
 
@@ -3202,11 +3002,6 @@ img {
         max-width: 620px;
     }
 
-
-    /* =====================================================
-       PRODUCTOS DESTACADOS TABLET
-       2 X 2
-    ===================================================== */
 
     .productos-destacados__encabezado {
         grid-template-columns: 1fr;
@@ -3341,11 +3136,8 @@ img {
 
     .hero__visual {
         min-height: 470px;
-    }
 
-
-    .hero__circulo {
-        width: 90%;
+        --hero-circulo-ancho: 90%;
     }
 
 
@@ -3388,18 +3180,16 @@ img {
 
 
     .hero__tarjeta--superior {
-        top: 1%;
+        top: 0;
 
-        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
         left: 0;
 
-        bottom: 1%;
+        bottom: 0;
     }
 
 
@@ -3507,10 +3297,6 @@ img {
     }
 
 
-    /* =====================================================
-       PRODUCTOS DESTACADOS MÓVIL
-    ===================================================== */
-
     .productos-destacados {
         padding:
             72px
@@ -3603,11 +3389,8 @@ img {
 
     .hero__visual {
         min-height: 410px;
-    }
 
-
-    .hero__circulo {
-        width: 94%;
+        --hero-circulo-ancho: 94%;
     }
 
 
@@ -3640,13 +3423,11 @@ img {
     .hero__tarjeta--superior {
         top: 0;
 
-        left: auto;
         right: 0;
     }
 
 
     .hero__tarjeta--inferior {
-        right: auto;
         left: 0;
 
         bottom: 0;
@@ -3657,10 +3438,6 @@ img {
         height: 250px;
     }
 
-
-    /* =====================================================
-       PRODUCTOS
-    ===================================================== */
 
     .producto-destacado__media {
         height: 275px;
@@ -3700,6 +3477,8 @@ img {
 
     .hero__visual {
         min-height: 380px;
+
+        --hero-circulo-ancho: 94%;
     }
 
 
@@ -3719,12 +3498,16 @@ img {
 
 
     .hero__tarjeta--superior {
-        top: 2%;
+        top: 0;
+
+        right: 0;
     }
 
 
     .hero__tarjeta--inferior {
-        bottom: 2%;
+        left: 0;
+
+        bottom: 0;
     }
 
 
@@ -3749,197 +3532,73 @@ img {
 }
 
 
-
-
-
 /* =========================================================
-   SISTEMA RESPONSIVE DEFINITIVO — TARJETAS FLOTANTES HERO
+   SISTEMA DEFINITIVO TARJETAS FLOTANTES HERO
 
-   Objetivo:
-   - Anclar las tarjetas al círculo central.
-   - Evitar que se peguen o salgan por los bordes.
-   - Mantener una posición consistente entre localhost
-     y producción.
-   - Adaptarse a escritorio, notebook, tablet y móvil.
+   IMPORTANTE:
+   Este bloque queda al final para tener prioridad sobre
+   todas las reglas anteriores.
+
+   Las tarjetas se mantienen alejadas del centro del producto.
 ========================================================= */
 
 .hero__visual {
-    /*
-     * Valores base.
-     *
-     * --hero-circulo-ancho:
-     * ancho real del círculo usado también para calcular
-     * la posición de las tarjetas.
-     *
-     * --hero-tarjeta-mitad:
-     * aproximadamente la mitad del ancho de cada tarjeta.
-     * Se usa como límite para impedir que salga del visual.
-     *
-     * --hero-tarjeta-entrada:
-     * cuánto entra la tarjeta hacia el interior del círculo.
-     */
-    --hero-circulo-ancho:
-        min(
-            91%,
-            535px
-        );
-
-    --hero-tarjeta-mitad: 128px;
-    --hero-tarjeta-entrada: 105px;
-
-    --hero-tarjeta-top: 11%;
-    --hero-tarjeta-bottom: 9%;
-
     overflow: visible;
 }
 
 
-/*
- * El círculo siempre utiliza la misma variable que sirve
- * para posicionar las tarjetas. De esta forma el cálculo
- * nunca queda desincronizado con el tamaño visual real.
- */
-.hero__circulo {
-    width:
-        var(
-            --hero-circulo-ancho
-        );
-}
-
-
 /* =========================================================
-   POSICIÓN BASE
+   ESCRITORIO
 ========================================================= */
 
 .hero__tarjeta--superior {
-    top:
-        var(
-            --hero-tarjeta-top
-        );
+    top: 0;
 
-    right: auto;
+    left: auto;
+    right: -10px;
 
-    /*
-     * Posición ideal:
-     * centro del visual
-     * + mitad del círculo
-     * - entrada de la tarjeta.
-     *
-     * min() impide que el centro de la tarjeta se acerque
-     * demasiado al extremo derecho.
-     */
-    left:
-        min(
-            calc(
-                100%
-                -
-                var(--hero-tarjeta-mitad)
-                -
-                4px
-            ),
-            calc(
-                50%
-                +
-                (
-                    var(--hero-circulo-ancho)
-                    /
-                    2
-                )
-                -
-                var(--hero-tarjeta-entrada)
-            )
-        );
-
-    transform:
-        translateX(-50%);
+    transform: none;
 }
 
 
 .hero__tarjeta--inferior {
     right: auto;
+    left: -10px;
 
-    /*
-     * Posición simétrica respecto de la tarjeta superior.
-     *
-     * max() impide que el centro de la tarjeta se acerque
-     * demasiado al extremo izquierdo.
-     */
-    left:
-        max(
-            calc(
-                var(--hero-tarjeta-mitad)
-                +
-                4px
-            ),
-            calc(
-                50%
-                -
-                (
-                    var(--hero-circulo-ancho)
-                    /
-                    2
-                )
-                +
-                var(--hero-tarjeta-entrada)
-            )
-        );
+    bottom: 0;
 
-    bottom:
-        var(
-            --hero-tarjeta-bottom
-        );
-
-    transform:
-        translateX(-50%);
+    transform: none;
 }
 
 
-/*
- * Conserva translateX(-50%) durante el hover.
- * Sin esto, la tarjeta saltaría horizontalmente.
- */
+/* =========================================================
+   HOVER
+========================================================= */
+
 .hero__tarjeta--superior:hover,
 .hero__tarjeta--inferior:hover {
     transform:
-        translateX(-50%)
         translateY(-3px);
 }
 
 
 /* =========================================================
-   NOTEBOOK / ESCRITORIO MEDIANO
-   861px — 1200px
+   NOTEBOOK
 ========================================================= */
 
 @media (min-width: 861px) and (max-width: 1200px) {
 
-    .hero__visual {
-        --hero-tarjeta-top: 9%;
-        --hero-tarjeta-bottom: 7%;
+    .hero__tarjeta--superior {
+        top: -4px;
+
+        right: 0;
     }
 
-}
 
+    .hero__tarjeta--inferior {
+        left: 0;
 
-/* =========================================================
-   NOTEBOOK MÁS ESTRECHO
-   861px — 1100px
-========================================================= */
-
-@media (min-width: 861px) and (max-width: 1100px) {
-
-    .hero__visual {
-        --hero-circulo-ancho:
-            min(
-                82%,
-                475px
-            );
-
-        --hero-tarjeta-mitad: 110px;
-        --hero-tarjeta-entrada: 90px;
-
-        --hero-tarjeta-top: 5%;
-        --hero-tarjeta-bottom: 4%;
+        bottom: -4px;
     }
 
 }
@@ -3947,23 +3606,21 @@ img {
 
 /* =========================================================
    TABLET
-   621px — 860px
 ========================================================= */
 
 @media (min-width: 621px) and (max-width: 860px) {
 
-    .hero__visual {
-        --hero-circulo-ancho:
-            min(
-                72%,
-                470px
-            );
+    .hero__tarjeta--superior {
+        top: 0;
 
-        --hero-tarjeta-mitad: 110px;
-        --hero-tarjeta-entrada: 90px;
+        right: 0;
+    }
 
-        --hero-tarjeta-top: 7%;
-        --hero-tarjeta-bottom: 5%;
+
+    .hero__tarjeta--inferior {
+        left: 0;
+
+        bottom: 0;
     }
 
 }
@@ -3971,59 +3628,21 @@ img {
 
 /* =========================================================
    MÓVIL
-   481px — 620px
 ========================================================= */
 
-@media (min-width: 481px) and (max-width: 620px) {
+@media (max-width: 620px) {
 
-    .hero__visual {
-        --hero-circulo-ancho: 90%;
+    .hero__tarjeta--superior {
+        top: 0;
 
-        --hero-tarjeta-mitad: 85px;
-        --hero-tarjeta-entrada: 72px;
-
-        --hero-tarjeta-top: 1%;
-        --hero-tarjeta-bottom: 1%;
+        right: 0;
     }
 
-}
 
+    .hero__tarjeta--inferior {
+        left: 0;
 
-/* =========================================================
-   MÓVIL PEQUEÑO
-   381px — 480px
-========================================================= */
-
-@media (min-width: 381px) and (max-width: 480px) {
-
-    .hero__visual {
-        --hero-circulo-ancho: 94%;
-
-        --hero-tarjeta-mitad: 73px;
-        --hero-tarjeta-entrada: 66px;
-
-        --hero-tarjeta-top: 0%;
-        --hero-tarjeta-bottom: 0%;
-    }
-
-}
-
-
-/* =========================================================
-   MÓVIL MUY PEQUEÑO
-   Hasta 380px
-========================================================= */
-
-@media (max-width: 380px) {
-
-    .hero__visual {
-        --hero-circulo-ancho: 94%;
-
-        --hero-tarjeta-mitad: 66px;
-        --hero-tarjeta-entrada: 62px;
-
-        --hero-tarjeta-top: 2%;
-        --hero-tarjeta-bottom: 2%;
+        bottom: 0;
     }
 
 }
@@ -4031,85 +3650,87 @@ img {
 
 /* =========================================================
    PANTALLAS GRANDES
-   1500px+
 ========================================================= */
 
 @media (min-width: 1500px) {
 
-    .hero__visual {
-        --hero-circulo-ancho:
-            min(
-                88%,
-                600px
-            );
+    .hero__tarjeta--superior {
+        top: -6px;
 
-        --hero-tarjeta-mitad: 128px;
-        --hero-tarjeta-entrada: 108px;
+        right: -14px;
+    }
 
-        --hero-tarjeta-top: 13%;
-        --hero-tarjeta-bottom: 11%;
+
+    .hero__tarjeta--inferior {
+        left: -14px;
+
+        bottom: -6px;
     }
 
 }
 
 
 /* =========================================================
-   PANTALLAS MUY GRANDES / 2K
-   1900px+
+   PANTALLAS 2K
 ========================================================= */
 
 @media (min-width: 1900px) {
 
-    .hero__visual {
-        --hero-circulo-ancho:
-            min(
-                86%,
-                680px
-            );
+    .hero__tarjeta--superior {
+        top: -8px;
 
-        --hero-tarjeta-entrada: 112px;
+        right: -16px;
+    }
 
-        --hero-tarjeta-top: 14%;
-        --hero-tarjeta-bottom: 12%;
+
+    .hero__tarjeta--inferior {
+        left: -16px;
+
+        bottom: -8px;
     }
 
 }
 
 
 /* =========================================================
-   MONITORES 2560+
+   2560+
 ========================================================= */
 
 @media (min-width: 2560px) {
 
-    .hero__visual {
-        --hero-tarjeta-entrada: 114px;
+    .hero__tarjeta--superior {
+        top: -10px;
 
-        --hero-tarjeta-top: 15%;
-        --hero-tarjeta-bottom: 13%;
+        right: -18px;
+    }
+
+
+    .hero__tarjeta--inferior {
+        left: -18px;
+
+        bottom: -10px;
     }
 
 }
 
 
 /* =========================================================
-   MONITORES 4K
-   3200px+
+   4K
 ========================================================= */
 
 @media (min-width: 3200px) {
 
-    .hero__visual {
-        --hero-circulo-ancho:
-            min(
-                78%,
-                760px
-            );
+    .hero__tarjeta--superior {
+        top: -12px;
 
-        --hero-tarjeta-entrada: 118px;
+        right: -20px;
+    }
 
-        --hero-tarjeta-top: 16%;
-        --hero-tarjeta-bottom: 14%;
+
+    .hero__tarjeta--inferior {
+        left: -20px;
+
+        bottom: -12px;
     }
 
 }
