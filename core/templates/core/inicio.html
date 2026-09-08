@@ -704,18 +704,19 @@
                                  IMAGEN
                             ================================================== -->
 
-                            {% if producto and producto.imagen %}
+                            {% if producto and producto.imagen_mostrable %}
 
                                 <a
-                                    href="{% url 'core:producto_detalle' producto.id %}"
+                                    href="{{ producto.get_absolute_url }}"
                                     class="producto-destacado__imagen-enlace"
                                 >
 
                                     <img
-                                        src="{{ producto.imagen.url }}"
+                                        src="{{ producto.imagen_mostrable }}"
                                         alt="{{ producto.nombre }}"
                                         class="producto-destacado__imagen"
                                         loading="lazy"
+                                        decoding="async"
                                     >
 
                                 </a>
@@ -757,7 +758,7 @@
                                 <h3>
 
                                     <a
-                                        href="{% url 'core:producto_detalle' producto.id %}"
+                                        href="{{ producto.get_absolute_url }}"
                                     >
 
                                         {{ producto.nombre }}

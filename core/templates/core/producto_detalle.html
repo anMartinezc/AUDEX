@@ -72,7 +72,7 @@
                 <div class="detalle-admin__acciones">
 
                     <a
-                        href="{% url 'core:producto_editar' producto.slug %}"
+                        href="{% url 'core:producto_editar' public_id=producto.public_id %}"
                         class="
                             detalle-admin__boton
                             detalle-admin__boton--editar

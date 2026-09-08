@@ -488,15 +488,29 @@ def productos(request):
         contexto,
     )
 
-
 @ensure_csrf_cookie
-def producto_detalle(request, slug):
+def producto_detalle(
+    request,
+    public_id,
+):
+    # =========================================================
+    # OBTENER PRODUCTO POR ID PÚBLICO
+    # =========================================================
+
     producto = get_object_or_404(
         Producto.objects
-        .select_related("categoria")
-        .prefetch_related("imagenes"),
-        slug=slug,
+        .select_related(
+            "categoria"
+        )
+        .prefetch_related(
+            "imagenes"
+        ),
+        public_id=public_id,
     )
+
+    # =========================================================
+    # CONTROL DE VISIBILIDAD
+    # =========================================================
 
     if (
         not producto.activo
@@ -508,8 +522,15 @@ def producto_detalle(request, slug):
             "core:productos"
         )
 
+    # =========================================================
+    # CONTEXTO
+    # =========================================================
+
     contexto = {
-        "producto": producto,
+        "producto": (
+            producto
+        ),
+
         "puede_administrar": (
             es_administrador_productos(
                 request.user
@@ -517,13 +538,15 @@ def producto_detalle(request, slug):
         ),
     }
 
+    # =========================================================
+    # RENDER
+    # =========================================================
+
     return render(
         request,
         "core/producto_detalle.html",
         contexto,
     )
-
-
 
 
 class ProductoCrearView(
@@ -667,16 +690,67 @@ class ProductoCrearView(
         )
 
 
-
-
 class ProductoEditarView(
     AdministradorProductosMixin,
     UpdateView,
 ):
+    # =========================================================
+    # CONFIGURACIÓN PRINCIPAL
+    # =========================================================
+
     model = Producto
+
     form_class = ProductoForm
-    template_name = "core/producto_formulario.html"
-    success_url = reverse_lazy("core:productos")
+
+    template_name = (
+        "core/producto_formulario.html"
+    )
+
+    success_url = reverse_lazy(
+        "core:productos"
+    )
+
+    # =========================================================
+    # IDENTIFICADOR PÚBLICO
+    # =========================================================
+    #
+    # Django buscará el producto mediante:
+    #
+    # Producto.public_id
+    #
+    # en lugar de utilizar:
+    #
+    # Producto.id / pk
+    #
+    # Ejemplo:
+    #
+    # /productos/
+    # 473847bc-6f87-451a-b332-e99204a7413b/
+    # editar/
+    #
+    # =========================================================
+
+    slug_field = "public_id"
+
+    slug_url_kwarg = "public_id"
+
+    # =========================================================
+    # QUERYSET
+    # =========================================================
+
+    def get_queryset(
+        self,
+    ):
+        return (
+            Producto.objects
+            .select_related(
+                "categoria"
+            )
+            .prefetch_related(
+                "imagenes",
+                "reglas_envio",
+            )
+        )
 
     # =========================================================
     # CONTEXTO
@@ -686,8 +760,11 @@ class ProductoEditarView(
         self,
         **kwargs,
     ):
-        context = super().get_context_data(
-            **kwargs
+        context = (
+            super()
+            .get_context_data(
+                **kwargs
+            )
         )
 
         # =====================================================
@@ -700,7 +777,9 @@ class ProductoEditarView(
             # IMÁGENES DEL PRODUCTO
             # -------------------------------------------------
 
-            context["imagenes_formset"] = (
+            context[
+                "imagenes_formset"
+            ] = (
                 ProductoImagenFormSet(
                     self.request.POST,
                     self.request.FILES,
@@ -712,7 +791,9 @@ class ProductoEditarView(
             # REGLAS ESPECIALES DE ENVÍO
             # -------------------------------------------------
 
-            context["reglas_envio_formset"] = (
+            context[
+                "reglas_envio_formset"
+            ] = (
                 ReglaEnvioProductoFormSet(
                     self.request.POST,
                     instance=self.object,
@@ -729,7 +810,9 @@ class ProductoEditarView(
             # IMÁGENES EXISTENTES
             # -------------------------------------------------
 
-            context["imagenes_formset"] = (
+            context[
+                "imagenes_formset"
+            ] = (
                 ProductoImagenFormSet(
                     instance=self.object,
                 )
@@ -739,7 +822,9 @@ class ProductoEditarView(
             # REGLAS DE ENVÍO EXISTENTES
             # -------------------------------------------------
 
-            context["reglas_envio_formset"] = (
+            context[
+                "reglas_envio_formset"
+            ] = (
                 ReglaEnvioProductoFormSet(
                     instance=self.object,
                 )
@@ -756,14 +841,20 @@ class ProductoEditarView(
         self,
         form,
     ):
-        context = self.get_context_data()
+        context = (
+            self.get_context_data()
+        )
 
         imagenes_formset = (
-            context["imagenes_formset"]
+            context[
+                "imagenes_formset"
+            ]
         )
 
         reglas_envio_formset = (
-            context["reglas_envio_formset"]
+            context[
+                "reglas_envio_formset"
+            ]
         )
 
         # =====================================================
@@ -771,6 +862,7 @@ class ProductoEditarView(
         # =====================================================
 
         if not imagenes_formset.is_valid():
+
             return self.form_invalid(
                 form
             )
@@ -780,6 +872,7 @@ class ProductoEditarView(
         # =====================================================
 
         if not reglas_envio_formset.is_valid():
+
             return self.form_invalid(
                 form
             )
@@ -788,7 +881,9 @@ class ProductoEditarView(
         # GUARDAR PRODUCTO
         # =====================================================
 
-        self.object = form.save()
+        self.object = (
+            form.save()
+        )
 
         # =====================================================
         # GUARDAR IMÁGENES
@@ -821,6 +916,10 @@ class ProductoEditarView(
                 "de envío actualizados correctamente."
             ),
         )
+
+        # =====================================================
+        # REDIRECCIÓN
+        # =====================================================
 
         return HttpResponseRedirect(
             self.get_success_url()

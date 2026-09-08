@@ -96,8 +96,6 @@ class Categoria(models.Model):
         )
 
 
-
-
 class Producto(models.Model):
 
     # =========================================================
@@ -109,6 +107,32 @@ class Producto(models.Model):
         S = "S", "S"
         M = "M", "M"
         L = "L", "L"
+
+    # =========================================================
+    # IDENTIFICADOR PÚBLICO
+    # =========================================================
+    #
+    # El ID numérico de Django se conserva internamente.
+    #
+    # Ejemplo interno:
+    #
+    #   id = 1
+    #
+    # Ejemplo público:
+    #
+    #   public_id =
+    #   9d657209-a108-45f6-a2d3-1fc6bb972602
+    #
+    # Nunca debemos utilizar el ID numérico en URLs públicas.
+    # =========================================================
+
+    public_id = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        verbose_name="ID público",
+    )
+
 
     # =========================================================
     # INFORMACIÓN PRINCIPAL
@@ -155,7 +179,9 @@ class Producto(models.Model):
 
     imagen_url = models.URLField(
         blank=True,
-        verbose_name="URL externa de imagen principal",
+        verbose_name=(
+            "URL externa de imagen principal"
+        ),
         help_text=(
             "Opcional. Se utiliza cuando no se "
             "carga una imagen principal local."
@@ -197,6 +223,13 @@ class Producto(models.Model):
     # =========================================================
     # ENVÍO
     # =========================================================
+    #
+    # Este campo se mantiene por compatibilidad con datos
+    # anteriores.
+    #
+    # La lógica nueva de Blue Express utiliza principalmente
+    # ReglaEnvioProducto.
+    # =========================================================
 
     talla_envio_minima = models.CharField(
         max_length=2,
@@ -205,9 +238,9 @@ class Producto(models.Model):
         default="",
         verbose_name="Talla mínima de envío",
         help_text=(
-            "Configuración administrativa. "
-            "Déjalo vacío para utilizar el cálculo "
-            "automático según la cantidad del carrito."
+            "Configuración administrativa heredada. "
+            "La lógica nueva utiliza reglas especiales "
+            "de envío por cantidad."
         ),
     )
 
@@ -277,6 +310,10 @@ class Producto(models.Model):
         auto_now=True,
     )
 
+    # =========================================================
+    # META
+    # =========================================================
+
     class Meta:
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
@@ -285,6 +322,10 @@ class Producto(models.Model):
             "-destacado",
             "-creado",
         ]
+
+    # =========================================================
+    # REPRESENTACIÓN
+    # =========================================================
 
     def __str__(self):
         return self.nombre
@@ -298,6 +339,10 @@ class Producto(models.Model):
 
         errores = {}
 
+        # -----------------------------------------------------
+        # PRECIO NORMAL
+        # -----------------------------------------------------
+
         if (
             self.precio is not None
             and self.precio <= Decimal("0")
@@ -306,8 +351,16 @@ class Producto(models.Model):
                 "El precio debe ser mayor que cero."
             )
 
+        # -----------------------------------------------------
+        # PRECIO OFERTA
+        # -----------------------------------------------------
+
         if self.precio_oferta is not None:
-            if self.precio_oferta <= Decimal("0"):
+
+            if (
+                self.precio_oferta
+                <= Decimal("0")
+            ):
                 errores["precio_oferta"] = (
                     "El precio de oferta debe ser "
                     "mayor que cero."
@@ -315,12 +368,17 @@ class Producto(models.Model):
 
             elif (
                 self.precio is not None
-                and self.precio_oferta >= self.precio
+                and self.precio_oferta
+                >= self.precio
             ):
                 errores["precio_oferta"] = (
                     "El precio de oferta debe ser "
                     "menor que el precio normal."
                 )
+
+        # -----------------------------------------------------
+        # IMAGEN PRINCIPAL
+        # -----------------------------------------------------
 
         if (
             not self.imagen
@@ -331,6 +389,10 @@ class Producto(models.Model):
                 "una URL externa."
             )
 
+        # -----------------------------------------------------
+        # STOCK RESERVADO
+        # -----------------------------------------------------
+
         if (
             self.stock_reservado
             > self.stock
@@ -340,7 +402,12 @@ class Producto(models.Model):
                 "superar el stock total."
             )
 
+        # -----------------------------------------------------
+        # ERRORES
+        # -----------------------------------------------------
+
         if errores:
+
             raise ValidationError(
                 errores
             )
@@ -349,13 +416,27 @@ class Producto(models.Model):
     # GUARDADO
     # =========================================================
 
-    def save(self, *args, **kwargs):
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ):
+
+        # -----------------------------------------------------
+        # GENERAR SLUG
+        # -----------------------------------------------------
+
         if not self.slug:
+
             slug_base = slugify(
                 self.nombre
             )
 
-            slug = slug_base
+            slug = (
+                slug_base
+                or uuid.uuid4().hex[:12]
+            )
+
             contador = 1
 
             while (
@@ -368,6 +449,7 @@ class Producto(models.Model):
                 )
                 .exists()
             ):
+
                 slug = (
                     f"{slug_base}-{contador}"
                 )
@@ -376,7 +458,15 @@ class Producto(models.Model):
 
             self.slug = slug
 
+        # -----------------------------------------------------
+        # VALIDAR
+        # -----------------------------------------------------
+
         self.full_clean()
+
+        # -----------------------------------------------------
+        # GUARDAR
+        # -----------------------------------------------------
 
         super().save(
             *args,
@@ -389,6 +479,7 @@ class Producto(models.Model):
 
     @property
     def en_oferta(self):
+
         return (
             self.precio_oferta is not None
             and self.precio_oferta > 0
@@ -397,6 +488,7 @@ class Producto(models.Model):
 
     @property
     def precio_actual(self):
+
         if self.en_oferta:
             return self.precio_oferta
 
@@ -404,6 +496,7 @@ class Producto(models.Model):
 
     @property
     def porcentaje_descuento(self):
+
         if not self.en_oferta:
             return 0
 
@@ -426,17 +519,22 @@ class Producto(models.Model):
 
     @property
     def imagen_mostrable(self):
+
         if self.imagen:
+
             try:
+
                 return self.imagen.url
 
             except ValueError:
+
                 pass
 
         return self.imagen_url
 
     @property
     def tiene_galeria(self):
+
         if not self.pk:
             return False
 
@@ -444,13 +542,16 @@ class Producto(models.Model):
 
     @property
     def cantidad_imagenes(self):
+
         cantidad = 0
 
         if self.imagen_mostrable:
             cantidad += 1
 
         if self.pk:
-            cantidad += self.imagenes.count()
+            cantidad += (
+                self.imagenes.count()
+            )
 
         return cantidad
 
@@ -460,6 +561,7 @@ class Producto(models.Model):
 
     @property
     def stock_disponible(self):
+
         return max(
             self.stock
             - self.stock_reservado,
@@ -468,6 +570,7 @@ class Producto(models.Model):
 
     @property
     def disponible(self):
+
         return (
             self.activo
             and self.stock_disponible > 0
@@ -479,23 +582,50 @@ class Producto(models.Model):
 
     @property
     def tiene_talla_envio_especial(self):
+
+        if not self.pk:
+            return False
+
+        # -----------------------------------------------------
+        # NUEVA LÓGICA
+        # -----------------------------------------------------
+
+        if hasattr(
+            self,
+            "reglas_envio",
+        ):
+
+            if (
+                self.reglas_envio
+                .filter(
+                    activa=True,
+                )
+                .exists()
+            ):
+                return True
+
+        # -----------------------------------------------------
+        # COMPATIBILIDAD LEGACY
+        # -----------------------------------------------------
+
         return bool(
             self.talla_envio_minima
         )
 
     # =========================================================
-    # URL
+    # URL PÚBLICA
     # =========================================================
 
     def get_absolute_url(self):
+
         return reverse(
             "core:producto_detalle",
             kwargs={
-                "slug": self.slug,
+                "public_id": (
+                    self.public_id
+                ),
             },
         )
-
-
 
 # =============================================================
 # REGLAS ESPECIALES DE ENVÍO POR PRODUCTO

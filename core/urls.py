@@ -30,12 +30,12 @@ urlpatterns = [
         name="producto_crear",
     ),
     path(
-        "productos/<slug:slug>/",
-        views.producto_detalle,
-        name="producto_detalle",
+    "productos/<uuid:public_id>/",
+    views.producto_detalle,
+    name="producto_detalle",
     ),
     path(
-        "productos/<slug:slug>/editar/",
+        "productos/<uuid:public_id>/editar/",
         views.ProductoEditarView.as_view(),
         name="producto_editar",
     ),

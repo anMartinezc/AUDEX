@@ -594,7 +594,7 @@ Productos | Audex
                                         ================================== -->
 
                                         <a
-                                            href="{% url 'core:producto_editar' producto.slug %}"
+                                            href="{% url 'core:producto_editar' public_id=producto.public_id %}"
                                             title="Editar producto"
                                             aria-label="Editar {{ producto.nombre }}"
                                         >
