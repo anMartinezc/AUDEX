@@ -3817,3 +3817,385 @@
     }
 
 }
+
+
+/* =========================================================
+   AJUSTE DEFINITIVO MOBILE — ORDEN DE COMPRA
+   Solo afecta teléfonos.
+   Orden:
+   1. Imagen principal
+   2. Título
+   3. Agregar al carrito
+   4. Favoritos
+   5. Cantidad
+   6. Precio
+   7. Valoración
+   8. Categoría / descripción / resto
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .detalle-producto__principal {
+        width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 0 !important;
+    }
+
+    /*
+     * Quitamos únicamente las cajas intermedias.
+     * El HTML sigue existiendo y el JS continúa encontrando
+     * la galería y los controles normalmente.
+     */
+    .detalle-galeria,
+    .detalle-informacion,
+    .detalle-informacion__superior {
+        display: contents !important;
+    }
+
+
+    /* -----------------------------------------------------
+       1. IMAGEN PRINCIPAL
+    ----------------------------------------------------- */
+
+    .detalle-galeria__principal {
+        order: 1;
+
+        width: 100% !important;
+
+        margin:
+            0 0 16px !important;
+    }
+
+
+    /* -----------------------------------------------------
+       2. TÍTULO
+    ----------------------------------------------------- */
+
+    .detalle-informacion h1 {
+        order: 2;
+
+        width: 100% !important;
+
+        margin:
+            0 0 14px !important;
+
+        font-size:
+            clamp(1.9rem, 9vw, 2.75rem) !important;
+
+        line-height: 1.05 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       3, 4 y 5. COMPRA
+       Carrito primero, favoritos después y cantidad al final.
+    ----------------------------------------------------- */
+
+    .detalle-compra {
+        order: 3;
+
+        width: 100% !important;
+
+        margin:
+            0 0 14px !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 10px !important;
+    }
+
+    .detalle-compra .detalle-agregar-carrito {
+        order: 1;
+    }
+
+    .detalle-compra .detalle-favorito {
+        order: 2;
+    }
+
+    .detalle-compra .detalle-cantidad {
+        order: 3;
+
+        width: 100% !important;
+
+        grid-row: auto !important;
+    }
+
+    .detalle-agregar-carrito,
+    .detalle-favorito {
+        width: 100% !important;
+
+        min-height: 54px !important;
+    }
+
+    .detalle-cantidad__control {
+        width: max-content !important;
+    }
+
+
+    /* -----------------------------------------------------
+       6. PRECIO
+    ----------------------------------------------------- */
+
+    .detalle-precio {
+        order: 4;
+
+        width: 100% !important;
+
+        margin:
+            0 0 14px !important;
+    }
+
+
+    /* -----------------------------------------------------
+       7. VALORACIÓN
+    ----------------------------------------------------- */
+
+    .detalle-valoracion-resumen {
+        order: 5;
+
+        width: 100% !important;
+
+        margin:
+            0 0 13px !important;
+
+        justify-content: flex-start !important;
+
+        border-radius: 13px !important;
+    }
+
+
+    /* -----------------------------------------------------
+       8. CATEGORÍA
+    ----------------------------------------------------- */
+
+    .detalle-etiquetas {
+        order: 6;
+
+        width: 100% !important;
+
+        margin:
+            0 0 12px !important;
+    }
+
+
+    /* -----------------------------------------------------
+       9. DESCRIPCIÓN CORTA
+    ----------------------------------------------------- */
+
+    .detalle-descripcion-corta {
+        order: 7;
+
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin:
+            0 0 4px !important;
+    }
+
+
+    /* -----------------------------------------------------
+       10. MINIATURAS
+       Se mantienen disponibles, pero ya no quedan entre
+       la imagen principal y el título.
+    ----------------------------------------------------- */
+
+    .detalle-galeria__inferior {
+        order: 8;
+
+        width: 100% !important;
+
+        margin:
+            16px 0 0 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       RESTO DE LA INFORMACIÓN
+    ----------------------------------------------------- */
+
+    .detalle-resumen-caracteristicas {
+        order: 9;
+
+        width: 100% !important;
+    }
+
+    .detalle-resumen-descripcion {
+        order: 10;
+
+        width: 100% !important;
+    }
+
+    .detalle-resumen-ficha {
+        order: 11;
+
+        width: 100% !important;
+    }
+
+    .detalle-servicios {
+        order: 12;
+
+        width: 100% !important;
+    }
+
+}
+
+
+/* =========================================================
+   FIX DEFINITIVO MOBILE — LOGIN DE OPINIONES
+   Icono y texto arriba.
+   Botón de inicio de sesión debajo del icono/texto.
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .detalle-opiniones__aviso--login {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding: 16px !important;
+
+        display: grid !important;
+
+        grid-template-columns:
+            46px minmax(0, 1fr) !important;
+
+        grid-template-rows:
+            auto auto !important;
+
+        column-gap: 12px !important;
+        row-gap: 12px !important;
+
+        align-items: start !important;
+
+        box-sizing: border-box !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__aviso-icono {
+        position: static !important;
+
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+
+        width: 46px !important;
+        height: 46px !important;
+
+        min-width: 46px !important;
+
+        margin: 0 !important;
+
+        align-self: start !important;
+
+        transform: none !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    > div:not(.detalle-opiniones__aviso-icono) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        margin: 0 !important;
+
+        display: block !important;
+    }
+
+    .detalle-opiniones__aviso--login strong {
+        display: block !important;
+
+        width: 100% !important;
+
+        margin: 0 !important;
+
+        line-height: 1.35 !important;
+
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+    }
+
+    .detalle-opiniones__aviso--login p {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin:
+            5px 0 0 !important;
+
+        line-height: 1.5 !important;
+
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+        hyphens: none !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__login-boton {
+        position: static !important;
+
+        grid-column:
+            1 / -1 !important;
+
+        grid-row: 2 !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        min-height: 48px !important;
+
+        margin: 0 !important;
+        padding:
+            0 14px !important;
+
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        gap: 7px !important;
+
+        box-sizing: border-box !important;
+
+        white-space: nowrap !important;
+
+        transform: none !important;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .detalle-opiniones__aviso--login {
+        padding: 14px !important;
+
+        grid-template-columns:
+            42px minmax(0, 1fr) !important;
+
+        column-gap: 10px !important;
+        row-gap: 11px !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__aviso-icono {
+        width: 42px !important;
+        height: 42px !important;
+
+        min-width: 42px !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__login-boton {
+        min-height: 46px !important;
+
+        font-size: 0.72rem !important;
+    }
+
+}
