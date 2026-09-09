@@ -3,6 +3,9 @@ from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     UserPassesTestMixin,
 )
+from django.core.exceptions import PermissionDenied
+from itertools import groupby
+from django.db.models.functions import TruncDate
 from django.db.models import Case, DecimalField, F, Q, When
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -488,6 +491,177 @@ def productos(request):
         contexto,
     )
 
+
+
+
+# ============================================================
+# RESEÑAS - CONTEXTO DEL PRODUCTO
+# ============================================================
+
+def obtener_contexto_resenas(
+    producto,
+    usuario=None,
+):
+    respuestas_aprobadas = (
+        ResenaRespuesta.objects
+        .filter(
+            estado=ResenaRespuesta.Estado.APROBADA,
+        )
+        .select_related(
+            "usuario",
+        )
+        .order_by(
+            "creado",
+            "id",
+        )
+    )
+
+    resenas_queryset = (
+        ProductoResena.objects
+        .filter(
+            producto=producto,
+            estado=ProductoResena.Estado.APROBADA,
+        )
+        .select_related(
+            "usuario",
+        )
+        .prefetch_related(
+            "imagenes",
+
+            Prefetch(
+                "respuestas",
+                queryset=respuestas_aprobadas,
+                to_attr="respuestas_visibles",
+            ),
+        )
+        .annotate(
+            fecha_comentario=TruncDate(
+                "creado",
+                tzinfo=(
+                    timezone.get_current_timezone()
+                ),
+            ),
+        )
+        .order_by(
+            "-fecha_comentario",
+            "-creado",
+            "-id",
+        )
+    )
+
+    resenas_lista = list(
+        resenas_queryset
+    )
+
+    # --------------------------------------------------------
+    # AGRUPAR RESEÑAS POR FECHA
+    # --------------------------------------------------------
+
+    resenas_por_fecha = []
+
+    for fecha, grupo in groupby(
+        resenas_lista,
+        key=lambda resena: (
+            resena.fecha_comentario
+        ),
+    ):
+        resenas_por_fecha.append(
+            {
+                "fecha": fecha,
+                "resenas": list(grupo),
+            }
+        )
+
+    # --------------------------------------------------------
+    # RESEÑA DEL USUARIO ACTUAL
+    # --------------------------------------------------------
+
+    resena_usuario = None
+
+    if (
+        usuario
+        and usuario.is_authenticated
+    ):
+        resena_usuario = (
+            ProductoResena.objects
+            .filter(
+                producto=producto,
+                usuario=usuario,
+            )
+            .prefetch_related(
+                "imagenes",
+            )
+            .first()
+        )
+
+    # --------------------------------------------------------
+    # ESTADÍSTICAS
+    # --------------------------------------------------------
+
+    cantidad_resenas = (
+        producto.cantidad_resenas
+    )
+
+    promedio_valoracion = (
+        producto.promedio_valoracion
+    )
+
+    distribucion = (
+        producto.distribucion_valoraciones
+    )
+
+    distribucion_resenas = []
+
+    for estrellas in range(
+        5,
+        0,
+        -1,
+    ):
+        total = distribucion.get(
+            estrellas,
+            0,
+        )
+
+        if cantidad_resenas:
+            porcentaje = round(
+                (
+                    total
+                    / cantidad_resenas
+                )
+                * 100
+            )
+        else:
+            porcentaje = 0
+
+        distribucion_resenas.append(
+            {
+                "estrellas": estrellas,
+                "total": total,
+                "porcentaje": porcentaje,
+            }
+        )
+
+    return {
+        "resenas": resenas_lista,
+        "resenas_por_fecha": (
+            resenas_por_fecha
+        ),
+        "resena_usuario": (
+            resena_usuario
+        ),
+        "cantidad_resenas": (
+            cantidad_resenas
+        ),
+        "promedio_valoracion": (
+            promedio_valoracion
+        ),
+        "distribucion_resenas": (
+            distribucion_resenas
+        ),
+    }
+
+
+
 @ensure_csrf_cookie
 def producto_detalle(
     request,
@@ -500,10 +674,10 @@ def producto_detalle(
     producto = get_object_or_404(
         Producto.objects
         .select_related(
-            "categoria"
+            "categoria",
         )
         .prefetch_related(
-            "imagenes"
+            "imagenes",
         ),
         public_id=public_id,
     )
@@ -512,31 +686,42 @@ def producto_detalle(
     # CONTROL DE VISIBILIDAD
     # =========================================================
 
-    if (
-        not producto.activo
-        and not es_administrador_productos(
+    puede_administrar = (
+        es_administrador_productos(
             request.user
         )
+    )
+
+    if (
+        not producto.activo
+        and not puede_administrar
     ):
         return redirect(
             "core:productos"
         )
 
     # =========================================================
-    # CONTEXTO
+    # CONTEXTO BASE
     # =========================================================
 
     contexto = {
-        "producto": (
-            producto
-        ),
+        "producto": producto,
 
         "puede_administrar": (
-            es_administrador_productos(
-                request.user
-            )
+            puede_administrar
         ),
     }
+
+    # =========================================================
+    # RESEÑAS DEL PRODUCTO
+    # =========================================================
+
+    contexto.update(
+        obtener_contexto_resenas(
+            producto=producto,
+            usuario=request.user,
+        )
+    )
 
     # =========================================================
     # RENDER
@@ -12818,4 +13003,489 @@ def error_500(
         request,
         "core/errores/500.html",
         status=500,
+    )
+
+
+
+
+
+
+
+
+
+
+
+# ============================================================
+# GUARDAR / EDITAR RESEÑA
+# ============================================================
+
+@login_required
+@require_POST
+def guardar_resena_producto(
+    request,
+    public_id,
+):
+    producto = get_object_or_404(
+        Producto,
+        public_id=public_id,
+        activo=True,
+    )
+
+    # --------------------------------------------------------
+    # ESTRELLAS
+    # --------------------------------------------------------
+
+    try:
+        estrellas = int(
+            request.POST.get(
+                "estrellas",
+                0,
+            )
+        )
+    except (
+        TypeError,
+        ValueError,
+    ):
+        estrellas = 0
+
+    if estrellas not in (
+        1,
+        2,
+        3,
+        4,
+        5,
+    ):
+        messages.error(
+            request,
+            "Selecciona una valoración entre 1 y 5 estrellas.",
+        )
+
+        return redirect(
+            producto.get_absolute_url()
+            + "#opiniones"
+        )
+
+    # --------------------------------------------------------
+    # COMENTARIO
+    # --------------------------------------------------------
+
+    comentario = (
+        request.POST.get(
+            "comentario",
+            "",
+        ).strip()
+    )
+
+    if not comentario:
+        messages.error(
+            request,
+            "Escribe tu opinión antes de publicar.",
+        )
+
+        return redirect(
+            producto.get_absolute_url()
+            + "#opiniones"
+        )
+
+    if len(comentario) > 2000:
+        messages.error(
+            request,
+            "La opinión no puede superar los 2.000 caracteres.",
+        )
+
+        return redirect(
+            producto.get_absolute_url()
+            + "#opiniones"
+        )
+
+    # --------------------------------------------------------
+    # RESEÑA EXISTENTE
+    # --------------------------------------------------------
+
+    resena = (
+        ProductoResena.objects
+        .filter(
+            producto=producto,
+            usuario=request.user,
+        )
+        .first()
+    )
+
+    # --------------------------------------------------------
+    # IMÁGENES
+    # --------------------------------------------------------
+
+    imagenes = request.FILES.getlist(
+        "imagenes"
+    )
+
+    cantidad_actual = (
+        resena.imagenes.count()
+        if resena
+        else 0
+    )
+
+    if (
+        cantidad_actual
+        + len(imagenes)
+        > 3
+    ):
+        messages.error(
+            request,
+            "Cada opinión puede tener como máximo 3 imágenes.",
+        )
+
+        return redirect(
+            producto.get_absolute_url()
+            + "#opiniones"
+        )
+
+    try:
+        for imagen in imagenes:
+            validar_imagen_resena(
+                imagen
+            )
+
+    except ValidationError as error:
+        messages.error(
+            request,
+            (
+                error.messages[0]
+                if error.messages
+                else "Imagen no válida."
+            ),
+        )
+
+        return redirect(
+            producto.get_absolute_url()
+            + "#opiniones"
+        )
+
+    # --------------------------------------------------------
+    # GUARDAR
+    # --------------------------------------------------------
+
+    creada = (
+        resena is None
+    )
+
+    try:
+        with transaction.atomic():
+
+            if resena is None:
+                resena = ProductoResena(
+                    producto=producto,
+                    usuario=request.user,
+                    estrellas=estrellas,
+                    comentario=comentario,
+                )
+
+            else:
+                resena.estrellas = (
+                    estrellas
+                )
+
+                resena.comentario = (
+                    comentario
+                )
+
+            resena.save()
+
+            siguiente_orden = (
+                resena.imagenes.count()
+            )
+
+            for imagen in imagenes:
+
+                ResenaImagen.objects.create(
+                    resena=resena,
+                    imagen=imagen,
+                    orden=siguiente_orden,
+                )
+
+                siguiente_orden += 1
+
+    except ValidationError as error:
+        messages.error(
+            request,
+            (
+                error.messages[0]
+                if error.messages
+                else "No se pudo guardar la opinión."
+            ),
+        )
+
+        return redirect(
+            producto.get_absolute_url()
+            + "#opiniones"
+        )
+
+    except IntegrityError:
+        messages.error(
+            request,
+            "No fue posible guardar la opinión. Intenta nuevamente.",
+        )
+
+        return redirect(
+            producto.get_absolute_url()
+            + "#opiniones"
+        )
+
+    if creada:
+        messages.success(
+            request,
+            "Tu opinión fue publicada.",
+        )
+    else:
+        messages.success(
+            request,
+            "Tu opinión fue actualizada.",
+        )
+
+    return redirect(
+        producto.get_absolute_url()
+        + "#opiniones"
+    )
+
+
+# ============================================================
+# RESPONDER RESEÑA
+# ============================================================
+
+@login_required
+@require_POST
+def responder_resena_producto(
+    request,
+    resena_id,
+):
+    resena = get_object_or_404(
+        ProductoResena.objects
+        .select_related(
+            "producto",
+        ),
+        pk=resena_id,
+        estado=ProductoResena.Estado.APROBADA,
+        producto__activo=True,
+    )
+
+    comentario = (
+        request.POST.get(
+            "comentario",
+            "",
+        ).strip()
+    )
+
+    if not comentario:
+        messages.error(
+            request,
+            "Escribe una respuesta.",
+        )
+
+        return redirect(
+            resena.producto.get_absolute_url()
+            + f"#resena-{resena.pk}"
+        )
+
+    if len(comentario) > 1500:
+        messages.error(
+            request,
+            "La respuesta no puede superar los 1.500 caracteres.",
+        )
+
+        return redirect(
+            resena.producto.get_absolute_url()
+            + f"#resena-{resena.pk}"
+        )
+
+    try:
+        ResenaRespuesta.objects.create(
+            resena=resena,
+            usuario=request.user,
+            comentario=comentario,
+        )
+
+    except ValidationError as error:
+        messages.error(
+            request,
+            (
+                error.messages[0]
+                if error.messages
+                else "No se pudo publicar la respuesta."
+            ),
+        )
+
+        return redirect(
+            resena.producto.get_absolute_url()
+            + f"#resena-{resena.pk}"
+        )
+
+    messages.success(
+        request,
+        "Respuesta publicada.",
+    )
+
+    return redirect(
+        resena.producto.get_absolute_url()
+        + f"#resena-{resena.pk}"
+    )
+
+
+# ============================================================
+# ELIMINAR IMAGEN DE RESEÑA
+# ============================================================
+
+@login_required
+@require_POST
+def eliminar_imagen_resena(
+    request,
+    imagen_id,
+):
+    imagen = get_object_or_404(
+        ResenaImagen.objects
+        .select_related(
+            "resena",
+            "resena__producto",
+        ),
+        pk=imagen_id,
+        resena__usuario=request.user,
+    )
+
+    producto = (
+        imagen.resena.producto
+    )
+
+    archivo = (
+        imagen.imagen
+    )
+
+    imagen.delete()
+
+    if archivo:
+        try:
+            archivo.delete(
+                save=False,
+            )
+        except Exception:
+            pass
+
+    messages.success(
+        request,
+        "Imagen eliminada.",
+    )
+
+    return redirect(
+        producto.get_absolute_url()
+        + "#opiniones"
+    )
+
+
+
+
+
+# ============================================================
+# CAMBIAR ESTADO DE RESEÑA — ADMINISTRADOR
+# ============================================================
+
+@login_required
+@require_POST
+def cambiar_estado_resena(
+    request,
+    resena_id,
+):
+    # ========================================================
+    # SEGURIDAD
+    # ========================================================
+
+    if not es_administrador_productos(
+        request.user
+    ):
+        raise PermissionDenied
+
+    # ========================================================
+    # OBTENER RESEÑA
+    # ========================================================
+
+    resena = get_object_or_404(
+        ProductoResena.objects
+        .select_related(
+            "producto",
+        ),
+        pk=resena_id,
+    )
+
+    # ========================================================
+    # OBTENER NUEVO ESTADO
+    # ========================================================
+
+    nuevo_estado = (
+        request.POST
+        .get(
+            "estado",
+            "",
+        )
+        .strip()
+    )
+
+    # ========================================================
+    # ESTADOS PERMITIDOS
+    # ========================================================
+
+    estados_permitidos = {
+        ProductoResena.Estado.APROBADA,
+        ProductoResena.Estado.RECHAZADA,
+    }
+
+    if (
+        nuevo_estado
+        not in estados_permitidos
+    ):
+        messages.error(
+            request,
+            "El estado indicado no es válido.",
+        )
+
+        return redirect(
+            resena.producto.get_absolute_url()
+            + f"#resena-{resena.pk}"
+        )
+
+    # ========================================================
+    # CAMBIAR ESTADO
+    # ========================================================
+
+    resena.estado = nuevo_estado
+
+    resena.save(
+        update_fields=[
+            "estado",
+            "actualizado",
+        ]
+    )
+
+    # ========================================================
+    # MENSAJE
+    # ========================================================
+
+    if (
+        nuevo_estado
+        == ProductoResena.Estado.APROBADA
+    ):
+        messages.success(
+            request,
+            "La opinión volvió a publicarse.",
+        )
+
+    else:
+        messages.success(
+            request,
+            "La opinión fue ocultada.",
+        )
+
+    # ========================================================
+    # REDIRECCIÓN
+    # ========================================================
+
+    return redirect(
+        resena.producto.get_absolute_url()
+        + f"#resena-{resena.pk}"
     )

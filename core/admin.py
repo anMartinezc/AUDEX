@@ -2,22 +2,7 @@ from django.contrib import admin
 
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import (
-    CarritoUsuario,
-    Categoria,
-    CodigoDescuento,
-    CorreoPedido,
-    Favorito,
-    MetaFidelidad,
-    Pedido,
-    PedidoHistorialEstado,
-    PedidoItem,
-    Producto,
-    ProductoImagen,
-    SaldoFidelidad,
-    UsoCodigoDescuento,
-)
-
+from .models import *
 
 # ============================================================
 # CONFIGURACIÓN BASE AUDEX + DJANGO UNFOLD
@@ -1437,3 +1422,366 @@ class FavoritoAdmin(
     ordering = (
         "-creado",
     )
+
+
+
+
+# ============================================================
+# RESEÑAS DE PRODUCTOS
+# ============================================================
+
+
+class ResenaImagenInline(TabularInline):
+    model = ResenaImagen
+
+    extra = 0
+
+    max_num = 3
+
+    fields = (
+        "imagen",
+        "orden",
+        "creado",
+    )
+
+    readonly_fields = (
+        "creado",
+    )
+
+    ordering = (
+        "orden",
+        "id",
+    )
+
+
+class ResenaRespuestaInline(TabularInline):
+    model = ResenaRespuesta
+
+    extra = 0
+
+    fields = (
+        "usuario",
+        "comentario",
+        "estado",
+        "creado",
+    )
+
+    readonly_fields = (
+        "usuario",
+        "comentario",
+        "creado",
+    )
+
+    ordering = (
+        "creado",
+        "id",
+    )
+
+
+@admin.register(ProductoResena)
+class ProductoResenaAdmin(
+    AudexModelAdmin
+):
+    list_display = (
+        "producto",
+        "nombre_usuario_admin",
+        "estrellas_admin",
+        "compra_verificada",
+        "cantidad_imagenes_admin",
+        "cantidad_respuestas_admin",
+        "estado",
+        "creado",
+    )
+
+    list_filter = (
+        "estrellas",
+        "compra_verificada",
+        "estado",
+        "creado",
+    )
+
+    search_fields = (
+        "producto__nombre",
+        "usuario__username",
+        "usuario__email",
+        "usuario__first_name",
+        "usuario__last_name",
+        "comentario",
+    )
+
+    readonly_fields = (
+        "producto",
+        "usuario",
+        "estrellas",
+        "comentario",
+        "compra_verificada",
+        "nombre_usuario_admin",
+        "cantidad_imagenes_admin",
+        "cantidad_respuestas_admin",
+        "creado",
+        "actualizado",
+    )
+
+    list_select_related = (
+        "producto",
+        "usuario",
+    )
+
+    inlines = (
+        ResenaImagenInline,
+        ResenaRespuestaInline,
+    )
+
+    ordering = (
+        "-creado",
+    )
+
+    date_hierarchy = "creado"
+
+    list_per_page = 50
+
+    fieldsets = (
+        (
+            "Reseña",
+            {
+                "fields": (
+                    "producto",
+                    "usuario",
+                    "nombre_usuario_admin",
+                    "estrellas",
+                    "comentario",
+                ),
+            },
+        ),
+
+        (
+            "Verificación",
+            {
+                "fields": (
+                    "compra_verificada",
+                    "cantidad_imagenes_admin",
+                    "cantidad_respuestas_admin",
+                ),
+            },
+        ),
+
+        (
+            "Moderación",
+            {
+                "fields": (
+                    "estado",
+                ),
+            },
+        ),
+
+        (
+            "Auditoría",
+            {
+                "fields": (
+                    "creado",
+                    "actualizado",
+                ),
+                "classes": (
+                    "collapse",
+                ),
+            },
+        ),
+    )
+
+    @admin.display(
+        description="Usuario",
+    )
+    def nombre_usuario_admin(
+        self,
+        obj,
+    ):
+        return obj.nombre_publico
+
+    @admin.display(
+        description="Valoración",
+    )
+    def estrellas_admin(
+        self,
+        obj,
+    ):
+        return (
+            "★" * obj.estrellas
+            + "☆" * (5 - obj.estrellas)
+        )
+
+    @admin.display(
+        description="Imágenes",
+    )
+    def cantidad_imagenes_admin(
+        self,
+        obj,
+    ):
+        if not obj.pk:
+            return 0
+
+        return obj.imagenes.count()
+
+    @admin.display(
+        description="Respuestas",
+    )
+    def cantidad_respuestas_admin(
+        self,
+        obj,
+    ):
+        if not obj.pk:
+            return 0
+
+        return obj.respuestas.count()
+
+    def has_add_permission(
+        self,
+        request,
+    ):
+        # Las reseñas deben ser creadas
+        # por los clientes desde la tienda.
+        return False
+
+
+# ============================================================
+# IMÁGENES DE RESEÑAS
+# ============================================================
+
+
+@admin.register(ResenaImagen)
+class ResenaImagenAdmin(
+    AudexModelAdmin
+):
+    list_display = (
+        "resena",
+        "producto_admin",
+        "orden",
+        "creado",
+    )
+
+    search_fields = (
+        "resena__producto__nombre",
+        "resena__usuario__username",
+        "resena__usuario__email",
+    )
+
+    readonly_fields = (
+        "resena",
+        "imagen",
+        "orden",
+        "creado",
+    )
+
+    list_select_related = (
+        "resena",
+        "resena__producto",
+        "resena__usuario",
+    )
+
+    ordering = (
+        "-creado",
+    )
+
+    @admin.display(
+        description="Producto",
+    )
+    def producto_admin(
+        self,
+        obj,
+    ):
+        return obj.resena.producto
+
+    def has_add_permission(
+        self,
+        request,
+    ):
+        return False
+
+
+# ============================================================
+# RESPUESTAS A RESEÑAS
+# ============================================================
+
+
+@admin.register(ResenaRespuesta)
+class ResenaRespuestaAdmin(
+    AudexModelAdmin
+):
+    list_display = (
+        "producto_admin",
+        "nombre_usuario_admin",
+        "equipo_oficial_admin",
+        "estado",
+        "creado",
+    )
+
+    list_filter = (
+        "estado",
+        "creado",
+    )
+
+    search_fields = (
+        "resena__producto__nombre",
+        "usuario__username",
+        "usuario__email",
+        "usuario__first_name",
+        "usuario__last_name",
+        "comentario",
+    )
+
+    readonly_fields = (
+        "resena",
+        "usuario",
+        "comentario",
+        "nombre_usuario_admin",
+        "equipo_oficial_admin",
+        "creado",
+        "actualizado",
+    )
+
+    list_select_related = (
+        "resena",
+        "resena__producto",
+        "usuario",
+    )
+
+    ordering = (
+        "-creado",
+    )
+
+    date_hierarchy = "creado"
+
+    @admin.display(
+        description="Producto",
+    )
+    def producto_admin(
+        self,
+        obj,
+    ):
+        return obj.resena.producto
+
+    @admin.display(
+        description="Usuario",
+    )
+    def nombre_usuario_admin(
+        self,
+        obj,
+    ):
+        return obj.nombre_publico
+
+    @admin.display(
+        boolean=True,
+        description="Equipo AUDEX",
+    )
+    def equipo_oficial_admin(
+        self,
+        obj,
+    ):
+        return obj.es_equipo_oficial
+
+    def has_add_permission(
+        self,
+        request,
+    ):
+        # Las respuestas normales se publican
+        # desde la tienda.
+        return False

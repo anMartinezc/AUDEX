@@ -1,6 +1,5 @@
 import uuid
 from decimal import Decimal
-from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -22,6 +21,159 @@ VALIDADOR_CODIGO_DESCUENTO = RegexValidator(
         "números, guiones y guiones bajos."
     ),
 )
+
+
+# =============================================================================
+# RESEÑAS DE PRODUCTOS
+# =============================================================================
+
+MAX_IMAGENES_POR_RESENA = 3
+MAX_TAMANO_IMAGEN_RESENA = 5 * 1024 * 1024
+EXTENSIONES_IMAGEN_RESENA = {
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+}
+
+
+def validar_imagen_resena(imagen):
+    """
+    Valida las imágenes adjuntas a las reseñas.
+
+    - Máximo 5 MB por archivo.
+    - Formatos permitidos: JPG, JPEG, PNG y WEBP.
+    """
+
+    if not imagen:
+        return
+
+    nombre = str(
+        getattr(
+            imagen,
+            "name",
+            "",
+        )
+        or ""
+    ).lower()
+
+    extension = (
+        nombre.rsplit(".", 1)[-1]
+        if "." in nombre
+        else ""
+    )
+
+    if extension not in EXTENSIONES_IMAGEN_RESENA:
+        raise ValidationError(
+            "Formato de imagen no permitido. "
+            "Utiliza JPG, JPEG, PNG o WEBP."
+        )
+
+    tamano = getattr(
+        imagen,
+        "size",
+        None,
+    )
+
+    if (
+        tamano is not None
+        and tamano > MAX_TAMANO_IMAGEN_RESENA
+    ):
+        raise ValidationError(
+            "Cada imagen puede pesar como máximo 5 MB."
+        )
+
+
+def ruta_imagen_resena(
+    instancia,
+    nombre_archivo,
+):
+    """
+    Guarda las imágenes de reseñas en una ruta independiente
+    de las imágenes del catálogo.
+    """
+
+    nombre = str(
+        nombre_archivo
+        or ""
+    )
+
+    extension = (
+        nombre.rsplit(".", 1)[-1].lower()
+        if "." in nombre
+        else "jpg"
+    )
+
+    if extension not in EXTENSIONES_IMAGEN_RESENA:
+        extension = "jpg"
+
+    identificador_resena = (
+        instancia.resena_id
+        or "nueva"
+    )
+
+    return (
+        "resenas/"
+        f"{identificador_resena}/"
+        f"{uuid.uuid4().hex}.{extension}"
+    )
+
+
+def nombre_publico_usuario(usuario):
+    """
+    Devuelve un nombre público corto sin exponer el correo.
+
+    Ejemplos:
+        Antonio Martínez -> Antonio M.
+        Camila -> Camila
+    """
+
+    if not usuario:
+        return "Cliente AUDEX"
+
+    nombre = str(
+        getattr(
+            usuario,
+            "first_name",
+            "",
+        )
+        or ""
+    ).strip()
+
+    apellido = str(
+        getattr(
+            usuario,
+            "last_name",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if nombre:
+        if apellido:
+            return (
+                f"{nombre} "
+                f"{apellido[0].upper()}."
+            )
+
+        return nombre
+
+    username = str(
+        getattr(
+            usuario,
+            "username",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if (
+        username
+        and "@" not in username
+    ):
+        return username
+
+    return "Cliente AUDEX"
 
 
 class Categoria(models.Model):
@@ -554,6 +706,135 @@ class Producto(models.Model):
             )
 
         return cantidad
+
+    # =========================================================
+    # RESEÑAS
+    # =========================================================
+
+    @property
+    def cantidad_resenas(self):
+        """
+        Cantidad de opiniones principales visibles.
+
+        Las respuestas a una reseña no aumentan este contador.
+        """
+
+        if not self.pk:
+            return 0
+
+        return (
+            self.resenas
+            .filter(
+                estado="aprobada",
+            )
+            .count()
+        )
+
+    @property
+    def promedio_valoracion(self):
+        """
+        Promedio de estrellas de las reseñas aprobadas.
+        Se devuelve con un decimal.
+        """
+
+        if not self.pk:
+            return 0.0
+
+        promedio = (
+            self.resenas
+            .filter(
+                estado="aprobada",
+            )
+            .aggregate(
+                promedio=models.Avg(
+                    "estrellas"
+                ),
+            )
+            .get(
+                "promedio"
+            )
+        )
+
+        if promedio is None:
+            return 0.0
+
+        return round(
+            float(promedio),
+            1,
+        )
+
+    @property
+    def distribucion_valoraciones(self):
+        """
+        Retorna un diccionario con el total por número de estrellas.
+
+        Ejemplo:
+            {
+                5: 12,
+                4: 3,
+                3: 1,
+                2: 0,
+                1: 0,
+            }
+        """
+
+        distribucion = {
+            5: 0,
+            4: 0,
+            3: 0,
+            2: 0,
+            1: 0,
+        }
+
+        if not self.pk:
+            return distribucion
+
+        filas = (
+            self.resenas
+            .filter(
+                estado="aprobada",
+            )
+            .values(
+                "estrellas",
+            )
+            .annotate(
+                total=models.Count(
+                    "id"
+                ),
+            )
+        )
+
+        for fila in filas:
+            distribucion[
+                int(
+                    fila["estrellas"]
+                )
+            ] = fila["total"]
+
+        return distribucion
+
+    @property
+    def cantidad_respuestas_resenas(self):
+        """
+        Total de respuestas visibles en las reseñas del producto.
+        """
+
+        if not self.pk:
+            return 0
+
+        return (
+            ResenaRespuesta.objects
+            .filter(
+                resena__producto=self,
+                resena__estado=(
+                    ProductoResena.Estado.APROBADA
+                ),
+                estado=(
+                    ResenaRespuesta.Estado.APROBADA
+                ),
+            )
+            .count()
+        )
 
     # =========================================================
     # STOCK
@@ -2108,6 +2389,532 @@ class PedidoItem(models.Model):
         return (
             self.descuento_producto_unitario
             * self.cantidad
+        )
+
+
+
+# =============================================================================
+# RESEÑAS DE PRODUCTOS
+# =============================================================================
+
+
+class ProductoResena(models.Model):
+
+    class Estado(models.TextChoices):
+        PENDIENTE = (
+            "pendiente",
+            "Pendiente",
+        )
+
+        APROBADA = (
+            "aprobada",
+            "Aprobada",
+        )
+
+        RECHAZADA = (
+            "rechazada",
+            "Rechazada",
+        )
+
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        related_name="resenas",
+        verbose_name="Producto",
+    )
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="resenas_productos",
+        verbose_name="Usuario",
+    )
+
+    estrellas = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5),
+        ],
+        db_index=True,
+        verbose_name="Valoración",
+        help_text=(
+            "Valoración entre 1 y 5 estrellas."
+        ),
+    )
+
+    comentario = models.TextField(
+        max_length=2000,
+        verbose_name="Comentario",
+        help_text=(
+            "Máximo 2.000 caracteres."
+        ),
+    )
+
+    compra_verificada = models.BooleanField(
+        default=False,
+        editable=False,
+        db_index=True,
+        verbose_name="Compra verificada",
+        help_text=(
+            "Se calcula automáticamente "
+            "a partir de los pedidos pagados."
+        ),
+    )
+
+    estado = models.CharField(
+        max_length=12,
+        choices=Estado.choices,
+        default=Estado.APROBADA,
+        db_index=True,
+        verbose_name="Estado",
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+        verbose_name="Creado",
+    )
+
+    actualizado = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Actualizado",
+    )
+
+    class Meta:
+        verbose_name = "Reseña de producto"
+        verbose_name_plural = "Reseñas de productos"
+
+        ordering = [
+            "-creado",
+            "-id",
+        ]
+
+        indexes = [
+            models.Index(
+                fields=[
+                    "producto",
+                    "estado",
+                    "creado",
+                ],
+                name="resena_prod_estado_fecha_idx",
+            ),
+
+            models.Index(
+                fields=[
+                    "usuario",
+                    "creado",
+                ],
+                name="resena_usuario_fecha_idx",
+            ),
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "producto",
+                    "usuario",
+                ],
+                name="resena_usuario_producto_unica",
+            ),
+
+            models.CheckConstraint(
+                condition=Q(
+                    estrellas__gte=1,
+                    estrellas__lte=5,
+                ),
+                name="resena_estrellas_1_5",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.producto.nombre} · "
+            f"{self.nombre_publico} · "
+            f"{self.estrellas}/5"
+        )
+
+    def clean(self):
+        super().clean()
+
+        errores = {}
+
+        self.comentario = str(
+            self.comentario
+            or ""
+        ).strip()
+
+        if not self.comentario:
+            errores["comentario"] = (
+                "Escribe un comentario para publicar "
+                "la reseña."
+            )
+
+        if (
+            self.estrellas is not None
+            and not 1 <= self.estrellas <= 5
+        ):
+            errores["estrellas"] = (
+                "La valoración debe estar "
+                "entre 1 y 5 estrellas."
+            )
+
+        if errores:
+            raise ValidationError(
+                errores
+            )
+
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ):
+        self.comentario = str(
+            self.comentario
+            or ""
+        ).strip()
+
+        self.compra_verificada = (
+            self._calcular_compra_verificada()
+        )
+
+        self.full_clean()
+
+        return super().save(
+            *args,
+            **kwargs,
+        )
+
+    def _calcular_compra_verificada(self):
+        """
+        Una reseña se considera compra verificada cuando existe
+        al menos un pedido pagado y aprobado del usuario que
+        contenga este mismo producto.
+        """
+
+        if (
+            not self.usuario_id
+            or not self.producto_id
+        ):
+            return False
+
+        return (
+            PedidoItem.objects
+            .filter(
+                producto_id=self.producto_id,
+                pedido__usuario_id=self.usuario_id,
+                pedido__pagado=True,
+                pedido__estado_pago=(
+                    Pedido.EstadoPago.APROBADO
+                ),
+            )
+            .exists()
+        )
+
+    def actualizar_compra_verificada(
+        self,
+        guardar=True,
+    ):
+        """
+        Permite volver a sincronizar la insignia si el estado
+        de una compra cambia después de publicar la reseña.
+        """
+
+        nuevo_valor = (
+            self._calcular_compra_verificada()
+        )
+
+        cambio = (
+            nuevo_valor
+            != self.compra_verificada
+        )
+
+        self.compra_verificada = (
+            nuevo_valor
+        )
+
+        if (
+            cambio
+            and guardar
+            and self.pk
+        ):
+            type(self).objects.filter(
+                pk=self.pk,
+            ).update(
+                compra_verificada=(
+                    nuevo_valor
+                ),
+            )
+
+        return nuevo_valor
+
+    @property
+    def nombre_publico(self):
+        return nombre_publico_usuario(
+            self.usuario
+        )
+
+    @property
+    def es_equipo_oficial(self):
+        return bool(
+            self.usuario_id
+            and getattr(
+                self.usuario,
+                "is_staff",
+                False,
+            )
+        )
+
+    @property
+    def cantidad_imagenes(self):
+        if not self.pk:
+            return 0
+
+        return self.imagenes.count()
+
+    @property
+    def puede_agregar_imagenes(self):
+        return (
+            self.cantidad_imagenes
+            < MAX_IMAGENES_POR_RESENA
+        )
+
+
+class ResenaImagen(models.Model):
+
+    resena = models.ForeignKey(
+        ProductoResena,
+        on_delete=models.CASCADE,
+        related_name="imagenes",
+        verbose_name="Reseña",
+    )
+
+    imagen = models.ImageField(
+        upload_to=ruta_imagen_resena,
+        validators=[
+            validar_imagen_resena,
+        ],
+        verbose_name="Imagen",
+        help_text=(
+            "JPG, JPEG, PNG o WEBP. "
+            "Máximo 5 MB."
+        ),
+    )
+
+    orden = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Orden",
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "Imagen de reseña"
+        verbose_name_plural = "Imágenes de reseñas"
+
+        ordering = [
+            "orden",
+            "id",
+        ]
+
+        indexes = [
+            models.Index(
+                fields=[
+                    "resena",
+                    "orden",
+                ],
+                name="resena_imagen_orden_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"Imagen de reseña #{self.resena_id}"
+        )
+
+    def clean(self):
+        super().clean()
+
+        if (
+            self.resena_id
+            and not self.pk
+        ):
+            cantidad_actual = (
+                ResenaImagen.objects
+                .filter(
+                    resena_id=self.resena_id,
+                )
+                .count()
+            )
+
+            if (
+                cantidad_actual
+                >= MAX_IMAGENES_POR_RESENA
+            ):
+                raise ValidationError(
+                    {
+                        "imagen": (
+                            "Cada reseña puede tener "
+                            "como máximo 3 imágenes."
+                        ),
+                    }
+                )
+
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ):
+        self.full_clean()
+
+        return super().save(
+            *args,
+            **kwargs,
+        )
+
+
+class ResenaRespuesta(models.Model):
+
+    class Estado(models.TextChoices):
+        PENDIENTE = (
+            "pendiente",
+            "Pendiente",
+        )
+
+        APROBADA = (
+            "aprobada",
+            "Aprobada",
+        )
+
+        RECHAZADA = (
+            "rechazada",
+            "Rechazada",
+        )
+
+    resena = models.ForeignKey(
+        ProductoResena,
+        on_delete=models.CASCADE,
+        related_name="respuestas",
+        verbose_name="Reseña",
+    )
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="respuestas_resenas",
+        verbose_name="Usuario",
+    )
+
+    comentario = models.TextField(
+        max_length=1500,
+        verbose_name="Respuesta",
+        help_text=(
+            "Máximo 1.500 caracteres."
+        ),
+    )
+
+    estado = models.CharField(
+        max_length=12,
+        choices=Estado.choices,
+        default=Estado.APROBADA,
+        db_index=True,
+        verbose_name="Estado",
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    actualizado = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Respuesta a reseña"
+        verbose_name_plural = "Respuestas a reseñas"
+
+        ordering = [
+            "creado",
+            "id",
+        ]
+
+        indexes = [
+            models.Index(
+                fields=[
+                    "resena",
+                    "estado",
+                    "creado",
+                ],
+                name="respuesta_resena_estado_idx",
+            ),
+
+            models.Index(
+                fields=[
+                    "usuario",
+                    "creado",
+                ],
+                name="respuesta_usuario_fecha_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"Respuesta de "
+            f"{self.nombre_publico} "
+            f"en reseña #{self.resena_id}"
+        )
+
+    def clean(self):
+        super().clean()
+
+        self.comentario = str(
+            self.comentario
+            or ""
+        ).strip()
+
+        if not self.comentario:
+            raise ValidationError(
+                {
+                    "comentario": (
+                        "Escribe una respuesta."
+                    ),
+                }
+            )
+
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ):
+        self.comentario = str(
+            self.comentario
+            or ""
+        ).strip()
+
+        self.full_clean()
+
+        return super().save(
+            *args,
+            **kwargs,
+        )
+
+    @property
+    def nombre_publico(self):
+        return nombre_publico_usuario(
+            self.usuario
+        )
+
+    @property
+    def es_equipo_oficial(self):
+        return bool(
+            self.usuario_id
+            and getattr(
+                self.usuario,
+                "is_staff",
+                False,
+            )
         )
 
 

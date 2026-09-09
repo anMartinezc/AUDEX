@@ -465,4 +465,28 @@ path(
         views.politica_cookies,
         name="politica_cookies",
     ),
+
+    path(
+    "productos/<uuid:public_id>/resena/",
+    views.guardar_resena_producto,
+    name="guardar_resena_producto",
+    ),
+
+    path(
+        "resenas/<int:resena_id>/responder/",
+        views.responder_resena_producto,
+        name="responder_resena_producto",
+    ),
+
+    path(
+        "resenas/imagenes/<int:imagen_id>/eliminar/",
+        views.eliminar_imagen_resena,
+        name="eliminar_imagen_resena",
+    ),
+
+    path(
+    "resenas/<int:resena_id>/estado/",
+    views.cambiar_estado_resena,
+    name="cambiar_estado_resena",
+    ),
 ]

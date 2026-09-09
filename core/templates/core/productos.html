@@ -28,6 +28,66 @@ Productos | Audex
         font: inherit;
         cursor: pointer;
     }
+
+    .producto-card__valoracion {
+        width: fit-content;
+        max-width: 100%;
+        margin-top: 8px;
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        color: var(--color-gris);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .producto-card__valoracion:hover {
+        color: var(--color-gris-claro);
+        transform: translateY(-1px);
+    }
+
+    .producto-card__valoracion-estrellas {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        color: #ffd166;
+        font-size: 0.76rem;
+    }
+
+    .producto-card__valoracion-estrellas i {
+        line-height: 1;
+    }
+
+    .producto-card__valoracion > strong {
+        color: var(--color-blanco);
+        font-size: 0.69rem;
+        font-weight: 800;
+    }
+
+    .producto-card__valoracion-cantidad {
+        color: var(--color-gris);
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    @media (max-width: 650px) {
+        .producto-card__valoracion {
+            margin-top: 7px;
+            gap: 5px;
+            font-size: 0.64rem;
+        }
+
+        .producto-card__valoracion-estrellas {
+            font-size: 0.72rem;
+        }
+
+        .producto-card__valoracion-cantidad {
+            font-size: 0.62rem;
+        }
+    }
 </style>
 
 {% endblock %}
@@ -828,6 +888,57 @@ Productos | Audex
                                         </a>
 
                                     </h2>
+
+
+                                    <!-- =====================================
+                                         VALORACIÓN / RESEÑAS
+                                    ====================================== -->
+
+                                    {% with promedio=producto.promedio_valoracion cantidad=producto.cantidad_resenas %}
+
+                                        <a
+                                            href="{{ producto.get_absolute_url }}#opiniones"
+                                            class="producto-card__valoracion"
+                                            aria-label="Ver opiniones de {{ producto.nombre }}"
+                                        >
+
+                                            <span
+                                                class="producto-card__valoracion-estrellas"
+                                                aria-hidden="true"
+                                            >
+                                                <i class="bi {% if promedio >= 1 %}bi-star-fill{% elif promedio >= 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if promedio >= 2 %}bi-star-fill{% elif promedio >= 1.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if promedio >= 3 %}bi-star-fill{% elif promedio >= 2.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if promedio >= 4 %}bi-star-fill{% elif promedio >= 3.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if promedio >= 5 %}bi-star-fill{% elif promedio >= 4.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                            </span>
+
+                                            {% if cantidad %}
+
+                                                <strong>
+                                                    {{ promedio|floatformat:1 }}
+                                                </strong>
+
+                                                <span class="producto-card__valoracion-cantidad">
+                                                    {{ cantidad }}
+                                                    {% if cantidad == 1 %}
+                                                        opinión
+                                                    {% else %}
+                                                        opiniones
+                                                    {% endif %}
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="producto-card__valoracion-cantidad">
+                                                    Sin opiniones
+                                                </span>
+
+                                            {% endif %}
+
+                                        </a>
+
+                                    {% endwith %}
 
 
 

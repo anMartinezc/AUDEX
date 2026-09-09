@@ -378,6 +378,69 @@
                     </h1>
 
 
+                    <!-- =============================================
+                         RESUMEN DE OPINIONES
+                    ============================================== -->
+                    <a
+                        href="#opiniones"
+                        class="detalle-valoracion-resumen"
+                        aria-label="Ver opiniones de {{ producto.nombre }}"
+                    >
+
+                        <span
+                            class="detalle-valoracion-resumen__estrellas"
+                            aria-hidden="true"
+                        >
+                            {% if cantidad_resenas %}
+
+                                <i class="bi {% if promedio_valoracion >= 1 %}bi-star-fill{% elif promedio_valoracion >= 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                <i class="bi {% if promedio_valoracion >= 2 %}bi-star-fill{% elif promedio_valoracion >= 1.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                <i class="bi {% if promedio_valoracion >= 3 %}bi-star-fill{% elif promedio_valoracion >= 2.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                <i class="bi {% if promedio_valoracion >= 4 %}bi-star-fill{% elif promedio_valoracion >= 3.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                                <i class="bi {% if promedio_valoracion >= 5 %}bi-star-fill{% elif promedio_valoracion >= 4.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+
+                            {% else %}
+
+                                <i class="bi bi-star"></i>
+                                <i class="bi bi-star"></i>
+                                <i class="bi bi-star"></i>
+                                <i class="bi bi-star"></i>
+                                <i class="bi bi-star"></i>
+
+                            {% endif %}
+                        </span>
+
+                        {% if cantidad_resenas %}
+
+                            <strong>
+                                {{ promedio_valoracion|floatformat:1 }}
+                            </strong>
+
+                            <span>
+                                {{ cantidad_resenas }}
+                                {% if cantidad_resenas == 1 %}
+                                    opinión
+                                {% else %}
+                                    opiniones
+                                {% endif %}
+                            </span>
+
+                        {% else %}
+
+                            <span>
+                                Sé el primero en opinar
+                            </span>
+
+                        {% endif %}
+
+                        <i
+                            class="bi bi-chevron-down"
+                            aria-hidden="true"
+                        ></i>
+
+                    </a>
+
+
                     <!-- DESCRIPCIÓN CORTA -->
                     {% if producto.descripcion_corta %}
 
@@ -991,6 +1054,847 @@
             </section>
 
         </div>
+
+
+        <!-- =====================================================
+             OPINIONES DE CLIENTES
+        ====================================================== -->
+        <section
+            class="detalle-opiniones"
+            id="opiniones"
+            aria-labelledby="tituloOpiniones"
+        >
+
+            <!-- =============================================
+                 CABECERA DE OPINIONES
+            ============================================== -->
+            <div class="detalle-opiniones__cabecera">
+
+                <div>
+
+                    <span class="etiqueta-seccion">
+                        Opiniones de clientes
+                    </span>
+
+                    <h2 id="tituloOpiniones">
+                        ¿Qué opinan quienes lo han probado?
+                    </h2>
+
+                    <p>
+                        Revisa experiencias de otros clientes o
+                        comparte la tuya si ya conoces este producto.
+                    </p>
+
+                </div>
+
+                {% if cantidad_resenas %}
+
+                    <a
+                        href="#listaOpiniones"
+                        class="detalle-opiniones__ver-todas"
+                    >
+                        Ver opiniones
+
+                        <i class="bi bi-arrow-down"></i>
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =============================================
+                 RESUMEN Y DISTRIBUCIÓN
+            ============================================== -->
+            <div class="detalle-opiniones__resumen-grid">
+
+                <article class="detalle-opiniones__promedio">
+
+                    {% if cantidad_resenas %}
+
+                        <strong class="detalle-opiniones__nota">
+                            {{ promedio_valoracion|floatformat:1 }}
+                        </strong>
+
+                        <div
+                            class="detalle-opiniones__estrellas-grandes"
+                            aria-label="Valoración promedio: {{ promedio_valoracion|floatformat:1 }} de 5"
+                        >
+                            <i class="bi {% if promedio_valoracion >= 1 %}bi-star-fill{% elif promedio_valoracion >= 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                            <i class="bi {% if promedio_valoracion >= 2 %}bi-star-fill{% elif promedio_valoracion >= 1.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                            <i class="bi {% if promedio_valoracion >= 3 %}bi-star-fill{% elif promedio_valoracion >= 2.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                            <i class="bi {% if promedio_valoracion >= 4 %}bi-star-fill{% elif promedio_valoracion >= 3.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                            <i class="bi {% if promedio_valoracion >= 5 %}bi-star-fill{% elif promedio_valoracion >= 4.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        </div>
+
+                        <span>
+                            Basado en
+                            {{ cantidad_resenas }}
+                            {% if cantidad_resenas == 1 %}
+                                opinión
+                            {% else %}
+                                opiniones
+                            {% endif %}
+                        </span>
+
+                    {% else %}
+
+                        <div class="detalle-opiniones__sin-promedio">
+
+                            <i class="bi bi-chat-square-heart"></i>
+
+                            <strong>
+                                Aún no hay opiniones
+                            </strong>
+
+                            <span>
+                                Sé el primero en compartir tu experiencia.
+                            </span>
+
+                        </div>
+
+                    {% endif %}
+
+                </article>
+
+
+                <div class="detalle-opiniones__distribucion">
+
+                    {% for fila in distribucion_resenas %}
+
+                        <div class="detalle-opiniones__distribucion-fila">
+
+                            <span class="detalle-opiniones__distribucion-estrellas">
+                                {{ fila.estrellas }}
+                                <i class="bi bi-star-fill"></i>
+                            </span>
+
+                            <div
+                                class="detalle-opiniones__barra"
+                                role="progressbar"
+                                aria-label="{{ fila.estrellas }} estrellas"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                aria-valuenow="{{ fila.porcentaje }}"
+                            >
+                                <span
+                                    style="width: {{ fila.porcentaje }}%;"
+                                ></span>
+                            </div>
+
+                            <span class="detalle-opiniones__distribucion-total">
+                                {{ fila.total }}
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 FORMULARIO / ESTADO DEL USUARIO
+            ============================================== -->
+            <div class="detalle-opiniones__publicar">
+
+                {% if puede_administrar %}
+
+                    <div class="detalle-opiniones__aviso detalle-opiniones__aviso--admin">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <div>
+                            <strong>
+                                Equipo AUDEX
+                            </strong>
+
+                            <p>
+                                Desde tu cuenta administrativa puedes
+                                responder, ocultar o volver a publicar las
+                                opiniones de los clientes.
+                            </p>
+                        </div>
+
+                    </div>
+
+                {% elif request.user.is_authenticated %}
+
+                    <div class="detalle-opiniones__formulario-contenedor">
+
+                        <div class="detalle-opiniones__formulario-titulo">
+
+                            <div>
+                                <span>
+                                    {% if resena_usuario %}
+                                        Tu opinión
+                                    {% else %}
+                                        Comparte tu experiencia
+                                    {% endif %}
+                                </span>
+
+                                <h3>
+                                    {% if resena_usuario %}
+                                        Edita tu valoración
+                                    {% else %}
+                                        Valora este producto
+                                    {% endif %}
+                                </h3>
+                            </div>
+
+                            {% if resena_usuario.compra_verificada %}
+
+                                <span class="detalle-opinion__verificada">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                    Compra verificada
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- IMÁGENES YA SUBIDAS -->
+                        {% if resena_usuario and resena_usuario.imagenes.all %}
+
+                            <div class="detalle-opiniones__imagenes-actuales">
+
+                                <span>
+                                    Fotos actuales
+                                </span>
+
+                                <div class="detalle-opiniones__imagenes-actuales-grid">
+
+                                    {% for foto in resena_usuario.imagenes.all %}
+
+                                        <div class="detalle-opiniones__imagen-actual">
+
+                                            <a
+                                                href="{{ foto.imagen.url }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                aria-label="Abrir foto de tu reseña"
+                                            >
+                                                <img
+                                                    src="{{ foto.imagen.url }}"
+                                                    alt="Foto de tu opinión sobre {{ producto.nombre }}"
+                                                    loading="lazy"
+                                                >
+                                            </a>
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'core:eliminar_imagen_resena' imagen_id=foto.id %}"
+                                            >
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    aria-label="Eliminar foto de la reseña"
+                                                    title="Eliminar foto"
+                                                >
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <form
+                            method="post"
+                            action="{% url 'core:guardar_resena_producto' public_id=producto.public_id %}"
+                            enctype="multipart/form-data"
+                            class="detalle-opiniones__formulario"
+                        >
+                            {% csrf_token %}
+
+
+                            <!-- ESTRELLAS -->
+                            <fieldset class="detalle-opiniones__campo">
+
+                                <legend>
+                                    Tu valoración
+                                </legend>
+
+                                <div
+                                    class="detalle-opiniones__selector-estrellas"
+                                    aria-label="Selecciona entre 1 y 5 estrellas"
+                                >
+
+                                    <input
+                                        type="radio"
+                                        name="estrellas"
+                                        id="estrella5"
+                                        value="5"
+                                        {% if resena_usuario.estrellas == 5 %}checked{% endif %}
+                                        required
+                                    >
+                                    <label for="estrella5" title="5 estrellas">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span class="visually-hidden">5 estrellas</span>
+                                    </label>
+
+                                    <input
+                                        type="radio"
+                                        name="estrellas"
+                                        id="estrella4"
+                                        value="4"
+                                        {% if resena_usuario.estrellas == 4 %}checked{% endif %}
+                                    >
+                                    <label for="estrella4" title="4 estrellas">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span class="visually-hidden">4 estrellas</span>
+                                    </label>
+
+                                    <input
+                                        type="radio"
+                                        name="estrellas"
+                                        id="estrella3"
+                                        value="3"
+                                        {% if resena_usuario.estrellas == 3 %}checked{% endif %}
+                                    >
+                                    <label for="estrella3" title="3 estrellas">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span class="visually-hidden">3 estrellas</span>
+                                    </label>
+
+                                    <input
+                                        type="radio"
+                                        name="estrellas"
+                                        id="estrella2"
+                                        value="2"
+                                        {% if resena_usuario.estrellas == 2 %}checked{% endif %}
+                                    >
+                                    <label for="estrella2" title="2 estrellas">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span class="visually-hidden">2 estrellas</span>
+                                    </label>
+
+                                    <input
+                                        type="radio"
+                                        name="estrellas"
+                                        id="estrella1"
+                                        value="1"
+                                        {% if resena_usuario.estrellas == 1 %}checked{% endif %}
+                                    >
+                                    <label for="estrella1" title="1 estrella">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span class="visually-hidden">1 estrella</span>
+                                    </label>
+
+                                </div>
+
+                            </fieldset>
+
+
+                            <!-- COMENTARIO -->
+                            <div class="detalle-opiniones__campo">
+
+                                <label for="comentarioResena">
+                                    Tu opinión
+                                </label>
+
+                                <textarea
+                                    name="comentario"
+                                    id="comentarioResena"
+                                    rows="5"
+                                    maxlength="2000"
+                                    placeholder="Cuéntanos qué te gustó, cómo lo utilizas o qué destacarías de este producto."
+                                    required
+                                >{% if resena_usuario %}{{ resena_usuario.comentario }}{% endif %}</textarea>
+
+                                <small>
+                                    Máximo 2.000 caracteres.
+                                </small>
+
+                            </div>
+
+
+                            <!-- IMÁGENES -->
+                            <div class="detalle-opiniones__campo">
+
+                                <label for="imagenesResena">
+                                    Agregar fotos
+                                    <span>
+                                        Opcional
+                                    </span>
+                                </label>
+
+                                <input
+                                    type="file"
+                                    name="imagenes"
+                                    id="imagenesResena"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    multiple
+                                >
+
+                                <small>
+                                    Puedes tener hasta 3 imágenes por opinión.
+                                    Formatos JPG, PNG o WebP. Máximo 5 MB por foto.
+                                </small>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="detalle-opiniones__publicar-boton"
+                            >
+                                <i class="bi bi-send"></i>
+
+                                {% if resena_usuario %}
+                                    Guardar cambios
+                                {% else %}
+                                    Publicar opinión
+                                {% endif %}
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="detalle-opiniones__aviso detalle-opiniones__aviso--login">
+
+                        <div class="detalle-opiniones__aviso-icono">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+
+                        <div>
+                            <strong>
+                                ¿Quieres compartir tu opinión?
+                            </strong>
+
+                            <p>
+                                Inicia sesión para valorar el producto,
+                                subir fotos y responder a otros clientes.
+                            </p>
+                        </div>
+
+                        <a
+                            href="{% url 'core:login' %}?next={{ request.get_full_path|urlencode }}%23opiniones"
+                            class="detalle-opiniones__login-boton"
+                        >
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            Iniciar sesión
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =============================================
+                 LISTADO AGRUPADO POR FECHA
+            ============================================== -->
+            <div
+                class="detalle-opiniones__lista"
+                id="listaOpiniones"
+            >
+
+                {% if resenas_por_fecha %}
+
+                    {% for grupo in resenas_por_fecha %}
+
+                        <section class="detalle-opiniones__grupo">
+
+                            <div class="detalle-opiniones__fecha">
+
+                                <i class="bi bi-calendar3"></i>
+
+                                <h3>
+                                    {{ grupo.fecha|date:"j \d\e F \d\e Y" }}
+                                </h3>
+
+                            </div>
+
+
+                            <div class="detalle-opiniones__grupo-lista">
+
+                                {% for resena in grupo.resenas %}
+
+                                    <article
+                                        class="detalle-opinion"
+                                        id="resena-{{ resena.id }}"
+                                    >
+
+                                        <header class="detalle-opinion__cabecera">
+
+                                            <div class="detalle-opinion__autor">
+
+                                                <div
+                                                    class="detalle-opinion__avatar"
+                                                    aria-hidden="true"
+                                                >
+                                                    <i class="bi bi-person-fill"></i>
+                                                </div>
+
+                                                <div>
+
+                                                    <div class="detalle-opinion__nombre-linea">
+
+                                                        <strong>
+                                                            {{ resena.nombre_publico }}
+                                                        </strong>
+
+                                                        {% if resena.es_equipo_oficial %}
+
+                                                            <span class="detalle-opinion__oficial">
+                                                                <i class="bi bi-shield-check"></i>
+                                                                Equipo AUDEX
+                                                            </span>
+
+                                                        {% endif %}
+
+                                                        {% if resena.compra_verificada %}
+
+                                                            <span class="detalle-opinion__verificada">
+                                                                <i class="bi bi-patch-check-fill"></i>
+                                                                Compra verificada
+                                                            </span>
+
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                    <time
+                                                        datetime="{{ resena.creado|date:'c' }}"
+                                                    >
+                                                        {{ resena.creado|date:"H:i" }}
+                                                    </time>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div
+                                                class="detalle-opinion__estrellas"
+                                                aria-label="{{ resena.estrellas }} de 5 estrellas"
+                                            >
+                                                <i class="bi {% if resena.estrellas >= 1 %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if resena.estrellas >= 2 %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if resena.estrellas >= 3 %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if resena.estrellas >= 4 %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                                <i class="bi {% if resena.estrellas >= 5 %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                                            </div>
+
+                                        </header>
+
+
+                                        <!-- =================================================
+                                             MODERACIÓN DE OPINIÓN — ADMINISTRADOR
+                                        ================================================== -->
+                                        {% if puede_administrar %}
+
+                                            <div class="detalle-opinion__moderacion">
+
+                                                <div class="detalle-opinion__estado">
+
+                                                    <i
+                                                        class="bi bi-shield-check"
+                                                        aria-hidden="true"
+                                                    ></i>
+
+                                                    <span>
+                                                        Estado:
+                                                    </span>
+
+                                                    <strong
+                                                        class="
+                                                            {% if resena.estado == 'aprobada' %}
+                                                                detalle-opinion__estado--publicada
+                                                            {% else %}
+                                                                detalle-opinion__estado--oculta
+                                                            {% endif %}
+                                                        "
+                                                    >
+                                                        {{ resena.get_estado_display }}
+                                                    </strong>
+
+                                                </div>
+
+
+                                                {% if resena.estado == 'aprobada' %}
+
+                                                    <form
+                                                        method="post"
+                                                        action="{% url 'core:cambiar_estado_resena' resena_id=resena.id %}"
+                                                    >
+                                                        {% csrf_token %}
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="estado"
+                                                            value="rechazada"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="
+                                                                detalle-opinion__moderacion-boton
+                                                                detalle-opinion__moderacion-boton--ocultar
+                                                            "
+                                                            title="Ocultar esta opinión"
+                                                        >
+                                                            <i
+                                                                class="bi bi-eye-slash"
+                                                                aria-hidden="true"
+                                                            ></i>
+
+                                                            Ocultar opinión
+                                                        </button>
+
+                                                    </form>
+
+                                                {% else %}
+
+                                                    <form
+                                                        method="post"
+                                                        action="{% url 'core:cambiar_estado_resena' resena_id=resena.id %}"
+                                                    >
+                                                        {% csrf_token %}
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="estado"
+                                                            value="aprobada"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="
+                                                                detalle-opinion__moderacion-boton
+                                                                detalle-opinion__moderacion-boton--publicar
+                                                            "
+                                                            title="Volver a publicar esta opinión"
+                                                        >
+                                                            <i
+                                                                class="bi bi-eye"
+                                                                aria-hidden="true"
+                                                            ></i>
+
+                                                            Volver a publicar
+                                                        </button>
+
+                                                    </form>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <!-- =================================================
+                                             COMENTARIO
+                                        ================================================== -->
+                                        <div class="detalle-opinion__comentario">
+                                            {{ resena.comentario|linebreaksbr }}
+                                        </div>
+
+
+                                        <!-- FOTOS DE LA OPINIÓN -->
+                                        {% if resena.imagenes.all %}
+
+                                            <div class="detalle-opinion__imagenes">
+
+                                                {% for foto in resena.imagenes.all %}
+
+                                                    <a
+                                                        href="{{ foto.imagen.url }}"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="detalle-opinion__imagen"
+                                                        aria-label="Abrir foto {{ forloop.counter }} de la opinión de {{ resena.nombre_publico }}"
+                                                    >
+                                                        <img
+                                                            src="{{ foto.imagen.url }}"
+                                                            alt="Foto {{ forloop.counter }} de la opinión sobre {{ producto.nombre }}"
+                                                            loading="lazy"
+                                                        >
+                                                    </a>
+
+                                                {% endfor %}
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <!-- RESPUESTAS -->
+                                        {% if resena.respuestas_visibles %}
+
+                                            <div class="detalle-opinion__respuestas">
+
+                                                {% for respuesta in resena.respuestas_visibles %}
+
+                                                    <article class="detalle-respuesta">
+
+                                                        <div class="detalle-respuesta__linea"></div>
+
+                                                        <div class="detalle-respuesta__contenido">
+
+                                                            <header class="detalle-respuesta__cabecera">
+
+                                                                <div class="detalle-respuesta__autor">
+
+                                                                    <strong>
+                                                                        {{ respuesta.nombre_publico }}
+                                                                    </strong>
+
+                                                                    {% if respuesta.es_equipo_oficial %}
+
+                                                                        <span class="detalle-opinion__oficial">
+                                                                            <i class="bi bi-shield-check"></i>
+                                                                            Equipo AUDEX
+                                                                        </span>
+
+                                                                    {% endif %}
+
+                                                                </div>
+
+                                                                <time
+                                                                    datetime="{{ respuesta.creado|date:'c' }}"
+                                                                >
+                                                                    {{ respuesta.creado|date:"d/m/Y H:i" }}
+                                                                </time>
+
+                                                            </header>
+
+                                                            <div class="detalle-respuesta__texto">
+                                                                {{ respuesta.comentario|linebreaksbr }}
+                                                            </div>
+
+                                                        </div>
+
+                                                    </article>
+
+                                                {% endfor %}
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <!-- RESPONDER -->
+                                        {% if request.user.is_authenticated %}
+
+                                            <details class="detalle-opinion__responder">
+
+                                                <summary>
+                                                    <i class="bi bi-reply"></i>
+                                                    Responder
+                                                </summary>
+
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'core:responder_resena_producto' resena_id=resena.id %}"
+                                                >
+                                                    {% csrf_token %}
+
+                                                    <label
+                                                        for="respuestaResena{{ resena.id }}"
+                                                        class="visually-hidden"
+                                                    >
+                                                        Responder a {{ resena.nombre_publico }}
+                                                    </label>
+
+                                                    <textarea
+                                                        name="comentario"
+                                                        id="respuestaResena{{ resena.id }}"
+                                                        rows="3"
+                                                        maxlength="1500"
+                                                        placeholder="Escribe una respuesta..."
+                                                        required
+                                                    ></textarea>
+
+                                                    <div class="detalle-opinion__responder-acciones">
+
+                                                        <small>
+                                                            Máximo 1.500 caracteres.
+                                                        </small>
+
+                                                        <button type="submit">
+                                                            <i class="bi bi-send"></i>
+                                                            Publicar respuesta
+                                                        </button>
+
+                                                    </div>
+
+                                                </form>
+
+                                            </details>
+
+                                        {% else %}
+
+                                            <a
+                                                href="{% url 'core:login' %}?next={{ request.get_full_path|urlencode }}%23resena-{{ resena.id }}"
+                                                class="detalle-opinion__iniciar-para-responder"
+                                            >
+                                                <i class="bi bi-reply"></i>
+                                                Inicia sesión para responder
+                                            </a>
+
+                                        {% endif %}
+
+                                    </article>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </section>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="detalle-opiniones__vacio">
+
+                        <div class="detalle-opiniones__vacio-icono">
+                            <i class="bi bi-chat-square-dots"></i>
+                        </div>
+
+                        <h3>
+                            Todavía no hay opiniones
+                        </h3>
+
+                        <p>
+                            Cuando un cliente valore este producto,
+                            su experiencia aparecerá aquí.
+                        </p>
+
+                        {% if not request.user.is_authenticated %}
+
+                            <a
+                                href="{% url 'core:login' %}?next={{ request.get_full_path|urlencode }}%23opiniones"
+                            >
+                                Iniciar sesión para opinar
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
 
     </div>
 
