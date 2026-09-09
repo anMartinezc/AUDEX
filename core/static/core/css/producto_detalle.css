@@ -3134,193 +3134,686 @@
     }
 }
 
-
 /* =========================================================
-   MÓVIL — ORDEN COMERCIAL DEL DETALLE
-
-   Objetivo:
-   1. Imagen principal
-   2. Título
-   3. Agregar al carrito
-   4. Favoritos
-   5. Cantidad
-   6. Precio, valoración y resto de la información
+   AJUSTE FINAL MOBILE — OPINIONES / LOGIN
+   Corrige el aviso de inicio de sesión en pantallas pequeñas:
+   evita texto comprimido y botones desbordados.
 ========================================================= */
 
 @media (max-width: 650px) {
 
-    /* Acercar la información a la imagen principal. */
-    .detalle-producto__principal {
+    /* -----------------------------------------------------
+       CONTENEDOR GENERAL DE OPINIONES
+    ----------------------------------------------------- */
+
+    .detalle-opiniones {
+        width: 100%;
+        max-width: 100%;
+
+        margin-top: 34px;
+
+        padding:
+            22px 16px;
+
+        box-sizing: border-box;
+
+        overflow: hidden;
+
+        border-radius: 20px;
+    }
+
+    .detalle-opiniones * {
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+
+    /* -----------------------------------------------------
+       CABECERA
+    ----------------------------------------------------- */
+
+    .detalle-opiniones__cabecera {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
         gap: 14px;
     }
 
-    /*
-     * En teléfono dejamos visible primero únicamente la imagen
-     * principal. Las miniaturas siguen en el DOM para que el JS
-     * de la galería pueda utilizarlas, pero no ocupan espacio.
-     */
-    .detalle-galeria__inferior {
-        display: none;
+    .detalle-opiniones__cabecera > div {
+        width: 100%;
+        min-width: 0;
     }
 
-    /*
-     * Convertimos el bloque de información en una columna
-     * reordenable sin alterar el HTML para escritorio.
-     */
-    .detalle-informacion {
-        display: flex;
-        flex-direction: column;
-
-        padding-top: 0;
-    }
-
-    /*
-     * Liberamos los hijos de la cabecera para poder ordenar
-     * individualmente título, valoración, categoría y descripción.
-     */
-    .detalle-informacion__superior {
-        display: contents;
-    }
-
-    /* Todo lo no priorizado queda después del CTA. */
-    .detalle-informacion > *,
-    .detalle-informacion__superior > * {
-        order: 20;
-    }
-
-    /* 1. TÍTULO — inmediatamente después de la imagen. */
-    .detalle-informacion h1 {
-        order: 1;
-
-        margin: 4px 0 12px;
-
-        font-size: clamp(2rem, 10vw, 2.8rem);
-        line-height: 1.02;
-    }
-
-    /* 2. BLOQUE DE COMPRA. */
-    .detalle-compra {
-        order: 2;
-
-        margin-top: 0;
-
-        display: flex;
-        flex-direction: column;
-
-        gap: 9px;
-    }
-
-    /* Dentro del CTA: carrito primero. */
-    .detalle-agregar-carrito {
-        order: 1;
-
-        min-height: 58px;
-
-        font-size: 0.82rem;
-
-        box-shadow:
-            0 14px 32px rgba(54, 169, 214, 0.24);
-    }
-
-    /* Favoritos justo después del carrito. */
-    .detalle-favorito {
-        order: 2;
-
-        min-height: 52px;
-    }
-
-    /* Cantidad queda después de las dos acciones principales. */
-    .detalle-cantidad {
-        order: 3;
-
-        grid-row: auto;
-
-        padding: 12px 13px;
-    }
-
-    .detalle-cantidad__control {
-        width: max-content;
-    }
-
-    /* 3. PRECIO — después de los CTA, tal como se solicitó. */
-    .detalle-precio {
-        order: 3;
-
-        margin-top: 13px;
-    }
-
-    /* 4. VALORACIÓN. */
-    .detalle-valoracion-resumen {
-        order: 4;
-
-        width: fit-content;
+    .detalle-opiniones__cabecera h2 {
         max-width: 100%;
 
-        margin: 12px 0 0;
+        font-size:
+            clamp(1.45rem, 7vw, 1.9rem);
+
+        line-height: 1.12;
+
+        overflow-wrap: normal;
+        word-break: normal;
     }
 
-    /* 5. CATEGORÍA. */
-    .detalle-etiquetas {
-        order: 5;
+    .detalle-opiniones__cabecera p {
+        max-width: 100%;
 
-        margin-top: 13px;
+        font-size: 0.78rem;
+
+        line-height: 1.55;
+
+        overflow-wrap: normal;
+        word-break: normal;
     }
 
-    /* 6. DESCRIPCIÓN CORTA. */
-    .detalle-descripcion-corta {
-        order: 6;
-
-        margin-top: 11px;
+    .detalle-opiniones__ver-todas {
+        width: 100%;
     }
 
-    /* 7. RESTO DE LA INFORMACIÓN. */
-    .detalle-resumen-caracteristicas {
-        order: 7;
+
+    /* -----------------------------------------------------
+       RESUMEN / BARRAS
+    ----------------------------------------------------- */
+
+    .detalle-opiniones__resumen-grid {
+        width: 100%;
+
+        grid-template-columns: 1fr;
+
+        gap: 13px;
     }
 
-    .detalle-resumen-descripcion {
-        order: 8;
+    .detalle-opiniones__promedio,
+    .detalle-opiniones__distribucion {
+        width: 100%;
+
+        min-width: 0;
+
+        border-radius: 16px;
     }
 
-    .detalle-resumen-ficha {
-        order: 9;
+    .detalle-opiniones__promedio {
+        min-height: 150px;
+
+        padding:
+            20px 16px;
     }
 
-    .detalle-servicios {
-        order: 10;
+    .detalle-opiniones__distribucion {
+        padding:
+            18px 14px;
+    }
+
+    .detalle-opiniones__distribucion-fila {
+        grid-template-columns:
+            38px minmax(0, 1fr) 24px;
+
+        gap: 8px;
+    }
+
+
+    /* -----------------------------------------------------
+       AVISO LOGIN / ADMIN
+       En móvil: icono + texto arriba,
+       botón en una fila completa debajo.
+    ----------------------------------------------------- */
+
+    .detalle-opiniones__aviso {
+        width: 100%;
+
+        padding:
+            16px;
+
+        display: grid;
+
+        grid-template-columns:
+            46px minmax(0, 1fr);
+
+        grid-template-rows: auto auto;
+
+        align-items: start;
+
+        column-gap: 12px;
+        row-gap: 14px;
+
+        border-radius: 16px;
+    }
+
+    .detalle-opiniones__aviso > i,
+    .detalle-opiniones__aviso-icono {
+        width: 46px;
+        height: 46px;
+
+        margin: 0;
+
+        grid-column: 1;
+        grid-row: 1;
+
+        align-self: start;
+    }
+
+    .detalle-opiniones__aviso > div:not(.detalle-opiniones__aviso-icono) {
+        width: 100%;
+        min-width: 0;
+
+        grid-column: 2;
+        grid-row: 1;
+
+        margin: 0;
+    }
+
+    .detalle-opiniones__aviso strong {
+        display: block;
+
+        margin: 0;
+
+        font-size: 0.83rem;
+
+        line-height: 1.35;
+
+        white-space: normal;
+
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .detalle-opiniones__aviso p {
+        width: 100%;
+
+        margin:
+            5px 0 0;
+
+        font-size: 0.72rem;
+
+        line-height: 1.5;
+
+        white-space: normal;
+
+        overflow-wrap: normal;
+        word-break: normal;
+        hyphens: none;
+    }
+
+    .detalle-opiniones__login-boton {
+        width: 100%;
+        max-width: 100%;
+
+        min-height: 48px;
+
+        margin: 0;
+
+        grid-column:
+            1 / -1;
+
+        grid-row: 2;
+
+        justify-self: stretch;
+
+        padding:
+            0 14px;
+
+        white-space: nowrap;
+
+        border-radius: 12px;
+    }
+
+
+    /* -----------------------------------------------------
+       FORMULARIO
+    ----------------------------------------------------- */
+
+    .detalle-opiniones__formulario-contenedor {
+        width: 100%;
+
+        padding:
+            18px 15px;
+
+        border-radius: 16px;
+    }
+
+    .detalle-opiniones__formulario-titulo {
+        width: 100%;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 10px;
+    }
+
+    .detalle-opiniones__campo,
+    .detalle-opiniones__campo textarea,
+    .detalle-opiniones__campo input[type="file"] {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .detalle-opiniones__selector-estrellas {
+        max-width: 100%;
+
+        gap: 3px;
+    }
+
+    .detalle-opiniones__selector-estrellas label {
+        font-size: 1.45rem;
+    }
+
+    .detalle-opiniones__publicar-boton {
+        width: 100%;
+
+        justify-self: stretch;
+    }
+
+
+    /* -----------------------------------------------------
+       TARJETAS DE OPINIÓN
+    ----------------------------------------------------- */
+
+    .detalle-opinion {
+        width: 100%;
+
+        padding:
+            16px 14px;
+
+        border-radius: 15px;
+    }
+
+    .detalle-opinion__cabecera {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 10px;
+    }
+
+    .detalle-opinion__autor {
+        width: 100%;
+
+        align-items: flex-start;
+    }
+
+    .detalle-opinion__autor > div:last-child {
+        min-width: 0;
+    }
+
+    .detalle-opinion__nombre-linea {
+        max-width: 100%;
+    }
+
+    .detalle-opinion__estrellas {
+        width: fit-content;
+
+        padding-left: 49px;
+    }
+
+    .detalle-opinion__comentario {
+        width: 100%;
+
+        overflow-wrap: break-word;
+        word-break: normal;
+    }
+
+
+    /* -----------------------------------------------------
+       MODERACIÓN
+    ----------------------------------------------------- */
+
+    .detalle-opinion__moderacion {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 10px;
+    }
+
+    .detalle-opinion__moderacion form,
+    .detalle-opinion__moderacion-boton {
+        width: 100%;
+    }
+
+
+    /* -----------------------------------------------------
+       RESPUESTAS
+    ----------------------------------------------------- */
+
+    .detalle-respuesta {
+        width: 100%;
+
+        grid-template-columns:
+            10px minmax(0, 1fr);
+
+        gap: 7px;
+    }
+
+    .detalle-respuesta__linea::before {
+        left: 4px;
+    }
+
+    .detalle-respuesta__contenido {
+        width: 100%;
+
+        padding:
+            12px;
+
+        border-radius: 12px;
+    }
+
+    .detalle-respuesta__cabecera {
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 4px;
+    }
+
+    .detalle-opinion__responder,
+    .detalle-opinion__responder form,
+    .detalle-opinion__responder textarea {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .detalle-opinion__responder-acciones {
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 8px;
+    }
+
+    .detalle-opinion__responder-acciones button {
+        width: 100%;
+    }
+
+
+    /* -----------------------------------------------------
+       ESTADO VACÍO
+    ----------------------------------------------------- */
+
+    .detalle-opiniones__vacio {
+        width: 100%;
+
+        padding:
+            32px 16px;
+
+        border-radius: 16px;
+    }
+
+    .detalle-opiniones__vacio h3 {
+        max-width: 100%;
+
+        font-size: 0.94rem;
+
+        line-height: 1.3;
+    }
+
+    .detalle-opiniones__vacio p {
+        max-width: 100%;
+
+        font-size: 0.7rem;
+
+        line-height: 1.5;
+    }
+
+    .detalle-opiniones__vacio a {
+        width: 100%;
+
+        text-align: center;
     }
 
 }
 
 
 /* =========================================================
-   MÓVIL PEQUEÑO — CTA AÚN MÁS COMPACTO
+   AJUSTE EXTRA — TELÉFONOS PEQUEÑOS
 ========================================================= */
 
 @media (max-width: 480px) {
 
-    .detalle-producto__principal {
-        gap: 10px;
+    .detalle-opiniones {
+        margin-top: 28px;
+
+        padding:
+            18px 12px;
+
+        border-radius: 17px;
     }
 
-    .detalle-informacion h1 {
-        margin: 2px 0 10px;
-
-        font-size: clamp(1.9rem, 10.5vw, 2.55rem);
+    .detalle-opiniones::before {
+        left: 12px;
+        right: 12px;
     }
 
-    .detalle-agregar-carrito {
-        min-height: 58px;
+    .detalle-opiniones__aviso {
+        padding:
+            14px;
 
-        border-radius: 14px;
+        grid-template-columns:
+            42px minmax(0, 1fr);
+
+        column-gap: 10px;
     }
 
-    .detalle-favorito {
-        min-height: 50px;
+    .detalle-opiniones__aviso > i,
+    .detalle-opiniones__aviso-icono {
+        width: 42px;
+        height: 42px;
     }
 
-    .detalle-precio {
-        margin-top: 11px;
+    .detalle-opiniones__aviso strong {
+        font-size: 0.8rem;
+    }
+
+    .detalle-opiniones__aviso p {
+        font-size: 0.69rem;
+    }
+
+    .detalle-opiniones__login-boton {
+        min-height: 46px;
+
+        font-size: 0.72rem;
+    }
+
+    .detalle-opiniones__cabecera h2 {
+        font-size:
+            clamp(1.35rem, 7vw, 1.65rem);
+    }
+
+    .detalle-opiniones__distribucion {
+        padding:
+            17px 12px;
+    }
+
+    .detalle-opiniones__distribucion-fila {
+        grid-template-columns:
+            36px minmax(0, 1fr) 22px;
+
+        gap: 7px;
+    }
+
+    .detalle-opiniones__formulario-contenedor {
+        padding:
+            16px 13px;
+    }
+
+    .detalle-opinion {
+        padding:
+            15px 12px;
+    }
+
+    .detalle-opinion__estrellas {
+        padding-left: 0;
+    }
+
+    .detalle-opiniones__imagen-actual,
+    .detalle-opinion__imagen {
+        width: 72px;
+        height: 72px;
+    }
+
+}
+
+
+/* =========================================================
+   AJUSTE EXTRA — TELÉFONOS MUY PEQUEÑOS
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .detalle-opiniones {
+        padding:
+            16px 10px;
+    }
+
+    .detalle-opiniones__aviso {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 11px;
+    }
+
+    .detalle-opiniones__aviso > i,
+    .detalle-opiniones__aviso-icono {
+        align-self: flex-start;
+    }
+
+    .detalle-opiniones__aviso > div:not(.detalle-opiniones__aviso-icono) {
+        width: 100%;
+    }
+
+    .detalle-opiniones__login-boton {
+        width: 100%;
+    }
+
+    .detalle-opiniones__selector-estrellas label {
+        font-size: 1.35rem;
+    }
+
+}
+
+
+/* =========================================================
+   FIX FINAL MOBILE — AVISO LOGIN DE OPINIONES
+   En teléfonos se apila verticalmente para evitar
+   solapamientos: icono, texto y botón debajo.
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .detalle-opiniones__aviso--login {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+
+        gap: 12px !important;
+
+        padding: 16px !important;
+
+        box-sizing: border-box !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__aviso-icono {
+        position: static !important;
+
+        width: 46px !important;
+        height: 46px !important;
+
+        margin: 0 !important;
+
+        flex: 0 0 46px !important;
+
+        align-self: flex-start !important;
+
+        transform: none !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    > div:not(.detalle-opiniones__aviso-icono) {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        margin: 0 !important;
+
+        display: block !important;
+
+        flex: none !important;
+
+        overflow: visible !important;
+    }
+
+    .detalle-opiniones__aviso--login strong,
+    .detalle-opiniones__aviso--login p {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+        hyphens: none !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__login-boton {
+        position: static !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        min-height: 48px !important;
+
+        margin: 0 !important;
+        padding: 0 14px !important;
+
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        align-self: stretch !important;
+
+        flex: none !important;
+
+        transform: none !important;
+
+        box-sizing: border-box !important;
+
+        white-space: nowrap !important;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .detalle-opiniones__aviso--login {
+        padding: 14px !important;
+
+        gap: 11px !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__aviso-icono {
+        width: 42px !important;
+        height: 42px !important;
+
+        flex-basis: 42px !important;
+    }
+
+    .detalle-opiniones__aviso--login
+    .detalle-opiniones__login-boton {
+        min-height: 46px !important;
+
+        font-size: 0.72rem !important;
     }
 
 }
