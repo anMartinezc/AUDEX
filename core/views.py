@@ -3,6 +3,10 @@ from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     UserPassesTestMixin,
 )
+from core.services.comprobantes import (
+    guardar_comprobante_webpay,
+    guardar_comprobante_mercadopago,
+)
 from django.core.exceptions import PermissionDenied
 from itertools import groupby
 from django.db.models.functions import TruncDate
@@ -8356,7 +8360,6 @@ def mercadopago_retorno_fallido(
 
 
 
-
 @transaction.atomic
 def actualizar_pedido_desde_pago(
     *,
@@ -8377,6 +8380,8 @@ def actualizar_pedido_desde_pago(
     - No confía en datos recibidos directamente del webhook.
     - Un pago approved se confirma mediante
       confirmar_pago_mercadopago().
+    - Un approved repetido vuelve a verificar el comprobante
+      sin repetir stock, descuento ni flujo post-pago.
     - No degrada accidentalmente un pedido ya aprobado.
     - Persiste estados pending, rejected, cancelled,
       refunded y charged_back.
@@ -8429,17 +8434,8 @@ def actualizar_pedido_desde_pago(
     # BLOQUEAR PEDIDO
     # =========================================================================
     #
-    # IMPORTANTE:
-    #
-    # No utilizamos:
-    #
-    #     .select_related("usuario")
-    #
-    # junto con select_for_update().
-    #
-    # Si Pedido.usuario permite NULL, PostgreSQL puede generar
-    # un LEFT OUTER JOIN y rechazar FOR UPDATE sobre el lado
-    # nullable del JOIN.
+    # No utilizamos select_related("usuario") junto
+    # con select_for_update().
     #
     # Bloqueamos exclusivamente la fila de Pedido.
     # =========================================================================
@@ -8676,6 +8672,18 @@ def actualizar_pedido_desde_pago(
     # nunca debe degradar un pago ya aprobado.
     #
     # refunded y charged_back sí son estados posteriores legítimos.
+    #
+    # IMPORTANTE:
+    #
+    # Si vuelve a llegar el MISMO payment_id con status=approved,
+    # llamamos nuevamente a confirmar_pago_mercadopago().
+    #
+    # Esa función ya es idempotente:
+    #
+    # - no vuelve a descontar stock;
+    # - no vuelve a consumir descuentos;
+    # - no vuelve a ejecutar el flujo post-pago;
+    # - sí asegura que ComprobantePago exista.
     # =========================================================================
 
     pedido_ya_aprobado = bool(
@@ -8703,6 +8711,41 @@ def actualizar_pedido_desde_pago(
             payment_id_guardado
             and payment_id_guardado == payment_id
         ):
+
+            # =================================================================
+            # APPROVED REPETIDO
+            # =================================================================
+            #
+            # Permitimos que confirmar_pago_mercadopago()
+            # vuelva a ejecutarse para asegurar el comprobante.
+            #
+            # La función es idempotente y no repetirá
+            # stock, descuentos ni otros procesos.
+            # =================================================================
+
+            if status == "approved":
+
+                logger.info(
+                    (
+                        "Pago Mercado Pago aprobado "
+                        "recibido nuevamente. "
+                        "Pedido=%s "
+                        "Payment ID=%s. "
+                        "Se verificará el comprobante."
+                    ),
+                    pedido.numero,
+                    payment_id,
+                )
+
+                return (
+                    confirmar_pago_mercadopago(
+                        pago
+                    )
+                )
+
+            # =================================================================
+            # ESTADO ANTIGUO / NO APROBADO
+            # =================================================================
 
             logger.info(
                 (
@@ -8815,7 +8858,7 @@ def actualizar_pedido_desde_pago(
     #
     # confirmar_pago_mercadopago()
     #
-    # que ya se encarga de:
+    # Esta función se encarga de:
     #
     # - validar monto;
     # - validar moneda;
@@ -8826,7 +8869,8 @@ def actualizar_pedido_desde_pago(
     # - stock;
     # - descuento;
     # - correo;
-    # - Nubox / DTE.
+    # - Nubox / DTE mientras siga activo;
+    # - ComprobantePago.
     # =========================================================================
 
     if status == "approved":
@@ -9052,8 +9096,9 @@ def actualizar_pedido_desde_pago(
         # ---------------------------------------------------------------------
         # El dinero ya no debe considerarse pagado.
         #
-        # No modificamos automáticamente Pedido.estado porque el pedido
-        # podría haber avanzado en logística, despacho o facturación.
+        # No modificamos automáticamente Pedido.estado porque
+        # el pedido podría haber avanzado en logística,
+        # despacho o facturación.
         # ---------------------------------------------------------------------
 
         pedido.pagado = False
@@ -9123,6 +9168,75 @@ def actualizar_pedido_desde_pago(
 
 
 
+@login_required(
+    login_url="core:login"
+)
+@require_GET
+def comprobante_pago(
+    request,
+    numero,
+):
+    pedido = get_object_or_404(
+        Pedido.objects
+        .select_related(
+            "usuario",
+            "comprobante_pago",
+        )
+        .prefetch_related(
+            "items__producto",
+        ),
+        numero=numero,
+    )
+
+    # =========================================================
+    # SEGURIDAD
+    # =========================================================
+
+    if (
+        pedido.usuario_id
+        and pedido.usuario_id != request.user.pk
+        and not request.user.is_staff
+    ):
+        raise PermissionDenied
+
+    # =========================================================
+    # PEDIDO DEBE ESTAR APROBADO
+    # =========================================================
+
+    if not (
+        pedido.pagado
+        and pedido.estado_pago
+        == Pedido.EstadoPago.APROBADO
+    ):
+        raise PermissionDenied(
+            "Este pedido todavía no tiene un pago aprobado."
+        )
+
+    # =========================================================
+    # COMPROBANTE
+    # =========================================================
+
+    try:
+        comprobante = (
+            pedido.comprobante_pago
+        )
+
+    except ComprobantePago.DoesNotExist:
+        comprobante = None
+
+    if comprobante is None:
+        raise PermissionDenied(
+            "El comprobante de este pedido todavía no está disponible."
+        )
+
+    return render(
+        request,
+        "core/cuenta/comprobante_pago.html",
+        {
+            "pedido": pedido,
+            "comprobante": comprobante,
+        },
+    )
 
 
 
@@ -9999,7 +10113,6 @@ def mercadopago_webhook(request):
         "ok",
         status=200,
     )
-
 @transaction.atomic
 def confirmar_pago_mercadopago(
     pago,
@@ -10023,7 +10136,8 @@ def confirmar_pago_mercadopago(
     - moneda CLP;
     - reutilización del payment_id;
     - idempotencia;
-    - concurrencia entre webhook y retorno.
+    - concurrencia entre webhook y retorno;
+    - creación/actualización segura del ComprobantePago.
 
     La confirmación definitiva continúa delegándose en
     marcar_pedido_como_pagado().
@@ -10109,6 +10223,88 @@ def confirmar_pago_mercadopago(
         .strip()
         .upper()
     )
+
+    # =========================================================================
+    # HELPER LOCAL PARA GUARDAR COMPROBANTE
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # El comprobante es un respaldo adicional del pago.
+    #
+    # Si por cualquier motivo falla su creación:
+    #
+    # - NO deshacemos el pago;
+    # - NO ponemos el pedido en revisión;
+    # - NO devolvemos stock;
+    # - NO liberamos descuentos;
+    # - NO marcamos la compra como rechazada.
+    #
+    # Utilizamos un savepoint interno para que un eventual error
+    # de base de datos del comprobante no dañe la transacción
+    # principal de confirmación.
+    # =========================================================================
+
+    def _guardar_comprobante_seguro(
+        pedido_confirmado,
+    ):
+        try:
+
+            with transaction.atomic():
+
+                comprobante = (
+                    guardar_comprobante_mercadopago(
+                        pedido=pedido_confirmado,
+                        pago=pago,
+                    )
+                )
+
+            if comprobante is not None:
+
+                logger.info(
+                    (
+                        "Comprobante Mercado Pago "
+                        "guardado correctamente. "
+                        "Pedido=%s "
+                        "Payment ID=%s "
+                        "Comprobante=%s."
+                    ),
+                    pedido_confirmado.numero,
+                    payment_id,
+                    comprobante.pk,
+                )
+
+            else:
+
+                logger.warning(
+                    (
+                        "guardar_comprobante_mercadopago() "
+                        "no creó comprobante. "
+                        "Pedido=%s "
+                        "Payment ID=%s."
+                    ),
+                    pedido_confirmado.numero,
+                    payment_id,
+                )
+
+            return comprobante
+
+        except Exception as error:
+
+            logger.exception(
+                (
+                    "No fue posible guardar el "
+                    "comprobante Mercado Pago. "
+                    "Pedido=%s "
+                    "Payment ID=%s "
+                    "Error=%s."
+                ),
+                pedido_confirmado.numero,
+                payment_id,
+                error,
+            )
+
+            return None
 
     # =========================================================================
     # PAYMENT ID
@@ -10200,24 +10396,6 @@ def confirmar_pago_mercadopago(
 
     # =========================================================================
     # OBTENER Y BLOQUEAR PEDIDO
-    # =========================================================================
-    #
-    # IMPORTANTE:
-    #
-    # No usamos select_related("usuario") junto con select_for_update().
-    #
-    # Si Pedido.usuario permite NULL, PostgreSQL genera un LEFT OUTER JOIN
-    # y no permite aplicar FOR UPDATE sobre el lado nullable del JOIN.
-    #
-    # Solo bloqueamos la fila de Pedido.
-    #
-    # Esto protege frente a:
-    #
-    # - webhook simultáneo;
-    # - retorno exitoso simultáneo;
-    # - webhook repetido;
-    # - doble confirmación.
-    #
     # =========================================================================
 
     try:
@@ -10386,18 +10564,18 @@ def confirmar_pago_mercadopago(
     # IDEMPOTENCIA
     # =========================================================================
     #
-    # Ejemplos:
+    # Si el pedido ya estaba aprobado con el mismo Payment ID:
     #
-    # webhook -> confirma
-    # retorno -> intenta confirmar nuevamente
+    # - NO volvemos a descontar stock;
+    # - NO volvemos a confirmar códigos;
+    # - NO volvemos a ejecutar correo;
     #
-    # o:
+    # PERO:
     #
-    # webhook #1
-    # webhook #2
+    # sí intentamos crear/actualizar el comprobante.
     #
-    # Si ya está aprobado con exactamente el mismo payment_id,
-    # no volvemos a ejecutar ninguna acción.
+    # Esto permite recuperar un comprobante que haya fallado
+    # en un intento anterior.
     # =========================================================================
 
     if (
@@ -10414,6 +10592,14 @@ def confirmar_pago_mercadopago(
             ),
             pedido.numero,
             payment_id,
+        )
+
+        # ---------------------------------------------------------------------
+        # ASEGURAR COMPROBANTE
+        # ---------------------------------------------------------------------
+
+        _guardar_comprobante_seguro(
+            pedido
         )
 
         return pedido
@@ -10454,10 +10640,6 @@ def confirmar_pago_mercadopago(
     # =========================================================================
     # PAYMENT ID UTILIZADO POR OTRO PEDIDO
     # =========================================================================
-    #
-    # Un mismo payment_id de Mercado Pago no debe confirmar
-    # dos pedidos diferentes.
-    # =========================================================================
 
     payment_id_en_otro_pedido = (
         Pedido.objects
@@ -10477,7 +10659,7 @@ def confirmar_pago_mercadopago(
                 "Payment ID Mercado Pago ya asociado "
                 "a otro pedido. "
                 "Pedido=%s "
-                "payment_id=%s."
+                "Payment ID=%s."
             ),
             pedido.numero,
             payment_id,
@@ -10485,8 +10667,8 @@ def confirmar_pago_mercadopago(
 
         raise ConfirmacionPagoError(
             (
-                "El payment_id recibido ya está "
-                "asociado a otro pedido."
+                "El payment_id de Mercado Pago "
+                "ya está asociado a otro pedido."
             )
         )
 
@@ -10537,7 +10719,7 @@ def confirmar_pago_mercadopago(
     # CONFIRMACIÓN CENTRAL
     # =========================================================================
     #
-    # marcar_pedido_como_pagado() debe centralizar:
+    # marcar_pedido_como_pagado() mantiene por ahora:
     #
     # - pedido.pagado;
     # - estado del pedido;
@@ -10546,8 +10728,9 @@ def confirmar_pago_mercadopago(
     # - descuento de stock;
     # - confirmación del código de descuento;
     # - correo;
-    # - Nubox / DTE cuando corresponda;
+    # - Nubox / DTE mientras siga habilitado;
     # - idempotencia adicional.
+    #
     # =========================================================================
 
     try:
@@ -10667,11 +10850,6 @@ def confirmar_pago_mercadopago(
     # =========================================================================
     # COMPROBAR PAYMENT ID FINAL
     # =========================================================================
-    #
-    # Además de verificar pagado/estado_pago,
-    # comprobamos que el payment_id persistido corresponda
-    # efectivamente al pago que estamos confirmando.
-    # =========================================================================
 
     payment_id_final = (
         str(
@@ -10709,6 +10887,26 @@ def confirmar_pago_mercadopago(
         )
 
     # =========================================================================
+    # NUEVO: GUARDAR COMPROBANTE MERCADO PAGO
+    # =========================================================================
+    #
+    # Solo llegamos aquí después de comprobar:
+    #
+    # - status == approved;
+    # - external_reference correcto;
+    # - monto correcto;
+    # - moneda correcta;
+    # - Payment ID válido;
+    # - Pedido realmente aprobado;
+    # - Payment ID persistido correctamente.
+    #
+    # =========================================================================
+
+    _guardar_comprobante_seguro(
+        pedido_confirmado
+    )
+
+    # =========================================================================
     # LOG FINAL
     # =========================================================================
 
@@ -10725,6 +10923,8 @@ def confirmar_pago_mercadopago(
     )
 
     return pedido_confirmado
+
+
 
 def obtener_datos_iniciales_checkout(request):
   
@@ -11124,7 +11324,6 @@ def mi_perfil(request):
 
 
 
-
 @csrf_exempt
 def webpay_retorno(request):
     """
@@ -11137,6 +11336,8 @@ def webpay_retorno(request):
        - ejecuta commit();
        - valida response_code, status, buy_order y monto;
        - marca pedido como pagado;
+       - guarda datos oficiales de Transbank;
+       - genera/actualiza ComprobantePago;
        - ejecuta flujo post-pago;
        - vacía carrito.
 
@@ -11146,7 +11347,7 @@ def webpay_retorno(request):
        - Transbank devuelve FAILED / response_code != 0;
        - guarda rechazo;
        - no descuenta stock;
-       - no genera boleta;
+       - no genera comprobante aprobado;
        - libera descuentos reservados.
 
     3. Cancelación desde formulario Webpay:
@@ -11184,21 +11385,6 @@ def webpay_retorno(request):
 
     # =========================================================================
     # DATOS ESPECIALES DE CANCELACIÓN WEBPAY
-    # =========================================================================
-    #
-    # Cuando el usuario presiona:
-    #
-    # "Anular compra y volver al comercio"
-    #
-    # Transbank NO devuelve token_ws.
-    #
-    # Devuelve:
-    #
-    # TBK_TOKEN
-    # TBK_ID_SESION
-    # TBK_ORDEN_COMPRA
-    #
-    # En este escenario NO se debe ejecutar commit().
     # =========================================================================
 
     tbk_token = (
@@ -11292,18 +11478,6 @@ def webpay_retorno(request):
     # =========================================================================
     # CANCELACIÓN EXPLÍCITA DESDE FORMULARIO WEBPAY
     # =========================================================================
-    #
-    # IMPORTANTE:
-    #
-    # Este bloque debe ejecutarse ANTES del manejo genérico:
-    #
-    #     if not token_ws:
-    #
-    # porque en una cancelación legítima Transbank devuelve TBK_TOKEN,
-    # pero NO devuelve token_ws.
-    #
-    # Nunca llamar commit() aquí.
-    # =========================================================================
 
     if tbk_token:
 
@@ -11320,10 +11494,6 @@ def webpay_retorno(request):
             tbk_orden_compra or "vacío",
             numero_pedido_sesion or "vacío",
         )
-
-        # ---------------------------------------------------------------------
-        # DETERMINAR PEDIDO CANCELADO
-        # ---------------------------------------------------------------------
 
         numero_pedido_cancelado = (
             tbk_orden_compra
@@ -11355,7 +11525,7 @@ def webpay_retorno(request):
                 )
 
         # ---------------------------------------------------------------------
-        # VALIDAR QUE EL PEDIDO SEA WEBPAY
+        # VALIDAR MÉTODO DEL PEDIDO
         # ---------------------------------------------------------------------
 
         if pedido is not None:
@@ -11395,7 +11565,7 @@ def webpay_retorno(request):
                 )
 
         # ---------------------------------------------------------------------
-        # MARCAR PEDIDO COMO CANCELADO
+        # MARCAR CANCELADO
         # ---------------------------------------------------------------------
 
         if (
@@ -11422,10 +11592,6 @@ def webpay_retorno(request):
                 ]
             )
 
-            # -----------------------------------------------------------------
-            # LIBERAR DESCUENTO
-            # -----------------------------------------------------------------
-
             try:
 
                 _liberar_descuento_si_corresponde(
@@ -11449,14 +11615,12 @@ def webpay_retorno(request):
                     "Pedido=%s "
                     "estado=%s "
                     "estado_pago=%s "
-                    "pagado=%s "
-                    "TBK_TOKEN=%s"
+                    "pagado=%s"
                 ),
                 pedido.numero,
                 pedido.estado,
                 pedido.estado_pago,
                 pedido.pagado,
-                tbk_token,
             )
 
         elif (
@@ -11495,10 +11659,6 @@ def webpay_retorno(request):
 
         request.session.modified = True
 
-        # ---------------------------------------------------------------------
-        # MENSAJE
-        # ---------------------------------------------------------------------
-
         messages.warning(
             request,
             (
@@ -11506,10 +11666,6 @@ def webpay_retorno(request):
                 "No se confirmó ningún cobro."
             ),
         )
-
-        # ---------------------------------------------------------------------
-        # REDIRECCIÓN
-        # ---------------------------------------------------------------------
 
         if pedido is not None:
 
@@ -11531,7 +11687,6 @@ def webpay_retorno(request):
 
     # =========================================================================
     # SIN TOKEN_WS Y SIN TBK_TOKEN
-    # CANCELACIÓN / ABANDONO / RETORNO INCOMPLETO
     # =========================================================================
 
     if not token_ws:
@@ -11591,14 +11746,6 @@ def webpay_retorno(request):
                             pedido.numero,
                         )
 
-                    logger.info(
-                        (
-                            "Pedido %s marcado como "
-                            "Webpay CANCELADO."
-                        ),
-                        pedido.numero,
-                    )
-
             except Pedido.DoesNotExist:
 
                 logger.warning(
@@ -11608,10 +11755,6 @@ def webpay_retorno(request):
                     ),
                     numero_pedido_sesion,
                 )
-
-        # ---------------------------------------------------------------------
-        # LIMPIAR SESIÓN
-        # ---------------------------------------------------------------------
 
         request.session.pop(
             "webpay_token",
@@ -11650,7 +11793,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # VALIDAR TOKEN_WS CONTRA SESIÓN
+    # VALIDAR TOKEN CONTRA SESIÓN
     # =========================================================================
 
     if (
@@ -11686,13 +11829,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # CONFIRMAR TRANSACCIÓN DIRECTAMENTE CON TRANSBANK
-    # =========================================================================
-    #
-    # Desde este punto existe token_ws.
-    #
-    # Por tanto estamos frente a una transacción que debe
-    # confirmarse mediante commit().
+    # COMMIT WEBPAY
     # =========================================================================
 
     try:
@@ -11885,7 +12022,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # NORMALIZAR RESPONSE CODE
+    # RESPONSE CODE
     # =========================================================================
 
     response_code = None
@@ -11906,17 +12043,14 @@ def webpay_retorno(request):
             logger.warning(
                 (
                     "Webpay devolvió response_code "
-                    "inválido. "
-                    "Pedido sesión=%s valor=%s"
+                    "inválido. Pedido sesión=%s valor=%s"
                 ),
                 numero_pedido_sesion,
                 response_code_raw,
             )
 
-            response_code = None
-
     # =========================================================================
-    # NORMALIZAR CUOTAS
+    # CUOTAS
     # =========================================================================
 
     installments_number = None
@@ -11940,8 +12074,7 @@ def webpay_retorno(request):
             logger.warning(
                 (
                     "Webpay devolvió installments_number "
-                    "inválido. "
-                    "Pedido sesión=%s valor=%s"
+                    "inválido. Pedido sesión=%s valor=%s"
                 ),
                 numero_pedido_sesion,
                 installments_number_raw,
@@ -11950,7 +12083,7 @@ def webpay_retorno(request):
             installments_number = None
 
     # =========================================================================
-    # NORMALIZAR FECHA DE TRANSACCIÓN
+    # FECHA
     # =========================================================================
 
     transaction_date = None
@@ -11976,17 +12109,18 @@ def webpay_retorno(request):
                     transaction_date_raw
                 )
 
-            if transaction_date is not None:
-
-                if timezone.is_naive(
+            if (
+                transaction_date is not None
+                and timezone.is_naive(
                     transaction_date
-                ):
+                )
+            ):
 
-                    transaction_date = (
-                        timezone.make_aware(
-                            transaction_date
-                        )
+                transaction_date = (
+                    timezone.make_aware(
+                        transaction_date
                     )
+                )
 
         except (
             TypeError,
@@ -11997,8 +12131,7 @@ def webpay_retorno(request):
             logger.warning(
                 (
                     "Webpay devolvió transaction_date "
-                    "inválida. "
-                    "Pedido sesión=%s valor=%s"
+                    "inválida. Pedido sesión=%s valor=%s"
                 ),
                 numero_pedido_sesion,
                 transaction_date_raw,
@@ -12007,7 +12140,7 @@ def webpay_retorno(request):
             transaction_date = None
 
     # =========================================================================
-    # LOG RESPUESTA TRANSBANK
+    # LOG RESPUESTA
     # =========================================================================
 
     logger.info(
@@ -12020,8 +12153,7 @@ def webpay_retorno(request):
             "authorization_code=%s "
             "payment_type_code=%s "
             "installments_number=%s "
-            "transaction_date=%s "
-            "pedido_sesion=%s"
+            "transaction_date=%s"
         ),
         response_code,
         status,
@@ -12031,11 +12163,10 @@ def webpay_retorno(request):
         payment_type_code,
         installments_number,
         transaction_date,
-        numero_pedido_sesion,
     )
 
     # =========================================================================
-    # VALIDAR BUY ORDER
+    # BUY ORDER
     # =========================================================================
 
     if not buy_order:
@@ -12057,7 +12188,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # BUSCAR PEDIDO
+    # PEDIDO
     # =========================================================================
 
     try:
@@ -12089,7 +12220,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # VALIDAR MÉTODO DE PAGO
+    # MÉTODO DE PAGO
     # =========================================================================
 
     metodo_pedido = str(
@@ -12126,7 +12257,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # VALIDAR PEDIDO CONTRA SESIÓN WEBPAY
+    # PEDIDO CONTRA SESIÓN
     # =========================================================================
 
     if (
@@ -12158,10 +12289,6 @@ def webpay_retorno(request):
             numero=pedido.numero,
         )
 
-    # =========================================================================
-    # VALIDAR PEDIDO EN CURSO
-    # =========================================================================
-
     if (
         pedido_pago_en_curso
         and pedido_pago_en_curso
@@ -12192,7 +12319,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # VALIDAR MONTO
+    # MONTO
     # =========================================================================
 
     try:
@@ -12234,7 +12361,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # COMPARAR MONTO
+    # MONTO DISTINTO
     # =========================================================================
 
     if amount != total_pedido:
@@ -12319,7 +12446,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # VALIDAR APROBACIÓN TRANSBANK
+    # APROBACIÓN TRANSBANK
     # =========================================================================
 
     aprobado = bool(
@@ -12328,7 +12455,7 @@ def webpay_retorno(request):
     )
 
     # =========================================================================
-    # TRANSBANK RECHAZÓ EL PAGO
+    # RECHAZADO
     # =========================================================================
 
     if not aprobado:
@@ -12403,10 +12530,6 @@ def webpay_retorno(request):
             ]
         )
 
-        # ---------------------------------------------------------------------
-        # LIBERAR DESCUENTO
-        # ---------------------------------------------------------------------
-
         try:
 
             _liberar_descuento_si_corresponde(
@@ -12418,15 +12541,10 @@ def webpay_retorno(request):
             logger.exception(
                 (
                     "Error liberando descuento "
-                    "tras rechazo Webpay. "
-                    "Pedido=%s"
+                    "tras rechazo Webpay. Pedido=%s"
                 ),
                 pedido.numero,
             )
-
-        # ---------------------------------------------------------------------
-        # LIMPIAR SESIÓN
-        # ---------------------------------------------------------------------
 
         request.session.pop(
             "webpay_token",
@@ -12445,26 +12563,6 @@ def webpay_retorno(request):
 
         request.session.modified = True
 
-        logger.info(
-            (
-                "Rechazo Webpay persistido. "
-                "Pedido=%s "
-                "estado=%s "
-                "estado_pago=%s "
-                "pagado=%s "
-                "response_code=%s "
-                "installments_number=%s "
-                "transaction_date=%s."
-            ),
-            pedido.numero,
-            pedido.estado,
-            pedido.estado_pago,
-            pedido.pagado,
-            pedido.webpay_response_code,
-            pedido.webpay_installments_number,
-            pedido.webpay_transaction_date,
-        )
-
         messages.error(
             request,
             (
@@ -12479,7 +12577,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # WEBPAY CONFIRMÓ EL PAGO
+    # WEBPAY AUTORIZADO
     # =========================================================================
 
     logger.info(
@@ -12488,20 +12586,16 @@ def webpay_retorno(request):
             "Pedido=%s "
             "response_code=%s "
             "status=%s "
-            "amount=%s "
-            "installments_number=%s "
-            "transaction_date=%s"
+            "amount=%s"
         ),
         pedido.numero,
         response_code,
         status,
         amount,
-        installments_number,
-        transaction_date,
     )
 
     # =========================================================================
-    # ÚLTIMOS DÍGITOS TARJETA
+    # ÚLTIMOS 4 DÍGITOS
     # =========================================================================
 
     card_number = ""
@@ -12518,6 +12612,13 @@ def webpay_retorno(request):
             )
             or ""
         ).strip()
+
+    # Nunca necesitamos conservar más de 4.
+    card_number = (
+        card_number[-4:]
+        if card_number
+        else ""
+    )
 
     # =========================================================================
     # MARCAR PEDIDO COMO PAGADO
@@ -12635,7 +12736,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # ASEGURAR PERSISTENCIA DE TODOS LOS DATOS WEBPAY
+    # PERSISTIR DATOS WEBPAY
     # =========================================================================
 
     pedido.webpay_token = (
@@ -12729,7 +12830,128 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # LOG DE DATOS WEBPAY PERSISTIDOS
+    # NUEVO: GUARDAR COMPROBANTE DE PAGO
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # Llegamos aquí solamente después de:
+    #
+    # - response_code == 0;
+    # - status == AUTHORIZED;
+    # - buy_order válido;
+    # - monto correcto;
+    # - Pedido realmente aprobado.
+    #
+    # Si falla la creación del comprobante, NO revertimos el pago.
+    # =========================================================================
+
+    try:
+
+        comprobante = (
+            guardar_comprobante_webpay(
+                pedido=pedido,
+
+                respuesta={
+                    "response_code": (
+                        response_code
+                    ),
+
+                    "status": (
+                        status
+                    ),
+
+                    "buy_order": (
+                        buy_order
+                    ),
+
+                    "authorization_code": (
+                        authorization_code
+                    ),
+
+                    "payment_type_code": (
+                        payment_type_code
+                    ),
+
+                    "installments_number": (
+                        installments_number
+                    ),
+
+                    "transaction_date": (
+                        transaction_date
+                    ),
+
+                    "amount": (
+                        amount
+                    ),
+
+                    "card_detail": {
+                        "card_number": (
+                            card_number
+                        ),
+                    },
+                },
+            )
+        )
+
+        if comprobante is not None:
+
+            logger.info(
+                (
+                    "Comprobante Webpay guardado "
+                    "correctamente. "
+                    "Pedido=%s "
+                    "Comprobante=%s."
+                ),
+                pedido.numero,
+                comprobante.pk,
+            )
+
+        else:
+
+            logger.warning(
+                (
+                    "guardar_comprobante_webpay() "
+                    "no creó comprobante. "
+                    "Pedido=%s."
+                ),
+                pedido.numero,
+            )
+
+    except Exception as error:
+
+        # ---------------------------------------------------------------------
+        # MUY IMPORTANTE:
+        #
+        # El pago YA fue confirmado.
+        #
+        # No debemos:
+        #
+        # - poner pagado=False;
+        # - poner estado_pago=REVISION;
+        # - liberar stock;
+        # - liberar descuento;
+        # - mostrar pago rechazado.
+        #
+        # El problema queda registrado para poder reconstruir
+        # el comprobante posteriormente.
+        # ---------------------------------------------------------------------
+
+        logger.exception(
+            (
+                "No fue posible guardar el "
+                "comprobante Webpay. "
+                "Pedido=%s "
+                "authorization_code=%s "
+                "Error=%s."
+            ),
+            pedido.numero,
+            authorization_code or "vacío",
+            error,
+        )
+
+    # =========================================================================
+    # LOG DATOS WEBPAY
     # =========================================================================
 
     logger.info(
@@ -12832,7 +13054,7 @@ def webpay_retorno(request):
         )
 
     # =========================================================================
-    # LIMPIAR INFORMACIÓN TEMPORAL WEBPAY
+    # LIMPIAR SESIÓN WEBPAY
     # =========================================================================
 
     request.session.pop(
@@ -12902,6 +13124,7 @@ def webpay_retorno(request):
         "core:pedido_confirmacion",
         numero=pedido.numero,
     )
+
 
 
 
@@ -13489,3 +13712,5 @@ def cambiar_estado_resena(
         resena.producto.get_absolute_url()
         + f"#resena-{resena.pk}"
     )
+
+

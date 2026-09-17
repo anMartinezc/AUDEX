@@ -1,0 +1,1170 @@
+{% extends 'core/base.html' %}
+{% load static humanize %}
+
+
+{% block title %}
+Comprobante de pago {{ pedido.numero }} | Audex
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/comprobante_pago.css' %}?v=2"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="comprobante">
+
+    <div class="contenedor comprobante__contenedor">
+
+
+        <!-- =====================================================
+             ACCIONES DE LA PÁGINA
+             NO APARECEN EN EL PDF
+        ====================================================== -->
+
+        <div class="comprobante__acciones-superiores">
+
+            <button
+                type="button"
+                class="comprobante__volver"
+                onclick="window.history.back();"
+            >
+                <i class="bi bi-arrow-left"></i>
+
+                Atrás
+            </button>
+
+            <button
+                type="button"
+                class="comprobante__imprimir"
+                id="btn-imprimir-comprobante"
+            >
+                <i class="bi bi-file-earmark-pdf"></i>
+
+                Descargar / Guardar PDF
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+             DOCUMENTO PRINCIPAL
+        ====================================================== -->
+
+        <article
+            class="comprobante-documento"
+            id="comprobante-documento"
+        >
+
+
+            <!-- =================================================
+                 CABECERA CORPORATIVA
+            ================================================== -->
+
+            <header class="comprobante-documento__cabecera">
+
+                <!-- =============================================
+                     MARCA
+                ============================================== -->
+
+                <div class="comprobante-marca">
+
+                    <div class="comprobante-marca__isotipo">
+
+                        <img
+                            src="{% static 'core/img/LogoAudex9.png' %}"
+                            alt="Logo Audex"
+                            class="comprobante-marca__logo"
+                        >
+
+                    </div>
+
+
+                    <div class="comprobante-marca__texto">
+
+                        <strong>
+                            AUDEX
+                        </strong>
+
+                        <span>
+                            Tecnología para tu día a día
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     IDENTIFICACIÓN DEL DOCUMENTO
+                ============================================== -->
+
+                <div class="comprobante-documento__identificacion">
+
+                    <span class="comprobante-documento__tipo">
+                        Comprobante de pago
+                    </span>
+
+                    <strong class="comprobante-documento__numero">
+                        {{ pedido.numero }}
+                    </strong>
+
+                    <div class="comprobante-documento__estado">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        <span>
+                            Pago aprobado
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- =================================================
+                 LÍNEA CORPORATIVA
+            ================================================== -->
+
+            <div class="comprobante-documento__linea"></div>
+
+
+            <!-- =================================================
+                 RESUMEN SUPERIOR
+            ================================================== -->
+
+            <section class="comprobante-resumen-superior">
+
+
+                <!-- =============================================
+                     PEDIDO
+                ============================================== -->
+
+                <div class="comprobante-resumen-superior__dato">
+
+                    <span>
+                        Pedido
+                    </span>
+
+                    <strong>
+                        {{ pedido.numero }}
+                    </strong>
+
+                </div>
+
+
+                <!-- =============================================
+                     FECHA
+                ============================================== -->
+
+                <div class="comprobante-resumen-superior__dato">
+
+                    <span>
+                        Fecha del pago
+                    </span>
+
+                    <strong>
+
+                        {% if comprobante.fecha_pago %}
+
+                            {{ comprobante.fecha_pago|date:"d/m/Y H:i" }}
+
+                        {% elif pedido.fecha_pago %}
+
+                            {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+
+                        {% else %}
+
+                            No disponible
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- =============================================
+                     MEDIO DE PAGO
+                ============================================== -->
+
+                <div class="comprobante-resumen-superior__dato">
+
+                    <span>
+                        Medio de pago
+                    </span>
+
+                    <strong>
+
+                        {% if comprobante.proveedor == "webpay" %}
+
+                            Webpay / Transbank
+
+                        {% elif comprobante.proveedor == "mercadopago" %}
+
+                            Mercado Pago
+
+                        {% else %}
+
+                            {{ comprobante.get_proveedor_display }}
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- =============================================
+                     MONEDA
+                ============================================== -->
+
+                <div class="comprobante-resumen-superior__dato">
+
+                    <span>
+                        Moneda
+                    </span>
+
+                    <strong>
+                        {{ comprobante.moneda|default:"CLP" }}
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 ESTADO DEL PAGO
+            ================================================== -->
+
+            <div class="comprobante-confirmacion">
+
+                <div class="comprobante-confirmacion__icono">
+
+                    <i class="bi bi-check-lg"></i>
+
+                </div>
+
+
+                <div class="comprobante-confirmacion__contenido">
+
+                    <span>
+                        Transacción confirmada
+                    </span>
+
+                    <strong>
+                        Pago procesado correctamente
+                    </strong>
+
+                    <p>
+                        Audex registró correctamente el pago asociado
+                        al pedido
+                        <strong>
+                            {{ pedido.numero }}
+                        </strong>.
+                    </p>
+
+                </div>
+
+
+                <div class="comprobante-confirmacion__monto">
+
+                    <span>
+                        Total pagado
+                    </span>
+
+                    <strong>
+                        ${{ comprobante.monto|default:pedido.total|floatformat:0|intcomma }}
+                    </strong>
+
+                    <small>
+                        {{ comprobante.moneda|default:"CLP" }}
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CLIENTE
+            ================================================== -->
+
+            <section class="comprobante-seccion">
+
+                <div class="comprobante-seccion__titulo">
+
+                    <span>
+                        Cliente
+                    </span>
+
+                    <h2>
+                        Información de la compra
+                    </h2>
+
+                </div>
+
+
+                <div class="comprobante-cliente">
+
+
+                    <!-- =========================================
+                         NOMBRE
+                    ========================================== -->
+
+                    <div class="comprobante-cliente__dato">
+
+                        <span>
+                            Nombre
+                        </span>
+
+                        <strong>
+
+                            {% if pedido.nombre or pedido.apellido %}
+
+                                {{ pedido.nombre }}
+                                {{ pedido.apellido }}
+
+                            {% elif pedido.usuario %}
+
+                                {{ pedido.usuario.get_full_name|default:pedido.usuario.username }}
+
+                            {% else %}
+
+                                Cliente Audex
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         EMAIL
+                    ========================================== -->
+
+                    <div class="comprobante-cliente__dato">
+
+                        <span>
+                            Correo electrónico
+                        </span>
+
+                        <strong>
+                            {{ pedido.email|default:"No disponible" }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 PRODUCTOS
+            ================================================== -->
+
+            <section class="comprobante-seccion comprobante-seccion--productos">
+
+                <div class="comprobante-seccion__titulo">
+
+                    <span>
+                        Detalle
+                    </span>
+
+                    <h2>
+                        Productos comprados
+                    </h2>
+
+                </div>
+
+
+                <!-- =============================================
+                     TABLA DESKTOP / PDF
+                ============================================== -->
+
+                <div class="comprobante-tabla-wrapper">
+
+                    <table class="comprobante-tabla">
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="comprobante-tabla__producto">
+                                    Producto
+                                </th>
+
+                                <th>
+                                    Cant.
+                                </th>
+
+                                <th>
+                                    Precio unitario
+                                </th>
+
+                                <th>
+                                    Total
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for item in pedido.items.all %}
+
+                                <tr>
+
+                                    <!-- =================================
+                                         PRODUCTO
+                                    ================================== -->
+
+                                    <td class="comprobante-tabla__producto">
+
+                                        <strong>
+                                            {{ item.nombre_producto }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <!-- =================================
+                                         CANTIDAD
+                                    ================================== -->
+
+                                    <td>
+                                        {{ item.cantidad }}
+                                    </td>
+
+
+                                    <!-- =================================
+                                         PRECIO
+                                    ================================== -->
+
+                                    <td>
+                                        ${{ item.precio_unitario|floatformat:0|intcomma }}
+                                    </td>
+
+
+                                    <!-- =================================
+                                         TOTAL
+                                    ================================== -->
+
+                                    <td>
+
+                                        <strong>
+                                            ${{ item.total_final|default:item.total|floatformat:0|intcomma }}
+                                        </strong>
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+
+                                    <td colspan="4">
+
+                                        No se encontraron productos
+                                        asociados al pedido.
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- =============================================
+                     PRODUCTOS MOBILE
+                ============================================== -->
+
+                <div class="comprobante-productos-mobile">
+
+                    {% for item in pedido.items.all %}
+
+                        <article class="comprobante-producto-mobile">
+
+
+                            <div class="comprobante-producto-mobile__nombre">
+
+                                <span>
+                                    Producto
+                                </span>
+
+                                <strong>
+                                    {{ item.nombre_producto }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="comprobante-producto-mobile__fila">
+
+                                <div>
+
+                                    <span>
+                                        Cantidad
+                                    </span>
+
+                                    <strong>
+                                        {{ item.cantidad }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Precio
+                                    </span>
+
+                                    <strong>
+                                        ${{ item.precio_unitario|floatformat:0|intcomma }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Total
+                                    </span>
+
+                                    <strong>
+                                        ${{ item.total_final|default:item.total|floatformat:0|intcomma }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    {% empty %}
+
+                        <div class="comprobante-producto-mobile">
+
+                            No hay productos asociados.
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 RESUMEN ECONÓMICO
+            ================================================== -->
+
+            <section class="comprobante-totales">
+
+
+                <!-- =============================================
+                     INFORMACIÓN
+                ============================================== -->
+
+                <div class="comprobante-totales__informacion">
+
+                    <div class="comprobante-totales__seguridad">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <div>
+
+                            <strong>
+                                Pago verificado
+                            </strong>
+
+                            <span>
+                                Información obtenida del proveedor
+                                de pago asociado a la compra.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     TOTALES
+                ============================================== -->
+
+                <div class="comprobante-totales__valores">
+
+
+                    <!-- =========================================
+                         SUBTOTAL
+                    ========================================== -->
+
+                    <div class="comprobante-totales__fila">
+
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <strong>
+                            ${{ pedido.subtotal|floatformat:0|intcomma }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         DESCUENTO
+                    ========================================== -->
+
+                    {% if pedido.descuento > 0 %}
+
+                        <div
+                            class="
+                                comprobante-totales__fila
+                                comprobante-totales__fila--descuento
+                            "
+                        >
+
+                            <span>
+                                Descuento
+                            </span>
+
+                            <strong>
+                                -${{ pedido.descuento|floatformat:0|intcomma }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         DESPACHO
+                    ========================================== -->
+
+                    <div class="comprobante-totales__fila">
+
+                        <span>
+                            Despacho
+                        </span>
+
+                        <strong>
+
+                            {% if pedido.despacho > 0 %}
+
+                                ${{ pedido.despacho|floatformat:0|intcomma }}
+
+                            {% else %}
+
+                                Gratis
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         TOTAL
+                    ========================================== -->
+
+                    <div
+                        class="
+                            comprobante-totales__fila
+                            comprobante-totales__fila--principal
+                        "
+                    >
+
+                        <span>
+                            Total pagado
+                        </span>
+
+                        <strong>
+                            ${{ comprobante.monto|default:pedido.total|floatformat:0|intcomma }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 DATOS DE LA TRANSACCIÓN
+            ================================================== -->
+
+            <section class="comprobante-seccion">
+
+                <div class="comprobante-seccion__titulo">
+
+                    <span>
+                        Transacción
+                    </span>
+
+                    <h2>
+                        Datos del pago
+                    </h2>
+
+                </div>
+
+
+                <div class="comprobante-transaccion">
+
+
+                    <!-- =========================================
+                         PROVEEDOR
+                    ========================================== -->
+
+                    <div class="comprobante-transaccion__dato">
+
+                        <span>
+                            Proveedor
+                        </span>
+
+                        <strong>
+
+                            {% if comprobante.proveedor == "webpay" %}
+
+                                Transbank
+
+                            {% elif comprobante.proveedor == "mercadopago" %}
+
+                                Mercado Pago
+
+                            {% else %}
+
+                                {{ comprobante.get_proveedor_display }}
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         ESTADO
+                    ========================================== -->
+
+                    <div class="comprobante-transaccion__dato">
+
+                        <span>
+                            Estado
+                        </span>
+
+                        <strong class="comprobante-transaccion__aprobado">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            Aprobado
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         PAYMENT ID
+                    ========================================== -->
+
+                    {% if comprobante.id_transaccion %}
+
+                        <div class="comprobante-transaccion__dato">
+
+                            <span>
+                                ID de transacción
+                            </span>
+
+                            <strong class="comprobante-transaccion__codigo">
+                                {{ comprobante.id_transaccion }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         REFERENCIA
+                    ========================================== -->
+
+                    {% if comprobante.referencia %}
+
+                        <div class="comprobante-transaccion__dato">
+
+                            <span>
+                                Referencia
+                            </span>
+
+                            <strong class="comprobante-transaccion__codigo">
+                                {{ comprobante.referencia }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         AUTORIZACIÓN
+                    ========================================== -->
+
+                    {% if comprobante.codigo_autorizacion %}
+
+                        <div class="comprobante-transaccion__dato">
+
+                            <span>
+                                Código de autorización
+                            </span>
+
+                            <strong class="comprobante-transaccion__codigo">
+                                {{ comprobante.codigo_autorizacion }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         MÉTODO
+                    ========================================== -->
+
+                    {% if comprobante.metodo_pago %}
+
+                        <div class="comprobante-transaccion__dato">
+
+                            <span>
+                                Método
+                            </span>
+
+                            <strong>
+                                {{ comprobante.metodo_pago }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         TIPO
+                    ========================================== -->
+
+                    {% if comprobante.tipo_pago %}
+
+                        <div class="comprobante-transaccion__dato">
+
+                            <span>
+                                Tipo de pago
+                            </span>
+
+                            <strong>
+                                {{ comprobante.tipo_pago }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         TARJETA
+                    ========================================== -->
+
+                    {% if comprobante.ultimos_4 %}
+
+                        <div class="comprobante-transaccion__dato">
+
+                            <span>
+                                Tarjeta
+                            </span>
+
+                            <strong class="comprobante-transaccion__tarjeta">
+
+                                <i class="bi bi-credit-card-2-front"></i>
+
+                                •••• {{ comprobante.ultimos_4 }}
+
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =========================================
+                         CUOTAS
+                    ========================================== -->
+
+                    {% if comprobante.cuotas %}
+
+                        <div class="comprobante-transaccion__dato">
+
+                            <span>
+                                Cuotas
+                            </span>
+
+                            <strong>
+                                {{ comprobante.cuotas }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 DIRECCIÓN DE DESPACHO
+            ================================================== -->
+
+            <section class="comprobante-seccion">
+
+                <div class="comprobante-seccion__titulo">
+
+                    <span>
+                        Entrega
+                    </span>
+
+                    <h2>
+                        Dirección de despacho
+                    </h2>
+
+                </div>
+
+
+                <div class="comprobante-direccion">
+
+                    <div class="comprobante-direccion__icono">
+
+                        <i class="bi bi-geo-alt"></i>
+
+                    </div>
+
+
+                    <div class="comprobante-direccion__datos">
+
+                        <strong>
+                            {{ pedido.nombre }}
+                            {{ pedido.apellido }}
+                        </strong>
+
+                        <p>
+
+                            {{ pedido.direccion }}
+                            {{ pedido.numero_direccion }}
+
+                            {% if pedido.departamento %}
+
+                                , {{ pedido.departamento }}
+
+                            {% endif %}
+
+                            <br>
+
+                            {{ pedido.comuna }},
+                            {{ pedido.region }}
+
+                        </p>
+
+
+                        {% if pedido.referencia %}
+
+                            <span>
+                                Referencia:
+                                {{ pedido.referencia }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 NOTA LEGAL / INFORMATIVA
+            ================================================== -->
+
+            <section class="comprobante-documento__nota">
+
+                <i class="bi bi-info-circle"></i>
+
+                <p>
+                    Este documento corresponde a un
+                    <strong>
+                        comprobante de pago
+                    </strong>
+                    generado por Audex a partir de la información
+                    verificada del proveedor de pago. No reemplaza
+                    el documento tributario electrónico asociado
+                    a la compra cuando corresponda.
+                </p>
+
+            </section>
+
+
+            <!-- =================================================
+                 PIE CORPORATIVO
+            ================================================== -->
+
+            <footer class="comprobante-documento__pie">
+
+                <div class="comprobante-documento__pie-marca">
+
+                    <strong>
+                        AUDEX
+                    </strong>
+
+                    <span>
+                        Comprobante generado electrónicamente
+                    </span>
+
+                </div>
+
+
+                <div class="comprobante-documento__pie-centro">
+
+                    <span>
+                        Pedido
+                    </span>
+
+                    <strong>
+                        {{ pedido.numero }}
+                    </strong>
+
+                </div>
+
+
+                <div class="comprobante-documento__pie-web">
+
+                    <span>
+                        audex.cl
+                    </span>
+
+                </div>
+
+            </footer>
+
+
+            <!-- =================================================
+                 PIE EXCLUSIVO PARA IMPRESIÓN
+            ================================================== -->
+
+            <div class="comprobante-print-footer">
+
+                <span>
+                    AUDEX · audex.cl
+                </span>
+
+                <span>
+                    {{ pedido.numero }}
+                </span>
+
+            </div>
+
+        </article>
+
+
+        <!-- =====================================================
+             NOTA FUERA DEL DOCUMENTO
+             NO SE IMPRIME
+        ====================================================== -->
+
+        <div class="comprobante__nota">
+
+            <i class="bi bi-shield-check"></i>
+
+            <div>
+
+                <strong>
+                    Tu información está protegida
+                </strong>
+
+                <p>
+                    El comprobante solo muestra información
+                    necesaria para identificar tu compra.
+                    Nunca mostramos el número completo de tu tarjeta.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            // =============================================================
+            // IMPRIMIR / GUARDAR COMO PDF
+            // =============================================================
+
+            const botonImprimir =
+                document.getElementById(
+                    "btn-imprimir-comprobante"
+                );
+
+            if (
+                botonImprimir
+            ) {
+
+                botonImprimir.addEventListener(
+                    "click",
+                    () => {
+
+                        window.print();
+
+                    },
+                );
+
+            }
+
+        },
+    );
+</script>
+
+{% endblock %}

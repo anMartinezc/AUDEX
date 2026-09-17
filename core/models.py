@@ -4590,3 +4590,119 @@ class CorreoPedido(models.Model):
             f"{self.email} · "
             f"{self.get_tipo_display()}"
         )
+
+
+
+class ComprobantePago(models.Model):
+
+    class Proveedor(models.TextChoices):
+        WEBPAY = "webpay", "Webpay / Transbank"
+        MERCADO_PAGO = "mercadopago", "Mercado Pago"
+
+    class Estado(models.TextChoices):
+        APROBADO = "aprobado", "Aprobado"
+        PENDIENTE = "pendiente", "Pendiente"
+        RECHAZADO = "rechazado", "Rechazado"
+        ANULADO = "anulado", "Anulado"
+        REEMBOLSADO = "reembolsado", "Reembolsado"
+
+    pedido = models.OneToOneField(
+        "Pedido",
+        on_delete=models.CASCADE,
+        related_name="comprobante_pago",
+    )
+
+    proveedor = models.CharField(
+        max_length=30,
+        choices=Proveedor.choices,
+        db_index=True,
+    )
+
+    estado = models.CharField(
+        max_length=20,
+        choices=Estado.choices,
+        default=Estado.PENDIENTE,
+        db_index=True,
+    )
+
+    # Estado original informado por Webpay / Mercado Pago.
+    estado_proveedor = models.CharField(
+        max_length=50,
+        blank=True,
+    )
+
+    # Payment ID de Mercado Pago u otro identificador.
+    id_transaccion = models.CharField(
+        max_length=100,
+        blank=True,
+        db_index=True,
+    )
+
+    # buy_order Webpay / external_reference Mercado Pago.
+    referencia = models.CharField(
+        max_length=100,
+        blank=True,
+        db_index=True,
+    )
+
+    codigo_autorizacion = models.CharField(
+        max_length=50,
+        blank=True,
+    )
+
+    monto = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
+    moneda = models.CharField(
+        max_length=10,
+        default="CLP",
+    )
+
+    fecha_pago = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    metodo_pago = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    tipo_pago = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    ultimos_4 = models.CharField(
+        max_length=4,
+        blank=True,
+    )
+
+    cuotas = models.PositiveIntegerField(
+        default=0,
+    )
+
+    # Solo almacenaremos información segura y necesaria.
+    datos_respaldo = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    actualizado = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Comprobante de pago"
+        verbose_name_plural = "Comprobantes de pago"
+        ordering = ["-creado"]
+
+    def __str__(self):
+        return f"{self.pedido.numero} - {self.get_proveedor_display()}"

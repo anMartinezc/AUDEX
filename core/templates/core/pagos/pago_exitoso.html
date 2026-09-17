@@ -10,7 +10,7 @@ Compra confirmada | Audex
 {% block extra_css %}
 <link
     rel="stylesheet"
-    href="{% static 'core/css/pago_exitoso.css' %}?v=8"
+    href="{% static 'core/css/pago_exitoso.css' %}?v=9"
 >
 {% endblock %}
 
@@ -51,6 +51,7 @@ Compra confirmada | Audex
                     enviarlos lo antes posible.
                 </p>
 
+
                 <!-- =================================================
                      NÚMERO DE PEDIDO
                 ================================================== -->
@@ -77,15 +78,33 @@ Compra confirmada | Audex
 
                 </div>
 
+
                 <!-- =================================================
                      ACCIONES PRINCIPALES
                 ================================================== -->
 
                 <div class="pago-exitoso__acciones">
 
+                    {% if pedido.comprobante_pago %}
+
+                        {% if pedido.comprobante_pago.estado == "aprobado" %}
+
+                            <a
+                                href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                class="boton boton--primario"
+                            >
+                                <i class="bi bi-receipt"></i>
+                                Ver comprobante
+                            </a>
+
+                        {% endif %}
+
+                    {% endif %}
+
+
                     <a
                         href="{% url 'core:productos' %}"
-                        class="boton boton--primario"
+                        class="boton boton--secundario"
                     >
                         Seguir comprando
                         <i class="bi bi-arrow-right"></i>
@@ -593,6 +612,22 @@ Compra confirmada | Audex
                             </div>
 
 
+                            {% if pedido.webpay_authorization_code %}
+
+                                <div class="pago-datos__fila">
+
+                                    <span>
+                                        Autorización
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.webpay_authorization_code }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
+
 
                             <div class="pago-datos__fila">
 
@@ -683,75 +718,355 @@ Compra confirmada | Audex
         <!-- =====================================================
              DOCUMENTOS DE LA COMPRA
         ====================================================== -->
-        <article
-            id="nubox-documento"
-            class="pago-tarjeta"
-            data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
-            data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
+
+        <section
             style="
                 margin-top: 28px;
-                overflow: hidden;
-                padding: 0;
+                display: grid;
+                gap: 20px;
             "
         >
 
-            <div
-                style="
-                    padding: 28px 30px 20px;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                "
-            >
-
-                <span class="pago-tarjeta__eyebrow">
-                    Documentos de la compra
-                </span>
-
-                <h2
-                    style="
-                        margin-top: 8px;
-                        margin-bottom: 8px;
-                    "
-                >
-                    BOLETA ELECTRÓNICA
-                </h2>
-
-               
-
-            </div>
-
-
             <!-- =================================================
-                BOLETA ELECTRÓNICA
+                 COMPROBANTE DE PAGO AUDEX
             ================================================== -->
 
-            <div
-                id="nubox-contenido"
-                aria-live="polite"
-            >
+            {% if pedido.comprobante_pago %}
 
-                {% if pedido.nubox_disponible %}
-
-                    <!-- =============================================
-                        BOLETA DISPONIBLE
-                    ============================================== -->
+                <article
+                    class="pago-tarjeta"
+                    style="
+                        overflow: hidden;
+                        padding: 0;
+                    "
+                >
 
                     <div
                         style="
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            gap: 22px;
-                            padding: 24px 30px;
-                            flex-wrap: wrap;
+                            padding: 28px 30px 20px;
+                            border-bottom:
+                                1px solid rgba(255, 255, 255, 0.08);
                         "
                     >
+
+                        <span class="pago-tarjeta__eyebrow">
+                            Documentos de la compra
+                        </span>
+
+                        <h2
+                            style="
+                                margin-top: 8px;
+                                margin-bottom: 8px;
+                            "
+                        >
+                            Comprobante de pago
+                        </h2>
+
+                        <p
+                            style="
+                                margin: 0;
+                                color: var(--color-gris-claro);
+                                line-height: 1.6;
+                            "
+                        >
+                            Respaldo de la transacción realizada
+                            para este pedido.
+                        </p>
+
+                    </div>
+
+
+                    {% if pedido.comprobante_pago.estado == "aprobado" %}
+
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: 22px;
+                                padding: 24px 30px;
+                                flex-wrap: wrap;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 18px;
+                                    min-width: 0;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        width: 52px;
+                                        height: 52px;
+                                        flex: 0 0 52px;
+                                        display: grid;
+                                        place-items: center;
+                                        border-radius: 14px;
+                                        background:
+                                            rgba(92, 207, 242, 0.10);
+                                        border:
+                                            1px solid rgba(92, 207, 242, 0.18);
+                                        color: var(--color-celeste);
+                                        font-size: 1.35rem;
+                                    "
+                                >
+                                    <i class="bi bi-receipt-cutoff"></i>
+                                </div>
+
+
+                                <div
+                                    style="
+                                        min-width: 0;
+                                    "
+                                >
+
+                                    <strong
+                                        style="
+                                            display: block;
+                                            margin-bottom: 5px;
+                                            font-size: 1.05rem;
+                                        "
+                                    >
+                                        Comprobante disponible
+                                    </strong>
+
+
+                                    <span
+                                        style="
+                                            display: block;
+                                            color: var(--color-gris-claro);
+                                            font-size: .92rem;
+                                        "
+                                    >
+
+                                        {% if pedido.comprobante_pago.proveedor == "webpay" %}
+
+                                            Pago procesado mediante
+                                            Webpay / Transbank.
+
+                                        {% elif pedido.comprobante_pago.proveedor == "mercadopago" %}
+
+                                            Pago procesado mediante
+                                            Mercado Pago.
+
+                                        {% else %}
+
+                                            Pago confirmado correctamente.
+
+                                        {% endif %}
+
+                                    </span>
+
+
+                                    {% if pedido.comprobante_pago.id_transaccion %}
+
+                                        <span
+                                            style="
+                                                display: block;
+                                                margin-top: 5px;
+                                                color: var(--color-gris-claro);
+                                                font-size: .86rem;
+                                                word-break: break-word;
+                                            "
+                                        >
+                                            ID:
+                                            {{ pedido.comprobante_pago.id_transaccion }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <a
+                                href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                class="boton boton--primario"
+                            >
+                                <i class="bi bi-receipt"></i>
+                                Ver comprobante
+                            </a>
+
+                        </div>
+
+
+                        <!-- =============================================
+                             DATOS RÁPIDOS
+                        ============================================== -->
+
+                        <div
+                            style="
+                                display: grid;
+                                grid-template-columns:
+                                    repeat(auto-fit, minmax(180px, 1fr));
+                                gap: 1px;
+                                background:
+                                    rgba(255, 255, 255, 0.06);
+                                border-top:
+                                    1px solid rgba(255, 255, 255, 0.08);
+                            "
+                        >
+
+                            <div
+                                style="
+                                    padding: 20px 24px;
+                                    background:
+                                        rgba(10, 14, 20, 0.96);
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: block;
+                                        margin-bottom: 6px;
+                                        color: var(--color-gris-claro);
+                                        font-size: .82rem;
+                                    "
+                                >
+                                    Monto
+                                </span>
+
+                                <strong>
+                                    ${{ pedido.comprobante_pago.monto|floatformat:0|intcomma }}
+                                </strong>
+                            </div>
+
+
+                            <div
+                                style="
+                                    padding: 20px 24px;
+                                    background:
+                                        rgba(10, 14, 20, 0.96);
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: block;
+                                        margin-bottom: 6px;
+                                        color: var(--color-gris-claro);
+                                        font-size: .82rem;
+                                    "
+                                >
+                                    Estado
+                                </span>
+
+                                <strong
+                                    style="
+                                        color: var(--color-celeste);
+                                    "
+                                >
+                                    Aprobado
+                                </strong>
+                            </div>
+
+
+                            {% if pedido.comprobante_pago.fecha_pago %}
+
+                                <div
+                                    style="
+                                        padding: 20px 24px;
+                                        background:
+                                            rgba(10, 14, 20, 0.96);
+                                    "
+                                >
+                                    <span
+                                        style="
+                                            display: block;
+                                            margin-bottom: 6px;
+                                            color: var(--color-gris-claro);
+                                            font-size: .82rem;
+                                        "
+                                    >
+                                        Fecha
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.comprobante_pago.fecha_pago|date:"d/m/Y H:i" }}
+                                    </strong>
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if pedido.comprobante_pago.ultimos_4 %}
+
+                                <div
+                                    style="
+                                        padding: 20px 24px;
+                                        background:
+                                            rgba(10, 14, 20, 0.96);
+                                    "
+                                >
+                                    <span
+                                        style="
+                                            display: block;
+                                            margin-bottom: 6px;
+                                            color: var(--color-gris-claro);
+                                            font-size: .82rem;
+                                        "
+                                    >
+                                        Tarjeta
+                                    </span>
+
+                                    <strong>
+                                        •••• {{ pedido.comprobante_pago.ultimos_4 }}
+                                    </strong>
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- =============================================
+                             ACLARACIÓN
+                        ============================================== -->
+
+                        <div
+                            style="
+                                padding: 18px 30px;
+                                border-top:
+                                    1px solid rgba(255, 255, 255, 0.08);
+                                background:
+                                    rgba(92, 207, 242, 0.035);
+                            "
+                        >
+
+                            <p
+                                style="
+                                    margin: 0;
+                                    color: var(--color-gris-claro);
+                                    font-size: .86rem;
+                                    line-height: 1.6;
+                                "
+                            >
+                                <i
+                                    class="bi bi-info-circle"
+                                    style="
+                                        color: var(--color-celeste);
+                                        margin-right: 6px;
+                                    "
+                                ></i>
+
+                                Este comprobante acredita el pago
+                                registrado por Audex.
+
+                            </p>
+
+                        </div>
+
+                    {% else %}
 
                         <div
                             style="
                                 display: flex;
                                 align-items: center;
                                 gap: 18px;
-                                min-width: 0;
+                                padding: 24px 30px;
                             "
                         >
 
@@ -763,51 +1078,366 @@ Compra confirmada | Audex
                                     display: grid;
                                     place-items: center;
                                     border-radius: 14px;
-                                    background: rgba(92, 207, 242, 0.10);
-                                    border: 1px solid rgba(92, 207, 242, 0.18);
-                                    color: var(--color-celeste);
-                                    font-size: 1.35rem;
+                                    background:
+                                        rgba(244, 201, 93, 0.10);
+                                    color: #f4c95d;
+                                    font-size: 1.3rem;
                                 "
                             >
-                                <i class="bi bi-receipt"></i>
+                                <i class="bi bi-hourglass-split"></i>
                             </div>
 
-
-                            <div
-                                style="
-                                    min-width: 0;
-                                "
-                            >
+                            <div>
 
                                 <strong
                                     style="
                                         display: block;
                                         margin-bottom: 5px;
-                                        font-size: 1.05rem;
                                     "
                                 >
-                                    Boleta electrónica disponible
+                                    Comprobante en preparación
                                 </strong>
 
                                 <span
                                     style="
-                                        display: block;
                                         color: var(--color-gris-claro);
-                                        font-size: .92rem;
+                                    "
+                                >
+                                    Tu pago está confirmado.
+                                    El comprobante estará disponible
+                                    en breve.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </article>
+
+
+            {% elif pedido.metodo_pago == "webpay" or pedido.metodo_pago == "mercadopago" %}
+
+                <!-- =================================================
+                     FALLBACK SI EL PAGO ESTÁ APROBADO
+                     PERO TODAVÍA NO EXISTE COMPROBANTE
+                ================================================== -->
+
+                <article
+                    class="pago-tarjeta"
+                    style="
+                        overflow: hidden;
+                        padding: 0;
+                    "
+                >
+
+                    <div
+                        style="
+                            padding: 28px 30px;
+                            display: flex;
+                            align-items: center;
+                            gap: 18px;
+                        "
+                    >
+
+                        <div
+                            style="
+                                width: 52px;
+                                height: 52px;
+                                flex: 0 0 52px;
+                                display: grid;
+                                place-items: center;
+                                border-radius: 14px;
+                                background:
+                                    rgba(244, 201, 93, 0.10);
+                                color: #f4c95d;
+                                font-size: 1.3rem;
+                            "
+                        >
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+
+                        <div>
+
+                            <span class="pago-tarjeta__eyebrow">
+                                Comprobante de pago
+                            </span>
+
+                            <h2
+                                style="
+                                    margin-top: 6px;
+                                    margin-bottom: 6px;
+                                "
+                            >
+                                Estamos preparando tu comprobante
+                            </h2>
+
+                            <p
+                                style="
+                                    margin: 0;
+                                    color: var(--color-gris-claro);
+                                "
+                            >
+                                Tu pago ya fue confirmado correctamente.
+                                El comprobante se generará utilizando
+                                los datos verificados del proveedor
+                                de pago.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 BOLETA ELECTRÓNICA NUBOX
+            ================================================== -->
+
+            <article
+                id="nubox-documento"
+                class="pago-tarjeta"
+                data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
+                data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
+                style="
+                    overflow: hidden;
+                    padding: 0;
+                "
+            >
+
+                <div
+                    style="
+                        padding: 28px 30px 20px;
+                        border-bottom:
+                            1px solid rgba(255, 255, 255, 0.08);
+                    "
+                >
+
+                    <span class="pago-tarjeta__eyebrow">
+                        Documento tributario
+                    </span>
+
+                    <h2
+                        style="
+                            margin-top: 8px;
+                            margin-bottom: 8px;
+                        "
+                    >
+                        Boleta electrónica
+                    </h2>
+
+                    <p
+                        style="
+                            margin: 0;
+                            color: var(--color-gris-claro);
+                            line-height: 1.6;
+                        "
+                    >
+                        Documento tributario electrónico asociado
+                        a tu compra.
+                    </p>
+
+                </div>
+
+
+                <div
+                    id="nubox-contenido"
+                    aria-live="polite"
+                >
+
+                    {% if pedido.nubox_disponible %}
+
+                        <!-- =============================================
+                             BOLETA DISPONIBLE
+                        ============================================== -->
+
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: 22px;
+                                padding: 24px 30px;
+                                flex-wrap: wrap;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 18px;
+                                    min-width: 0;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        width: 52px;
+                                        height: 52px;
+                                        flex: 0 0 52px;
+                                        display: grid;
+                                        place-items: center;
+                                        border-radius: 14px;
+                                        background:
+                                            rgba(92, 207, 242, 0.10);
+                                        border:
+                                            1px solid rgba(92, 207, 242, 0.18);
+                                        color: var(--color-celeste);
+                                        font-size: 1.35rem;
+                                    "
+                                >
+                                    <i class="bi bi-receipt"></i>
+                                </div>
+
+
+                                <div
+                                    style="
+                                        min-width: 0;
                                     "
                                 >
 
-                                    {% if pedido.nubox_folio %}
+                                    <strong
+                                        style="
+                                            display: block;
+                                            margin-bottom: 5px;
+                                            font-size: 1.05rem;
+                                        "
+                                    >
+                                        Boleta electrónica disponible
+                                    </strong>
 
-                                        Boleta N.º
-                                        {{ pedido.nubox_folio }}
+                                    <span
+                                        style="
+                                            display: block;
+                                            color: var(--color-gris-claro);
+                                            font-size: .92rem;
+                                        "
+                                    >
 
-                                    {% else %}
+                                        {% if pedido.nubox_folio %}
 
-                                        Tu documento ya está disponible.
+                                            Boleta N.º
+                                            {{ pedido.nubox_folio }}
 
-                                    {% endif %}
+                                        {% else %}
 
+                                            Tu documento tributario
+                                            ya está disponible.
+
+                                        {% endif %}
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            {% if pedido.nubox_url_pdf %}
+
+                                <a
+                                    href="{{ pedido.nubox_url_pdf }}"
+                                    class="boton boton--primario"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    <i class="bi bi-download"></i>
+                                    Descargar boleta
+                                </a>
+
+                            {% else %}
+
+                                <div
+                                    style="
+                                        width: 44px;
+                                        height: 44px;
+                                        flex: 0 0 44px;
+                                        display: grid;
+                                        place-items: center;
+                                        border-radius: 50%;
+                                        border:
+                                            1px solid rgba(255, 255, 255, 0.10);
+                                        color: var(--color-celeste);
+                                        font-size: 1.25rem;
+                                    "
+                                >
+                                    <i class="bi bi-check-lg"></i>
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                    {% elif pedido.nubox_tiene_error %}
+
+                        <!-- =============================================
+                             BOLETA NO EMITIDA DE INMEDIATO
+                        ============================================== -->
+
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 18px;
+                                padding: 24px 30px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    width: 52px;
+                                    height: 52px;
+                                    flex: 0 0 52px;
+                                    display: grid;
+                                    place-items: center;
+                                    border-radius: 14px;
+                                    background:
+                                        rgba(244, 201, 93, 0.10);
+                                    color: #f4c95d;
+                                    font-size: 1.3rem;
+                                "
+                            >
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+
+
+                            <div>
+
+                                <strong
+                                    style="
+                                        display: block;
+                                        margin-bottom: 5px;
+                                    "
+                                >
+                                    Tu boleta estará disponible en breve
+                                </strong>
+
+                                <span
+                                    data-nubox-estado
+                                    style="
+                                        color: var(--color-gris-claro);
+                                    "
+                                >
+                                    La enviaremos a tu correo y también
+                                    podrás descargarla desde este sitio.
+                                </span>
+
+                                <span
+                                    data-nubox-indicador
+                                    style="
+                                        display: block;
+                                        margin-top: 6px;
+                                        color: #f4c95d;
+                                        font-size: .82rem;
+                                    "
+                                >
+                                    Verificando estado...
                                 </span>
 
                             </div>
@@ -815,220 +1445,155 @@ Compra confirmada | Audex
                         </div>
 
 
-                        {% if pedido.nubox_url_pdf %}
+                    {% elif pedido.nubox_en_proceso %}
 
-                            <a
-                                href="{{ pedido.nubox_url_pdf }}"
-                                class="boton boton--primario"
-                                target="_blank"
-                                rel="noopener"
-                            >
-                                <i class="bi bi-download"></i>
+                        <!-- =============================================
+                             BOLETA EN PROCESO
+                        ============================================== -->
 
-                                Descargar boleta
-                            </a>
-
-                        {% else %}
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 18px;
+                                padding: 24px 30px;
+                            "
+                        >
 
                             <div
                                 style="
-                                    width: 44px;
-                                    height: 44px;
-                                    flex: 0 0 44px;
+                                    width: 52px;
+                                    height: 52px;
+                                    flex: 0 0 52px;
                                     display: grid;
                                     place-items: center;
-                                    border-radius: 50%;
-                                    border: 1px solid rgba(255, 255, 255, 0.10);
-                                    color: var(--color-celeste);
-                                    font-size: 1.25rem;
+                                    border-radius: 14px;
+                                    background:
+                                        rgba(244, 201, 93, 0.10);
+                                    color: #f4c95d;
+                                    font-size: 1.3rem;
                                 "
                             >
-                                <i class="bi bi-check-lg"></i>
+                                <i class="bi bi-hourglass-split"></i>
                             </div>
 
-                        {% endif %}
 
-                    </div>
+                            <div>
+
+                                <strong
+                                    style="
+                                        display: block;
+                                        margin-bottom: 5px;
+                                    "
+                                >
+                                    Tu boleta estará disponible en breve
+                                </strong>
+
+                                <span
+                                    data-nubox-estado
+                                    style="
+                                        color: var(--color-gris-claro);
+                                    "
+                                >
+                                    La boleta está siendo procesada.
+                                </span>
+
+                                <span
+                                    data-nubox-indicador
+                                    style="
+                                        display: block;
+                                        margin-top: 6px;
+                                        color: #f4c95d;
+                                        font-size: .82rem;
+                                    "
+                                >
+                                    Verificando estado...
+                                </span>
+
+                            </div>
+
+                        </div>
 
 
-                {% elif pedido.nubox_tiene_error %}
+                    {% else %}
 
-                    <!-- =============================================
-                        BOLETA NO EMITIDA DE INMEDIATO
-                    ============================================== -->
-
-                    <div
-                        style="
-                            display: flex;
-                            align-items: center;
-                            gap: 18px;
-                            padding: 24px 30px;
-                        "
-                    >
+                        <!-- =============================================
+                             BOLETA EN PREPARACIÓN
+                        ============================================== -->
 
                         <div
                             style="
-                                width: 52px;
-                                height: 52px;
-                                flex: 0 0 52px;
-                                display: grid;
-                                place-items: center;
-                                border-radius: 14px;
-                                background: rgba(244, 201, 93, 0.10);
-                                color: #f4c95d;
-                                font-size: 1.3rem;
+                                display: flex;
+                                align-items: center;
+                                gap: 18px;
+                                padding: 24px 30px;
                             "
                         >
-                            <i class="bi bi-clock-history"></i>
-                        </div>
 
-
-                        <div>
-
-                            <strong
+                            <div
                                 style="
-                                    display: block;
-                                    margin-bottom: 5px;
+                                    width: 52px;
+                                    height: 52px;
+                                    flex: 0 0 52px;
+                                    display: grid;
+                                    place-items: center;
+                                    border-radius: 14px;
+                                    background:
+                                        rgba(244, 201, 93, 0.10);
+                                    color: #f4c95d;
+                                    font-size: 1.3rem;
                                 "
                             >
-                                Tu boleta estará disponible en breve
-                            </strong>
-
-                            <span
-                                data-nubox-estado
-                                style="
-                                    color: var(--color-gris-claro);
-                                "
-                            >
-                                La enviaremos a tu correo y también podrás
-                                descargarla desde este sitio.
-                            </span>
-
-                        </div>
-
-                    </div>
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
 
 
-                {% elif pedido.nubox_en_proceso %}
+                            <div>
 
-                    <!-- =============================================
-                        BOLETA EN PROCESO
-                    ============================================== -->
+                                <strong
+                                    style="
+                                        display: block;
+                                        margin-bottom: 5px;
+                                    "
+                                >
+                                    Tu boleta estará disponible en breve
+                                </strong>
 
-                    <div
-                        style="
-                            display: flex;
-                            align-items: center;
-                            gap: 18px;
-                            padding: 24px 30px;
-                        "
-                    >
+                                <span
+                                    data-nubox-estado
+                                    style="
+                                        color: var(--color-gris-claro);
+                                    "
+                                >
+                                    La enviaremos a tu correo y también
+                                    podrás descargarla desde este sitio.
+                                </span>
 
-                        <div
-                            style="
-                                width: 52px;
-                                height: 52px;
-                                flex: 0 0 52px;
-                                display: grid;
-                                place-items: center;
-                                border-radius: 14px;
-                                background: rgba(244, 201, 93, 0.10);
-                                color: #f4c95d;
-                                font-size: 1.3rem;
-                            "
-                        >
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
+                                <span
+                                    data-nubox-indicador
+                                    style="
+                                        display: block;
+                                        margin-top: 6px;
+                                        color: #f4c95d;
+                                        font-size: .82rem;
+                                    "
+                                >
+                                    Verificando estado...
+                                </span>
 
-
-                        <div>
-
-                            <strong
-                                style="
-                                    display: block;
-                                    margin-bottom: 5px;
-                                "
-                            >
-                                Tu boleta estará disponible en breve
-                            </strong>
-
-                            <span
-                                data-nubox-estado
-                                style="
-                                    color: var(--color-gris-claro);
-                                "
-                            >
-                                La enviaremos a tu correo y también podrás
-                                descargarla desde este sitio.
-                            </span>
+                            </div>
 
                         </div>
 
-                    </div>
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+        </section>
 
 
-                {% else %}
-
-                    <!-- =============================================
-                        BOLETA EN PREPARACIÓN
-                    ============================================== -->
-
-                    <div
-                        style="
-                            display: flex;
-                            align-items: center;
-                            gap: 18px;
-                            padding: 24px 30px;
-                        "
-                    >
-
-                        <div
-                            style="
-                                width: 52px;
-                                height: 52px;
-                                flex: 0 0 52px;
-                                display: grid;
-                                place-items: center;
-                                border-radius: 14px;
-                                background: rgba(244, 201, 93, 0.10);
-                                color: #f4c95d;
-                                font-size: 1.3rem;
-                            "
-                        >
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-
-
-                        <div>
-
-                            <strong
-                                style="
-                                    display: block;
-                                    margin-bottom: 5px;
-                                "
-                            >
-                                Tu boleta estará disponible en breve
-                            </strong>
-
-                            <span
-                                data-nubox-estado
-                                style="
-                                    color: var(--color-gris-claro);
-                                "
-                            >
-                                La enviaremos a tu correo y también podrás
-                                descargarla desde este sitio.
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-        </article>
         <!-- =====================================================
              DIRECCIÓN DE DESPACHO
         ====================================================== -->
@@ -1363,6 +1928,8 @@ Compra confirmada | Audex
                 consultaEnCurso = true;
                 intentos += 1;
 
+                let detenerConsultas = false;
+
                 try {
 
                     const response = await fetch(
@@ -1389,16 +1956,20 @@ Compra confirmada | Audex
                             "No fue posible actualizar automáticamente."
                         );
 
+                        detenerConsultas = true;
+
                         return;
                     }
 
                     if (!response.ok) {
+
                         throw new Error(
                             `HTTP ${response.status}`
                         );
                     }
 
-                    const data = await response.json();
+                    const data =
+                        await response.json();
 
                     if (
                         data
@@ -1420,6 +1991,7 @@ Compra confirmada | Audex
                             estadoElemento.textContent = (
                                 `Estado: ${data.estado}`
                             );
+
                         }
                     }
 
@@ -1432,9 +2004,13 @@ Compra confirmada | Audex
                             "Boleta emitida correctamente."
                         );
 
+                        detenerConsultas = true;
+
                         window.setTimeout(
                             () => {
+
                                 window.location.reload();
+
                             },
                             350,
                         );
@@ -1452,6 +2028,12 @@ Compra confirmada | Audex
                 } finally {
 
                     consultaEnCurso = false;
+
+                }
+
+
+                if (detenerConsultas) {
+                    return;
                 }
 
 
@@ -1474,10 +2056,12 @@ Compra confirmada | Audex
                 );
 
                 if (estadoElemento) {
+
                     estadoElemento.textContent = (
                         "La boleta sigue en procesamiento. "
                         + "Puedes volver a esta página más tarde."
                     );
+
                 }
             };
 

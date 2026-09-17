@@ -1,15 +1,17 @@
 {% extends 'core/base.html' %}
 {% load static humanize %}
 
+
 {% block title %}
     {{ pedido.numero }} | Gestión Audex
 {% endblock %}
+
 
 {% block extra_css %}
 
     <link
         rel="stylesheet"
-        href="{% static 'core/css/pedidos.css' %}?v=9"
+        href="{% static 'core/css/pedidos.css' %}?v=10"
     >
 
 {% endblock %}
@@ -270,11 +272,17 @@
                     <div class="seguimiento-total">
 
                         <span>
+
                             {% if pago_aprobado %}
+
                                 Total pagado
+
                             {% else %}
+
                                 Total del pedido
+
                             {% endif %}
+
                         </span>
 
                         <strong>
@@ -797,10 +805,6 @@
                     </div>
 
 
-                    <!-- =============================================
-                         TIMELINE VISUAL
-                    ============================================== -->
-
                     <div class="timeline-pedido">
 
                         {% for paso in timeline %}
@@ -819,10 +823,6 @@
                                 "
                             >
 
-                                <!-- =================================
-                                     ICONO DE LA ETAPA
-                                ================================== -->
-
                                 <div class="timeline-paso__icono">
 
                                     <i
@@ -835,10 +835,6 @@
 
                                 </div>
 
-
-                                <!-- =================================
-                                     INFORMACIÓN DE LA ETAPA
-                                ================================== -->
 
                                 <div class="timeline-paso__contenido">
 
@@ -887,7 +883,7 @@
 
 
             <!-- =================================================
-                 LATERAL
+                 COLUMNA LATERAL
             ================================================== -->
 
             <aside class="detalle-admin__lateral">
@@ -917,7 +913,6 @@
                             >
 
                                 {% csrf_token %}
-
 
                                 {{ form.non_field_errors }}
 
@@ -1028,6 +1023,10 @@
 
                     <div class="detalle-admin__datos">
 
+                        <!-- =========================================
+                             ESTADO
+                        ========================================== -->
+
                         <div>
 
                             <span>
@@ -1057,6 +1056,10 @@
                         </div>
 
 
+                        <!-- =========================================
+                             MÉTODO
+                        ========================================== -->
+
                         <div>
 
                             <span>
@@ -1069,6 +1072,10 @@
 
                         </div>
 
+
+                        <!-- =========================================
+                             FECHA
+                        ========================================== -->
 
                         {% if pedido.fecha_pago %}
 
@@ -1086,6 +1093,10 @@
 
                         {% endif %}
 
+
+                        <!-- =========================================
+                             WEBPAY
+                        ========================================== -->
 
                         {% if pedido.metodo_pago == "webpay" %}
 
@@ -1108,6 +1119,10 @@
                         {% endif %}
 
 
+                        <!-- =========================================
+                             MERCADO PAGO
+                        ========================================== -->
+
                         {% if pedido.metodo_pago == "mercadopago" %}
 
                             {% if pedido.mercadopago_payment_id %}
@@ -1129,6 +1144,153 @@
                         {% endif %}
 
                     </div>
+
+
+                    <!-- =================================================
+                         COMPROBANTE DE PAGO
+                    ================================================== -->
+
+                    {% if pago_aprobado %}
+
+                        <div class="detalle-admin__comprobante">
+
+                            {% if pedido.comprobante_pago %}
+
+                                <!-- =========================================
+                                     COMPROBANTE DISPONIBLE
+                                ========================================== -->
+
+                                <div class="detalle-admin__comprobante-info">
+
+                                    <div class="detalle-admin__comprobante-icono">
+
+                                        <i class="bi bi-receipt"></i>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <span>
+                                            Documento de pago
+                                        </span>
+
+                                        <strong>
+                                            Comprobante disponible
+                                        </strong>
+
+
+                                        {% if pedido.comprobante_pago.id_transaccion %}
+
+                                            <small>
+
+                                                ID:
+                                                {{ pedido.comprobante_pago.id_transaccion }}
+
+                                            </small>
+
+                                        {% endif %}
+
+
+                                        {% if pedido.comprobante_pago.proveedor %}
+
+                                            <small>
+
+                                                Medio:
+
+                                                {% if pedido.comprobante_pago.proveedor == "webpay" %}
+
+                                                    Webpay / Transbank
+
+                                                {% elif pedido.comprobante_pago.proveedor == "mercadopago" %}
+
+                                                    Mercado Pago
+
+                                                {% else %}
+
+                                                    {{ pedido.comprobante_pago.get_proveedor_display }}
+
+                                                {% endif %}
+
+                                            </small>
+
+                                        {% endif %}
+
+
+                                        {% if pedido.comprobante_pago.fecha_pago %}
+
+                                            <small>
+
+                                                Fecha:
+                                                {{ pedido.comprobante_pago.fecha_pago|date:"d/m/Y H:i" }}
+
+                                            </small>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            <a
+                                href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                class="
+                                    boton
+                                    boton--primario
+                                    detalle-admin__comprobante-boton
+                                "
+                                title="Abrir comprobante de pago"
+                            >
+                                <i class="bi bi-receipt"></i>
+
+                                Ver comprobante
+                            </a>
+
+                            {% else %}
+
+                                <!-- =========================================
+                                     COMPROBANTE AÚN NO DISPONIBLE
+                                ========================================== -->
+
+                                <div
+                                    class="
+                                        detalle-admin__comprobante-info
+                                        detalle-admin__comprobante-info--pendiente
+                                    "
+                                >
+
+                                    <div class="detalle-admin__comprobante-icono">
+
+                                        <i class="bi bi-hourglass-split"></i>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <span>
+                                            Documento de pago
+                                        </span>
+
+                                        <strong>
+                                            Comprobante no disponible
+                                        </strong>
+
+                                        <small>
+                                            El pago está aprobado, pero
+                                            todavía no existe un comprobante
+                                            asociado al pedido.
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
 
                 </article>
 

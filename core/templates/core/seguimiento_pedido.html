@@ -1,18 +1,21 @@
 {% extends 'core/base.html' %}
 {% load static humanize %}
 
+
 {% block title %}
     Seguimiento de pedido | Audex
 {% endblock %}
+
 
 {% block extra_css %}
 
     <link
         rel="stylesheet"
-        href="{% static 'core/css/seguimiento_pedido.css' %}?v=4"
+        href="{% static 'core/css/seguimiento_pedido.css' %}?v=5"
     >
 
 {% endblock %}
+
 
 {% block content %}
 
@@ -47,7 +50,9 @@
 
                 <p>
                     Ingresa el número de tu pedido y el
-                    <strong>RUT utilizado al realizar la compra</strong>
+                    <strong>
+                        RUT utilizado al realizar la compra
+                    </strong>
                     para consultar su estado y seguimiento.
                 </p>
 
@@ -132,13 +137,10 @@
                         {{ form.rut }}
 
 
-                        <!-- =========================================
-                             TEXTO DE AYUDA
-                        ========================================== -->
-
                         <p class="campo__ayuda">
 
                             Debes ingresar el
+
                             <strong>
                                 mismo RUT que utilizaste al realizar
                                 la compra de este producto.
@@ -506,6 +508,150 @@
 
 
                     <!-- =============================================
+                         COMPROBANTE DE PAGO
+                    ============================================== -->
+
+                    {% if pago_confirmado %}
+
+                        <article class="seguimiento-tarjeta">
+
+                            <h2>
+                                Comprobante de pago
+                            </h2>
+
+
+                            {% if pedido.comprobante_pago %}
+
+                                <!-- =====================================
+                                     COMPROBANTE DISPONIBLE
+                                ====================================== -->
+
+                                <div class="seguimiento-boleta">
+
+                                    <div class="seguimiento-boleta__estado">
+
+                                        <div class="seguimiento-boleta__icono">
+
+                                            <i class="bi bi-receipt-cutoff"></i>
+
+                                        </div>
+
+
+                                        <div class="seguimiento-boleta__info">
+
+                                            <strong>
+                                                Comprobante disponible
+                                            </strong>
+
+
+                                            <span>
+
+                                                {% if pedido.comprobante_pago.proveedor == "webpay" %}
+
+                                                    Pago confirmado mediante
+                                                    Webpay / Transbank.
+
+                                                {% elif pedido.comprobante_pago.proveedor == "mercadopago" %}
+
+                                                    Pago confirmado mediante
+                                                    Mercado Pago.
+
+                                                {% else %}
+
+                                                    Tu comprobante de pago
+                                                    está disponible.
+
+                                                {% endif %}
+
+                                            </span>
+
+
+                                            {% if pedido.comprobante_pago.id_transaccion %}
+
+                                                <small>
+                                                    ID de transacción:
+                                                    {{ pedido.comprobante_pago.id_transaccion }}
+                                                </small>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- =================================
+                                         BOTÓN COMPROBANTE
+                                    ================================== -->
+
+                                    <a
+                                        href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                        class="
+                                            boton
+                                            boton--primario
+                                            boton--completo
+                                        "
+                                        title="Ver comprobante de pago"
+                                    >
+
+                                        <i class="bi bi-receipt"></i>
+
+                                        Ver comprobante
+
+                                    </a>
+
+                                </div>
+
+
+                            {% else %}
+
+                                <!-- =====================================
+                                     COMPROBANTE PENDIENTE
+                                ====================================== -->
+
+                                <div
+                                    class="
+                                        seguimiento-boleta
+                                        seguimiento-boleta--pendiente
+                                    "
+                                >
+
+                                    <div class="seguimiento-boleta__estado">
+
+                                        <div class="seguimiento-boleta__icono">
+
+                                            <i class="bi bi-clock-history"></i>
+
+                                        </div>
+
+
+                                        <div class="seguimiento-boleta__info">
+
+                                            <strong>
+                                                Comprobante en preparación
+                                            </strong>
+
+
+                                            <span>
+                                                Tu pago está confirmado,
+                                                pero el comprobante todavía
+                                                no se encuentra disponible.
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                        </article>
+
+                    {% endif %}
+
+
+                    <!-- =============================================
                          BOLETA ELECTRÓNICA
                     ============================================== -->
 
@@ -520,9 +666,9 @@
 
                             {% if boleta_disponible and boleta_descarga_url %}
 
-                                <!-- =========================================
+                                <!-- =====================================
                                      BOLETA DISPONIBLE
-                                ========================================== -->
+                                ====================================== -->
 
                                 <div class="seguimiento-boleta">
 
@@ -589,9 +735,9 @@
 
                             {% else %}
 
-                                <!-- =========================================
+                                <!-- =====================================
                                      BOLETA TODAVÍA NO DISPONIBLE
-                                ========================================== -->
+                                ====================================== -->
 
                                 <div
                                     class="
@@ -651,191 +797,210 @@
 ============================================================== -->
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    // =========================================================
-    // OBTENER CAMPO RUT
-    // =========================================================
+        // =====================================================
+        // OBTENER CAMPO RUT
+        // =====================================================
 
-    const campoRut =
-        document.getElementById("id_rut")
-        || document.querySelector(".js-rut");
-
-
-    // =========================================================
-    // SI EL FORMULARIO NO ESTÁ PRESENTE
-    // =========================================================
-
-    if (!campoRut) {
-        return;
-    }
-
-
-    // =========================================================
-    // CONFIGURACIÓN
-    // =========================================================
-
-    campoRut.setAttribute(
-        "maxlength",
-        "12"
-    );
-
-    campoRut.setAttribute(
-        "autocomplete",
-        "off"
-    );
-
-    campoRut.setAttribute(
-        "spellcheck",
-        "false"
-    );
-
-
-    // =========================================================
-    // FORMATEAR RUT
-    // =========================================================
-
-    function formatearRut(valor) {
-
-        // -----------------------------------------------------
-        // SABER SI EL ÚLTIMO CARÁCTER INGRESADO ES K
-        // -----------------------------------------------------
-
-        const terminaEnK = /k$/i.test(
-            valor.trim()
-        );
-
-
-        // -----------------------------------------------------
-        // ELIMINAR PUNTOS, GUIONES, ESPACIOS Y OTROS CARACTERES
-        // -----------------------------------------------------
-
-        let limpio = valor
-            .replace(
-                /[^0-9kK]/g,
-                ""
+        const campoRut =
+            document.getElementById(
+                "id_rut"
             )
-            .toUpperCase();
+            || document.querySelector(
+                ".js-rut"
+            );
 
 
-        // -----------------------------------------------------
-        // LA K SOLO PUEDE SER DÍGITO VERIFICADOR
-        // -----------------------------------------------------
+        // =====================================================
+        // SI EL FORMULARIO NO ESTÁ PRESENTE
+        // =====================================================
 
-        limpio = limpio.replace(
-            /K/g,
-            ""
+        if (!campoRut) {
+            return;
+        }
+
+
+        // =====================================================
+        // CONFIGURACIÓN
+        // =====================================================
+
+        campoRut.setAttribute(
+            "maxlength",
+            "12"
+        );
+
+        campoRut.setAttribute(
+            "autocomplete",
+            "off"
+        );
+
+        campoRut.setAttribute(
+            "spellcheck",
+            "false"
         );
 
 
-        // -----------------------------------------------------
-        // MÁXIMO 9 CARACTERES SIN FORMATO
-        //
-        // 8 dígitos de cuerpo
-        // +
-        // 1 dígito verificador
-        // -----------------------------------------------------
+        // =====================================================
+        // FORMATEAR RUT
+        // =====================================================
 
-        if (terminaEnK) {
+        function formatearRut(valor) {
 
-            limpio = limpio.slice(
+            // -------------------------------------------------
+            // SABER SI EL ÚLTIMO CARÁCTER INGRESADO ES K
+            // -------------------------------------------------
+
+            const terminaEnK = /k$/i.test(
+                valor.trim()
+            );
+
+
+            // -------------------------------------------------
+            // LIMPIAR VALOR
+            // -------------------------------------------------
+
+            let limpio = valor
+                .replace(
+                    /[^0-9kK]/g,
+                    ""
+                )
+                .toUpperCase();
+
+
+            // -------------------------------------------------
+            // LA K SOLO PUEDE SER DÍGITO VERIFICADOR
+            // -------------------------------------------------
+
+            limpio = limpio.replace(
+                /K/g,
+                ""
+            );
+
+
+            // -------------------------------------------------
+            // MÁXIMO 9 CARACTERES SIN FORMATO
+            // -------------------------------------------------
+
+            if (terminaEnK) {
+
+                limpio = limpio.slice(
+                    0,
+                    8
+                );
+
+                limpio += "K";
+
+            } else {
+
+                limpio = limpio.slice(
+                    0,
+                    9
+                );
+
+            }
+
+
+            // -------------------------------------------------
+            // VACÍO
+            // -------------------------------------------------
+
+            if (!limpio) {
+                return "";
+            }
+
+
+            // -------------------------------------------------
+            // UN SOLO CARÁCTER
+            // -------------------------------------------------
+
+            if (limpio.length === 1) {
+                return limpio;
+            }
+
+
+            // -------------------------------------------------
+            // SEPARAR CUERPO Y DV
+            // -------------------------------------------------
+
+            const dv = limpio.slice(
+                -1
+            );
+
+
+            let cuerpo = limpio.slice(
+                0,
+                -1
+            );
+
+
+            // -------------------------------------------------
+            // SOLO NÚMEROS EN EL CUERPO
+            // -------------------------------------------------
+
+            cuerpo = cuerpo.replace(
+                /\D/g,
+                ""
+            );
+
+
+            // -------------------------------------------------
+            // MÁXIMO 8 DÍGITOS
+            // -------------------------------------------------
+
+            cuerpo = cuerpo.slice(
                 0,
                 8
             );
 
-            limpio += "K";
 
-        } else {
+            // -------------------------------------------------
+            // AGREGAR PUNTOS
+            // -------------------------------------------------
 
-            limpio = limpio.slice(
-                0,
-                9
+            cuerpo = cuerpo.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                "."
             );
 
+
+            // -------------------------------------------------
+            // RESULTADO
+            // -------------------------------------------------
+
+            return (
+                cuerpo
+                + "-"
+                + dv
+            );
         }
 
 
-        // -----------------------------------------------------
-        // VACÍO
-        // -----------------------------------------------------
+        // =====================================================
+        // AL ESCRIBIR
+        // =====================================================
 
-        if (!limpio) {
-            return "";
-        }
+        campoRut.addEventListener(
+            "input",
+            function () {
 
+                campoRut.value = (
+                    formatearRut(
+                        campoRut.value
+                    )
+                );
 
-        // -----------------------------------------------------
-        // UN SOLO CARÁCTER
-        // -----------------------------------------------------
-
-        if (limpio.length === 1) {
-            return limpio;
-        }
-
-
-        // -----------------------------------------------------
-        // SEPARAR CUERPO Y DÍGITO VERIFICADOR
-        // -----------------------------------------------------
-
-        const dv = limpio.slice(
-            -1
-        );
-
-        let cuerpo = limpio.slice(
-            0,
-            -1
+            }
         );
 
 
-        // -----------------------------------------------------
-        // EL CUERPO SOLO PUEDE CONTENER NÚMEROS
-        // -----------------------------------------------------
+        // =====================================================
+        // AL PEGAR / AUTOCOMPLETAR
+        // =====================================================
 
-        cuerpo = cuerpo.replace(
-            /\D/g,
-            ""
-        );
-
-
-        // -----------------------------------------------------
-        // MÁXIMO 8 DÍGITOS EN EL CUERPO
-        // -----------------------------------------------------
-
-        cuerpo = cuerpo.slice(
-            0,
-            8
-        );
-
-
-        // -----------------------------------------------------
-        // AGREGAR PUNTOS
-        // -----------------------------------------------------
-
-        cuerpo = cuerpo.replace(
-            /\B(?=(\d{3})+(?!\d))/g,
-            "."
-        );
-
-
-        // -----------------------------------------------------
-        // RESULTADO
-        // -----------------------------------------------------
-
-        return (
-            cuerpo
-            + "-"
-            + dv
-        );
-    }
-
-
-    // =========================================================
-    // AL ESCRIBIR
-    // =========================================================
-
-    campoRut.addEventListener(
-        "input",
-        function () {
+        if (campoRut.value) {
 
             campoRut.value = (
                 formatearRut(
@@ -844,24 +1009,9 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
         }
-    );
-
-
-    // =========================================================
-    // AL PEGAR / AUTOCOMPLETAR
-    // =========================================================
-
-    if (campoRut.value) {
-
-        campoRut.value = (
-            formatearRut(
-                campoRut.value
-            )
-        );
 
     }
-
-});
+);
 </script>
 
 {% endblock %}

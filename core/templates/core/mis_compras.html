@@ -11,12 +11,12 @@ Mis compras | Audex
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/pedidos.css' %}?v=8"
+    href="{% static 'core/css/pedidos.css' %}?v=10"
 >
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/mis_compras.css' %}?v=4"
+    href="{% static 'core/css/mis_compras.css' %}?v=5"
 >
 
 {% endblock %}
@@ -37,8 +37,11 @@ Mis compras | Audex
             <div class="mis-compras-hero__contenido">
 
                 <span class="etiqueta-seccion">
+
                     <i class="bi bi-bag-check"></i>
+
                     Mi cuenta
+
                 </span>
 
 
@@ -50,7 +53,8 @@ Mis compras | Audex
                 <p>
                     Revisa tus compras,
                     consulta su seguimiento y accede
-                    a tus boletas electrónicas.
+                    a tus comprobantes de pago
+                    y boletas electrónicas.
                 </p>
 
             </div>
@@ -62,9 +66,11 @@ Mis compras | Audex
                     href="{% url 'core:seguimiento_pedido' %}"
                     class="boton boton--secundario"
                 >
+
                     <i class="bi bi-search"></i>
 
                     Buscar pedido
+
                 </a>
 
             </div>
@@ -189,9 +195,15 @@ Mis compras | Audex
 
             </div>
 
+
         {% else %}
 
-            <div class="mis-compras-controles mis-compras-controles--vacio">
+            <div
+                class="
+                    mis-compras-controles
+                    mis-compras-controles--vacio
+                "
+            >
 
                 <div class="mis-compras-controles__superior">
 
@@ -276,6 +288,10 @@ Mis compras | Audex
 
                     <div class="pedido-historial__datos">
 
+                        <!-- =============================================
+                             FECHA
+                        ============================================== -->
+
                         <div>
 
                             <span>
@@ -289,6 +305,10 @@ Mis compras | Audex
 
                         </div>
 
+
+                        <!-- =============================================
+                             UNIDADES
+                        ============================================== -->
 
                         <div>
 
@@ -304,6 +324,10 @@ Mis compras | Audex
                         </div>
 
 
+                        <!-- =============================================
+                             TOTAL
+                        ============================================== -->
+
                         <div>
 
                             <span>
@@ -317,6 +341,10 @@ Mis compras | Audex
 
                         </div>
 
+
+                        <!-- =============================================
+                             PAGO
+                        ============================================== -->
 
                         <div>
 
@@ -467,11 +495,48 @@ Mis compras | Audex
                         <a
                             href="{% url 'core:seguimiento_pedido_numero' pedido.numero %}"
                             class="boton boton--primario"
+                            title="Ver seguimiento del pedido"
                         >
+
                             <i class="bi bi-truck"></i>
 
                             Ver seguimiento
+
                         </a>
+
+
+                        <!-- =============================================
+                             COMPROBANTE DE PAGO
+                        ============================================== -->
+
+                        {% if pedido.comprobante_pago %}
+
+                            <a
+                                href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                class="boton boton--secundario"
+                                title="Ver comprobante de pago"
+                            >
+
+                                <i class="bi bi-receipt-cutoff"></i>
+
+                                Ver comprobante
+
+                            </a>
+
+                        {% else %}
+
+                            <span
+                                class="pedido-boleta-pendiente"
+                                title="El comprobante de pago todavía no está disponible"
+                            >
+
+                                <i class="bi bi-hourglass-split"></i>
+
+                                Comprobante en preparación
+
+                            </span>
+
+                        {% endif %}
 
 
                         <!-- =============================================
@@ -487,7 +552,8 @@ Mis compras | Audex
                                 class="boton boton--secundario"
                                 title="Ver boleta electrónica"
                             >
-                                <i class="bi bi-receipt"></i>
+
+                                <i class="bi bi-file-earmark-text"></i>
 
                                 Ver boleta
 
@@ -498,6 +564,7 @@ Mis compras | Audex
                                 {% endif %}
 
                                 <i class="bi bi-box-arrow-up-right"></i>
+
                             </a>
 
 
@@ -507,7 +574,8 @@ Mis compras | Audex
                                 class="boton boton--secundario"
                                 title="Boleta electrónica emitida"
                             >
-                                <i class="bi bi-receipt"></i>
+
+                                <i class="bi bi-file-earmark-check"></i>
 
                                 Boleta emitida
 
@@ -516,6 +584,7 @@ Mis compras | Audex
                                     N.º {{ pedido.nubox_folio }}
 
                                 {% endif %}
+
                             </span>
 
 
@@ -551,9 +620,11 @@ Mis compras | Audex
                                 class="pedido-boleta-pendiente"
                                 title="La boleta todavía no está disponible"
                             >
+
                                 <i class="bi bi-exclamation-circle"></i>
 
                                 Boleta en proceso
+
                             </span>
 
 
@@ -564,11 +635,43 @@ Mis compras | Audex
                                 <i class="bi bi-hourglass-split"></i>
 
                                 Boleta en preparación
+
                             </span>
 
                         {% endif %}
 
                     </div>
+
+
+                    <!-- =================================================
+                         INFORMACIÓN DEL COMPROBANTE
+                    ================================================== -->
+
+                    {% if pedido.comprobante_pago %}
+
+                        <div class="pedido-historial__boleta-info">
+
+                            <i class="bi bi-shield-check"></i>
+
+                            <span>
+
+                                Comprobante de pago disponible
+
+                                {% if pedido.comprobante_pago.proveedor == "webpay" %}
+
+                                    · Webpay / Transbank
+
+                                {% elif pedido.comprobante_pago.proveedor == "mercadopago" %}
+
+                                    · Mercado Pago
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    {% endif %}
 
 
                     <!-- =================================================
@@ -622,9 +725,11 @@ Mis compras | Audex
                             href="{% url 'core:mis_compras' %}"
                             class="boton boton--primario"
                         >
+
                             <i class="bi bi-arrow-left"></i>
 
                             Ver todas mis compras
+
                         </a>
 
 
@@ -634,7 +739,11 @@ Mis compras | Audex
                             href="{% url 'core:productos' %}"
                             class="boton boton--primario"
                         >
+
+                            <i class="bi bi-bag"></i>
+
                             Ver productos
+
                         </a>
 
                     {% endif %}
@@ -665,9 +774,11 @@ Mis compras | Audex
                             href="?estado={{ estado_actual|urlencode }}&page={{ page_obj.previous_page_number }}"
                             rel="prev"
                         >
+
                             <i class="bi bi-arrow-left"></i>
 
                             Anterior
+
                         </a>
 
                     {% else %}
@@ -676,9 +787,11 @@ Mis compras | Audex
                             href="?page={{ page_obj.previous_page_number }}"
                             rel="prev"
                         >
+
                             <i class="bi bi-arrow-left"></i>
 
                             Anterior
+
                         </a>
 
                     {% endif %}
@@ -711,9 +824,11 @@ Mis compras | Audex
                             href="?estado={{ estado_actual|urlencode }}&page={{ page_obj.next_page_number }}"
                             rel="next"
                         >
+
                             Siguiente
 
                             <i class="bi bi-arrow-right"></i>
+
                         </a>
 
                     {% else %}
@@ -722,9 +837,11 @@ Mis compras | Audex
                             href="?page={{ page_obj.next_page_number }}"
                             rel="next"
                         >
+
                             Siguiente
 
                             <i class="bi bi-arrow-right"></i>
+
                         </a>
 
                     {% endif %}
@@ -739,6 +856,7 @@ Mis compras | Audex
 
 </section>
 
+{% endblock %}
 
 
 {% block extra_js %}
@@ -760,6 +878,7 @@ Mis compras | Audex
                 )
             );
 
+
             if (!pedidos.length) {
                 return;
             }
@@ -774,6 +893,7 @@ Mis compras | Audex
              * Este código NO emite ni reemite boletas.
              * Únicamente consulta el endpoint de estado.
              */
+
             const pendientes = pedidos.filter(
                 (pedido) => {
 
@@ -781,13 +901,16 @@ Mis compras | Audex
                         pedido.dataset.nuboxDocumentId || ""
                     ).trim();
 
+
                     const emitido = (
                         pedido.dataset.nuboxEmitido === "true"
                     );
 
+
                     const statusUrl = (
                         pedido.dataset.nuboxStatusUrl || ""
                     ).trim();
+
 
                     return (
                         Boolean(documentId)
@@ -821,13 +944,16 @@ Mis compras | Audex
                     return;
                 }
 
+
                 pedido
                     .querySelectorAll(
                         "[data-nubox-estado]"
                     )
                     .forEach(
                         (elemento) => {
+
                             elemento.textContent = estado;
+
                         },
                     );
             };
@@ -841,6 +967,7 @@ Mis compras | Audex
                     pedido.dataset.nuboxStatusUrl || ""
                 ).trim();
 
+
                 if (!statusUrl) {
                     return false;
                 }
@@ -852,15 +979,18 @@ Mis compras | Audex
                         method: "GET",
 
                         headers: {
+
                             "X-Requested-With": (
                                 "XMLHttpRequest"
                             ),
+
                             "Accept": (
                                 "application/json"
                             ),
                         },
 
                         credentials: "same-origin",
+
                         cache: "no-store",
                     },
                 );
@@ -871,6 +1001,7 @@ Mis compras | Audex
                  * o el pedido dejó de existir, dejamos
                  * de consultar esa tarjeta.
                  */
+
                 if (
                     response.status === 403
                     || response.status === 404
@@ -926,7 +1057,9 @@ Mis compras | Audex
 
 
                 consultaEnCurso = true;
+
                 intentos += 1;
+
 
                 try {
 
@@ -974,6 +1107,7 @@ Mis compras | Audex
                      * - nubox_url_pdf;
                      * - estado emitido.
                      */
+
                     if (algunoEmitido) {
 
                         detenerPolling = true;
@@ -1024,6 +1158,7 @@ Mis compras | Audex
              * casi inmediata, evitando consumir peticiones
              * mientras la página está oculta.
              */
+
             document.addEventListener(
                 "visibilitychange",
                 () => {
@@ -1050,7 +1185,5 @@ Mis compras | Audex
         },
     );
 </script>
-
-{% endblock %}
 
 {% endblock %}

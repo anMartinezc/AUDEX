@@ -1417,7 +1417,6 @@ def seguimiento_pedido(
 # ==========================================================================
 # PANEL ADMINISTRATIVO DE PEDIDOS
 # ==========================================================================
-
 @staff_member_required
 def panel_pedidos(request):
     """
@@ -1433,6 +1432,10 @@ def panel_pedidos(request):
     - Nubox se actualiza mediante polling AJAX después de que
       el HTML ya fue mostrado.
     - ?actualizar_panel=1 continúa siendo una consulta liviana.
+    - version_panel solo cambia cuando cambian los contadores
+      reales de las bandejas.
+    - Cambios internos en Pedido.actualizado NO provocan
+      recargas automáticas innecesarias.
     """
 
     # =========================================================================
@@ -1528,7 +1531,7 @@ def panel_pedidos(request):
     #
     # IMPORTANTE:
     #
-    # Esta consulta es INDEPENDIENTE de:
+    # Esta consulta es independiente de:
     #
     # - la bandeja abierta;
     # - el buscador;
@@ -1565,19 +1568,10 @@ def panel_pedidos(request):
     # =========================================================================
     # BANDEJA DE PAGOS PENDIENTES - ÚLTIMAS 48 HORAS
     # =========================================================================
-    #
-    # Esta sí parte del queryset del panel para conservar:
-    #
-    # - búsqueda;
-    # - productos precargados;
-    # - total_unidades.
-    #
-    # Al entrar desde la alerta sin búsqueda muestra todos
-    # los pendientes creados en las últimas 48 horas.
-    # =========================================================================
 
     pendientes_pago = (
-        pedidos.filter(
+        pedidos
+        .filter(
             pagado=False,
             estado_pago__in=[
                 Pedido.EstadoPago.PENDIENTE,
@@ -1668,7 +1662,8 @@ def panel_pedidos(request):
     # =========================================================================
     #
     # Solo se consulta nuestra base de datos.
-    # NO se llama Nubox durante el render.
+    #
+    # NO se llama a Nubox durante el render.
     # =========================================================================
 
     boletas_pendientes = (
@@ -1701,7 +1696,7 @@ def panel_pedidos(request):
 
 
     # =========================================================================
-    # CONTADORES
+    # CONTADORES DE BANDEJAS
     # =========================================================================
 
     totales = {
@@ -1715,29 +1710,37 @@ def panel_pedidos(request):
     # PAGOS PENDIENTES - ALERTA GLOBAL 48 HORAS
     # =========================================================================
     #
-    # El contador NO depende de filtros visuales.
+    # Este contador no depende:
     #
-    # Por eso la alerta no desaparece al:
+    # - del buscador;
+    # - de la bandeja;
+    # - de la paginación.
     #
-    # - abrir la bandeja;
-    # - volver al tablero;
-    # - navegar por otras bandejas.
+    # Por eso sirve para la alerta global.
     # =========================================================================
 
     total_pendientes_recientes = (
         pendientes_alerta_48h.count()
     )
 
+
     total_pendientes_pago = (
         total_pendientes_recientes
     )
 
-    # No mostramos historial de pendientes anteriores a 48 horas.
+
+    # =========================================================================
+    # PENDIENTES EXPIRADOS
+    # =========================================================================
+    #
+    # No mostramos historial de pendientes superiores a 48 horas.
+    # =========================================================================
+
     total_pendientes_expirados = 0
 
 
     # =========================================================================
-    # BOLETAS
+    # BOLETAS PENDIENTES
     # =========================================================================
 
     total_boletas_pendientes = (
@@ -1749,6 +1752,24 @@ def panel_pedidos(request):
 
     # =========================================================================
     # ÚLTIMA ACTUALIZACIÓN
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # Este valor se conserva únicamente como información para
+    # el frontend.
+    #
+    # NO forma parte de version_panel.
+    #
+    # Pedido.actualizado puede cambiar debido a:
+    #
+    # - sincronización con Nubox;
+    # - cambios administrativos;
+    # - procesos automáticos;
+    # - cualquier save() realizado sobre Pedido.
+    #
+    # Si lo utilizamos como versión del panel puede provocar
+    # recargas innecesarias.
     # =========================================================================
 
     ultima_actualizacion = (
@@ -1762,17 +1783,23 @@ def panel_pedidos(request):
 
 
     # =========================================================================
-    # VERSIÓN DEL TABLERO
+    # VERSIÓN ESTABLE DEL TABLERO
+    # =========================================================================
+    #
+    # Antes se incluía:
+    #
+    #     ultima_actualizacion.isoformat()
+    #
+    # Eso podía provocar que el navegador detectara cambios
+    # continuamente aunque ningún pedido hubiera cambiado
+    # realmente de bandeja.
+    #
+    # Ahora la versión representa exclusivamente el estado
+    # estructural del tablero.
     # =========================================================================
 
     version_panel = "|".join(
         [
-            (
-                ultima_actualizacion.isoformat()
-                if ultima_actualizacion
-                else ""
-            ),
-
             str(
                 totales[
                     "nuevos"
@@ -1811,6 +1838,15 @@ def panel_pedidos(request):
     # =========================================================================
     # CONSULTA LIVIANA DEL FRONTEND
     # =========================================================================
+    #
+    # El JavaScript puede consultar:
+    #
+    #     ?actualizar_panel=1
+    #
+    # sin volver a cargar todo el HTML.
+    #
+    # Si version_panel permanece igual, NO debería recargar la página.
+    # =========================================================================
 
     if (
         request.GET.get(
@@ -1834,6 +1870,7 @@ def panel_pedidos(request):
                 ),
 
                 "totales": {
+
                     "nuevos": (
                         totales[
                             "nuevos"
@@ -1873,9 +1910,24 @@ def panel_pedidos(request):
             }
         )
 
+
+        # =====================================================================
+        # EVITAR CACHÉ DEL POLLING
+        # =====================================================================
+
         response[
             "Cache-Control"
-        ] = "no-store"
+        ] = (
+            "no-store, no-cache, must-revalidate, max-age=0"
+        )
+
+        response[
+            "Pragma"
+        ] = "no-cache"
+
+        response[
+            "Expires"
+        ] = "0"
 
         return response
 
@@ -1885,6 +1937,7 @@ def panel_pedidos(request):
     # =========================================================================
 
     bandejas_nombres = {
+
         "nuevos": (
             "Nuevos"
         ),
@@ -1916,6 +1969,7 @@ def panel_pedidos(request):
     # =========================================================================
 
     bandejas_iconos = {
+
         "nuevos": (
             "bi-bag-check"
         ),
@@ -1963,6 +2017,7 @@ def panel_pedidos(request):
 
 
     page_obj = None
+
     titulo_bandeja = ""
 
 
@@ -1978,19 +2033,23 @@ def panel_pedidos(request):
             ]
         )
 
+
         paginador = Paginator(
             queryset_bandeja,
             PEDIDOS_POR_PAGINA_ADMIN,
         )
 
+
         page_obj = (
-            paginador.get_page(
+            paginador
+            .get_page(
                 request.GET.get(
                     "page",
                     1,
                 )
             )
         )
+
 
         titulo_bandeja = (
             bandejas_nombres[
@@ -2003,8 +2062,8 @@ def panel_pedidos(request):
     # TARJETAS DEL TABLERO
     # =========================================================================
     #
-    # Si estamos viendo una bandeja completa no evaluamos
-    # también las cuatro columnas del tablero.
+    # Si estamos mostrando una bandeja completa, no evaluamos
+    # también las cuatro columnas principales.
     # =========================================================================
 
     bandejas = []
@@ -2027,6 +2086,7 @@ def panel_pedidos(request):
                     clave
                 ]
             )
+
 
             total = (
                 totales[
@@ -2075,115 +2135,170 @@ def panel_pedidos(request):
     # CONTEXTO
     # =========================================================================
 
+    contexto = {
+
+        # =====================================================================
+        # TABLERO
+        # =====================================================================
+
+        "bandejas": (
+            bandejas
+        ),
+
+        "version_panel": (
+            version_panel
+        ),
+
+
+        # =====================================================================
+        # BANDEJA
+        # =====================================================================
+
+        "bandeja_actual": (
+            bandeja_actual
+        ),
+
+        "titulo_bandeja": (
+            titulo_bandeja
+        ),
+
+        "mostrar_bandeja": (
+            mostrar_bandeja
+        ),
+
+
+        # =====================================================================
+        # PAGINACIÓN
+        # =====================================================================
+
+        "page_obj": (
+            page_obj
+        ),
+
+
+        # =====================================================================
+        # BÚSQUEDA
+        # =====================================================================
+
+        "busqueda": (
+            busqueda
+        ),
+
+
+        # =====================================================================
+        # CONTADORES PRINCIPALES
+        # =====================================================================
+
+        "total_principal": (
+            totales[
+                "nuevos"
+            ]
+        ),
+
+        "total_operacion": (
+            totales[
+                "operacion"
+            ]
+        ),
+
+        "total_despacho": (
+            totales[
+                "despacho"
+            ]
+        ),
+
+        "total_cerrados": (
+            totales[
+                "finalizados"
+            ]
+        ),
+
+
+        # =====================================================================
+        # PAGOS PENDIENTES
+        # =====================================================================
+
+        "total_pendientes_pago": (
+            total_pendientes_pago
+        ),
+
+        "total_pendientes_recientes": (
+            total_pendientes_recientes
+        ),
+
+        "total_pendientes_expirados": (
+            total_pendientes_expirados
+        ),
+
+
+        # =====================================================================
+        # BOLETAS
+        # =====================================================================
+
+        "total_boletas_pendientes": (
+            total_boletas_pendientes
+        ),
+
+
+        # =====================================================================
+        # INFORMACIÓN DE ACTUALIZACIÓN
+        # =====================================================================
+
+        "ultima_actualizacion": (
+            ultima_actualizacion
+        ),
+
+
+        # =====================================================================
+        # COMPATIBILIDAD CON EL TEMPLATE ACTUAL
+        # =====================================================================
+
+        "principal": (
+            nuevos[
+                :PEDIDOS_VISIBLES_POR_BANDEJA
+            ]
+            if not mostrar_bandeja
+            else []
+        ),
+
+        "operacion": (
+            operacion[
+                :PEDIDOS_VISIBLES_POR_BANDEJA
+            ]
+            if not mostrar_bandeja
+            else []
+        ),
+
+        "despacho": (
+            despacho[
+                :PEDIDOS_VISIBLES_POR_BANDEJA
+            ]
+            if not mostrar_bandeja
+            else []
+        ),
+
+        "cerrados": (
+            finalizados[
+                :PEDIDOS_VISIBLES_POR_BANDEJA
+            ]
+            if not mostrar_bandeja
+            else []
+        ),
+    }
+
+
+    # =========================================================================
+    # RENDER
+    # =========================================================================
+
     return render(
         request,
         "core/gestion/panel_pedidos.html",
-        {
-            "bandejas": (
-                bandejas
-            ),
-
-            "version_panel": (
-                version_panel
-            ),
-
-            "bandeja_actual": (
-                bandeja_actual
-            ),
-
-            "titulo_bandeja": (
-                titulo_bandeja
-            ),
-
-            "mostrar_bandeja": (
-                mostrar_bandeja
-            ),
-
-            "page_obj": (
-                page_obj
-            ),
-
-            "busqueda": (
-                busqueda
-            ),
-
-            "total_principal": (
-                totales[
-                    "nuevos"
-                ]
-            ),
-
-            "total_operacion": (
-                totales[
-                    "operacion"
-                ]
-            ),
-
-            "total_despacho": (
-                totales[
-                    "despacho"
-                ]
-            ),
-
-            "total_cerrados": (
-                totales[
-                    "finalizados"
-                ]
-            ),
-
-            "total_pendientes_pago": (
-                total_pendientes_pago
-            ),
-
-            "total_pendientes_recientes": (
-                total_pendientes_recientes
-            ),
-
-            "total_pendientes_expirados": (
-                total_pendientes_expirados
-            ),
-
-            "total_boletas_pendientes": (
-                total_boletas_pendientes
-            ),
-
-            # =============================================================
-            # COMPATIBILIDAD
-            # =============================================================
-
-            "principal": (
-                nuevos[
-                    :PEDIDOS_VISIBLES_POR_BANDEJA
-                ]
-                if not mostrar_bandeja
-                else []
-            ),
-
-            "operacion": (
-                operacion[
-                    :PEDIDOS_VISIBLES_POR_BANDEJA
-                ]
-                if not mostrar_bandeja
-                else []
-            ),
-
-            "despacho": (
-                despacho[
-                    :PEDIDOS_VISIBLES_POR_BANDEJA
-                ]
-                if not mostrar_bandeja
-                else []
-            ),
-
-            "cerrados": (
-                finalizados[
-                    :PEDIDOS_VISIBLES_POR_BANDEJA
-                ]
-                if not mostrar_bandeja
-                else []
-            ),
-        },
+        contexto,
     )
+
+
+
 
 # ==========================================================================
 # DETALLE Y ADMINISTRACIÓN DE UN PEDIDO

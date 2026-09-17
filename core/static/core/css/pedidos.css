@@ -1,7 +1,7 @@
 /* =========================================================
    PANEL PEDIDO DETALLE
    Archivo:
-   core/static/core/css/panel_pedido_detalle.css
+   core/static/core/css/pedidos.css
 ========================================================= */
 
 
@@ -1342,6 +1342,232 @@
 
 
 /* =========================================================
+   COMPROBANTE DE PAGO
+========================================================= */
+
+.detalle-admin__comprobante {
+    width: 100%;
+
+    margin-top: 22px;
+
+    padding-top: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.075
+        );
+}
+
+
+/* =========================================================
+   INFO COMPROBANTE
+========================================================= */
+
+.detalle-admin__comprobante-info {
+    min-width: 0;
+
+    flex: 1;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.detalle-admin__comprobante-info > div:last-child {
+    min-width: 0;
+
+    flex: 1;
+}
+
+
+.detalle-admin__comprobante-icono {
+    width: 44px;
+
+    height: 44px;
+
+    flex:
+        0
+        0
+        44px;
+
+    display: grid;
+
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1.05rem;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.17
+        );
+
+    border-radius: 12px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.075
+        );
+
+    box-shadow:
+        inset
+        0
+        1px
+        0
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+}
+
+
+.detalle-admin__comprobante-info span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.61rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.055em;
+
+    text-transform: uppercase;
+}
+
+
+.detalle-admin__comprobante-info strong {
+    display: block;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.77rem;
+
+    font-weight: 900;
+
+    line-height: 1.35;
+
+    overflow-wrap: anywhere;
+}
+
+
+.detalle-admin__comprobante-info small {
+    display: block;
+
+    margin-top: 4px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.61rem;
+
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   COMPROBANTE PENDIENTE
+========================================================= */
+
+.detalle-admin__comprobante-info--pendiente
+.detalle-admin__comprobante-icono {
+    color: #f4c95d;
+
+    border-color:
+        rgba(
+            244,
+            201,
+            93,
+            0.17
+        );
+
+    background:
+        rgba(
+            244,
+            201,
+            93,
+            0.065
+        );
+}
+
+
+.detalle-admin__comprobante-info--pendiente strong {
+    color: #f4d979;
+}
+
+
+/* =========================================================
+   BOTÓN COMPROBANTE
+========================================================= */
+
+.detalle-admin__comprobante-boton {
+    min-width: max-content;
+
+    min-height: 42px;
+
+    flex:
+        0
+        0
+        auto;
+
+    padding:
+        0
+        14px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    font-size: 0.67rem;
+
+    font-weight: 900;
+
+    white-space: nowrap;
+}
+
+
+.detalle-admin__comprobante-boton i {
+    font-size: 0.85rem;
+}
+
+
+/* =========================================================
    DIRECCIÓN
 ========================================================= */
 
@@ -1420,7 +1646,6 @@
 
 /* =========================================================
    TIMELINE / TRAZABILIDAD
-   MISMO ESTILO DEL SEGUIMIENTO DEL CLIENTE
 ========================================================= */
 
 .detalle-admin .timeline-pedido {
@@ -1665,11 +1890,6 @@
 /* =========================================================
    ETAPA ACTUAL
 ========================================================= */
-/*
-   La etapa actual también queda completamente celeste.
-
-   Se diferencia de las anteriores por un halo más marcado.
-========================================================= */
 
 .detalle-admin
 .timeline-paso--activo {
@@ -1735,17 +1955,6 @@
 /* =========================================================
    SIGUIENTE ETAPA
 ========================================================= */
-/*
-   La etapa inmediatamente posterior a la actual
-   queda con borde celeste.
-
-   De esta manera:
-
-   COMPLETADO  = círculo celeste
-   ACTUAL      = círculo celeste + halo
-   SIGUIENTE   = círculo oscuro con borde celeste
-   RESTO       = apagadas
-========================================================= */
 
 .detalle-admin
 .timeline-paso--activo
@@ -1794,13 +2003,6 @@
 
 /* =========================================================
    SIGUIENTE ETAPA CUANDO NO EXISTE ACTIVO
-========================================================= */
-/*
-   En algunos estados el backend puede dejar todos
-   los anteriores como completados sin marcar explícitamente
-   un paso activo.
-
-   En ese caso destacamos el primer pendiente.
 ========================================================= */
 
 .detalle-admin
@@ -1876,12 +2078,30 @@
 
     .detalle-admin__boleta-acciones {
         grid-column:
-            1 / -1;
+            1
+            /
+            -1;
 
         justify-content:
             flex-start;
 
         padding-left: 68px;
+    }
+
+
+    /* =====================================================
+       COMPROBANTE
+    ====================================================== */
+
+    .detalle-admin__comprobante {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .detalle-admin__comprobante-boton {
+        width: 100%;
     }
 
 }
@@ -1904,6 +2124,23 @@
     .detalle-admin__cabecera {
         align-items:
             flex-start;
+    }
+
+
+    /*
+       Al pasar a una sola columna vuelve a haber espacio
+       suficiente para mostrar comprobante horizontal.
+    */
+
+    .detalle-admin__comprobante {
+        align-items: center;
+
+        flex-direction: row;
+    }
+
+
+    .detalle-admin__comprobante-boton {
+        width: auto;
     }
 
 }
@@ -2051,7 +2288,9 @@
 
     .detalle-admin__boleta-acciones {
         grid-column:
-            1 / -1;
+            1
+            /
+            -1;
 
         width: 100%;
 
@@ -2087,6 +2326,31 @@
     > div
     > strong {
         text-align: left;
+    }
+
+
+    /* =====================================================
+       COMPROBANTE
+    ====================================================== */
+
+    .detalle-admin__comprobante {
+        align-items: stretch;
+
+        flex-direction: column;
+
+        gap: 14px;
+    }
+
+
+    .detalle-admin__comprobante-info {
+        align-items: flex-start;
+    }
+
+
+    .detalle-admin__comprobante-boton {
+        width: 100%;
+
+        min-height: 44px;
     }
 
 
@@ -2190,8 +2454,50 @@
 
 
     .detalle-admin
+    .seguimiento-total {
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+        gap: 7px;
+    }
+
+
+    .detalle-admin
     .seguimiento-total strong {
         font-size: 1.2rem;
+    }
+
+
+    /* =====================================================
+       COMPROBANTE
+    ====================================================== */
+
+    .detalle-admin__comprobante-info {
+        gap: 10px;
+    }
+
+
+    .detalle-admin__comprobante-icono {
+        width: 40px;
+
+        height: 40px;
+
+        flex-basis: 40px;
+
+        border-radius: 10px;
+    }
+
+
+    .detalle-admin__comprobante-info strong {
+        font-size: 0.73rem;
+    }
+
+
+    .detalle-admin__comprobante-info small {
+        font-size: 0.59rem;
     }
 
 
