@@ -108,32 +108,32 @@ def enmascarar_rut(rut):
 # IDENTIFICACIÓN DEL CLIENTE
 # ============================================================================
 
-
 def crear_cliente_clave(
     *,
     usuario,
     rut,
 ):
     """
-    Identificador utilizado para impedir
-    que un cliente utilice el mismo código
-    más de una vez.
+    Genera una clave privada basada exclusivamente
+    en el RUT.
 
-    Usuario autenticado:
-        USER:<id>
+    La regla de códigos generales es:
 
-    Cliente invitado:
-        RUT:<HMAC DEL RUT>
+        mismo RUT + mismo código = un solo uso
+
+    Ejemplos:
+
+        12.345.678-5 + AUDEX15   -> permitido una vez
+        12.345.678-5 + AUDEX15   -> segundo uso bloqueado
+
+        12.345.678-5 + VERANO10  -> permitido
+        22.222.222-2 + AUDEX15   -> permitido
+
+    El usuario autenticado NO modifica esta identidad.
+
+    Esto evita que una misma persona pueda volver a utilizar
+    el mismo código creando otra cuenta o comprando como invitado.
     """
-
-    if getattr(
-        usuario,
-        "is_authenticated",
-        False,
-    ):
-        return (
-            f"USER:{usuario.pk}"
-        )
 
     rut_normalizado = (
         normalizar_rut(
@@ -144,19 +144,24 @@ def crear_cliente_clave(
     if not rut_normalizado:
         raise DescuentoError(
             (
-                "Ingresa un RUT válido antes "
-                "de aplicar el código."
+                "Debes ingresar un RUT válido "
+                "para finalizar la compra con "
+                "este código."
             )
         )
 
     digest = hmac.new(
         key=(
             settings.SECRET_KEY
-            .encode("utf-8")
+            .encode(
+                "utf-8"
+            )
         ),
         msg=(
             rut_normalizado
-            .encode("utf-8")
+            .encode(
+                "utf-8"
+            )
         ),
         digestmod=hashlib.sha256,
     ).hexdigest()
@@ -164,7 +169,6 @@ def crear_cliente_clave(
     return (
         f"RUT:{digest}"
     )
-
 
 # ============================================================================
 # RESULTADO SIN DESCUENTO
@@ -497,9 +501,8 @@ def _validar_uso_anterior(
     if ya_utilizado:
         raise DescuentoError(
             (
-                "Este código ya fue utilizado "
-                "o está reservado por este "
-                "cliente."
+                "Este código de descuento ya fue "
+                "utilizado con este RUT."
             )
         )
 
@@ -546,7 +549,6 @@ def _validar_uso_anterior(
 # RESOLVER DESCUENTO
 # ============================================================================
 
-
 def resolver_descuento(
     *,
     usuario,
@@ -555,6 +557,38 @@ def resolver_descuento(
     codigo,
     bloquear=False,
 ):
+    """
+    Resuelve un código de descuento.
+
+    COMPORTAMIENTO:
+
+    1. Sin código:
+       devuelve resultado sin descuento.
+
+    2. Código + sin RUT + bloquear=False:
+       permite calcular el descuento provisionalmente.
+
+       Esto se utiliza en el resumen AJAX del checkout.
+
+    3. Código + RUT:
+       comprueba si la combinación:
+
+           RUT + CÓDIGO
+
+       ya fue utilizada o está reservada.
+
+    4. bloquear=True:
+       corresponde al flujo definitivo de compra.
+       En ese caso el RUT es obligatorio.
+
+    La reserva definitiva vuelve a ser validada posteriormente
+    por reservar_codigo_descuento().
+    """
+
+    # ========================================================================
+    # NORMALIZAR
+    # ========================================================================
+
     codigo_texto = (
         normalizar_codigo(
             codigo
@@ -568,25 +602,24 @@ def resolver_descuento(
         )
     )
 
+    rut_normalizado = (
+        normalizar_rut(
+            rut
+        )
+    )
+
+    # ========================================================================
+    # SIN CÓDIGO
+    # ========================================================================
+
     if not codigo_texto:
         return (
             resultado_sin_descuento()
         )
 
-    # ------------------------------------------------------------------------
-    # IDENTIFICACIÓN DEL CLIENTE
-    # ------------------------------------------------------------------------
-
-    cliente_clave = (
-        crear_cliente_clave(
-            usuario=usuario,
-            rut=rut,
-        )
-    )
-
-    # ------------------------------------------------------------------------
+    # ========================================================================
     # BUSCAR CÓDIGO
-    # ------------------------------------------------------------------------
+    # ========================================================================
 
     consulta = (
         CodigoDescuento.objects
@@ -613,27 +646,89 @@ def resolver_descuento(
             )
         )
 
-    # ------------------------------------------------------------------------
-    # VALIDACIONES
-    # ------------------------------------------------------------------------
+    # ========================================================================
+    # VALIDAR VIGENCIA
+    # ========================================================================
 
     _validar_vigencia(
         codigo_objeto
     )
+
+    # ========================================================================
+    # VALIDAR PROPIETARIO
+    # ========================================================================
+    #
+    # Los códigos de fidelidad continúan perteneciendo
+    # exclusivamente al usuario que los recibió.
+    # ========================================================================
 
     _validar_propietario(
         codigo=codigo_objeto,
         usuario=usuario,
     )
 
-    _validar_uso_anterior(
-        codigo=codigo_objeto,
-        cliente_clave=cliente_clave,
-    )
+    # ========================================================================
+    # IDENTIFICACIÓN DEL CLIENTE
+    # ========================================================================
+    #
+    # SIN RUT:
+    #
+    # Si bloquear=False estamos solamente mostrando
+    # una previsualización del descuento.
+    #
+    # En esa etapa NO impedimos aplicar el código.
+    #
+    # CON RUT:
+    #
+    # generamos la clave RUT:<HMAC> y comprobamos
+    # la combinación RUT + código.
+    # ========================================================================
+
+    cliente_clave = ""
+
+    if rut_normalizado:
+
+        cliente_clave = (
+            crear_cliente_clave(
+                usuario=usuario,
+                rut=rut_normalizado,
+            )
+        )
+
+        # --------------------------------------------------------------------
+        # COMPROBAR:
+        #
+        # mismo RUT + mismo código
+        # --------------------------------------------------------------------
+
+        _validar_uso_anterior(
+            codigo=codigo_objeto,
+            cliente_clave=cliente_clave,
+        )
+
+    elif bloquear:
+
+        # --------------------------------------------------------------------
+        # En una operación definitiva nunca permitimos
+        # utilizar un código sin RUT.
+        # --------------------------------------------------------------------
+
+        raise DescuentoError(
+            (
+                "Debes ingresar un RUT válido "
+                "para utilizar este código."
+            )
+        )
+
+    # ========================================================================
+    # MONTO MÍNIMO
+    # ========================================================================
 
     monto_minimo = (
         codigo_objeto.monto_minimo
-        or Decimal("0")
+        or Decimal(
+            "0"
+        )
     )
 
     if subtotal < monto_minimo:
@@ -645,9 +740,9 @@ def resolver_descuento(
             )
         )
 
-    # ------------------------------------------------------------------------
-    # MODALIDAD DEL DESCUENTO
-    # ------------------------------------------------------------------------
+    # ========================================================================
+    # MODALIDAD
+    # ========================================================================
 
     if (
         codigo_objeto.modalidad
@@ -655,6 +750,7 @@ def resolver_descuento(
         .Modalidad
         .MONTO_FIJO
     ):
+
         descuento = (
             calcular_importe_descuento_fijo(
                 subtotal=subtotal,
@@ -663,18 +759,25 @@ def resolver_descuento(
         )
 
         porcentaje_resultado = (
-            Decimal("0")
+            Decimal(
+                "0"
+            )
         )
 
     else:
+
         descuento = (
             calcular_importe_descuento(
                 subtotal=subtotal,
+
                 porcentaje=(
                     codigo_objeto
                     .porcentaje
-                    or Decimal("0")
+                    or Decimal(
+                        "0"
+                    )
                 ),
+
                 monto_maximo=(
                     codigo_objeto
                     .monto_maximo_descuento
@@ -685,12 +788,14 @@ def resolver_descuento(
         porcentaje_resultado = (
             codigo_objeto
             .porcentaje
-            or Decimal("0")
+            or Decimal(
+                "0"
+            )
         )
 
-    # ------------------------------------------------------------------------
-    # TIPO DEL DESCUENTO DEL PEDIDO
-    # ------------------------------------------------------------------------
+    # ========================================================================
+    # TIPO DEL DESCUENTO
+    # ========================================================================
 
     if (
         codigo_objeto.tipo
@@ -698,6 +803,7 @@ def resolver_descuento(
         .Tipo
         .FIDELIDAD
     ):
+
         tipo_pedido = (
             Pedido
             .TipoDescuento
@@ -705,24 +811,42 @@ def resolver_descuento(
         )
 
     else:
+
         tipo_pedido = (
             Pedido
             .TipoDescuento
             .GENERAL
         )
 
+    # ========================================================================
+    # RESULTADO
+    # ========================================================================
+
     return ResultadoDescuento(
-        codigo_objeto=codigo_objeto,
-        codigo=codigo_objeto.codigo,
-        tipo=tipo_pedido,
+        codigo_objeto=(
+            codigo_objeto
+        ),
+
+        codigo=(
+            codigo_objeto.codigo
+        ),
+
+        tipo=(
+            tipo_pedido
+        ),
+
         porcentaje=(
             porcentaje_resultado
         ),
-        descuento=descuento,
-        cliente_clave=cliente_clave,
+
+        descuento=(
+            descuento
+        ),
+
+        cliente_clave=(
+            cliente_clave
+        ),
     )
-
-
 # ============================================================================
 # RESERVAR USO DEL CÓDIGO
 # ============================================================================
@@ -828,9 +952,8 @@ def reservar_codigo_descuento(
     except IntegrityError as error:
         raise DescuentoError(
             (
-                "Este código ya fue utilizado "
-                "o está reservado por este "
-                "cliente."
+                "Este código de descuento ya fue "
+                "utilizado con este RUT."
             )
         ) from error
 
@@ -1013,8 +1136,6 @@ def generar_codigo_fidelidad_unico(
 # ============================================================================
 # REGISTRAR COMPRA EN FIDELIDAD
 # ============================================================================
-
-
 @transaction.atomic
 def registrar_compra_fidelidad(
     pedido_id,
@@ -1026,13 +1147,20 @@ def registrar_compra_fidelidad(
     Reglas:
 
     - Solo cuenta pedidos pagados y aprobados.
+    - Solo cuenta Webpay y Mercado Pago.
     - Solo cuenta pedidos asociados a un usuario.
     - Cada pedido se contabiliza una sola vez.
+    - El despacho NO suma fidelidad.
+    - Se acumula subtotal - descuento.
     - El acumulado es histórico.
     - Cada MetaFidelidad se entrega una sola vez
       por usuario.
     - Soporta premios porcentuales y premios CLP.
     """
+
+    # ==================================================================
+    # PEDIDO
+    # ==================================================================
 
     pedido = (
         Pedido.objects
@@ -1050,6 +1178,24 @@ def registrar_compra_fidelidad(
     # ==================================================================
 
     if not pedido.pago_aprobado:
+        return []
+
+    # ==================================================================
+    # MÉTODO DE PAGO VÁLIDO PARA FIDELIDAD
+    # ==================================================================
+    #
+    # Solamente:
+    #
+    # - Webpay
+    # - Mercado Pago
+    #
+    # Transferencias y otros métodos no generan fidelidad.
+    # ==================================================================
+
+    if pedido.metodo_pago not in {
+        Pedido.MetodoPago.WEBPAY,
+        Pedido.MetodoPago.MERCADOPAGO,
+    }:
         return []
 
     # ==================================================================
@@ -1098,6 +1244,18 @@ def registrar_compra_fidelidad(
             )
         )
 
+        # --------------------------------------------------------------
+        # IMPORTE QUE SUMA A FIDELIDAD
+        # --------------------------------------------------------------
+        #
+        # No utilizamos pedido.total porque incluye despacho.
+        #
+        # Fidelidad:
+        #
+        #     subtotal - descuento
+        #
+        # --------------------------------------------------------------
+
         monto_contabilizado = max(
             subtotal - descuento,
             Decimal("0"),
@@ -1113,12 +1271,17 @@ def registrar_compra_fidelidad(
             + monto_contabilizado
         )
 
-        # Conservamos saldo_actual por compatibilidad.
-        # El sistema nuevo utiliza total_historico
-        # para calcular las metas.
+        # --------------------------------------------------------------
+        # SALDO ACTUAL
+        # --------------------------------------------------------------
+
         saldo.saldo_actual = (
             saldo.total_historico
         )
+
+        # --------------------------------------------------------------
+        # MARCAR PEDIDO COMO CONTABILIZADO
+        # --------------------------------------------------------------
 
         pedido.fidelidad_contabilizada = (
             True
@@ -1174,6 +1337,15 @@ def registrar_compra_fidelidad(
         # --------------------------------------------------------------
         # ESTA META YA FUE ENTREGADA AL CLIENTE
         # --------------------------------------------------------------
+        #
+        # Buscamos incluso códigos:
+        #
+        # - usados;
+        # - vencidos;
+        # - desactivados.
+        #
+        # Si la meta ya entregó un código, no generamos otro.
+        # --------------------------------------------------------------
 
         ya_generado = (
             CodigoDescuento.objects
@@ -1201,10 +1373,7 @@ def registrar_compra_fidelidad(
         codigo_texto = (
             generar_codigo_fidelidad_unico(
                 usuario=pedido.usuario,
-                numero_meta=meta.pk,
-                prefijo=(
-                    meta.prefijo_codigo
-                ),
+                meta=meta,
             )
         )
 
@@ -1337,6 +1506,13 @@ def registrar_compra_fidelidad(
     # ==================================================================
     # METAS CUMPLIDAS
     # ==================================================================
+    #
+    # Una meta continúa contando históricamente aunque su código:
+    #
+    # - haya sido utilizado;
+    # - esté vencido;
+    # - haya sido desactivado.
+    # ==================================================================
 
     saldo.metas_cumplidas = (
         CodigoDescuento.objects
@@ -1349,6 +1525,7 @@ def registrar_compra_fidelidad(
             usuario_exclusivo=(
                 pedido.usuario
             ),
+            meta_fidelidad__isnull=False,
         )
         .values(
             "meta_fidelidad_id"
@@ -1373,34 +1550,30 @@ def registrar_compra_fidelidad(
     return codigos_generados
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @transaction.atomic
 def sincronizar_fidelidad_usuario(
     usuario,
 ):
     """
-    Reconstruye el saldo de fidelidad utilizando
-    todos los pedidos aprobados del usuario.
+    Reconstruye completamente la fidelidad del usuario
+    utilizando los pedidos realmente válidos.
 
-    Sirve para:
+    Reglas:
 
-    - Compras antiguas.
-    - Reparar saldos inconsistentes.
-    - Migraciones del sistema anterior.
+    - Solo Webpay y Mercado Pago.
+    - Solo pagos aprobados.
+    - Solo pedidos marcados como pagados.
+    - No incluye despacho.
+    - Acumula subtotal - descuento.
+    - Corrige pedidos antiguos incorrectamente marcados.
+    - Genera premios faltantes.
+    - Nunca vuelve a generar una recompensa de una meta
+      que ya entregó anteriormente un código.
     """
+
+    # ==================================================================
+    # USUARIO
+    # ==================================================================
 
     if not getattr(
         usuario,
@@ -1410,7 +1583,7 @@ def sincronizar_fidelidad_usuario(
         return []
 
     # ==================================================================
-    # PEDIDOS REALMENTE PAGADOS
+    # PEDIDOS REALMENTE VÁLIDOS PARA FIDELIDAD
     # ==================================================================
 
     pedidos = list(
@@ -1418,12 +1591,24 @@ def sincronizar_fidelidad_usuario(
         .select_for_update()
         .filter(
             usuario=usuario,
+
             pagado=True,
+
             estado_pago=(
                 Pedido
                 .EstadoPago
                 .APROBADO
             ),
+
+            metodo_pago__in=[
+                Pedido
+                .MetodoPago
+                .WEBPAY,
+
+                Pedido
+                .MetodoPago
+                .MERCADOPAGO,
+            ],
         )
         .order_by(
             "creado",
@@ -1454,6 +1639,10 @@ def sincronizar_fidelidad_usuario(
                 or 0
             )
         )
+
+        # --------------------------------------------------------------
+        # NO INCLUIR DESPACHO
+        # --------------------------------------------------------------
 
         monto = max(
             subtotal - descuento,
@@ -1492,19 +1681,70 @@ def sincronizar_fidelidad_usuario(
     )
 
     # ==================================================================
-    # MARCAR PEDIDOS COMO CONTABILIZADOS
+    # IDS DE PEDIDOS VÁLIDOS
     # ==================================================================
 
-    if pedidos:
+    pedidos_validos_ids = [
+        pedido.pk
+        for pedido
+        in pedidos
+    ]
 
-        Pedido.objects.filter(
-            pk__in=[
-                pedido.pk
-                for pedido in pedidos
-            ]
-        ).update(
+    # ==================================================================
+    # MARCAR PEDIDOS VÁLIDOS COMO CONTABILIZADOS
+    # ==================================================================
+
+    if pedidos_validos_ids:
+
+        (
+            Pedido.objects
+            .filter(
+                pk__in=(
+                    pedidos_validos_ids
+                )
+            )
+            .update(
+                fidelidad_contabilizada=True,
+            )
+        )
+
+    # ==================================================================
+    # LIMPIAR PEDIDOS QUE YA NO DEBEN CONTAR
+    # ==================================================================
+    #
+    # Esto corrige pedidos antiguos que hayan quedado marcados
+    # fidelidad_contabilizada=True aunque actualmente:
+    #
+    # - estén rechazados;
+    # - estén cancelados;
+    # - estén reembolsados;
+    # - sean transferencias;
+    # - no estén pagados;
+    # - ya no tengan estado APROBADO.
+    # ==================================================================
+
+    pedidos_no_validos = (
+        Pedido.objects
+        .filter(
+            usuario=usuario,
             fidelidad_contabilizada=True,
         )
+    )
+
+    if pedidos_validos_ids:
+
+        pedidos_no_validos = (
+            pedidos_no_validos
+            .exclude(
+                pk__in=(
+                    pedidos_validos_ids
+                )
+            )
+        )
+
+    pedidos_no_validos.update(
+        fidelidad_contabilizada=False,
+    )
 
     # ==================================================================
     # METAS ALCANZADAS
@@ -1514,6 +1754,7 @@ def sincronizar_fidelidad_usuario(
         MetaFidelidad.objects
         .filter(
             activa=True,
+
             monto_objetivo__lte=(
                 total_historico
             ),
@@ -1529,7 +1770,15 @@ def sincronizar_fidelidad_usuario(
 
     ahora = timezone.now()
 
+    # ==================================================================
+    # GENERAR PREMIOS FALTANTES
+    # ==================================================================
+
     for meta in metas:
+
+        # --------------------------------------------------------------
+        # COMPROBAR SI ESTA META YA ENTREGÓ UN PREMIO
+        # --------------------------------------------------------------
 
         existente = (
             CodigoDescuento.objects
@@ -1539,8 +1788,14 @@ def sincronizar_fidelidad_usuario(
                     .Tipo
                     .FIDELIDAD
                 ),
-                usuario_exclusivo=usuario,
-                meta_fidelidad=meta,
+
+                usuario_exclusivo=(
+                    usuario
+                ),
+
+                meta_fidelidad=(
+                    meta
+                ),
             )
             .first()
         )
@@ -1548,15 +1803,20 @@ def sincronizar_fidelidad_usuario(
         if existente:
             continue
 
+        # --------------------------------------------------------------
+        # CÓDIGO ÚNICO
+        # --------------------------------------------------------------
+
         codigo_texto = (
             generar_codigo_fidelidad_unico(
                 usuario=usuario,
-                numero_meta=meta.pk,
-                prefijo=(
-                    meta.prefijo_codigo
-                ),
+                meta=meta,
             )
         )
+
+        # --------------------------------------------------------------
+        # DATOS BASE
+        # --------------------------------------------------------------
 
         datos = {
             "tipo": (
@@ -1617,6 +1877,10 @@ def sincronizar_fidelidad_usuario(
             ),
         }
 
+        # --------------------------------------------------------------
+        # PREMIO PORCENTUAL
+        # --------------------------------------------------------------
+
         if (
             meta.modalidad
             == CodigoDescuento
@@ -1640,6 +1904,10 @@ def sincronizar_fidelidad_usuario(
                 meta.monto_maximo_descuento
             )
 
+        # --------------------------------------------------------------
+        # PREMIO MONTO FIJO
+        # --------------------------------------------------------------
+
         else:
 
             datos[
@@ -1656,6 +1924,10 @@ def sincronizar_fidelidad_usuario(
                 "monto_maximo_descuento"
             ] = None
 
+        # --------------------------------------------------------------
+        # CREAR CÓDIGO
+        # --------------------------------------------------------------
+
         codigo = (
             CodigoDescuento.objects
             .create(
@@ -1667,6 +1939,10 @@ def sincronizar_fidelidad_usuario(
             codigo
         )
 
+    # ==================================================================
+    # METAS CUMPLIDAS
+    # ==================================================================
+
     saldo.metas_cumplidas = (
         CodigoDescuento.objects
         .filter(
@@ -1675,7 +1951,12 @@ def sincronizar_fidelidad_usuario(
                 .Tipo
                 .FIDELIDAD
             ),
-            usuario_exclusivo=usuario,
+
+            usuario_exclusivo=(
+                usuario
+            ),
+
+            meta_fidelidad__isnull=False,
         )
         .values(
             "meta_fidelidad_id"
@@ -1683,6 +1964,10 @@ def sincronizar_fidelidad_usuario(
         .distinct()
         .count()
     )
+
+    # ==================================================================
+    # GUARDAR SALDO
+    # ==================================================================
 
     saldo.save(
         update_fields=[

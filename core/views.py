@@ -59,12 +59,7 @@ from core.services.carrito_persistente import *
 from django.contrib.auth import (
     logout as django_logout,
 )
-from core.services.descuentos import (
-    DescuentoError,
-    liberar_uso_codigo_pedido,
-    obtener_codigos_disponibles,
-    resolver_descuento,
-)
+
 from core.services.checkout import *
 
 
@@ -1206,476 +1201,6 @@ def categorias(request):
 # ======================================================================
 
 
-def _generar_codigo_fidelidad_unico(
-    usuario,
-    meta,
-):
-    """
-    Genera un código único para una recompensa de fidelidad.
-
-    Ejemplo:
-        AUDEXFIEL-12-3-A1B2C3D4
-
-    donde:
-        12 = ID del usuario
-        3  = ID de la meta
-    """
-
-    prefijo = (
-        meta.prefijo_codigo
-        or "AUDEXFIEL"
-    ).strip().upper()
-
-    while True:
-
-        token = (
-            uuid.uuid4()
-            .hex[:8]
-            .upper()
-        )
-
-        codigo = (
-            f"{prefijo}-"
-            f"{usuario.pk}-"
-            f"{meta.pk}-"
-            f"{token}"
-        )
-
-        # El modelo admite máximo 64 caracteres.
-        codigo = codigo[:64]
-
-        existe = (
-            CodigoDescuento.objects
-            .filter(
-                codigo=codigo,
-            )
-            .exists()
-        )
-
-        if not existe:
-            return codigo
-
-
-def _obtener_total_compras_aprobadas(
-    usuario,
-):
-    """
-    Calcula el acumulado REAL del usuario para fidelidad.
-
-    Solamente contabiliza:
-
-    - Pedidos pertenecientes al usuario.
-    - Pago marcado como pagado.
-    - Estado de pago APROBADO.
-    - Mercado Pago o Webpay.
-
-    No contabiliza:
-
-    - Transferencias.
-    - Pagos pendientes.
-    - Pagos iniciados.
-    - Pagos rechazados.
-    - Pagos cancelados.
-    - Pagos reembolsados.
-    - Pagos en revisión.
-    """
-
-    resultado = (
-        Pedido.objects
-        .filter(
-            usuario=usuario,
-            pagado=True,
-            estado_pago=(
-                Pedido
-                .EstadoPago
-                .APROBADO
-            ),
-            metodo_pago__in=[
-                Pedido
-                .MetodoPago
-                .WEBPAY,
-
-                Pedido
-                .MetodoPago
-                .MERCADOPAGO,
-            ],
-        )
-        .aggregate(
-            total=Sum(
-                "total"
-            )
-        )
-    )
-
-    return Decimal(
-        str(
-            resultado["total"]
-            or 0
-        )
-    )
-
-
-@transaction.atomic
-def _sincronizar_fidelidad_usuario(
-    usuario,
-):
-    """
-    Sincroniza completamente la fidelidad del usuario.
-
-    1. Recalcula el histórico usando pedidos realmente aprobados.
-    2. Actualiza SaldoFidelidad.
-    3. Marca como contabilizados los pedidos aprobados.
-    4. Detecta todas las metas alcanzadas.
-    5. Genera una recompensa si la meta nunca fue entregada.
-    6. NO vuelve a generar el código si:
-       - ya fue utilizado;
-       - fue desactivado por administración;
-       - ya existe por cualquier motivo.
-    """
-
-    # ==================================================================
-    # TOTAL REAL PAGADO
-    # ==================================================================
-
-    acumulado = (
-        _obtener_total_compras_aprobadas(
-            usuario
-        )
-    )
-
-    # ==================================================================
-    # SALDO DE FIDELIDAD
-    # ==================================================================
-
-    saldo, _ = (
-        SaldoFidelidad.objects
-        .select_for_update()
-        .get_or_create(
-            usuario=usuario,
-            defaults={
-                "saldo_actual": (
-                    acumulado
-                ),
-                "total_historico": (
-                    acumulado
-                ),
-                "metas_cumplidas": 0,
-            },
-        )
-    )
-
-    # El histórico se reconstruye desde Pedido.
-    #
-    # Así evitamos:
-    # - compras duplicadas;
-    # - acumulados antiguos incorrectos;
-    # - pedidos rechazados contabilizados;
-    # - pedidos reembolsados contabilizados.
-    saldo.total_historico = acumulado
-
-    # Por ahora saldo_actual representa también
-    # lo acumulado vigente para las metas.
-    saldo.saldo_actual = acumulado
-
-    # ==================================================================
-    # MARCAR PEDIDOS VÁLIDOS COMO CONTABILIZADOS
-    # ==================================================================
-
-    (
-        Pedido.objects
-        .filter(
-            usuario=usuario,
-            pagado=True,
-            estado_pago=(
-                Pedido
-                .EstadoPago
-                .APROBADO
-            ),
-            metodo_pago__in=[
-                Pedido
-                .MetodoPago
-                .WEBPAY,
-
-                Pedido
-                .MetodoPago
-                .MERCADOPAGO,
-            ],
-            fidelidad_contabilizada=False,
-        )
-        .update(
-            fidelidad_contabilizada=True
-        )
-    )
-
-    # Si un pedido dejó de ser válido
-    # (por ejemplo, reembolsado),
-    # dejamos consistente el indicador.
-    (
-        Pedido.objects
-        .filter(
-            usuario=usuario,
-            fidelidad_contabilizada=True,
-        )
-        .exclude(
-            pagado=True,
-            estado_pago=(
-                Pedido
-                .EstadoPago
-                .APROBADO
-            ),
-            metodo_pago__in=[
-                Pedido
-                .MetodoPago
-                .WEBPAY,
-
-                Pedido
-                .MetodoPago
-                .MERCADOPAGO,
-            ],
-        )
-        .update(
-            fidelidad_contabilizada=False
-        )
-    )
-
-    # ==================================================================
-    # METAS ACTIVAS
-    # ==================================================================
-
-    metas = list(
-        MetaFidelidad.objects
-        .filter(
-            activa=True,
-        )
-        .order_by(
-            "monto_objetivo",
-            "orden",
-            "pk",
-        )
-    )
-
-    # ==================================================================
-    # GENERAR RECOMPENSAS
-    # ==================================================================
-
-    for numero_meta, meta in enumerate(
-        metas,
-        start=1,
-    ):
-
-        objetivo = Decimal(
-            str(
-                meta.monto_objetivo
-                or 0
-            )
-        )
-
-        if objetivo <= 0:
-            continue
-
-        if acumulado < objetivo:
-            continue
-
-        # --------------------------------------------------------------
-        # MUY IMPORTANTE
-        #
-        # Buscamos el código aunque:
-        #
-        # - esté consumido;
-        # - esté desactivado;
-        # - esté vencido.
-        #
-        # Si existe, NO generamos otro.
-        #
-        # Así el administrador puede bloquearlo simplemente
-        # colocando activo=False.
-        #
-        # Y si el cliente ya lo utilizó, consumido=True evita
-        # que vuelva a recibir la recompensa.
-        # --------------------------------------------------------------
-
-        codigo_existente = (
-            CodigoDescuento.objects
-            .filter(
-                tipo=(
-                    CodigoDescuento
-                    .Tipo
-                    .FIDELIDAD
-                ),
-                usuario_exclusivo=usuario,
-                meta_fidelidad=meta,
-            )
-            .first()
-        )
-
-        if codigo_existente:
-            continue
-
-        ahora = timezone.now()
-
-        fecha_fin = (
-            ahora
-            + timezone.timedelta(
-                days=meta.vigencia_dias
-            )
-        )
-
-        datos_codigo = {
-            "tipo": (
-                CodigoDescuento
-                .Tipo
-                .FIDELIDAD
-            ),
-
-            "usuario_exclusivo": (
-                usuario
-            ),
-
-            "meta_fidelidad": (
-                meta
-            ),
-
-            "numero_meta": (
-                numero_meta
-            ),
-
-            "nombre": (
-                f"Premio fidelidad - "
-                f"{meta.nombre}"
-            ),
-
-            "codigo": (
-                _generar_codigo_fidelidad_unico(
-                    usuario,
-                    meta,
-                )
-            ),
-
-            "descripcion": (
-                f"Premio desbloqueado al "
-                f"alcanzar ${meta.monto_objetivo:,.0f} "
-                f"en compras aprobadas."
-            ),
-
-            "activo": True,
-
-            "consumido": False,
-
-            "modalidad": (
-                meta.modalidad
-            ),
-
-            "monto_minimo": (
-                meta.monto_minimo_compra
-                or Decimal("0")
-            ),
-
-            "fecha_inicio": (
-                ahora
-            ),
-
-            "fecha_fin": (
-                fecha_fin
-            ),
-        }
-
-        # --------------------------------------------------------------
-        # PREMIO PORCENTUAL
-        # --------------------------------------------------------------
-
-        if (
-            meta.modalidad
-            == MetaFidelidad
-            .Modalidad
-            .PORCENTAJE
-        ):
-
-            datos_codigo.update(
-                {
-                    "porcentaje": (
-                        meta.porcentaje
-                    ),
-
-                    "monto_descuento": (
-                        None
-                    ),
-
-                    "monto_maximo_descuento": (
-                        meta
-                        .monto_maximo_descuento
-                    ),
-                }
-            )
-
-        # --------------------------------------------------------------
-        # PREMIO MONTO FIJO
-        # --------------------------------------------------------------
-
-        else:
-
-            datos_codigo.update(
-                {
-                    "porcentaje": (
-                        None
-                    ),
-
-                    "monto_descuento": (
-                        meta.monto_descuento
-                    ),
-
-                    "monto_maximo_descuento": (
-                        None
-                    ),
-                }
-            )
-
-        CodigoDescuento.objects.create(
-            **datos_codigo
-        )
-
-    # ==================================================================
-    # CANTIDAD HISTÓRICA DE PREMIOS GENERADOS
-    # ==================================================================
-
-    #
-    # Aquí NO filtramos activo=True ni consumido=False.
-    #
-    # Si ya recibió un premio, sigue siendo una meta históricamente
-    # cumplida aunque:
-    #
-    # - haya usado el código;
-    # - el administrador lo haya desactivado;
-    # - el código haya vencido.
-    #
-
-    total_premios_generados = (
-        CodigoDescuento.objects
-        .filter(
-            tipo=(
-                CodigoDescuento
-                .Tipo
-                .FIDELIDAD
-            ),
-            usuario_exclusivo=usuario,
-        )
-        .count()
-    )
-
-    saldo.metas_cumplidas = (
-        total_premios_generados
-    )
-
-    saldo.save(
-        update_fields=[
-            "saldo_actual",
-            "total_historico",
-            "metas_cumplidas",
-            "actualizado",
-        ]
-    )
-
-    return saldo
-
 
 # ======================================================================
 # OFERTAS
@@ -1688,7 +1213,7 @@ def ofertas(request):
 
     Muestra:
 
-    - Productos activos con una rebaja superior al 15%.
+    - Productos activos con una rebaja superior al 30%.
     - Todos los códigos generales activos y vigentes.
     - Códigos generales porcentuales.
     - Códigos generales de monto fijo en CLP.
@@ -1697,12 +1222,25 @@ def ofertas(request):
       aprobadas por Mercado Pago o Webpay.
     - Próxima recompensa del usuario.
     - Códigos personales disponibles.
+
+    IMPORTANTE:
+
+    Los códigos generales se limitan en el checkout mediante:
+
+        RUT + CÓDIGO
+
+    La página de ofertas no intenta decidir si un código general
+    fue utilizado basándose en request.user, porque la identidad
+    definitiva para códigos generales es el RUT ingresado durante
+    el checkout.
+
+    Los códigos de fidelidad sí pertenecen a un usuario concreto.
     """
 
     ahora = timezone.now()
 
     # ==================================================================
-    # PRODUCTOS CON MÁS DE 15% DE DESCUENTO
+    # PRODUCTOS CON MÁS DE 30% DE DESCUENTO
     # ==================================================================
 
     candidatos = list(
@@ -1794,6 +1332,7 @@ def ofertas(request):
 
         if producto.stock_oferta <= 0:
             producto.stock_porcentaje = 0
+
             continue
 
         producto.stock_porcentaje = max(
@@ -1895,7 +1434,7 @@ def ofertas(request):
     )
 
     # ==================================================================
-    # CÓDIGOS GENERALES UTILIZADOS
+    # TODOS LOS CÓDIGOS GENERALES
     # ==================================================================
 
     codigos_generales = [
@@ -1903,41 +1442,30 @@ def ofertas(request):
         *codigos_porcentaje,
     ]
 
-    codigos_generales_usados = set()
-
-    if request.user.is_authenticated:
-
-        cliente_clave = (
-            f"USER:{request.user.pk}"
-        )
-
-        codigos_generales_usados = set(
-            UsoCodigoDescuento.objects
-            .filter(
-                cliente_clave=cliente_clave,
-                estado=(
-                    UsoCodigoDescuento
-                    .Estado
-                    .CONFIRMADO
-                ),
-                codigo__tipo=(
-                    CodigoDescuento
-                    .Tipo
-                    .GENERAL
-                ),
-            )
-            .values_list(
-                "codigo_id",
-                flat=True,
-            )
-        )
+    # ==================================================================
+    # ESTADO DEL CÓDIGO GENERAL PARA LA PÁGINA DE OFERTAS
+    # ==================================================================
+    #
+    # IMPORTANTE:
+    #
+    # Ya NO utilizamos:
+    #
+    #     USER:<id>
+    #
+    # porque el sistema definitivo de control utiliza:
+    #
+    #     RUT + CÓDIGO
+    #
+    # En esta página todavía no conocemos necesariamente el RUT que el
+    # cliente utilizará en el checkout.
+    #
+    # Por eso mostramos los códigos generales activos/vigentes y la
+    # comprobación definitiva ocurre al ingresar el RUT en el checkout.
+    # ==================================================================
 
     for codigo in codigos_generales:
 
-        codigo.usado_por_cliente = (
-            codigo.pk
-            in codigos_generales_usados
-        )
+        codigo.usado_por_cliente = False
 
     # ==================================================================
     # CÓDIGO DESTACADO
@@ -1945,7 +1473,8 @@ def ofertas(request):
 
     codigos_disponibles_para_destacar = [
         codigo
-        for codigo in codigos_generales
+        for codigo
+        in codigos_generales
         if not codigo.usado_por_cliente
     ]
 
@@ -1965,7 +1494,8 @@ def ofertas(request):
 
     fechas_fin = [
         codigo.fecha_fin
-        for codigo in codigos_generales
+        for codigo
+        in codigos_generales
         if (
             codigo.fecha_fin
             and not codigo.usado_por_cliente
@@ -2005,25 +1535,27 @@ def ofertas(request):
     # ==================================================================
 
     fidelidad = None
+
     codigos_personales = []
 
     if request.user.is_authenticated:
 
         # --------------------------------------------------------------
-        # CLAVE DEL CLIENTE
-        # --------------------------------------------------------------
-
-        cliente_clave = (
-            f"USER:{request.user.pk}"
-        )
-
-        # --------------------------------------------------------------
         # SINCRONIZAR CON LOS PEDIDOS REALES
         # --------------------------------------------------------------
 
+# --------------------------------------------------------------
+# SINCRONIZAR FIDELIDAD DESDE EL SERVICIO CENTRAL
+# --------------------------------------------------------------
+
+        sincronizar_fidelidad_usuario(
+            request.user
+        )
+
         saldo = (
-            _sincronizar_fidelidad_usuario(
-                request.user
+            SaldoFidelidad.objects
+            .get(
+                usuario=request.user
             )
         )
 
@@ -2036,18 +1568,24 @@ def ofertas(request):
 
         # --------------------------------------------------------------
         # CÓDIGOS DE FIDELIDAD YA UTILIZADOS
+        # --------------------------------------------------------------
         #
-        # Un código será considerado utilizado si existe un registro
-        # CONFIRMADO en UsoCodigoDescuento para este usuario.
+        # IMPORTANTE:
         #
-        # Esto evita depender exclusivamente del campo "consumido"
-        # del CodigoDescuento.
+        # Ya NO filtramos mediante:
+        #
+        #     cliente_clave="USER:<id>"
+        #
+        # porque los nuevos registros utilizan una clave basada en RUT.
+        #
+        # Para fidelidad podemos identificar los códigos directamente
+        # mediante codigo.usuario_exclusivo, porque cada premio personal
+        # pertenece exclusivamente a un usuario.
         # --------------------------------------------------------------
 
         codigos_fidelidad_usados = set(
             UsoCodigoDescuento.objects
             .filter(
-                cliente_clave=cliente_clave,
                 estado=(
                     UsoCodigoDescuento
                     .Estado
@@ -2070,18 +1608,16 @@ def ofertas(request):
 
         # --------------------------------------------------------------
         # CÓDIGOS PERSONALES DISPONIBLES
+        # --------------------------------------------------------------
         #
-        # Primero obtenemos los códigos que potencialmente podrían
-        # utilizarse y después excluimos cualquier código que tenga
-        # un UsoCodigoDescuento CONFIRMADO.
-        #
-        # Solo mostramos los que:
+        # Solo mostramos códigos que:
         #
         # - pertenecen al usuario;
-        # - siguen activos;
-        # - todavía no fueron consumidos;
+        # - están activos;
+        # - no están consumidos;
         # - no tienen uso confirmado;
-        # - siguen vigentes.
+        # - siguen vigentes;
+        # - tienen un descuento válido.
         # --------------------------------------------------------------
 
         codigos_personales = list(
@@ -2153,17 +1689,16 @@ def ofertas(request):
 
         # --------------------------------------------------------------
         # TODOS LOS CÓDIGOS GENERADOS POR META
+        # --------------------------------------------------------------
         #
-        # IMPORTANTE:
+        # Incluimos también:
         #
-        # Aquí consultamos también:
+        # - consumidos;
+        # - desactivados;
+        # - vencidos.
         #
-        # - códigos consumidos;
-        # - códigos desactivados;
-        # - códigos vencidos;
-        #
-        # Esto es necesario para saber si una meta ya entregó su
-        # premio anteriormente y mostrar correctamente su estado.
+        # De esta forma podemos saber que una meta ya entregó
+        # anteriormente su recompensa y no generarla nuevamente.
         # --------------------------------------------------------------
 
         todos_codigos_meta = (
@@ -2191,10 +1726,6 @@ def ofertas(request):
 
         # --------------------------------------------------------------
         # CÓDIGO MÁS RECIENTE DE CADA META
-        #
-        # Como el queryset está ordenado por meta y luego por creación
-        # descendente, solamente guardamos el primer código encontrado
-        # para cada meta.
         # --------------------------------------------------------------
 
         codigos_por_meta = {}
@@ -2205,6 +1736,7 @@ def ofertas(request):
                 codigo.meta_fidelidad_id
                 not in codigos_por_meta
             ):
+
                 codigos_por_meta[
                     codigo.meta_fidelidad_id
                 ] = codigo
@@ -2223,7 +1755,9 @@ def ofertas(request):
             )
 
             if objetivo <= 0:
-                objetivo = Decimal("1")
+                objetivo = Decimal(
+                    "1"
+                )
 
             faltante = max(
                 objetivo - acumulado,
@@ -2266,6 +1800,7 @@ def ofertas(request):
 
             # ----------------------------------------------------------
             # DETERMINAR SI EL CÓDIGO YA FUE UTILIZADO
+            # ----------------------------------------------------------
             #
             # Consideramos utilizado cuando:
             #
@@ -2274,9 +1809,6 @@ def ofertas(request):
             # O
             #
             # 2. Existe UsoCodigoDescuento CONFIRMADO.
-            #
-            # La segunda condición protege frente a posibles estados
-            # desincronizados del campo "consumido".
             # ----------------------------------------------------------
 
             codigo_utilizado = bool(
@@ -2313,9 +1845,6 @@ def ofertas(request):
 
             # ----------------------------------------------------------
             # CÓDIGO DESACTIVADO
-            #
-            # Si ya fue utilizado, priorizamos el estado "utilizado"
-            # por sobre "desactivado".
             # ----------------------------------------------------------
 
             meta.codigo_desactivado_cliente = (
@@ -2328,8 +1857,6 @@ def ofertas(request):
 
             # ----------------------------------------------------------
             # CÓDIGO VENCIDO
-            #
-            # Estado adicional útil para el template.
             # ----------------------------------------------------------
 
             meta.codigo_vencido_cliente = (
@@ -2357,7 +1884,9 @@ def ofertas(request):
             )
 
             if objetivo > acumulado:
+
                 proxima_meta = meta
+
                 break
 
         # --------------------------------------------------------------
@@ -2432,7 +1961,10 @@ def ofertas(request):
     # ==================================================================
 
     contexto = {
+        # --------------------------------------------------------------
         # PRODUCTOS
+        # --------------------------------------------------------------
+
         "productos_oferta": (
             productos_oferta
         ),
@@ -2449,7 +1981,10 @@ def ofertas(request):
             hero_producto
         ),
 
+        # --------------------------------------------------------------
         # CÓDIGOS GENERALES
+        # --------------------------------------------------------------
+
         "codigos_generales": (
             codigos_generales
         ),
@@ -2482,7 +2017,10 @@ def ofertas(request):
             campana_vence_en
         ),
 
+        # --------------------------------------------------------------
         # FIDELIDAD
+        # --------------------------------------------------------------
+
         "programa_fidelidad_activo": (
             programa_fidelidad_activo
         ),
@@ -5323,7 +4861,6 @@ def checkout(request):
     )
 
 
-
 @require_POST
 def checkout_resumen_descuento(
     request,
@@ -5340,13 +4877,26 @@ def checkout_resumen_descuento(
     - despacho Blue Express;
     - total final.
 
-    IMPORTANTE:
+    REGLAS IMPORTANTES:
 
-    Un código solamente se considera visualmente aplicado
-    cuando genera un descuento REAL mayor que $0.
+    1. El código puede previsualizarse sin RUT.
 
-    El despacho puede cotizarse desde que el usuario
-    selecciona región y comuna.
+    2. Si existe un RUT, resolver_descuento()
+       comprobará la combinación:
+
+           RUT + CÓDIGO
+
+       para impedir que el mismo código sea utilizado
+       más de una vez por el mismo RUT.
+
+    3. La validación definitiva ocurre al confirmar
+       el pedido.
+
+    4. Para cotizar Blue Express solamente necesitamos
+       la región.
+
+    5. Los errores del descuento y los errores del
+       despacho se mantienen separados.
     """
 
     # =========================================================================
@@ -5358,6 +4908,7 @@ def checkout_resumen_descuento(
     )
 
     if not carrito:
+
         return JsonResponse(
             {
                 "ok": False,
@@ -5365,6 +4916,14 @@ def checkout_resumen_descuento(
                 "mensaje": (
                     "Tu carrito está vacío."
                 ),
+
+                "mensaje_despacho": (
+                    "Selecciona una región"
+                ),
+
+                "error_descuento": "",
+
+                "error_despacho": "",
 
                 "codigo_aplicado": "",
 
@@ -5387,8 +4946,14 @@ def checkout_resumen_descuento(
                 "despacho": 0,
 
                 "despacho_formateado": (
-                    "Selecciona región y comuna"
+                    "Selecciona una región"
                 ),
+
+                "talla_envio": "",
+
+                "zona_envio": "",
+
+                "cantidad_envio": 0,
 
                 "total": 0,
 
@@ -5396,6 +4961,10 @@ def checkout_resumen_descuento(
             },
             status=400,
         )
+
+    # =========================================================================
+    # SERIALIZAR CARRITO
+    # =========================================================================
 
     carrito_serializado = (
         _serializar_carrito(
@@ -5407,6 +4976,7 @@ def checkout_resumen_descuento(
         "vacio",
         True,
     ):
+
         return JsonResponse(
             {
                 "ok": False,
@@ -5414,6 +4984,14 @@ def checkout_resumen_descuento(
                 "mensaje": (
                     "Tu carrito está vacío."
                 ),
+
+                "mensaje_despacho": (
+                    "Selecciona una región"
+                ),
+
+                "error_descuento": "",
+
+                "error_despacho": "",
 
                 "codigo_aplicado": "",
 
@@ -5436,8 +5014,14 @@ def checkout_resumen_descuento(
                 "despacho": 0,
 
                 "despacho_formateado": (
-                    "Selecciona región y comuna"
+                    "Selecciona una región"
                 ),
+
+                "talla_envio": "",
+
+                "zona_envio": "",
+
+                "cantidad_envio": 0,
 
                 "total": 0,
 
@@ -5458,6 +5042,30 @@ def checkout_resumen_descuento(
         or ""
     ).strip().upper()
 
+    # =========================================================================
+    # RUT
+    # =========================================================================
+    #
+    # IMPORTANTE:
+    #
+    # El RUT puede estar vacío durante esta solicitud.
+    #
+    # Ejemplo:
+    #
+    #   AUDEX15
+    #       ↓
+    #   Aplicar
+    #       ↓
+    #   rut=""
+    #       ↓
+    #   mostrar descuento provisional
+    #
+    # Cuando exista RUT, resolver_descuento() comprobará:
+    #
+    #   RUT + CÓDIGO
+    #
+    # =========================================================================
+
     rut = (
         request.POST.get(
             "rut",
@@ -5466,6 +5074,10 @@ def checkout_resumen_descuento(
         or ""
     ).strip().upper()
 
+    # =========================================================================
+    # REGIÓN
+    # =========================================================================
+
     region = (
         request.POST.get(
             "region",
@@ -5473,6 +5085,16 @@ def checkout_resumen_descuento(
         )
         or ""
     ).strip()
+
+    # =========================================================================
+    # DATOS ADICIONALES DE DIRECCIÓN
+    # =========================================================================
+    #
+    # Se reciben por compatibilidad con checkout.js.
+    #
+    # No son necesarios para calcular actualmente
+    # la tarifa Blue Express.
+    # =========================================================================
 
     comuna = (
         request.POST.get(
@@ -5498,30 +5120,48 @@ def checkout_resumen_descuento(
         or ""
     ).strip()
 
+    # Evita advertencias de variables sin utilizar
+    # y deja explícito que estos datos son recibidos
+    # para el checkout definitivo.
+    _ = (
+        comuna,
+        direccion,
+        numero_direccion,
+    )
+
     # =========================================================================
     # DATOS NECESARIOS PARA COTIZAR DESPACHO
     # =========================================================================
     #
-    # Para mostrar el costo de despacho dinámicamente
-    # solamente exigimos:
+    # Blue Express puede calcular la tarifa solamente
+    # con la región.
     #
-    # - región;
-    # - comuna.
-    #
-    # Dirección y número siguen siendo recibidos y pueden
-    # continuar siendo obligatorios al confirmar el pedido,
-    # pero ya no bloquean la cotización del despacho.
+    # La comuna, dirección y número siguen siendo
+    # obligatorios para finalizar el pedido mediante
+    # CheckoutForm, pero no bloquean la visualización
+    # dinámica del despacho.
     # =========================================================================
 
-    datos_envio_completos = all(
-        [
-            region,
-            comuna,
-        ]
+    despacho_listo = bool(
+        region
     )
 
     # =========================================================================
     # CALCULAR RESUMEN
+    # =========================================================================
+    #
+    # resolver_descuento() es llamado internamente con:
+    #
+    #     bloquear=False
+    #
+    # Eso permite:
+    #
+    # código + sin RUT
+    #     -> previsualización
+    #
+    # código + RUT
+    #     -> validación RUT + código
+    #
     # =========================================================================
 
     resumen = calcular_resumen_checkout(
@@ -5531,19 +5171,23 @@ def checkout_resumen_descuento(
             carrito_serializado
         ),
 
-        codigo=codigo,
+        codigo=(
+            codigo
+        ),
 
-        rut=rut,
+        rut=(
+            rut
+        ),
 
         region=(
             region
-            if datos_envio_completos
+            if despacho_listo
             else ""
         ),
     )
 
     # =========================================================================
-    # MONTOS
+    # SUBTOTAL
     # =========================================================================
 
     subtotal = Decimal(
@@ -5556,10 +5200,24 @@ def checkout_resumen_descuento(
         )
     )
 
+    # =========================================================================
+    # DESCUENTO
+    # =========================================================================
+
     descuento = Decimal(
         str(
             resumen.get(
                 "descuento",
+                0,
+            )
+            or 0
+        )
+    )
+
+    porcentaje = Decimal(
+        str(
+            resumen.get(
+                "porcentaje_descuento",
                 0,
             )
             or 0
@@ -5576,6 +5234,10 @@ def checkout_resumen_descuento(
         )
     )
 
+    # =========================================================================
+    # DESPACHO
+    # =========================================================================
+
     despacho = Decimal(
         str(
             resumen.get(
@@ -5586,20 +5248,14 @@ def checkout_resumen_descuento(
         )
     )
 
+    # =========================================================================
+    # TOTAL
+    # =========================================================================
+
     total = Decimal(
         str(
             resumen.get(
                 "total",
-                0,
-            )
-            or 0
-        )
-    )
-
-    porcentaje = Decimal(
-        str(
-            resumen.get(
-                "porcentaje_descuento",
                 0,
             )
             or 0
@@ -5618,17 +5274,25 @@ def checkout_resumen_descuento(
         or ""
     ).strip().upper()
 
+    tipo_descuento = (
+        resumen.get(
+            "tipo_descuento",
+            Pedido.TipoDescuento.NINGUNO,
+        )
+        or Pedido.TipoDescuento.NINGUNO
+    )
+
     error_descuento = (
         resumen.get(
             "error_descuento",
             "",
         )
         or ""
-    )
+    ).strip()
 
-    # -------------------------------------------------------------------------
-    # ESTA ES LA REGLA IMPORTANTE
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # ¿EXISTE DESCUENTO REAL?
+    # =========================================================================
 
     tiene_descuento_aplicado = bool(
         codigo_aplicado
@@ -5636,11 +5300,23 @@ def checkout_resumen_descuento(
         and not error_descuento
     )
 
-    # -------------------------------------------------------------------------
-    # Si no existe descuento real, limpiamos el código del resultado visual.
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # LIMPIAR DESCUENTO INVÁLIDO
+    # =========================================================================
+    #
+    # Si el código:
+    #
+    # - no existe;
+    # - está vencido;
+    # - está desactivado;
+    # - no cumple monto mínimo;
+    # - ya fue utilizado con ese RUT;
+    #
+    # no mostramos ningún descuento visual.
+    # =========================================================================
 
     if not tiene_descuento_aplicado:
+
         codigo_aplicado = ""
 
         descuento = Decimal(
@@ -5655,6 +5331,22 @@ def checkout_resumen_descuento(
             subtotal
         )
 
+        tipo_descuento = (
+            Pedido
+            .TipoDescuento
+            .NINGUNO
+        )
+
+        # ---------------------------------------------------------------------
+        # Recalcular total visual para asegurarnos de que
+        # ningún descuento inválido quede incorporado.
+        # ---------------------------------------------------------------------
+
+        total = (
+            subtotal
+            + despacho
+        )
+
     # =========================================================================
     # BLUE EXPRESS
     # =========================================================================
@@ -5665,7 +5357,7 @@ def checkout_resumen_descuento(
             "",
         )
         or ""
-    )
+    ).strip()
 
     talla_envio = (
         resumen.get(
@@ -5698,13 +5390,15 @@ def checkout_resumen_descuento(
     def formatear_pesos(
         valor,
     ):
-        valor_entero = int(
-            Decimal(
-                str(
-                    valor
-                    or 0
-                )
+        valor_decimal = Decimal(
+            str(
+                valor
+                or 0
             )
+        )
+
+        valor_entero = int(
+            valor_decimal
         )
 
         return (
@@ -5718,8 +5412,15 @@ def checkout_resumen_descuento(
     # =========================================================================
     # MENSAJE DEL CÓDIGO
     # =========================================================================
+    #
+    # Este mensaje pertenece EXCLUSIVAMENTE al código.
+    #
+    # Nunca debe reutilizarse para mostrar errores
+    # dentro de la fila de despacho.
+    # =========================================================================
 
     if error_descuento:
+
         mensaje = (
             error_descuento
         )
@@ -5727,12 +5428,14 @@ def checkout_resumen_descuento(
     elif tiene_descuento_aplicado:
 
         if porcentaje > 0:
+
             mensaje = (
                 f"Código {codigo_aplicado} aplicado: "
                 f"{porcentaje:g}% de descuento."
             )
 
         else:
+
             mensaje = (
                 f"Código {codigo_aplicado} aplicado: "
                 f"{formatear_pesos(descuento)} "
@@ -5740,41 +5443,96 @@ def checkout_resumen_descuento(
             )
 
     elif codigo:
+
         mensaje = (
             "El código no generó un descuento aplicable."
         )
 
     else:
+
         mensaje = (
             "Puedes usar un código general "
             "o un premio personal."
         )
 
     # =========================================================================
-    # DESPACHO
+    # MENSAJE / VALOR DEL DESPACHO
+    # =========================================================================
+    #
+    # Esta información pertenece EXCLUSIVAMENTE
+    # a Blue Express.
     # =========================================================================
 
-    if not datos_envio_completos:
+    if not despacho_listo:
+
         despacho_formateado = (
-            "Selecciona región y comuna"
+            "Selecciona una región"
+        )
+
+        mensaje_despacho = (
+            "Selecciona una región"
         )
 
     elif error_despacho:
+
         despacho_formateado = (
             "No disponible"
         )
 
+        mensaje_despacho = (
+            error_despacho
+            or (
+                "No fue posible calcular "
+                "el despacho."
+            )
+        )
+
     elif despacho > 0:
+
         despacho_formateado = (
             formatear_pesos(
                 despacho
             )
         )
 
+        mensaje_despacho = ""
+
     else:
+
         despacho_formateado = (
             "No disponible"
         )
+
+        mensaje_despacho = (
+            "No fue posible calcular "
+            "el despacho."
+        )
+
+    # =========================================================================
+    # ESTADOS INDEPENDIENTES
+    # =========================================================================
+    #
+    # ok:
+    #     mantiene compatibilidad con checkout.js.
+    #
+    # ok_descuento:
+    #     indica exclusivamente si el código tiene error.
+    #
+    # ok_despacho:
+    #     indica exclusivamente si Blue Express tiene error.
+    # =========================================================================
+
+    ok_descuento = (
+        not bool(
+            error_descuento
+        )
+    )
+
+    ok_despacho = (
+        not bool(
+            error_despacho
+        )
+    )
 
     # =========================================================================
     # RESPUESTA JSON
@@ -5782,12 +5540,38 @@ def checkout_resumen_descuento(
 
     return JsonResponse(
         {
-            "ok": not bool(
-                error_descuento
-                or error_despacho
+            # -----------------------------------------------------------------
+            # ESTADO GENERAL
+            # -----------------------------------------------------------------
+
+            "ok": (
+                ok_descuento
+                and ok_despacho
             ),
 
-            "mensaje": mensaje,
+            # -----------------------------------------------------------------
+            # ESTADOS INDEPENDIENTES
+            # -----------------------------------------------------------------
+
+            "ok_descuento": (
+                ok_descuento
+            ),
+
+            "ok_despacho": (
+                ok_despacho
+            ),
+
+            # -----------------------------------------------------------------
+            # MENSAJE DEL CÓDIGO
+            # -----------------------------------------------------------------
+
+            "mensaje": (
+                mensaje
+            ),
+
+            "error_descuento": (
+                error_descuento
+            ),
 
             # -----------------------------------------------------------------
             # SUBTOTAL
@@ -5804,7 +5588,7 @@ def checkout_resumen_descuento(
             ),
 
             # -----------------------------------------------------------------
-            # DESCUENTO ADICIONAL
+            # DESCUENTO
             # -----------------------------------------------------------------
 
             "tiene_descuento_aplicado": (
@@ -5813,6 +5597,10 @@ def checkout_resumen_descuento(
 
             "codigo_aplicado": (
                 codigo_aplicado
+            ),
+
+            "tipo_descuento": (
+                tipo_descuento
             ),
 
             "porcentaje_descuento": float(
@@ -5844,7 +5632,7 @@ def checkout_resumen_descuento(
             ),
 
             # -----------------------------------------------------------------
-            # DESPACHO
+            # DESPACHO BLUE EXPRESS
             # -----------------------------------------------------------------
 
             "despacho": int(
@@ -5853,6 +5641,14 @@ def checkout_resumen_descuento(
 
             "despacho_formateado": (
                 despacho_formateado
+            ),
+
+            "mensaje_despacho": (
+                mensaje_despacho
+            ),
+
+            "error_despacho": (
+                error_despacho
             ),
 
             "talla_envio": (
@@ -5867,12 +5663,8 @@ def checkout_resumen_descuento(
                 cantidad_envio
             ),
 
-            "error_despacho": (
-                error_despacho
-            ),
-
             # -----------------------------------------------------------------
-            # TOTAL FINAL
+            # TOTAL
             # -----------------------------------------------------------------
 
             "total": int(
