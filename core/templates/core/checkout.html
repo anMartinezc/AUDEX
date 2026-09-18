@@ -17,6 +17,15 @@ Finalizar compra | Audex
 <style>
 
     /* =========================================================
+       FILAS OCULTAS DEL RESUMEN
+    ========================================================== */
+
+    .checkout-valores__fila[hidden] {
+        display: none !important;
+    }
+
+
+    /* =========================================================
        TIEMPO ESTIMADO
     ========================================================== */
 
@@ -969,8 +978,18 @@ Finalizar compra | Audex
 
                                         <small>
 
-                                            {{ codigo.porcentaje|floatformat:0 }}%
-                                            de descuento
+                                            {% if codigo.porcentaje %}
+
+                                                {{ codigo.porcentaje|floatformat:0 }}%
+                                                de descuento
+
+                                            {% else %}
+
+                                                ${{ codigo.monto_descuento|floatformat:0|intcomma }} CLP
+                                                de descuento
+
+                                            {% endif %}
+
 
                                             {% if codigo.monto_minimo > 0 %}
 
@@ -1007,9 +1026,22 @@ Finalizar compra | Audex
                 <div class="checkout-valores">
 
 
-                    <!-- TOTAL PRODUCTOS -->
+                    <!-- =========================================
+                         TOTAL PRODUCTOS
+                         SOLO SI EXISTEN OFERTAS
+                    ========================================== -->
 
-                    <div class="checkout-valores__fila">
+                    <div
+                        class="
+                            checkout-valores__fila
+                            checkout-valores__fila--productos
+                        "
+                        id="checkoutFilaTotalProductos"
+
+                        {% if not carrito.tiene_ofertas %}
+                            hidden
+                        {% endif %}
+                    >
 
                         <div>
 
@@ -1030,10 +1062,6 @@ Finalizar compra | Audex
 
                                 {{ carrito.subtotal_precio_lista_formateado }} CLP
 
-                            {% else %}
-
-                                {{ carrito.subtotal_formateado }} CLP
-
                             {% endif %}
 
                         </strong>
@@ -1041,14 +1069,16 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- AHORRO OFERTAS -->
+                    <!-- =========================================
+                         AHORRO EN PRODUCTOS
+                         SOLO SI EXISTEN OFERTAS
+                    ========================================== -->
 
                     <div
                         class="
                             checkout-valores__fila
                             checkout-valores__fila--descuento
                         "
-
                         id="checkoutFilaAhorroOfertas"
 
                         {% if not carrito.tiene_ofertas %}
@@ -1078,10 +1108,6 @@ Finalizar compra | Audex
 
                                 -{{ carrito.ahorro_ofertas_formateado }} CLP
 
-                            {% else %}
-
-                                -$0 CLP
-
                             {% endif %}
 
                         </strong>
@@ -1089,7 +1115,10 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- SUBTOTAL -->
+                    <!-- =========================================
+                         SUBTOTAL
+                         SIEMPRE VISIBLE
+                    ========================================== -->
 
                     <div
                         class="
@@ -1117,20 +1146,23 @@ Finalizar compra | Audex
 
 
                         <strong id="checkoutSubtotal">
+
                             {{ carrito.subtotal_formateado }} CLP
+
                         </strong>
 
                     </div>
 
 
-                    <!-- DESCUENTO CUPÓN -->
+                    <!-- =========================================
+                         DESCUENTO ADICIONAL POR CUPÓN
+                    ========================================== -->
 
                     <div
                         class="
                             checkout-valores__fila
                             checkout-valores__fila--cupon
                         "
-
                         id="checkoutFilaDescuento"
 
                         {% if not resumen.tiene_descuento_aplicado %}
@@ -1191,10 +1223,6 @@ Finalizar compra | Audex
 
                                 -${{ resumen.descuento|floatformat:0|intcomma }} CLP
 
-                            {% else %}
-
-                                -$0 CLP
-
                             {% endif %}
 
                         </strong>
@@ -1202,14 +1230,15 @@ Finalizar compra | Audex
                     </div>
 
 
-                    <!-- SUBTOTAL DESCUENTO -->
+                    <!-- =========================================
+                         SUBTOTAL CON CUPÓN
+                    ========================================== -->
 
                     <div
                         class="
                             checkout-valores__fila
                             checkout-valores__fila--despues-descuento
                         "
-
                         id="checkoutFilaSubtotalConDescuento"
 
                         {% if not resumen.tiene_descuento_aplicado %}
@@ -1236,10 +1265,6 @@ Finalizar compra | Audex
 
                                 ${{ resumen.subtotal_con_descuento|floatformat:0|intcomma }} CLP
 
-                            {% else %}
-
-                                {{ carrito.subtotal_formateado }} CLP
-
                             {% endif %}
 
                         </strong>
@@ -1265,7 +1290,7 @@ Finalizar compra | Audex
                             </span>
 
                             <small>
-                                Blue Express
+                                Envío a través de Blue Express
                             </small>
 
                         </div>
@@ -1496,6 +1521,9 @@ Finalizar compra | Audex
                             </h4>
 
                             <p>
+                                Los envíos se realizan a través de
+                                Blue Express.
+
                                 Los plazos estimados de entrega
                                 son informados antes de confirmar la compra
                                 según la región de despacho seleccionada.
