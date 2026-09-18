@@ -1,6 +1,7 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
+
     const pagina = document.getElementById(
         "carritoPagina"
     );
@@ -29,8 +30,20 @@ document.addEventListener("DOMContentLoaded", () => {
         "carritoResumenCantidad"
     );
 
+    const filaProductosPrecioLista = document.getElementById(
+        "filaProductosPrecioLista"
+    );
+
     const precioListaElemento = document.getElementById(
         "carritoPaginaPrecioLista"
+    );
+
+    const filaDescuento = document.getElementById(
+        "filaDescuento"
+    );
+
+    const descuentoElemento = document.getElementById(
+        "carritoPaginaDescuento"
     );
 
     const subtotalElemento = document.getElementById(
@@ -51,14 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const botonContinuar = document.getElementById(
         "continuarCompra"
-    );
-
-    const filaDescuento = document.getElementById(
-        "filaDescuento"
-    );
-
-    const descuentoElemento = document.getElementById(
-        "carritoPaginaDescuento"
     );
 
     const despachoElemento = document.getElementById(
@@ -86,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
 
     const urls = {
+
         estado: String(
             pagina.dataset.urlEstado
             || ""
@@ -124,11 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
     function obtenerCookie(
         nombre
     ) {
+
         const cookies = document.cookie
             ? document.cookie.split(";")
             : [];
 
         for (const cookie of cookies) {
+
             const limpia = cookie.trim();
 
             if (
@@ -136,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     `${nombre}=`
                 )
             ) {
+
                 return decodeURIComponent(
                     limpia.substring(
                         nombre.length + 1
@@ -151,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function escaparHTML(
         valor
     ) {
+
         const elemento = document.createElement(
             "div"
         );
@@ -167,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
         valor,
         defecto = 0
     ) {
+
         const numero = Number(
             valor
         );
@@ -182,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function formatearCLP(
         valor
     ) {
+
         const numero = Math.round(
             numeroSeguro(
                 valor
@@ -197,6 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function textoProductos(
         cantidad
     ) {
+
         return (
             `${cantidad} `
             + (
@@ -211,6 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function textoUnidades(
         cantidad
     ) {
+
         return (
             `${cantidad} `
             + (
@@ -221,6 +235,51 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
+
+    // =========================================================================
+    // MOSTRAR / OCULTAR FILA DEL RESUMEN
+    // =========================================================================
+    //
+    // Además de utilizar hidden, agregamos display:none !important.
+    //
+    // Esto evita que una regla CSS como:
+    //
+    //     .carrito-resumen__fila {
+    //         display: flex;
+    //     }
+    //
+    // pueda volver a mostrar una fila marcada como hidden.
+    // =========================================================================
+
+    function mostrarFilaResumen(
+        elemento,
+        mostrar
+    ) {
+
+        if (!elemento) {
+            return;
+        }
+
+        if (mostrar) {
+
+            elemento.hidden = false;
+
+            elemento.style.removeProperty(
+                "display"
+            );
+
+        } else {
+
+            elemento.hidden = true;
+
+            elemento.style.setProperty(
+                "display",
+                "none",
+                "important"
+            );
+        }
+    }
+
     // =========================================================================
     // FETCH
     // =========================================================================
@@ -229,7 +288,9 @@ document.addEventListener("DOMContentLoaded", () => {
         url,
         cuerpo = null
     ) {
+
         if (!url) {
+
             throw new Error(
                 "La URL de la operación no está configurada."
             );
@@ -240,6 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         const configuracion = {
+
             method: esGet
                 ? "GET"
                 : "POST",
@@ -249,6 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
             cache: "no-store",
 
             headers: {
+
                 Accept: "application/json",
 
                 "X-Requested-With": (
@@ -258,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         if (!esGet) {
+
             configuracion.headers[
                 "Content-Type"
             ] = "application/json";
@@ -281,8 +345,11 @@ document.addEventListener("DOMContentLoaded", () => {
         let datos = {};
 
         try {
+
             datos = await respuesta.json();
+
         } catch (error) {
+
             throw new Error(
                 "El servidor no devolvió JSON válido."
             );
@@ -292,6 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
             !respuesta.ok
             || datos.ok === false
         ) {
+
             throw new Error(
                 datos.mensaje
                 || "No fue posible completar la operación."
@@ -308,6 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function mostrarToast(
         texto
     ) {
+
         if (
             !toast
             || !toastTexto
@@ -334,6 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         temporizadorToast = window.setTimeout(
             () => {
+
                 toast.classList.remove(
                     "carrito-pagina-toast--visible"
                 );
@@ -354,6 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function normalizarCarrito(
         carrito
     ) {
+
         const itemsOriginales = Array.isArray(
             carrito?.items
         )
@@ -361,12 +432,17 @@ document.addEventListener("DOMContentLoaded", () => {
             : [];
 
         let cantidadTotal = 0;
+
         let subtotal = 0;
+
         let subtotalPrecioLista = 0;
+
         let ahorroOfertas = 0;
+
 
         const items = itemsOriginales.map(
             (item) => {
+
                 const cantidad = Math.max(
                     1,
                     Math.round(
@@ -406,8 +482,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (
                     precioOriginal < precio
                 ) {
-                    precioOriginal = precio;
+
+                    precioOriginal = (
+                        precio
+                    );
                 }
+
 
                 const enOferta = (
                     Boolean(
@@ -416,34 +496,43 @@ document.addEventListener("DOMContentLoaded", () => {
                     && precioOriginal > precio
                 );
 
+
                 const totalLinea = (
                     precio
                     * cantidad
                 );
+
 
                 const totalOriginalLinea = (
                     precioOriginal
                     * cantidad
                 );
 
-                const ahorroUnitario = enOferta
-                    ? (
-                        precioOriginal
-                        - precio
-                    )
-                    : 0;
+
+                const ahorroUnitario = (
+                    enOferta
+                        ? (
+                            precioOriginal
+                            - precio
+                        )
+                        : 0
+                );
+
 
                 const ahorroLinea = (
                     ahorroUnitario
                     * cantidad
                 );
 
+
                 let porcentajeDescuento = 0;
+
 
                 if (
                     enOferta
                     && precioOriginal > 0
                 ) {
+
                     porcentajeDescuento = Math.round(
                         (
                             ahorroUnitario
@@ -453,22 +542,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
                 }
 
-                cantidadTotal += cantidad;
 
-                subtotal += totalLinea;
+                cantidadTotal += (
+                    cantidad
+                );
+
+
+                subtotal += (
+                    totalLinea
+                );
+
 
                 subtotalPrecioLista += (
                     totalOriginalLinea
                 );
 
+
                 ahorroOfertas += (
                     ahorroLinea
                 );
 
+
                 return {
+
                     ...item,
 
                     cantidad,
+
                     stock,
 
                     precio,
@@ -540,7 +640,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         );
 
+
         return {
+
             ...carrito,
 
             items,
@@ -592,19 +694,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
 
     function actualizarDespachoPendiente() {
+
         if (despachoElemento) {
+
             despachoElemento.textContent = (
                 "Por calcular"
             );
         }
 
         if (progresoEnvio) {
+
             progresoEnvio.style.width = (
                 "0%"
             );
         }
 
         if (mensajeEnvio) {
+
             mensajeEnvio.textContent = "";
         }
     }
@@ -614,14 +720,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
 
     function plantillaVacia() {
+
         return `
             <div class="carrito-pagina-vacio">
 
                 <div class="carrito-pagina-vacio__icono">
+
                     <i
                         class="bi bi-bag"
                         aria-hidden="true"
                     ></i>
+
                 </div>
 
                 <h2>
@@ -656,76 +765,92 @@ document.addEventListener("DOMContentLoaded", () => {
     function plantillaProducto(
         item
     ) {
-        const imagen = item.imagen
-            ? `
-                <img
-                    src="${escaparHTML(
-                        item.imagen
-                    )}"
-                    alt="${escaparHTML(
-                        item.nombre
-                    )}"
-                    loading="lazy"
-                >
-            `
-            : `
-                <i
-                    class="bi bi-earbuds"
-                    aria-hidden="true"
-                ></i>
-            `;
 
-        const categoria = item.categoria
-            ? `
-                <span class="carrito-producto__categoria">
-                    ${escaparHTML(
-                        item.categoria
-                    )}
-                </span>
-            `
-            : "";
+        const imagen = (
+            item.imagen
+                ? `
+                    <img
+                        src="${escaparHTML(
+                            item.imagen
+                        )}"
+                        alt="${escaparHTML(
+                            item.nombre
+                        )}"
+                        loading="lazy"
+                    >
+                `
+                : `
+                    <i
+                        class="bi bi-earbuds"
+                        aria-hidden="true"
+                    ></i>
+                `
+        );
 
-        const oferta = item.en_oferta
-            ? `
-                <span class="carrito-producto__oferta">
-                    Oferta
-                </span>
 
-                <span class="carrito-producto__porcentaje">
-                    -${item.porcentaje_descuento}%
-                </span>
-            `
-            : "";
+        const categoria = (
+            item.categoria
+                ? `
+                    <span class="carrito-producto__categoria">
+                        ${escaparHTML(
+                            item.categoria
+                        )}
+                    </span>
+                `
+                : ""
+        );
 
-        const precioUnitario = item.en_oferta
-            ? `
-                <span class="carrito-producto__precio-original">
-                    ${item.precio_original_formateado}
-                </span>
 
-                <strong class="carrito-producto__precio-oferta">
-                    ${item.precio_formateado}
-                </strong>
-            `
-            : `
-                <span class="carrito-producto__unitario">
+        const oferta = (
+            item.en_oferta
+                ? `
+                    <span class="carrito-producto__oferta">
+                        Oferta
+                    </span>
 
-                    Precio unitario:
+                    <span class="carrito-producto__porcentaje">
+                        -${item.porcentaje_descuento}%
+                    </span>
+                `
+                : ""
+        );
 
-                    <strong>
+
+        const precioUnitario = (
+            item.en_oferta
+                ? `
+                    <span class="carrito-producto__precio-original">
+                        ${item.precio_original_formateado}
+                    </span>
+
+                    <strong class="carrito-producto__precio-oferta">
                         ${item.precio_formateado}
                     </strong>
+                `
+                : `
+                    <span class="carrito-producto__unitario">
 
-                </span>
-            `;
+                        Precio unitario:
 
-        const totalOriginal = item.en_oferta
-            ? `
-                <small class="carrito-producto__total-original">
-                    ${item.total_original_formateado}
-                </small>
-            `
-            : "";
+                        <strong>
+                            ${item.precio_formateado}
+                        </strong>
+
+                    </span>
+                `
+        );
+
+
+        const totalOriginal = (
+            item.en_oferta
+                ? `
+                    <small class="carrito-producto__total-original">
+                        ${item.total_original_formateado}
+                    </small>
+                `
+                : ""
+        );
+
 
         const ahorro = (
             item.en_oferta
@@ -733,17 +858,21 @@ document.addEventListener("DOMContentLoaded", () => {
         )
             ? `
                 <small class="carrito-producto__ahorro">
+
                     Ahorras
                     ${item.ahorro_linea_formateado}
+
                 </small>
             `
             : "";
+
 
         const sumarDisabled = (
             item.cantidad >= item.stock
         )
             ? "disabled"
             : "";
+
 
         return `
             <article
@@ -767,11 +896,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div>
 
                             <div class="carrito-producto__etiquetas">
+
                                 ${categoria}
+
                                 ${oferta}
+
                             </div>
 
                             <h3>
+
                                 <a
                                     href="${escaparHTML(
                                         item.url_detalle
@@ -781,10 +914,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                         item.nombre
                                     )}
                                 </a>
+
                             </h3>
 
                             <div class="carrito-producto__precio-unitario">
+
                                 ${precioUnitario}
+
                             </div>
 
                         </div>
@@ -797,10 +933,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 item.nombre
                             )}"
                         >
+
                             <i
                                 class="bi bi-trash3"
                                 aria-hidden="true"
                             ></i>
+
                         </button>
 
                     </div>
@@ -819,10 +957,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                     type="button"
                                     data-carrito-pagina-accion="restar"
                                 >
+
                                     <i
                                         class="bi bi-dash-lg"
                                         aria-hidden="true"
                                     ></i>
+
                                 </button>
 
                                 <strong>
@@ -834,17 +974,21 @@ document.addEventListener("DOMContentLoaded", () => {
                                     data-carrito-pagina-accion="sumar"
                                     ${sumarDisabled}
                                 >
+
                                     <i
                                         class="bi bi-plus-lg"
                                         aria-hidden="true"
                                     ></i>
+
                                 </button>
 
                             </div>
 
                             <small>
+
                                 ${item.stock}
                                 unidades disponibles
+
                             </small>
 
                         </div>
@@ -880,6 +1024,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function plantillaProductoResumen(
         item
     ) {
+
         const cantidadVisual = (
             item.cantidad > 1
         )
@@ -890,44 +1035,54 @@ document.addEventListener("DOMContentLoaded", () => {
             `
             : "";
 
-        const precios = item.en_oferta
-            ? `
-                <span class="carrito-resumen-producto__precio-original">
-                    ${item.precio_original_formateado}
-                </span>
 
-                <strong class="carrito-resumen-producto__precio-oferta">
-                    ${item.precio_formateado}
-                </strong>
+        const precios = (
+            item.en_oferta
+                ? `
+                    <span class="carrito-resumen-producto__precio-original">
+                        ${item.precio_original_formateado}
+                    </span>
 
-                <span class="carrito-resumen-producto__descuento-badge">
-                    -${item.porcentaje_descuento}%
-                </span>
-            `
-            : `
-                <strong class="carrito-resumen-producto__precio">
-                    ${item.precio_formateado}
-                </strong>
-            `;
+                    <strong class="carrito-resumen-producto__precio-oferta">
+                        ${item.precio_formateado}
+                    </strong>
+
+                    <span class="carrito-resumen-producto__descuento-badge">
+                        -${item.porcentaje_descuento}%
+                    </span>
+                `
+                : `
+                    <strong class="carrito-resumen-producto__precio">
+                        ${item.precio_formateado}
+                    </strong>
+                `
+        );
+
 
         const unitario = (
             item.cantidad > 1
         )
             ? `
                 <small class="carrito-resumen-producto__unitario">
+
                     ${item.precio_formateado}
                     c/u
+
                 </small>
             `
             : "";
 
-        const totalOriginal = item.en_oferta
-            ? `
-                <span class="carrito-resumen-producto__total-original">
-                    ${item.total_original_formateado}
-                </span>
-            `
-            : "";
+
+        const totalOriginal = (
+            item.en_oferta
+                ? `
+                    <span class="carrito-resumen-producto__total-original">
+                        ${item.total_original_formateado}
+                    </span>
+                `
+                : ""
+        );
+
 
         return `
             <article
@@ -943,9 +1098,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         )}"
                         class="carrito-resumen-producto__nombre"
                     >
+
                         ${escaparHTML(
                             item.nombre
                         )}
+
                     </a>
 
                     ${cantidadVisual}
@@ -955,7 +1112,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="carrito-resumen-producto__detalle">
 
                     <div class="carrito-resumen-producto__precios">
+
                         ${precios}
+
                     </div>
 
                     ${unitario}
@@ -979,34 +1138,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
     // ACTUALIZACIÓN OPTIMISTA
     // =========================================================================
-    //
-    // Cambiamos visualmente la cantidad ANTES de esperar Django.
-    // Luego Django confirma y hacemos un GET fresco.
-    // =========================================================================
 
     function aplicarCantidadLocal(
         productoId,
         nuevaCantidad
     ) {
+
         if (!carritoActual) {
             return;
         }
 
         const carritoCopia = {
+
             ...carritoActual,
 
             items: carritoActual.items.map(
                 (item) => {
+
                     if (
-                        Number(item.id)
-                        !== Number(productoId)
+                        Number(
+                            item.id
+                        )
+                        !== Number(
+                            productoId
+                        )
                     ) {
+
                         return {
                             ...item,
                         };
                     }
 
                     return {
+
                         ...item,
 
                         cantidad: (
@@ -1023,18 +1187,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // RENDER RESUMEN
+    // RENDER RESUMEN DE PRODUCTOS
     // =========================================================================
 
     function renderizarProductosResumen(
         carrito
     ) {
+
         if (!resumenProductosContenedor) {
             return;
         }
 
         if (carrito.vacio) {
+
             resumenProductosContenedor.innerHTML = "";
+
             return;
         }
 
@@ -1054,11 +1221,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function actualizarResumen(
         carrito
     ) {
+
         const cantidadTotal = (
             carrito.cantidad_total
         );
 
+        // =====================================================================
+        // CANTIDADES
+        // =====================================================================
+
         if (cantidadElemento) {
+
             cantidadElemento.textContent = (
                 textoProductos(
                     cantidadTotal
@@ -1066,7 +1239,9 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
+
         if (resumenCantidadElemento) {
+
             resumenCantidadElemento.textContent = (
                 textoUnidades(
                     cantidadTotal
@@ -1074,71 +1249,148 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
+
         if (contadorHeader) {
+
             contadorHeader.textContent = (
                 cantidadTotal
             );
         }
 
+        // =====================================================================
+        // DESCUENTO REAL
+        // =====================================================================
+        //
+        // Ambas filas:
+        //
+        //     Productos
+        //     Descuentos
+        //
+        // solamente aparecen cuando realmente existe ahorro.
+        //
+        // SIN DESCUENTO:
+        //
+        //     Subtotal       $189.980
+        //
+        // CON DESCUENTO:
+        //
+        //     Productos      $219.980
+        //     Descuentos     -$30.000
+        //     Subtotal       $189.980
+        //
+        // =====================================================================
+
+        const ahorroReal = Math.max(
+            0,
+            numeroSeguro(
+                carrito.ahorro_ofertas,
+                0
+            )
+        );
+
+        const tieneDescuentoReal = (
+            carrito.tiene_ofertas
+            && ahorroReal > 0
+        );
+
+        // =====================================================================
+        // PRODUCTOS / PRECIO LISTA
+        // =====================================================================
+
+        mostrarFilaResumen(
+            filaProductosPrecioLista,
+            tieneDescuentoReal
+        );
+
+
         if (precioListaElemento) {
+
             precioListaElemento.textContent = (
-                carrito.tiene_ofertas
+                tieneDescuentoReal
                     ? carrito
                         .subtotal_precio_lista_formateado
-                    : carrito
-                        .subtotal_formateado
+                    : ""
             );
         }
 
-        if (
-            filaDescuento
-            && descuentoElemento
-        ) {
-            if (
-                carrito.tiene_ofertas
-                && carrito.ahorro_ofertas > 0
-            ) {
-                filaDescuento.hidden = false;
+        // =====================================================================
+        // DESCUENTOS
+        // =====================================================================
 
-                descuentoElemento.textContent = (
-                    `-${carrito.ahorro_ofertas_formateado}`
-                );
-            } else {
-                filaDescuento.hidden = true;
+        mostrarFilaResumen(
+            filaDescuento,
+            tieneDescuentoReal
+        );
 
-                descuentoElemento.textContent = (
-                    "-$0"
-                );
-            }
+
+        if (descuentoElemento) {
+
+            descuentoElemento.textContent = (
+                tieneDescuentoReal
+                    ? (
+                        `-${carrito.ahorro_ofertas_formateado}`
+                    )
+                    : ""
+            );
         }
 
+        // =====================================================================
+        // SUBTOTAL
+        // =====================================================================
+
         if (subtotalElemento) {
+
             subtotalElemento.textContent = (
                 carrito.subtotal_formateado
             );
         }
 
+        // =====================================================================
+        // TOTAL ESTIMADO
+        // =====================================================================
+        //
+        // En esta pantalla todavía no se ha calculado
+        // el despacho Blue Express.
+        // =====================================================================
+
         if (totalElemento) {
+
             totalElemento.textContent = (
                 carrito.subtotal_formateado
             );
         }
 
+        // =====================================================================
+        // DESPACHO BLUE EXPRESS
+        // =====================================================================
+
         actualizarDespachoPendiente();
 
+        // =====================================================================
+        // VACIAR CARRITO
+        // =====================================================================
+
         if (botonVaciar) {
+
             botonVaciar.hidden = (
                 carrito.vacio
             );
         }
 
+        // =====================================================================
+        // CONTINUAR COMPRA
+        // =====================================================================
+
         if (botonContinuar) {
+
             botonContinuar.classList.toggle(
                 "carrito-continuar--deshabilitado",
                 carrito.vacio
             );
 
+
             if (carrito.vacio) {
+
                 botonContinuar.setAttribute(
                     "aria-disabled",
                     "true"
@@ -1148,7 +1400,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     "tabindex",
                     "-1"
                 );
+
             } else {
+
                 botonContinuar.removeAttribute(
                     "aria-disabled"
                 );
@@ -1167,13 +1421,18 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderizar(
         carritoRecibido
     ) {
+
         const carrito = normalizarCarrito(
             carritoRecibido
         );
 
-        carritoActual = carrito;
+        carritoActual = (
+            carrito
+        );
+
 
         if (productosContenedor) {
+
             productosContenedor.innerHTML = (
                 carrito.vacio
                     ? plantillaVacia()
@@ -1185,9 +1444,11 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
+
         renderizarProductosResumen(
             carrito
         );
+
 
         actualizarResumen(
             carrito
@@ -1199,11 +1460,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
 
     async function obtenerCarritoFresco() {
+
         const datos = await solicitar(
             urls.estado
         );
 
         if (!datos.carrito) {
+
             throw new Error(
                 "No se recibió el carrito actualizado."
             );
@@ -1217,28 +1480,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
 
     async function cargarCarrito() {
+
         try {
-            const carrito = await obtenerCarritoFresco();
+
+            const carrito = (
+                await obtenerCarritoFresco()
+            );
 
             renderizar(
                 carrito
             );
 
         } catch (error) {
+
             console.error(
                 "Error cargando carrito:",
                 error
             );
 
+
             if (productosContenedor) {
+
                 productosContenedor.innerHTML = `
                     <div class="carrito-pagina-vacio">
 
                         <div class="carrito-pagina-vacio__icono">
+
                             <i
                                 class="bi bi-exclamation-circle"
                                 aria-hidden="true"
                             ></i>
+
                         </div>
 
                         <h2>
@@ -1265,6 +1537,7 @@ document.addEventListener("DOMContentLoaded", () => {
         productoId,
         cantidad
     ) {
+
         productoId = Number(
             productoId
         );
@@ -1273,12 +1546,18 @@ document.addEventListener("DOMContentLoaded", () => {
             cantidad
         );
 
+
         if (
-            !Number.isFinite(productoId)
-            || !Number.isFinite(cantidad)
+            !Number.isFinite(
+                productoId
+            )
+            || !Number.isFinite(
+                cantidad
+            )
         ) {
             return;
         }
+
 
         if (
             operacionesProductos.has(
@@ -1288,9 +1567,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
         operacionesProductos.add(
             productoId
         );
+
 
         const carritoAnterior = (
             carritoActual
@@ -1305,7 +1586,9 @@ document.addEventListener("DOMContentLoaded", () => {
             cantidad
         );
 
+
         try {
+
             // -----------------------------------------------------------------
             // GUARDAR EN DJANGO
             // -----------------------------------------------------------------
@@ -1313,6 +1596,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await solicitar(
                 urls.actualizar,
                 {
+
                     producto_id: (
                         productoId
                     ),
@@ -1324,21 +1608,18 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             // -----------------------------------------------------------------
-            // MUY IMPORTANTE:
-            //
-            // NO usamos directamente datos.carrito del POST.
-            //
-            // Hacemos un GET nuevo a carrito_estado para obtener
-            // exactamente lo mismo que obtendrías al recargar la página.
+            // OBTENER ESTADO NUEVO DESDE DJANGO
             // -----------------------------------------------------------------
 
             const carritoFresco = (
                 await obtenerCarritoFresco()
             );
 
+
             renderizar(
                 carritoFresco
             );
+
 
             const productoElemento = (
                 productosContenedor
@@ -1347,36 +1628,41 @@ document.addEventListener("DOMContentLoaded", () => {
                     )
             );
 
+
             productoElemento?.classList.add(
                 "carrito-producto--actualizado"
             );
+
 
             mostrarToast(
                 "Cantidad actualizada."
             );
 
         } catch (error) {
+
             console.error(
                 "Error actualizando cantidad:",
                 error
             );
 
             // -----------------------------------------------------------------
-            // SI FALLA:
-            // restauramos el estado anterior.
+            // RESTAURAR ESTADO ANTERIOR
             // -----------------------------------------------------------------
 
             if (carritoAnterior) {
+
                 renderizar(
                     carritoAnterior
                 );
             }
+
 
             mostrarToast(
                 error.message
             );
 
         } finally {
+
             operacionesProductos.delete(
                 productoId
             );
@@ -1390,9 +1676,11 @@ document.addEventListener("DOMContentLoaded", () => {
     async function eliminarProducto(
         productoId
     ) {
+
         productoId = Number(
             productoId
         );
+
 
         if (
             operacionesProductos.has(
@@ -1402,11 +1690,14 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
         operacionesProductos.add(
             productoId
         );
 
+
         try {
+
             await solicitar(
                 urls.eliminar,
                 {
@@ -1416,29 +1707,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             );
 
+
             const carritoFresco = (
                 await obtenerCarritoFresco()
             );
 
+
             renderizar(
                 carritoFresco
             );
+
 
             mostrarToast(
                 "Producto eliminado."
             );
 
         } catch (error) {
+
             console.error(
                 "Error eliminando producto:",
                 error
             );
+
 
             mostrarToast(
                 error.message
             );
 
         } finally {
+
             operacionesProductos.delete(
                 productoId
             );
@@ -1452,9 +1749,11 @@ document.addEventListener("DOMContentLoaded", () => {
     productosContenedor?.addEventListener(
         "click",
         (evento) => {
+
             const boton = evento.target.closest(
                 "[data-carrito-pagina-accion]"
             );
+
 
             if (
                 !boton
@@ -1463,17 +1762,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+
             const productoElemento = (
                 boton.closest(
                     ".carrito-producto"
                 )
             );
 
+
             const productoId = Number(
                 productoElemento
                     ?.dataset
                     .productoId
             );
+
 
             const producto = (
                 carritoActual
@@ -1488,26 +1790,34 @@ document.addEventListener("DOMContentLoaded", () => {
                     )
             );
 
+
             if (!producto) {
                 return;
             }
+
 
             const accion = (
                 boton.dataset
                     .carritoPaginaAccion
             );
 
-            if (accion === "sumar") {
+
+            if (
+                accion === "sumar"
+            ) {
+
                 if (
                     producto.cantidad
                     >= producto.stock
                 ) {
+
                     mostrarToast(
                         "No hay más unidades disponibles."
                     );
 
                     return;
                 }
+
 
                 actualizarCantidad(
                     productoId,
@@ -1517,19 +1827,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (accion === "restar") {
+
+            if (
+                accion === "restar"
+            ) {
+
                 const nuevaCantidad = (
                     producto.cantidad
                     - 1
                 );
 
-                if (nuevaCantidad <= 0) {
+
+                if (
+                    nuevaCantidad <= 0
+                ) {
+
                     eliminarProducto(
                         productoId
                     );
 
                     return;
                 }
+
 
                 actualizarCantidad(
                     productoId,
@@ -1539,7 +1858,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (accion === "eliminar") {
+
+            if (
+                accion === "eliminar"
+            ) {
+
                 eliminarProducto(
                     productoId
                 );
@@ -1548,43 +1871,52 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // =========================================================================
-    // VACIAR
+    // VACIAR CARRITO
     // =========================================================================
 
     botonVaciar?.addEventListener(
         "click",
         async () => {
+
             const confirmar = window.confirm(
                 "¿Deseas eliminar todos los productos del carrito?"
             );
+
 
             if (!confirmar) {
                 return;
             }
 
+
             try {
+
                 await solicitar(
                     urls.vaciar,
                     {}
                 );
 
+
                 const carritoFresco = (
                     await obtenerCarritoFresco()
                 );
 
+
                 renderizar(
                     carritoFresco
                 );
+
 
                 mostrarToast(
                     "El carrito fue vaciado."
                 );
 
             } catch (error) {
+
                 console.error(
                     "Error vaciando carrito:",
                     error
                 );
+
 
                 mostrarToast(
                     error.message
