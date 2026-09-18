@@ -472,11 +472,9 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     function despachoListoParaCotizar() {
         const region = obtenerRegionActual();
-        const comuna = obtenerComunaActual();
 
-        return (
-            Boolean(region)
-            && Boolean(comuna)
+        return Boolean(
+            region
         );
     }
 
@@ -534,6 +532,23 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
+        // =========================================================
+        // RUT
+        // =========================================================
+
+        if (campoRut) {
+            cuerpo.set(
+                "rut",
+                formatearRut(
+                    campoRut.value
+                )
+            );
+        }
+
+        // =========================================================
+        // CÓDIGO DE DESCUENTO
+        // =========================================================
+
         if (inputCupon) {
             cuerpo.set(
                 "codigo_descuento",
@@ -542,6 +557,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 )
             );
         }
+
+        // =========================================================
+        // DATOS DE ENVÍO
+        // =========================================================
 
         cuerpo.set(
             "region",
@@ -565,7 +584,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return cuerpo;
     }
-
     async function solicitarResumenCheckout(
         signal = undefined
     ) {
@@ -734,7 +752,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     ""
                 );
 
-                mostrarEnvioPendiente();
+                if (regionSelect.value) {
+                    programarCotizacionEnvio();
+                } else {
+                    mostrarEnvioPendiente();
+                }
 
                 if (!comunaSelect.disabled) {
                     comunaSelect.focus();
@@ -1145,3 +1167,84 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     );
 });
+
+
+
+// =========================================================================
+// DETECTAR AUTOCOMPLETADO DEL NAVEGADOR
+// =========================================================================
+
+let ultimaRegionAutocompletada = (
+    obtenerRegionActual()
+);
+
+function sincronizarAutocompletadoEnvio() {
+    const regionActual = (
+        obtenerRegionActual()
+    );
+
+    const comunaActual = (
+        obtenerComunaActual()
+    );
+
+    // ---------------------------------------------------------
+    // Si Chrome cambió la región automáticamente,
+    // recargamos sus comunas.
+    // ---------------------------------------------------------
+
+    if (
+        regionSelect
+        && comunaSelect
+        && regionActual
+        && regionActual !== ultimaRegionAutocompletada
+    ) {
+        cargarComunas(
+            regionActual,
+            comunaActual
+        );
+
+        ultimaRegionAutocompletada = (
+            regionActual
+        );
+    }
+
+    // ---------------------------------------------------------
+    // Con región disponible ya podemos cotizar.
+    // ---------------------------------------------------------
+
+    if (regionActual) {
+        programarCotizacionEnvio();
+    }
+}
+
+
+// Chrome / Safari pueden completar datos después
+// de DOMContentLoaded.
+
+[
+    150,
+    500,
+    1000,
+    1800,
+].forEach(
+    (tiempo) => {
+        window.setTimeout(
+            sincronizarAutocompletadoEnvio,
+            tiempo
+        );
+    }
+);
+
+
+// También cubre volver atrás desde Webpay,
+// restauración de pestaña y caché del navegador.
+
+window.addEventListener(
+    "pageshow",
+    () => {
+        window.setTimeout(
+            sincronizarAutocompletadoEnvio,
+            200
+        );
+    }
+);
