@@ -4538,8 +4538,6 @@ def _sincronizar_totales_pedido_antes_pago(
     return pedido
 
 
-
-
 def checkout(request):
     # =========================================================================
     # OBTENER CARRITO
@@ -4606,6 +4604,20 @@ def checkout(request):
         # =====================================================================
         # FORMULARIO VÁLIDO
         # =====================================================================
+        #
+        # IMPORTANTE:
+        #
+        # El hecho de permitir aplicar visualmente un código sin haber
+        # ingresado todavía el RUT NO modifica esta validación.
+        #
+        # Para finalizar realmente la compra:
+        #
+        # - CheckoutForm valida los datos definitivos;
+        # - procesar_pedido_checkout vuelve a validar el descuento;
+        # - allí debe comprobarse si ese RUT ya utilizó el código;
+        # - solamente después se crea el pedido.
+        #
+        # =====================================================================
 
         if form.is_valid():
 
@@ -4616,18 +4628,21 @@ def checkout(request):
                 # CREAR PEDIDO
                 # =============================================================
                 #
+                # Esta es la validación definitiva.
+                #
                 # procesar_pedido_checkout() debe:
                 #
                 # - volver a validar productos;
                 # - validar stock;
-                # - validar el código de descuento;
+                # - validar el RUT;
+                # - validar nuevamente el código;
+                # - comprobar uso previo del código por RUT;
                 # - reservar el código si corresponde;
                 # - crear Pedido;
                 # - crear PedidoItem;
                 # - guardar el descuento histórico.
                 #
-                # Luego sincronizamos nuevamente los importes definitivos
-                # antes de entregarlos al proveedor de pago.
+                # Nunca debemos confiar solamente en el resumen AJAX.
                 # =============================================================
 
                 with transaction.atomic():
@@ -4645,12 +4660,11 @@ def checkout(request):
                     # =========================================================
                     #
                     # subtotal productos
-                    # - descuento adicional
-                    # + Blue Express
+                    # - descuento
+                    # + despacho
                     # = pedido.total
                     #
-                    # pedido.total será el valor que Mercado Pago / Webpay
-                    # deberá cobrar.
+                    # Este será el monto real enviado al proveedor.
                     # =========================================================
 
                     pedido = (
@@ -4663,7 +4677,7 @@ def checkout(request):
                     )
 
                 # =============================================================
-                # REFRESCAR PEDIDO DESDE BASE DE DATOS
+                # REFRESCAR PEDIDO
                 # =============================================================
 
                 pedido.refresh_from_db(
@@ -4858,7 +4872,7 @@ def checkout(request):
                     )
 
                 # =============================================================
-                # MERCADO PAGO / REDIRECCIÓN EXTERNA NORMAL
+                # MERCADO PAGO / REDIRECCIÓN EXTERNA
                 # =============================================================
 
                 url_redireccion = getattr(
@@ -4930,7 +4944,7 @@ def checkout(request):
                 )
 
             # =================================================================
-            # ERROR AL INICIAR EL PROVEEDOR
+            # ERROR AL INICIAR PROVEEDOR
             # =================================================================
 
             except ErrorInicioPago as error:
@@ -5045,16 +5059,25 @@ def checkout(request):
         )
 
     # =========================================================================
-    # CÓDIGO, RUT Y REGIÓN PARA EL RESUMEN
+    # DATOS PARA EL RESUMEN
     # =========================================================================
     #
-    # El RUT se utiliza para validar que el cliente no haya utilizado
-    # anteriormente el mismo código.
+    # IMPORTANTE:
     #
-    # La región se utiliza para:
+    # El código puede mostrarse en el resumen ANTES
+    # de que exista un RUT.
     #
-    # - calcular la tarifa Blue Express;
-    # - calcular el tiempo estimado de entrega.
+    # El RUT es opcional durante esta etapa.
+    #
+    # Si existe:
+    #     calcular_resumen_checkout() puede comprobar
+    #     si ya utilizó el descuento.
+    #
+    # Si no existe:
+    #     el descuento debe considerarse provisional.
+    #
+    # La validación definitiva ocurre al procesar
+    # el pedido, nunca solamente en este resumen.
     #
     # =========================================================================
 
@@ -5067,6 +5090,10 @@ def checkout(request):
             )
             or ""
         ).strip().upper()
+
+        # =====================================================================
+        # RUT OPCIONAL PARA EL RESUMEN
+        # =====================================================================
 
         rut_descuento = (
             request.POST.get(
@@ -5088,6 +5115,16 @@ def checkout(request):
 
         codigo_descuento = ""
 
+        # =====================================================================
+        # RUT INICIAL
+        # =====================================================================
+        #
+        # Puede existir, por ejemplo, porque el usuario
+        # ya tiene información guardada.
+        #
+        # Su ausencia no impide construir el resumen.
+        # =====================================================================
+
         rut_descuento = (
             datos_iniciales.get(
                 "rut",
@@ -5105,7 +5142,27 @@ def checkout(request):
         ).strip()
 
     # =========================================================================
-    # RESUMEN
+    # RESUMEN PROVISIONAL
+    # =========================================================================
+    #
+    # calcular_resumen_checkout() debe aceptar:
+    #
+    # rut=""
+    #
+    # Cuando el RUT esté vacío, debe validar:
+    #
+    # - existencia del código;
+    # - vigencia;
+    # - estado activo;
+    # - monto mínimo;
+    # - tipo y valor del descuento;
+    #
+    # pero NO debe rechazar el código simplemente
+    # porque todavía no exista RUT.
+    #
+    # La limitación "una vez por RUT" solamente
+    # puede comprobarse cuando exista un RUT.
+    #
     # =========================================================================
 
     resumen = calcular_resumen_checkout(
@@ -5130,19 +5187,6 @@ def checkout(request):
 
     # =========================================================================
     # TIEMPO ESTIMADO DE ENTREGA
-    # =========================================================================
-    #
-    # Región Metropolitana:
-    #     SANTIAGO -> 48 hrs
-    #
-    # Regiones Centro:
-    #     CENTRO -> 72 hrs
-    #
-    # Regiones Extremo:
-    #     EXTREMO -> 72 hrs
-    #
-    # Si todavía no se ha seleccionado una región,
-    # no mostramos tiempo estimado.
     # =========================================================================
 
     zona_envio = None
@@ -5191,15 +5235,6 @@ def checkout(request):
 
     # =========================================================================
     # AGREGAR DATOS DE ENVÍO AL RESUMEN
-    # =========================================================================
-    #
-    # De esta forma también podremos acceder desde el template mediante:
-    #
-    # resumen.tiempo_estimado_horas
-    # resumen.tiempo_estimado_texto
-    # resumen.zona_envio
-    #
-    # siempre que resumen sea un diccionario.
     # =========================================================================
 
     if isinstance(
@@ -5286,9 +5321,6 @@ def checkout(request):
         "core/checkout.html",
         contexto,
     )
-
-
-
 
 
 
