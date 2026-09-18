@@ -65,6 +65,7 @@ Tu carrito | Audex
         <header class="carrito-pagina__cabecera">
 
             <div>
+
                 <span class="etiqueta-seccion">
                     Tu selección
                 </span>
@@ -77,6 +78,7 @@ Tu carrito | Audex
                     Revisa tus productos, ajusta las cantidades
                     y confirma el resumen antes de continuar.
                 </p>
+
             </div>
 
             <a
@@ -106,11 +108,13 @@ Tu carrito | Audex
                     carrito-paso--activo
                 "
             >
+
                 <span>
                     1
                 </span>
 
                 <div>
+
                     <strong>
                         Carrito
                     </strong>
@@ -118,17 +122,21 @@ Tu carrito | Audex
                     <small>
                         Revisa tu compra
                     </small>
+
                 </div>
+
             </article>
 
             <span class="carrito-pasos__linea"></span>
 
             <article class="carrito-paso">
+
                 <span>
                     2
                 </span>
 
                 <div>
+
                     <strong>
                         Datos
                     </strong>
@@ -136,17 +144,21 @@ Tu carrito | Audex
                     <small>
                         Información de entrega
                     </small>
+
                 </div>
+
             </article>
 
             <span class="carrito-pasos__linea"></span>
 
             <article class="carrito-paso">
+
                 <span>
                     3
                 </span>
 
                 <div>
+
                     <strong>
                         Pago
                     </strong>
@@ -154,7 +166,9 @@ Tu carrito | Audex
                     <small>
                         Finalizar pedido
                     </small>
+
                 </div>
+
             </article>
 
         </div>
@@ -176,6 +190,7 @@ Tu carrito | Audex
                 <div class="carrito-listado__encabezado">
 
                     <div>
+
                         <h2>
                             Productos
                         </h2>
@@ -184,22 +199,26 @@ Tu carrito | Audex
                             {{ carrito.cantidad_total }}
                             producto{{ carrito.cantidad_total|pluralize }}
                         </span>
+
                     </div>
 
                     <button
                         type="button"
                         class="carrito-pagina-vaciar"
                         id="carritoPaginaVaciar"
+
                         {% if carrito.vacio %}
                             hidden
                         {% endif %}
                     >
+
                         <i
                             class="bi bi-trash3"
                             aria-hidden="true"
                         ></i>
 
                         Vaciar carrito
+
                     </button>
 
                 </div>
@@ -220,10 +239,12 @@ Tu carrito | Audex
                         <div class="carrito-pagina-vacio">
 
                             <div class="carrito-pagina-vacio__icono">
+
                                 <i
                                     class="bi bi-bag"
                                     aria-hidden="true"
                                 ></i>
+
                             </div>
 
                             <h2>
@@ -305,9 +326,11 @@ Tu carrito | Audex
                                             <div class="carrito-producto__etiquetas">
 
                                                 {% if item.categoria %}
+
                                                     <span class="carrito-producto__categoria">
                                                         {{ item.categoria }}
                                                     </span>
+
                                                 {% endif %}
 
                                                 {% if item.en_oferta %}
@@ -330,9 +353,11 @@ Tu carrito | Audex
 
 
                                             <h3>
+
                                                 <a href="{{ item.url_detalle }}">
                                                     {{ item.nombre }}
                                                 </a>
+
                                             </h3>
 
 
@@ -353,11 +378,13 @@ Tu carrito | Audex
                                                 {% else %}
 
                                                     <span class="carrito-producto__unitario">
+
                                                         Precio unitario:
 
                                                         <strong>
                                                             {{ item.precio_formateado }} CLP
                                                         </strong>
+
                                                     </span>
 
                                                 {% endif %}
@@ -373,10 +400,12 @@ Tu carrito | Audex
                                             data-carrito-pagina-accion="eliminar"
                                             aria-label="Eliminar {{ item.nombre }}"
                                         >
+
                                             <i
                                                 class="bi bi-trash3"
                                                 aria-hidden="true"
                                             ></i>
+
                                         </button>
 
                                     </div>
@@ -401,10 +430,12 @@ Tu carrito | Audex
                                                     data-carrito-pagina-accion="restar"
                                                     aria-label="Disminuir cantidad de {{ item.nombre }}"
                                                 >
+
                                                     <i
                                                         class="bi bi-dash-lg"
                                                         aria-hidden="true"
                                                     ></i>
+
                                                 </button>
 
                                                 <strong>
@@ -415,14 +446,17 @@ Tu carrito | Audex
                                                     type="button"
                                                     data-carrito-pagina-accion="sumar"
                                                     aria-label="Aumentar cantidad de {{ item.nombre }}"
+
                                                     {% if item.cantidad >= item.stock %}
                                                         disabled
                                                     {% endif %}
                                                 >
+
                                                     <i
                                                         class="bi bi-plus-lg"
                                                         aria-hidden="true"
                                                     ></i>
+
                                                 </button>
 
                                             </div>
@@ -458,8 +492,10 @@ Tu carrito | Audex
                                             {% if item.en_oferta and item.ahorro_linea %}
 
                                                 <small class="carrito-producto__ahorro">
+
                                                     Ahorras
                                                     {{ item.ahorro_linea_formateado }} CLP
+
                                                 </small>
 
                                             {% endif %}
@@ -495,6 +531,7 @@ Tu carrito | Audex
                             ></i>
 
                             <div>
+
                                 <strong>
                                     Compra protegida
                                 </strong>
@@ -502,6 +539,7 @@ Tu carrito | Audex
                                 <span>
                                     Transacción segura
                                 </span>
+
                             </div>
 
                         </article>
@@ -515,6 +553,7 @@ Tu carrito | Audex
                             ></i>
 
                             <div>
+
                                 <strong>
                                     Cambios simples
                                 </strong>
@@ -522,6 +561,7 @@ Tu carrito | Audex
                                 <span>
                                     Consulta las condiciones
                                 </span>
+
                             </div>
 
                         </article>
@@ -535,6 +575,7 @@ Tu carrito | Audex
                             ></i>
 
                             <div>
+
                                 <strong>
                                     Atención Audex
                                 </strong>
@@ -542,6 +583,7 @@ Tu carrito | Audex
                                 <span>
                                     Asesoría durante tu compra
                                 </span>
+
                             </div>
 
                         </article>
@@ -562,6 +604,7 @@ Tu carrito | Audex
                 <div class="carrito-resumen__titulo">
 
                     <div>
+
                         <span>
                             Resumen
                         </span>
@@ -569,6 +612,7 @@ Tu carrito | Audex
                         <h2>
                             Tu compra
                         </h2>
+
                     </div>
 
                     <i
@@ -594,8 +638,10 @@ Tu carrito | Audex
                             </strong>
 
                             <span id="carritoResumenCantidad">
+
                                 {{ carrito.cantidad_total }}
                                 unidad{{ carrito.cantidad_total|pluralize:"es" }}
+
                             </span>
 
                         </div>
@@ -675,8 +721,10 @@ Tu carrito | Audex
                                         {% if item.cantidad > 1 %}
 
                                             <small class="carrito-resumen-producto__unitario">
+
                                                 {{ item.precio_formateado }} CLP
                                                 c/u
+
                                             </small>
 
                                         {% endif %}
@@ -714,7 +762,7 @@ Tu carrito | Audex
 
 
                 <!-- ===================================================== -->
-                <!-- COMPATIBILIDAD CON JS DE DESPACHO GRATIS -->
+                <!-- COMPATIBILIDAD CON JS DE DESPACHO -->
                 <!-- ===================================================== -->
 
                 <div
@@ -726,10 +774,12 @@ Tu carrito | Audex
                     <p id="carritoPaginaMensajeEnvio"></p>
 
                     <div class="carrito-resumen__progreso">
+
                         <span
                             id="carritoPaginaProgreso"
                             style="width: 0%;"
                         ></span>
+
                     </div>
 
                 </div>
@@ -744,9 +794,25 @@ Tu carrito | Audex
                     <div class="carrito-resumen__valores">
 
 
-                        <!-- PRODUCTOS -->
+                        <!-- ================================================= -->
+                        <!-- PRECIO LISTA -->
+                        <!-- ================================================= -->
+                        <!--
+                            Solo se muestra cuando existe ahorro real.
 
-                        <div class="carrito-resumen__fila">
+                            Si no existen productos en oferta:
+                            NO mostramos esta fila para evitar duplicarla
+                            con Subtotal.
+                        -->
+
+                        <div
+                            class="carrito-resumen__fila"
+                            id="filaProductosPrecioLista"
+
+                            {% if not carrito.tiene_ofertas %}
+                                hidden
+                            {% endif %}
+                        >
 
                             <span>
                                 Productos
@@ -756,8 +822,6 @@ Tu carrito | Audex
 
                                 {% if carrito.tiene_ofertas %}
                                     {{ carrito.subtotal_precio_lista_formateado }} CLP
-                                {% else %}
-                                    {{ carrito.subtotal_formateado }} CLP
                                 {% endif %}
 
                             </strong>
@@ -765,7 +829,16 @@ Tu carrito | Audex
                         </div>
 
 
+                        <!-- ================================================= -->
                         <!-- DESCUENTOS -->
+                        <!-- ================================================= -->
+                        <!--
+                            Solamente visible cuando ahorro_ofertas > 0.
+
+                            De esta manera nunca se muestra:
+
+                                -$0 CLP
+                        -->
 
                         <div
                             class="
@@ -795,8 +868,6 @@ Tu carrito | Audex
 
                                 {% if carrito.tiene_ofertas %}
                                     -{{ carrito.ahorro_ofertas_formateado }} CLP
-                                {% else %}
-                                    -$0 CLP
                                 {% endif %}
 
                             </strong>
@@ -804,7 +875,20 @@ Tu carrito | Audex
                         </div>
 
 
+                        <!-- ================================================= -->
                         <!-- SUBTOTAL -->
+                        <!-- ================================================= -->
+                        <!--
+                            Siempre se muestra.
+
+                            SIN descuentos:
+                                Subtotal = valor de productos.
+
+                            CON descuentos:
+                                Productos
+                                - Descuentos
+                                = Subtotal
+                        -->
 
                         <div class="carrito-resumen__fila">
 
@@ -819,7 +903,9 @@ Tu carrito | Audex
                         </div>
 
 
-                        <!-- DESPACHO -->
+                        <!-- ================================================= -->
+                        <!-- DESPACHO BLUE EXPRESS -->
+                        <!-- ================================================= -->
 
                         <div
                             class="
@@ -835,7 +921,7 @@ Tu carrito | Audex
                                 </span>
 
                                 <small>
-                                    Se calculará según tu dirección
+                                    Envío a través de Blue Express
                                 </small>
 
                             </div>
@@ -878,7 +964,7 @@ Tu carrito | Audex
 
 
                     <!-- ================================================= -->
-                    <!-- AVISO DE DESPACHO -->
+                    <!-- AVISO BLUE EXPRESS -->
                     <!-- ================================================= -->
 
                     <div class="carrito-resumen__aviso-despacho">
@@ -891,13 +977,15 @@ Tu carrito | Audex
                         <div>
 
                             <strong>
-                                Despacho aún no incluido
+                                Despacho Blue Express aún no incluido
                             </strong>
 
                             <span>
-                                En el siguiente paso calcularemos
-                                el valor según tu región, comuna
-                                y dirección de entrega.
+                                Los envíos se realizan a través de
+                                Blue Express. En el siguiente paso
+                                calcularemos el valor según tu región
+                                y utilizaremos tu comuna y dirección
+                                para completar la entrega.
                             </span>
 
                         </div>
@@ -1054,14 +1142,21 @@ Tu carrito | Audex
 
 
 <!-- ===================================================================== -->
-<!-- MANTENER FORMATO CLP DESPUÉS DE ACTUALIZACIONES AJAX -->
+<!-- FORMATO CLP + VISIBILIDAD DE DESCUENTOS -->
 <!-- ===================================================================== -->
 
 <script>
 (function () {
+
     "use strict";
 
+
+    // =====================================================================
+    // SELECTORES MONETARIOS
+    // =====================================================================
+
     const selectoresMonetarios = [
+
         ".carrito-producto__precio-original",
         ".carrito-producto__precio-oferta",
         ".carrito-producto__unitario strong",
@@ -1080,117 +1175,296 @@ Tu carrito | Audex
         "#carritoPaginaDescuento",
         "#carritoPaginaSubtotal",
         "#carritoPaginaTotal"
+
     ];
 
 
-    function tieneValorMonetario(texto) {
-        return /\$\s*-?[\d.,]+|-?\$\s*[\d.,]+/.test(texto);
+    // =====================================================================
+    // DETECTAR VALOR MONETARIO
+    // =====================================================================
+
+    function tieneValorMonetario(
+        texto
+    ) {
+
+        return (
+            /\$\s*-?[\d.,]+|-?\$\s*[\d.,]+/
+            .test(
+                texto
+            )
+        );
+
     }
 
 
-    function agregarCLP(elemento) {
+    // =====================================================================
+    // AGREGAR CLP
+    // =====================================================================
+
+    function agregarCLP(
+        elemento
+    ) {
 
         if (!elemento) {
             return;
         }
 
-        const texto = elemento.textContent.trim();
+        const texto = (
+            elemento
+            .textContent
+            .trim()
+        );
 
         if (!texto) {
             return;
         }
 
-        if (!tieneValorMonetario(texto)) {
+        if (
+            !tieneValorMonetario(
+                texto
+            )
+        ) {
             return;
         }
 
-        if (/\bCLP\b/i.test(texto)) {
+        if (
+            /\bCLP\b/i
+            .test(
+                texto
+            )
+        ) {
             return;
         }
 
-        /*
-         * Caso especial:
-         *
-         * "Ahorras $10.000"
-         * pasa a:
-         *
-         * "Ahorras $10.000 CLP"
-         */
+        elemento.textContent = (
+            `${texto} CLP`
+        );
 
-        elemento.textContent = `${texto} CLP`;
     }
 
+
+    // =====================================================================
+    // APLICAR FORMATO CLP
+    // =====================================================================
 
     function aplicarFormatoCLP() {
 
-        selectoresMonetarios.forEach((selector) => {
+        selectoresMonetarios.forEach(
+            (
+                selector
+            ) => {
 
-            document
-                .querySelectorAll(selector)
-                .forEach(agregarCLP);
+                document
+                    .querySelectorAll(
+                        selector
+                    )
+                    .forEach(
+                        agregarCLP
+                    );
 
-        });
+            }
+        );
 
     }
 
 
-    /*
-     * Aplicar una vez al cargar la página.
-     */
+    // =====================================================================
+    // CONVERTIR TEXTO MONETARIO A NÚMERO
+    // =====================================================================
 
-    if (document.readyState === "loading") {
+    function obtenerMonto(
+        texto
+    ) {
+
+        if (!texto) {
+            return 0;
+        }
+
+        const limpio = (
+            String(
+                texto
+            )
+            .replace(
+                /[^\d-]/g,
+                ""
+            )
+        );
+
+        const numero = (
+            Number.parseInt(
+                limpio,
+                10
+            )
+        );
+
+        if (
+            Number.isNaN(
+                numero
+            )
+        ) {
+            return 0;
+        }
+
+        return Math.abs(
+            numero
+        );
+
+    }
+
+
+    // =====================================================================
+    // VISIBILIDAD DEL RESUMEN DE DESCUENTOS
+    // =====================================================================
+    //
+    // Con descuento:
+    //
+    //     Productos      $300.000
+    //     Descuentos     -$30.000
+    //     Subtotal       $270.000
+    //
+    // Sin descuento:
+    //
+    //     Subtotal       $270.000
+    //
+    // Nunca mostramos:
+    //
+    //     Descuentos     -$0
+    //
+    // ni duplicamos Productos + Subtotal.
+    // =====================================================================
+
+    function actualizarVisibilidadDescuento() {
+
+        const filaProductos = (
+            document.getElementById(
+                "filaProductosPrecioLista"
+            )
+        );
+
+        const filaDescuento = (
+            document.getElementById(
+                "filaDescuento"
+            )
+        );
+
+        const descuentoElemento = (
+            document.getElementById(
+                "carritoPaginaDescuento"
+            )
+        );
+
+        if (
+            !filaProductos
+            || !filaDescuento
+            || !descuentoElemento
+        ) {
+            return;
+        }
+
+        const descuento = (
+            obtenerMonto(
+                descuentoElemento
+                    .textContent
+            )
+        );
+
+        const tieneDescuento = (
+            descuento > 0
+        );
+
+        filaProductos.hidden = (
+            !tieneDescuento
+        );
+
+        filaDescuento.hidden = (
+            !tieneDescuento
+        );
+
+    }
+
+
+    // =====================================================================
+    // ACTUALIZAR PRESENTACIÓN
+    // =====================================================================
+
+    function actualizarPresentacion() {
+
+        aplicarFormatoCLP();
+
+        actualizarVisibilidadDescuento();
+
+    }
+
+
+    // =====================================================================
+    // CARGA INICIAL
+    // =====================================================================
+
+    if (
+        document.readyState
+        === "loading"
+    ) {
 
         document.addEventListener(
             "DOMContentLoaded",
-            aplicarFormatoCLP
+            actualizarPresentacion
         );
 
     } else {
 
-        aplicarFormatoCLP();
+        actualizarPresentacion();
 
     }
 
 
-    /*
-     * El carrito se modifica mediante AJAX.
-     *
-     * carrito_completo.js puede reemplazar textContent o reconstruir
-     * partes completas del DOM, eliminando el texto "CLP" escrito
-     * originalmente en Django.
-     *
-     * MutationObserver detecta esas modificaciones y vuelve a agregar
-     * CLP automáticamente.
-     */
+    // =====================================================================
+    // ACTUALIZACIONES AJAX
+    // =====================================================================
 
-    const carritoPagina = document.getElementById(
-        "carritoPagina"
+    const carritoPagina = (
+        document.getElementById(
+            "carritoPagina"
+        )
     );
 
 
     if (carritoPagina) {
 
-        let actualizacionPendiente = false;
+        let actualizacionPendiente = (
+            false
+        );
 
 
-        const observer = new MutationObserver(() => {
+        const observer = (
+            new MutationObserver(
+                () => {
 
-            if (actualizacionPendiente) {
-                return;
-            }
+                    if (
+                        actualizacionPendiente
+                    ) {
+                        return;
+                    }
 
-            actualizacionPendiente = true;
+                    actualizacionPendiente = (
+                        true
+                    );
 
 
-            requestAnimationFrame(() => {
+                    requestAnimationFrame(
+                        () => {
 
-                aplicarFormatoCLP();
+                            actualizarPresentacion();
 
-                actualizacionPendiente = false;
+                            actualizacionPendiente = (
+                                false
+                            );
 
-            });
+                        }
+                    );
 
-        });
+                }
+            )
+        );
 
 
         observer.observe(
