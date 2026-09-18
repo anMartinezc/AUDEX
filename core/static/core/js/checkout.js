@@ -30,6 +30,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
     // RUT
     // =========================================================================
+    //
+    // IMPORTANTE:
+    //
+    // El RUT NO es necesario para aplicar visualmente
+    // un código de descuento.
+    //
+    // Django será quien valide posteriormente:
+    //
+    // - que el RUT sea válido;
+    // - que el cliente no haya usado anteriormente
+    //   un código limitado por RUT;
+    // - que el descuento siga siendo válido antes
+    //   de crear definitivamente el pedido.
+    //
+    // =========================================================================
 
     const campoRut = document.getElementById(
         "id_rut"
@@ -86,127 +101,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // VALIDAR RUT CHILENO
-    // =========================================================================
-    //
-    // Valida el dígito verificador utilizando
-    // el algoritmo oficial módulo 11.
-    //
-    // Ejemplos:
-    //
-    // 12.345.678-5 -> válido si el DV corresponde.
-    // 12.345.678-1 -> inválido si el DV no corresponde.
-    //
-    // =========================================================================
-
-    function validarRutChileno(
-        valor
-    ) {
-        const rutLimpio = limpiarRut(
-            valor
-        );
-
-        // El RUT debe tener:
-        //
-        // 7 u 8 dígitos de cuerpo
-        // + 1 dígito verificador.
-        //
-        // Total limpio:
-        // 8 o 9 caracteres.
-
-        if (
-            rutLimpio.length < 8
-            || rutLimpio.length > 9
-        ) {
-            return false;
-        }
-
-        const cuerpo = rutLimpio.slice(
-            0,
-            -1
-        );
-
-        const dvIngresado = rutLimpio.slice(
-            -1
-        );
-
-        if (!/^\d+$/.test(cuerpo)) {
-            return false;
-        }
-
-        // Evitar cuerpos vacíos o compuestos
-        // únicamente por ceros.
-
-        if (
-            Number(cuerpo) <= 0
-        ) {
-            return false;
-        }
-
-        let suma = 0;
-        let multiplicador = 2;
-
-        for (
-            let i = cuerpo.length - 1;
-            i >= 0;
-            i -= 1
-        ) {
-            suma += (
-                Number(
-                    cuerpo[i]
-                )
-                * multiplicador
-            );
-
-            multiplicador += 1;
-
-            if (multiplicador > 7) {
-                multiplicador = 2;
-            }
-        }
-
-        const resultado = (
-            11 - (
-                suma % 11
-            )
-        );
-
-        let dvCalculado;
-
-        if (resultado === 11) {
-            dvCalculado = "0";
-
-        } else if (resultado === 10) {
-            dvCalculado = "K";
-
-        } else {
-            dvCalculado = String(
-                resultado
-            );
-        }
-
-        return (
-            dvIngresado === dvCalculado
-        );
-    }
-
-    // =========================================================================
     // EVENTOS DEL RUT
+    // =========================================================================
+    //
+    // JavaScript solamente lo formatea.
+    //
+    // La validación definitiva pertenece al backend.
     // =========================================================================
 
     if (campoRut) {
         campoRut.addEventListener(
             "input",
             () => {
-                // -------------------------------------------------------------
-                // El usuario modificó el RUT.
-                // Eliminamos cualquier error anterior.
-                // -------------------------------------------------------------
-
-                campoRut.setCustomValidity(
-                    ""
-                );
-
                 campoRut.value = formatearRut(
                     campoRut.value
                 );
@@ -219,51 +125,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 campoRut.value = formatearRut(
                     campoRut.value
                 );
-
-                if (!campoRut.value) {
-                    campoRut.setCustomValidity(
-                        ""
-                    );
-
-                    return;
-                }
-
-                if (
-                    !validarRutChileno(
-                        campoRut.value
-                    )
-                ) {
-                    campoRut.setCustomValidity(
-                        "El RUT ingresado no es válido."
-                    );
-
-                    return;
-                }
-
-                campoRut.setCustomValidity(
-                    ""
-                );
             }
         );
-
-        // =====================================================================
-        // RUT INICIAL
-        // =====================================================================
 
         if (campoRut.value) {
             campoRut.value = formatearRut(
                 campoRut.value
             );
-
-            if (
-                validarRutChileno(
-                    campoRut.value
-                )
-            ) {
-                campoRut.setCustomValidity(
-                    ""
-                );
-            }
         }
     }
 
@@ -617,14 +485,15 @@ document.addEventListener("DOMContentLoaded", () => {
         ).trim();
     }
 
-    /*
-     * Para cotizar Blue Express basta
-     * con conocer la región.
-     *
-     * Comuna, dirección y número siguen
-     * siendo obligatorios para finalizar
-     * la compra.
-     */
+    // =========================================================================
+    // ¿SE PUEDE COTIZAR?
+    // =========================================================================
+    //
+    // Para Blue Express basta con conocer la región.
+    //
+    // Comuna, dirección y número siguen siendo
+    // obligatorios para finalizar la compra.
+    // =========================================================================
 
     function despachoListoParaCotizar() {
         const region = obtenerRegionActual();
@@ -680,7 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // CONSTRUIR DATOS PARA EL RESUMEN
+    // CONSTRUIR DATOS DEL RESUMEN
     // =========================================================================
 
     function construirDatosResumen() {
@@ -696,13 +565,35 @@ document.addEventListener("DOMContentLoaded", () => {
         // =====================================================================
         // RUT
         // =====================================================================
+        //
+        // El RUT se envía solamente si existe.
+        //
+        // No es obligatorio para solicitar el resumen
+        // ni para aplicar visualmente el descuento.
+        //
+        // Cuando el usuario lo complete, Django podrá
+        // utilizarlo para comprobar si ese código ya
+        // fue utilizado anteriormente por ese RUT.
+        // =====================================================================
 
         if (campoRut) {
+            const rutActual = String(
+                campoRut.value
+                || ""
+            ).trim();
+
             cuerpo.set(
                 "rut",
-                formatearRut(
-                    campoRut.value
-                )
+                rutActual
+                    ? formatearRut(
+                        rutActual
+                    )
+                    : ""
+            );
+        } else {
+            cuerpo.set(
+                "rut",
+                ""
             );
         }
 
@@ -1029,7 +920,20 @@ document.addEventListener("DOMContentLoaded", () => {
         inputCupon.value = codigo;
 
         // =====================================================================
-        // VALIDAR CÓDIGO
+        // ÚNICA VALIDACIÓN PREVIA:
+        // DEBE EXISTIR UN CÓDIGO
+        // =====================================================================
+        //
+        // El RUT NO es obligatorio aquí.
+        //
+        // El usuario puede:
+        //
+        // 1. escribir AUDEX15;
+        // 2. pulsar Aplicar;
+        // 3. ver el descuento;
+        // 4. completar después sus datos personales;
+        // 5. Django validará el RUT y el uso anterior
+        //    del código antes de aceptar el pedido.
         // =====================================================================
 
         if (!codigo) {
@@ -1047,83 +951,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // =====================================================================
-        // OBTENER RUT
-        // =====================================================================
-
-        const rutActual = campoRut
-            ? limpiarRut(
-                campoRut.value
-            )
-            : "";
-
-        // =====================================================================
-        // RUT VACÍO
-        // =====================================================================
-
-        if (!rutActual) {
-            mostrarMensajeCupon(
-                (
-                    "Ingresa tu RUT antes "
-                    + "de aplicar el código."
-                ),
-                "error"
-            );
-
-            if (campoRut) {
-                campoRut.setCustomValidity(
-                    ""
-                );
-
-                campoRut.focus();
-            }
-
-            return;
-        }
-
-        // =====================================================================
-        // VALIDAR MATEMÁTICAMENTE EL RUT
-        // =====================================================================
-
-        if (
-            !validarRutChileno(
-                rutActual
-            )
-        ) {
-            mostrarMensajeCupon(
-                (
-                    "El RUT ingresado "
-                    + "no es válido."
-                ),
-                "error"
-            );
-
-            if (campoRut) {
-                campoRut.setCustomValidity(
-                    "El RUT ingresado no es válido."
-                );
-
-                campoRut.focus();
-            }
-
-            return;
-        }
-
-        // =====================================================================
-        // RUT VÁLIDO
-        // =====================================================================
-
-        if (campoRut) {
-            campoRut.setCustomValidity(
-                ""
-            );
-
-            campoRut.value = formatearRut(
-                campoRut.value
-            );
-        }
-
-        // =====================================================================
-        // INICIAR VALIDACIÓN DEL CÓDIGO
+        // VALIDAR CÓDIGO CON EL SERVIDOR
         // =====================================================================
 
         establecerEstadoBotonCupon(
@@ -1402,7 +1230,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // =========================================================================
-    // ENVÍO DEL FORMULARIO
+    // ENVÍO FINAL DEL FORMULARIO
     // =========================================================================
 
     formulario.addEventListener(
@@ -1421,34 +1249,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // VALIDAR Y NORMALIZAR RUT
+            // NORMALIZAR RUT
+            // =================================================================
+            //
+            // No comprobamos matemáticamente el RUT aquí.
+            //
+            // Django / CheckoutForm hará la validación
+            // definitiva del RUT.
             // =================================================================
 
             if (campoRut) {
                 campoRut.value = formatearRut(
                     campoRut.value
-                );
-
-                if (
-                    !validarRutChileno(
-                        campoRut.value
-                    )
-                ) {
-                    evento.preventDefault();
-
-                    campoRut.setCustomValidity(
-                        "El RUT ingresado no es válido."
-                    );
-
-                    campoRut.focus();
-
-                    campoRut.reportValidity();
-
-                    return;
-                }
-
-                campoRut.setCustomValidity(
-                    ""
                 );
             }
 
@@ -1522,7 +1334,15 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // VALIDACIÓN HTML DEL FORMULARIO
+            // VALIDACIÓN HTML
+            // =================================================================
+            //
+            // Si el campo RUT tiene required en CheckoutForm,
+            // aquí seguirá siendo obligatorio para FINALIZAR
+            // la compra.
+            //
+            // Lo que ya no ocurre es que sea obligatorio
+            // para utilizar el botón "Aplicar".
             // =================================================================
 
             if (!formulario.checkValidity()) {
