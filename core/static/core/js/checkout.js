@@ -85,10 +85,128 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
+    // =========================================================================
+    // VALIDAR RUT CHILENO
+    // =========================================================================
+    //
+    // Valida el dígito verificador utilizando
+    // el algoritmo oficial módulo 11.
+    //
+    // Ejemplos:
+    //
+    // 12.345.678-5 -> válido si el DV corresponde.
+    // 12.345.678-1 -> inválido si el DV no corresponde.
+    //
+    // =========================================================================
+
+    function validarRutChileno(
+        valor
+    ) {
+        const rutLimpio = limpiarRut(
+            valor
+        );
+
+        // El RUT debe tener:
+        //
+        // 7 u 8 dígitos de cuerpo
+        // + 1 dígito verificador.
+        //
+        // Total limpio:
+        // 8 o 9 caracteres.
+
+        if (
+            rutLimpio.length < 8
+            || rutLimpio.length > 9
+        ) {
+            return false;
+        }
+
+        const cuerpo = rutLimpio.slice(
+            0,
+            -1
+        );
+
+        const dvIngresado = rutLimpio.slice(
+            -1
+        );
+
+        if (!/^\d+$/.test(cuerpo)) {
+            return false;
+        }
+
+        // Evitar cuerpos vacíos o compuestos
+        // únicamente por ceros.
+
+        if (
+            Number(cuerpo) <= 0
+        ) {
+            return false;
+        }
+
+        let suma = 0;
+        let multiplicador = 2;
+
+        for (
+            let i = cuerpo.length - 1;
+            i >= 0;
+            i -= 1
+        ) {
+            suma += (
+                Number(
+                    cuerpo[i]
+                )
+                * multiplicador
+            );
+
+            multiplicador += 1;
+
+            if (multiplicador > 7) {
+                multiplicador = 2;
+            }
+        }
+
+        const resultado = (
+            11 - (
+                suma % 11
+            )
+        );
+
+        let dvCalculado;
+
+        if (resultado === 11) {
+            dvCalculado = "0";
+
+        } else if (resultado === 10) {
+            dvCalculado = "K";
+
+        } else {
+            dvCalculado = String(
+                resultado
+            );
+        }
+
+        return (
+            dvIngresado === dvCalculado
+        );
+    }
+
+    // =========================================================================
+    // EVENTOS DEL RUT
+    // =========================================================================
+
     if (campoRut) {
         campoRut.addEventListener(
             "input",
             () => {
+                // -------------------------------------------------------------
+                // El usuario modificó el RUT.
+                // Eliminamos cualquier error anterior.
+                // -------------------------------------------------------------
+
+                campoRut.setCustomValidity(
+                    ""
+                );
+
                 campoRut.value = formatearRut(
                     campoRut.value
                 );
@@ -101,13 +219,51 @@ document.addEventListener("DOMContentLoaded", () => {
                 campoRut.value = formatearRut(
                     campoRut.value
                 );
+
+                if (!campoRut.value) {
+                    campoRut.setCustomValidity(
+                        ""
+                    );
+
+                    return;
+                }
+
+                if (
+                    !validarRutChileno(
+                        campoRut.value
+                    )
+                ) {
+                    campoRut.setCustomValidity(
+                        "El RUT ingresado no es válido."
+                    );
+
+                    return;
+                }
+
+                campoRut.setCustomValidity(
+                    ""
+                );
             }
         );
+
+        // =====================================================================
+        // RUT INICIAL
+        // =====================================================================
 
         if (campoRut.value) {
             campoRut.value = formatearRut(
                 campoRut.value
             );
+
+            if (
+                validarRutChileno(
+                    campoRut.value
+                )
+            ) {
+                campoRut.setCustomValidity(
+                    ""
+                );
+            }
         }
     }
 
@@ -142,6 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
             comunasPorRegion = JSON.parse(
                 comunasScript.textContent
             );
+
         } catch (error) {
             console.error(
                 (
@@ -248,6 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
             comunaSelect.value = (
                 comunaSeleccionada
             );
+
         } else {
             comunaSelect.value = "";
         }
@@ -460,13 +618,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /*
-     * Para cotizar Blue Express basta con
-     * conocer la región.
+     * Para cotizar Blue Express basta
+     * con conocer la región.
      *
-     * La comuna, dirección y número continúan
+     * Comuna, dirección y número siguen
      * siendo obligatorios para finalizar
      * la compra.
      */
+
     function despachoListoParaCotizar() {
         const region = obtenerRegionActual();
 
@@ -536,12 +695,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // =====================================================================
         // RUT
-        // =====================================================================
-        //
-        // Importante:
-        //
-        // El RUT se envía junto con el código para que Django pueda comprobar
-        // si ese cliente ya utilizó anteriormente el código de descuento.
         // =====================================================================
 
         if (campoRut) {
@@ -715,11 +868,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         } finally {
-            /*
-             * Evitamos que una petición antigua
-             * elimine la referencia de una petición
-             * nueva que todavía esté ejecutándose.
-             */
             if (
                 solicitudEnvioActual
                 === controlador
@@ -797,6 +945,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (regionSelect.value) {
                     programarCotizacionEnvio();
+
                 } else {
                     mostrarEnvioPendiente();
                 }
@@ -818,15 +967,9 @@ document.addEventListener("DOMContentLoaded", () => {
             () => {
                 cancelarCotizacionPendiente();
 
-                /*
-                 * Aunque el despacho ya puede
-                 * calcularse únicamente con la región,
-                 * volvemos a actualizarlo al cambiar
-                 * la comuna para mantener sincronizado
-                 * el resumen.
-                 */
                 if (obtenerRegionActual()) {
                     programarCotizacionEnvio();
+
                 } else {
                     mostrarEnvioPendiente();
                 }
@@ -885,6 +1028,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         inputCupon.value = codigo;
 
+        // =====================================================================
+        // VALIDAR CÓDIGO
+        // =====================================================================
+
         if (!codigo) {
             mostrarMensajeCupon(
                 (
@@ -900,11 +1047,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // =====================================================================
-        // RUT
-        // =====================================================================
-        //
-        // El backend necesita el RUT para comprobar
-        // el uso del código.
+        // OBTENER RUT
         // =====================================================================
 
         const rutActual = campoRut
@@ -912,6 +1055,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 campoRut.value
             )
             : "";
+
+        // =====================================================================
+        // RUT VACÍO
+        // =====================================================================
 
         if (!rutActual) {
             mostrarMensajeCupon(
@@ -923,17 +1070,61 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             if (campoRut) {
+                campoRut.setCustomValidity(
+                    ""
+                );
+
                 campoRut.focus();
             }
 
             return;
         }
 
+        // =====================================================================
+        // VALIDAR MATEMÁTICAMENTE EL RUT
+        // =====================================================================
+
+        if (
+            !validarRutChileno(
+                rutActual
+            )
+        ) {
+            mostrarMensajeCupon(
+                (
+                    "El RUT ingresado "
+                    + "no es válido."
+                ),
+                "error"
+            );
+
+            if (campoRut) {
+                campoRut.setCustomValidity(
+                    "El RUT ingresado no es válido."
+                );
+
+                campoRut.focus();
+            }
+
+            return;
+        }
+
+        // =====================================================================
+        // RUT VÁLIDO
+        // =====================================================================
+
         if (campoRut) {
+            campoRut.setCustomValidity(
+                ""
+            );
+
             campoRut.value = formatearRut(
                 campoRut.value
             );
         }
+
+        // =====================================================================
+        // INICIAR VALIDACIÓN DEL CÓDIGO
+        // =====================================================================
 
         establecerEstadoBotonCupon(
             true
@@ -1015,6 +1206,10 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
     }
+
+    // =========================================================================
+    // EVENTOS DEL CÓDIGO
+    // =========================================================================
 
     if (!inputCupon) {
         console.error(
@@ -1102,14 +1297,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
     // DETECTAR AUTOCOMPLETADO DEL NAVEGADOR
     // =========================================================================
-    //
-    // Chrome y Safari pueden completar región, comuna,
-    // dirección y otros datos después de DOMContentLoaded
-    // sin disparar necesariamente un evento "change".
-    //
-    // Por ello hacemos varias comprobaciones durante
-    // los primeros segundos.
-    // =========================================================================
 
     function sincronizarAutocompletadoEnvio() {
         const regionActual = (
@@ -1123,10 +1310,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!regionActual) {
             return;
         }
-
-        // =====================================================================
-        // SI CAMBIÓ LA REGIÓN POR AUTOCOMPLETADO
-        // =====================================================================
 
         if (
             regionSelect
@@ -1142,10 +1325,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 regionActual
             );
         }
-
-        // =====================================================================
-        // RECALCULAR DESPACHO
-        // =====================================================================
 
         programarCotizacionEnvio();
     }
@@ -1184,6 +1363,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (despachoListoParaCotizar()) {
         programarCotizacionEnvio();
+
     } else {
         mostrarEnvioPendiente();
     }
@@ -1241,12 +1421,34 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // NORMALIZAR RUT
+            // VALIDAR Y NORMALIZAR RUT
             // =================================================================
 
             if (campoRut) {
                 campoRut.value = formatearRut(
                     campoRut.value
+                );
+
+                if (
+                    !validarRutChileno(
+                        campoRut.value
+                    )
+                ) {
+                    evento.preventDefault();
+
+                    campoRut.setCustomValidity(
+                        "El RUT ingresado no es válido."
+                    );
+
+                    campoRut.focus();
+
+                    campoRut.reportValidity();
+
+                    return;
+                }
+
+                campoRut.setCustomValidity(
+                    ""
                 );
             }
 
