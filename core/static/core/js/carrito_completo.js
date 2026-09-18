@@ -1064,10 +1064,7 @@ document.addEventListener("DOMContentLoaded", () => {
         )
             ? `
                 <small class="carrito-resumen-producto__unitario">
-
-                    ${item.precio_formateado}
-                    c/u
-
+                    ${item.precio_formateado} CLP c/u
                 </small>
             `
             : "";
