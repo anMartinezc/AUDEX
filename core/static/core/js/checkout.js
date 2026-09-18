@@ -1,6 +1,10 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // =========================================================================
+    // ELEMENTOS PRINCIPALES
+    // =========================================================================
+
     const checkout = document.getElementById(
         "checkout"
     );
@@ -12,10 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!checkout || !formulario) {
         return;
     }
-
-    // =========================================================================
-    // ELEMENTOS GENERALES
-    // =========================================================================
 
     const botonConfirmar = document.getElementById(
         "checkoutConfirmar"
@@ -31,19 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // RUT
     // =========================================================================
     //
-    // IMPORTANTE:
+    // JavaScript solamente:
     //
-    // El RUT NO es necesario para aplicar visualmente
-    // un código de descuento.
+    // - limpia;
+    // - formatea visualmente.
     //
-    // Django será quien valide posteriormente:
+    // NO se exige el RUT para aplicar un código.
     //
-    // - que el RUT sea válido;
-    // - que el cliente no haya usado anteriormente
-    //   un código limitado por RUT;
-    // - que el descuento siga siendo válido antes
-    //   de crear definitivamente el pedido.
-    //
+    // La validación definitiva del RUT debe realizarla Django.
     // =========================================================================
 
     const campoRut = document.getElementById(
@@ -100,15 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    // =========================================================================
-    // EVENTOS DEL RUT
-    // =========================================================================
-    //
-    // JavaScript solamente lo formatea.
-    //
-    // La validación definitiva pertenece al backend.
-    // =========================================================================
-
     if (campoRut) {
         campoRut.addEventListener(
             "input",
@@ -134,6 +120,285 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
     }
+
+    // =========================================================================
+    // TELÉFONO CHILENO
+    // =========================================================================
+    //
+    // Visualmente:
+    //
+    // +56 | 912345678
+    //
+    // Django recibe solamente:
+    //
+    // 912345678
+    // =========================================================================
+
+    const telefonoInput = document.getElementById(
+        "id_telefono"
+    );
+
+    const PREFIJO_TELEFONO = "+56";
+
+    function obtenerDigitosTelefono(
+        valor
+    ) {
+        let texto = String(
+            valor || ""
+        ).trim();
+
+        if (
+            texto.startsWith(
+                PREFIJO_TELEFONO
+            )
+        ) {
+            texto = texto.substring(
+                PREFIJO_TELEFONO.length
+            );
+        }
+
+        let digitos = texto.replace(
+            /\D/g,
+            ""
+        );
+
+        /*
+         * Permitir también:
+         *
+         * 56912345678
+         */
+
+        if (
+            digitos.length === 11
+            && digitos.startsWith(
+                "56"
+            )
+        ) {
+            digitos = digitos.substring(
+                2
+            );
+        }
+
+        return digitos.substring(
+            0,
+            9
+        );
+    }
+
+    function crearControlTelefono() {
+        if (!telefonoInput) {
+            return;
+        }
+
+        if (
+            telefonoInput.closest(
+                ".checkout-telefono-control"
+            )
+        ) {
+            return;
+        }
+
+        const padre = telefonoInput.parentNode;
+
+        if (!padre) {
+            return;
+        }
+
+        const contenedorTelefono = (
+            document.createElement(
+                "div"
+            )
+        );
+
+        contenedorTelefono.className = (
+            "checkout-telefono-control"
+        );
+
+        const prefijoTelefono = (
+            document.createElement(
+                "span"
+            )
+        );
+
+        prefijoTelefono.className = (
+            "checkout-telefono-prefijo"
+        );
+
+        prefijoTelefono.textContent = (
+            PREFIJO_TELEFONO
+        );
+
+        prefijoTelefono.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        padre.insertBefore(
+            contenedorTelefono,
+            telefonoInput
+        );
+
+        contenedorTelefono.appendChild(
+            prefijoTelefono
+        );
+
+        contenedorTelefono.appendChild(
+            telefonoInput
+        );
+    }
+
+    function normalizarTelefonoChile() {
+        if (!telefonoInput) {
+            return;
+        }
+
+        telefonoInput.value = (
+            obtenerDigitosTelefono(
+                telefonoInput.value
+            )
+        );
+    }
+
+    if (telefonoInput) {
+        const numeroInicial = (
+            obtenerDigitosTelefono(
+                telefonoInput.value
+            )
+        );
+
+        crearControlTelefono();
+
+        telefonoInput.setAttribute(
+            "maxlength",
+            "9"
+        );
+
+        telefonoInput.setAttribute(
+            "inputmode",
+            "numeric"
+        );
+
+        telefonoInput.setAttribute(
+            "autocomplete",
+            "tel-national"
+        );
+
+        telefonoInput.setAttribute(
+            "pattern",
+            "[0-9]{9}"
+        );
+
+        telefonoInput.setAttribute(
+            "placeholder",
+            "912345678"
+        );
+
+        telefonoInput.setAttribute(
+            "title",
+            (
+                "Ingresa un número de "
+                + "teléfono de 9 dígitos."
+            )
+        );
+
+        telefonoInput.value = numeroInicial;
+
+        telefonoInput.addEventListener(
+            "input",
+            () => {
+                telefonoInput.setCustomValidity(
+                    ""
+                );
+
+                normalizarTelefonoChile();
+            }
+        );
+
+        telefonoInput.addEventListener(
+            "paste",
+            (evento) => {
+                evento.preventDefault();
+
+                const portapapeles = (
+                    evento.clipboardData
+                    || window.clipboardData
+                );
+
+                const textoPegado = portapapeles
+                    ? portapapeles.getData(
+                        "text"
+                    )
+                    : "";
+
+                telefonoInput.value = (
+                    obtenerDigitosTelefono(
+                        textoPegado
+                    )
+                );
+
+                telefonoInput.setCustomValidity(
+                    ""
+                );
+            }
+        );
+    }
+
+    // =========================================================================
+    // LIMPIAR EJEMPLOS VISUALES
+    // =========================================================================
+    //
+    // Conserva la lógica que anteriormente
+    // estaba dentro de checkout.html.
+    // =========================================================================
+
+    formulario
+        .querySelectorAll(
+            "input[placeholder], textarea[placeholder]"
+        )
+        .forEach(
+            (campo) => {
+                const placeholder = String(
+                    campo.getAttribute(
+                        "placeholder"
+                    )
+                    || ""
+                );
+
+                if (
+                    /antonio/i.test(
+                        placeholder
+                    )
+                ) {
+                    campo.removeAttribute(
+                        "placeholder"
+                    );
+                }
+            }
+        );
+
+    formulario
+        .querySelectorAll(
+            ".helptext, small"
+        )
+        .forEach(
+            (elemento) => {
+                const texto = String(
+                    elemento.textContent
+                    || ""
+                ).trim();
+
+                if (
+                    /^ejemplo\s*:/i.test(
+                        texto
+                    )
+                    || /ejemplo.*antonio/i.test(
+                        texto
+                    )
+                ) {
+                    elemento.remove();
+                }
+            }
+        );
 
     // =========================================================================
     // REGIONES, COMUNAS Y DIRECCIÓN
@@ -166,7 +431,6 @@ document.addEventListener("DOMContentLoaded", () => {
             comunasPorRegion = JSON.parse(
                 comunasScript.textContent
             );
-
         } catch (error) {
             console.error(
                 (
@@ -273,14 +537,139 @@ document.addEventListener("DOMContentLoaded", () => {
             comunaSelect.value = (
                 comunaSeleccionada
             );
-
         } else {
             comunaSelect.value = "";
         }
     }
 
+    function obtenerRegionActual() {
+        return String(
+            regionSelect?.value
+            || ""
+        ).trim();
+    }
+
+    function obtenerComunaActual() {
+        return String(
+            comunaSelect?.value
+            || ""
+        ).trim();
+    }
+
+    function obtenerDireccionActual() {
+        return String(
+            direccionInput?.value
+            || ""
+        ).trim();
+    }
+
+    function obtenerNumeroDireccionActual() {
+        return String(
+            numeroDireccionInput?.value
+            || ""
+        ).trim();
+    }
+
     // =========================================================================
-    // CÓDIGO DE DESCUENTO Y RESUMEN
+    // TIEMPO ESTIMADO BLUE EXPRESS
+    // =========================================================================
+
+    const tiempoEstimadoElemento = (
+        document.getElementById(
+            "checkoutTiempoEstimado"
+        )
+    );
+
+    const REGION_SANTIAGO = new Set([
+        "Metropolitana",
+    ]);
+
+    const REGIONES_CENTRO = new Set([
+        "Coquimbo",
+        "Valparaíso",
+        "O’Higgins",
+        "O'Higgins",
+        "Maule",
+        "Ñuble",
+        "Biobío",
+        "La Araucanía",
+        "Los Ríos",
+        "Los Lagos",
+    ]);
+
+    const REGIONES_EXTREMO = new Set([
+        "Arica y Parinacota",
+        "Tarapacá",
+        "Antofagasta",
+        "Atacama",
+        "Aysén",
+        "Magallanes",
+    ]);
+
+    function obtenerTiempoEntrega(
+        region
+    ) {
+        const regionNormalizada = String(
+            region || ""
+        ).trim();
+
+        if (
+            REGION_SANTIAGO.has(
+                regionNormalizada
+            )
+        ) {
+            return 48;
+        }
+
+        if (
+            REGIONES_CENTRO.has(
+                regionNormalizada
+            )
+            || REGIONES_EXTREMO.has(
+                regionNormalizada
+            )
+        ) {
+            return 72;
+        }
+
+        return null;
+    }
+
+    function actualizarTiempoEntrega() {
+        if (
+            !regionSelect
+            || !tiempoEstimadoElemento
+        ) {
+            return;
+        }
+
+        const horas = obtenerTiempoEntrega(
+            regionSelect.value
+        );
+
+        const textoNuevo = horas
+            ? `${horas} hrs`
+            : "Selecciona una región";
+
+        /*
+         * Evita mutaciones innecesarias y,
+         * por lo tanto, ciclos del MutationObserver.
+         */
+
+        if (
+            tiempoEstimadoElemento
+                .textContent
+                .trim()
+            !== textoNuevo
+        ) {
+            tiempoEstimadoElemento.textContent = (
+                textoNuevo
+            );
+        }
+    }
+
+    // =========================================================================
+    // CÓDIGO DE DESCUENTO
     // =========================================================================
 
     const inputCupon = document.getElementById(
@@ -306,6 +695,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const codigoAplicadoElemento = (
         document.getElementById(
             "checkoutCodigoAplicado"
+        )
+    );
+
+    const filaSubtotalConDescuento = (
+        document.getElementById(
+            "checkoutFilaSubtotalConDescuento"
+        )
+    );
+
+    const subtotalConDescuentoElemento = (
+        document.getElementById(
+            "checkoutSubtotalConDescuento"
+        )
+    );
+
+    const tipoDescuentoElemento = (
+        document.getElementById(
+            "checkoutTipoDescuentoAplicado"
         )
     );
 
@@ -353,8 +760,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         mensajeCupon.textContent = (
-            mensaje
-            || ""
+            mensaje || ""
         );
 
         mensajeCupon.classList.remove(
@@ -395,13 +801,175 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // =========================================================================
+    // FORMATO MONETARIO CHILENO
+    // =========================================================================
+
+    const selectoresMonetarios = [
+        ".checkout-producto__precio-original",
+        ".checkout-producto__precio-oferta",
+        ".checkout-producto__precio-normal",
+        ".checkout-producto__ahorro-unitario",
+        ".checkout-producto__precio-cada-uno",
+        ".checkout-producto__total-original",
+        ".checkout-producto__total > strong",
+        "#checkoutTotalProductosOriginal",
+        "#checkoutAhorroOfertas",
+        "#checkoutSubtotal",
+        "#checkoutDescuento",
+        "#checkoutSubtotalConDescuento",
+        "#checkoutDespacho",
+        "#checkoutTotal",
+    ];
+
+    function normalizarMilesChile(
+        texto
+    ) {
+        if (!texto) {
+            return texto;
+        }
+
+        return texto.replace(
+            /(-?\$)\s*([\d.,]+)/g,
+            (
+                coincidencia,
+                simbolo,
+                numero
+            ) => {
+                const soloDigitos = (
+                    numero.replace(
+                        /[^\d]/g,
+                        ""
+                    )
+                );
+
+                if (!soloDigitos) {
+                    return coincidencia;
+                }
+
+                const numeroEntero = parseInt(
+                    soloDigitos,
+                    10
+                );
+
+                if (
+                    Number.isNaN(
+                        numeroEntero
+                    )
+                ) {
+                    return coincidencia;
+                }
+
+                const formateado = (
+                    new Intl.NumberFormat(
+                        "es-CL",
+                        {
+                            maximumFractionDigits: 0,
+                        }
+                    ).format(
+                        numeroEntero
+                    )
+                );
+
+                return (
+                    `${simbolo}${formateado}`
+                );
+            }
+        );
+    }
+
+    function contieneMonto(
+        texto
+    ) {
+        return (
+            /-?\$\s*[\d.,]+/.test(
+                texto
+            )
+        );
+    }
+
+    function formatearElemento(
+        elemento
+    ) {
+        if (!elemento) {
+            return;
+        }
+
+        const textoOriginal = String(
+            elemento.textContent
+            || ""
+        ).trim();
+
+        if (!textoOriginal) {
+            return;
+        }
+
+        if (
+            !contieneMonto(
+                textoOriginal
+            )
+        ) {
+            return;
+        }
+
+        let textoNuevo = normalizarMilesChile(
+            textoOriginal
+        );
+
+        textoNuevo = textoNuevo.replace(
+            /\s+CLP\b/gi,
+            ""
+        );
+
+        textoNuevo = (
+            `${textoNuevo} CLP`
+        );
+
+        /*
+         * Solo modificamos el DOM si realmente
+         * cambió el contenido.
+         */
+
+        if (
+            textoNuevo !== textoOriginal
+        ) {
+            elemento.textContent = textoNuevo;
+        }
+    }
+
+    function aplicarFormatoMonetario() {
+        selectoresMonetarios.forEach(
+            (selector) => {
+                document
+                    .querySelectorAll(
+                        selector
+                    )
+                    .forEach(
+                        formatearElemento
+                    );
+            }
+        );
+    }
+
+    // =========================================================================
+    // ACTUALIZAR RESUMEN
+    // =========================================================================
+
     function actualizarResumen(
         datos
     ) {
+        if (!datos) {
+            return;
+        }
+
         const descuento = Number(
             datos.descuento
             || 0
         );
+
+        // =====================================================================
+        // FILA DESCUENTO
+        // =====================================================================
 
         if (filaDescuento) {
             filaDescuento.hidden = (
@@ -422,6 +990,10 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
+        // =====================================================================
+        // CÓDIGO APLICADO
+        // =====================================================================
+
         if (codigoAplicadoElemento) {
             codigoAplicadoElemento.textContent = (
                 datos.codigo_aplicado
@@ -429,10 +1001,60 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
-        if (despachoElemento) {
+        // =====================================================================
+        // SUBTOTAL DESPUÉS DEL DESCUENTO
+        // =====================================================================
+
+        if (filaSubtotalConDescuento) {
+            filaSubtotalConDescuento.hidden = (
+                descuento <= 0
+            );
+        }
+
+        if (
+            subtotalConDescuentoElemento
+            && datos.subtotal_con_descuento_formateado
+        ) {
+            subtotalConDescuentoElemento.textContent = (
+                datos.subtotal_con_descuento_formateado
+            );
+        }
+
+        // =====================================================================
+        // TIPO DE DESCUENTO
+        // =====================================================================
+
+        if (tipoDescuentoElemento) {
+            const porcentaje = Number(
+                datos.porcentaje_descuento
+                || 0
+            );
+
+            if (descuento <= 0) {
+                tipoDescuentoElemento.textContent = "";
+
+            } else if (porcentaje > 0) {
+                tipoDescuentoElemento.textContent = (
+                    `${porcentaje}% aplicado al subtotal`
+                );
+
+            } else {
+                tipoDescuentoElemento.textContent = (
+                    "Descuento de monto fijo"
+                );
+            }
+        }
+
+        // =====================================================================
+        // DESPACHO
+        // =====================================================================
+
+        if (
+            despachoElemento
+            && datos.despacho_formateado
+        ) {
             despachoElemento.textContent = (
                 datos.despacho_formateado
-                || "$0"
             );
 
             despachoElemento.removeAttribute(
@@ -440,12 +1062,20 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
-        if (totalElemento) {
+        // =====================================================================
+        // TOTAL
+        // =====================================================================
+
+        if (
+            totalElemento
+            && datos.total_formateado
+        ) {
             totalElemento.textContent = (
                 datos.total_formateado
-                || "$0"
             );
         }
+
+        aplicarFormatoMonetario();
     }
 
     // =========================================================================
@@ -457,46 +1087,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const RETARDO_COTIZACION_ENVIO = 900;
 
-    function obtenerRegionActual() {
-        return String(
-            regionSelect?.value
-            || ""
-        ).trim();
-    }
-
-    function obtenerComunaActual() {
-        return String(
-            comunaSelect?.value
-            || ""
-        ).trim();
-    }
-
-    function obtenerDireccionActual() {
-        return String(
-            direccionInput?.value
-            || ""
-        ).trim();
-    }
-
-    function obtenerNumeroDireccionActual() {
-        return String(
-            numeroDireccionInput?.value
-            || ""
-        ).trim();
-    }
-
-    // =========================================================================
-    // ¿SE PUEDE COTIZAR?
-    // =========================================================================
-    //
-    // Para Blue Express basta con conocer la región.
-    //
-    // Comuna, dirección y número siguen siendo
-    // obligatorios para finalizar la compra.
-    // =========================================================================
-
     function despachoListoParaCotizar() {
         const region = obtenerRegionActual();
+
+        /*
+         * La tarifa depende de la región/zona.
+         *
+         * La comuna, calle y número siguen siendo
+         * obligatorios para finalizar el checkout,
+         * pero no para visualizar la tarifa.
+         */
 
         return Boolean(
             region
@@ -549,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // CONSTRUIR DATOS DEL RESUMEN
+    // CONSTRUIR DATOS PARA AJAX
     // =========================================================================
 
     function construirDatosResumen() {
@@ -563,17 +1163,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // =====================================================================
-        // RUT
+        // RUT OPCIONAL
         // =====================================================================
         //
-        // El RUT se envía solamente si existe.
+        // MUY IMPORTANTE:
         //
-        // No es obligatorio para solicitar el resumen
-        // ni para aplicar visualmente el descuento.
+        // Un RUT vacío NO bloquea la solicitud.
         //
-        // Cuando el usuario lo complete, Django podrá
-        // utilizarlo para comprobar si ese código ya
-        // fue utilizado anteriormente por ese RUT.
+        // El usuario puede aplicar el código antes
+        // de completar sus datos personales.
         // =====================================================================
 
         if (campoRut) {
@@ -590,6 +1188,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     )
                     : ""
             );
+
         } else {
             cuerpo.set(
                 "rut",
@@ -607,6 +1206,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 normalizarCodigo(
                     inputCupon.value
                 )
+            );
+        } else {
+            cuerpo.set(
+                "codigo_descuento",
+                ""
             );
         }
 
@@ -638,7 +1242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // SOLICITAR RESUMEN AL SERVIDOR
+    // SOLICITAR RESUMEN
     // =========================================================================
 
     async function solicitarResumenCheckout(
@@ -674,7 +1278,39 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         );
 
-        const datos = await respuesta.json();
+        /*
+         * Primero leemos como texto para poder
+         * mostrar un error más claro si Django
+         * devuelve HTML inesperadamente.
+         */
+
+        const textoRespuesta = await respuesta.text();
+
+        let datos;
+
+        try {
+            datos = textoRespuesta
+                ? JSON.parse(
+                    textoRespuesta
+                )
+                : {};
+
+        } catch (error) {
+            console.error(
+                (
+                    "El endpoint del resumen "
+                    + "no devolvió JSON válido."
+                ),
+                textoRespuesta
+            );
+
+            throw new Error(
+                (
+                    "El servidor no entregó "
+                    + "una respuesta válida."
+                )
+            );
+        }
 
         return {
             respuesta,
@@ -701,7 +1337,9 @@ document.addEventListener("DOMContentLoaded", () => {
             solicitudEnvioActual.abort();
         }
 
-        const controlador = new AbortController();
+        const controlador = (
+            new AbortController()
+        );
 
         solicitudEnvioActual = controlador;
 
@@ -719,11 +1357,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 !respuesta.ok
                 || datos.ok === false
             ) {
+                /*
+                 * MUY IMPORTANTE:
+                 *
+                 * NO utilizamos datos.mensaje aquí.
+                 *
+                 * datos.mensaje puede ser:
+                 *
+                 * "Ingresa tu RUT..."
+                 * "Código inválido..."
+                 *
+                 * y ese mensaje NO debe aparecer
+                 * dentro de la fila "Despacho".
+                 */
+
                 if (despachoElemento) {
                     despachoElemento.textContent = (
                         datos.mensaje_despacho
-                        || datos.mensaje
-                        || "No disponible"
+                        || (
+                            despachoListoParaCotizar()
+                                ? (
+                                    "No fue posible "
+                                    + "calcular el despacho"
+                                )
+                                : (
+                                    "Completa los "
+                                    + "datos de envío"
+                                )
+                        )
                     );
 
                     despachoElemento.removeAttribute(
@@ -737,6 +1398,8 @@ document.addEventListener("DOMContentLoaded", () => {
             actualizarResumen(
                 datos
             );
+
+            actualizarTiempoEntrega();
 
         } catch (error) {
             if (error.name === "AbortError") {
@@ -759,6 +1422,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         } finally {
+            /*
+             * Evita que una solicitud antigua
+             * borre la referencia de una nueva.
+             */
+
             if (
                 solicitudEnvioActual
                 === controlador
@@ -810,14 +1478,36 @@ document.addEventListener("DOMContentLoaded", () => {
         && comunaSelect
         && comunasScript
     ) {
+        const regionInicial = (
+            obtenerRegionActual()
+            || String(
+                checkout.dataset.regionSeleccionada
+                || ""
+            ).trim()
+        );
+
         const comunaInicial = (
-            comunaSelect.value
-            || ""
-        ).trim();
+            String(
+                comunaSelect.value
+                || checkout.dataset.comunaSeleccionada
+                || ""
+            ).trim()
+        );
 
         cargarComunas(
-            regionSelect.value,
+            regionInicial,
             comunaInicial
+        );
+
+        if (
+            regionInicial
+            && !regionSelect.value
+        ) {
+            regionSelect.value = regionInicial;
+        }
+
+        ultimaRegionAutocompletada = (
+            obtenerRegionActual()
         );
 
         regionSelect.addEventListener(
@@ -834,6 +1524,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     obtenerRegionActual()
                 );
 
+                actualizarTiempoEntrega();
+
                 if (regionSelect.value) {
                     programarCotizacionEnvio();
 
@@ -848,17 +1540,15 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    // =========================================================================
-    // COMUNA
-    // =========================================================================
-
     if (comunaSelect) {
         comunaSelect.addEventListener(
             "change",
             () => {
                 cancelarCotizacionPendiente();
 
-                if (obtenerRegionActual()) {
+                if (
+                    obtenerRegionActual()
+                ) {
                     programarCotizacionEnvio();
 
                 } else {
@@ -876,7 +1566,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // CÓDIGO DE DESCUENTO
+    // APLICAR CÓDIGO DE DESCUENTO
     // =========================================================================
 
     async function aplicarCupon(
@@ -886,16 +1576,17 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(
                 (
                     "No existe el input "
-                    + "#id_codigo_descuento. "
-                    + "Revisa CheckoutForm y "
-                    + "checkout.html."
+                    + "#id_codigo_descuento."
                 )
             );
 
             return;
         }
 
-        if (!botonCupon || !csrfInput) {
+        if (
+            !botonCupon
+            || !csrfInput
+        ) {
             return;
         }
 
@@ -920,28 +1611,18 @@ document.addEventListener("DOMContentLoaded", () => {
         inputCupon.value = codigo;
 
         // =====================================================================
-        // ÚNICA VALIDACIÓN PREVIA:
+        // ÚNICA VALIDACIÓN DEL FRONTEND:
         // DEBE EXISTIR UN CÓDIGO
         // =====================================================================
         //
-        // El RUT NO es obligatorio aquí.
+        // NO pedimos RUT aquí.
         //
-        // El usuario puede:
-        //
-        // 1. escribir AUDEX15;
-        // 2. pulsar Aplicar;
-        // 3. ver el descuento;
-        // 4. completar después sus datos personales;
-        // 5. Django validará el RUT y el uso anterior
-        //    del código antes de aceptar el pedido.
+        // El RUT podrá estar completamente vacío.
         // =====================================================================
 
         if (!codigo) {
             mostrarMensajeCupon(
-                (
-                    "Ingresa un código "
-                    + "de descuento."
-                ),
+                "Ingresa un código de descuento.",
                 "error"
             );
 
@@ -949,10 +1630,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             return;
         }
-
-        // =====================================================================
-        // VALIDAR CÓDIGO CON EL SERVIDOR
-        // =====================================================================
 
         establecerEstadoBotonCupon(
             true
@@ -968,9 +1645,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 datos,
             } = await solicitarResumenCheckout();
 
-            actualizarResumen(
+            /*
+             * Solo actualizamos los montos si el
+             * servidor entregó información utilizable.
+             */
+
+            if (
                 datos
-            );
+                && typeof datos === "object"
+            ) {
+                actualizarResumen(
+                    datos
+                );
+            }
 
             if (
                 !respuesta.ok
@@ -979,6 +1666,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 mostrarMensajeCupon(
                     (
                         datos.mensaje
+                        || datos.error_descuento
                         || (
                             "El código no pudo "
                             + "aplicarse."
@@ -1006,8 +1694,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            if (
+                Number(
+                    datos.descuento
+                    || 0
+                ) > 0
+            ) {
+                mostrarMensajeCupon(
+                    (
+                        datos.mensaje
+                        || "Código aplicado correctamente."
+                    ),
+                    "exito"
+                );
+
+                return;
+            }
+
             mostrarMensajeCupon(
-                "No hay un código aplicado."
+                (
+                    datos.mensaje
+                    || "No hay un código aplicado."
+                )
             );
 
         } catch (error) {
@@ -1066,7 +1774,9 @@ document.addEventListener("DOMContentLoaded", () => {
         inputCupon.addEventListener(
             "keydown",
             (evento) => {
-                if (evento.key !== "Enter") {
+                if (
+                    evento.key !== "Enter"
+                ) {
                     return;
                 }
 
@@ -1102,10 +1812,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         return;
                     }
 
-                    const codigo = (
-                        normalizarCodigo(
-                            boton.dataset.codigo
-                        )
+                    const codigo = normalizarCodigo(
+                        boton.dataset.codigo
                     );
 
                     if (!codigo) {
@@ -1123,7 +1831,11 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // =========================================================================
-    // DETECTAR AUTOCOMPLETADO DEL NAVEGADOR
+    // AUTOCOMPLETADO DEL NAVEGADOR
+    // =========================================================================
+    //
+    // Chrome y Safari pueden completar los campos
+    // después de DOMContentLoaded sin lanzar change.
     // =========================================================================
 
     function sincronizarAutocompletadoEnvio() {
@@ -1142,7 +1854,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (
             regionSelect
             && comunaSelect
-            && regionActual !== ultimaRegionAutocompletada
+            && regionActual
+                !== ultimaRegionAutocompletada
         ) {
             cargarComunas(
                 regionActual,
@@ -1153,6 +1866,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 regionActual
             );
         }
+
+        actualizarTiempoEntrega();
 
         programarCotizacionEnvio();
     }
@@ -1171,10 +1886,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     );
 
-    // =========================================================================
-    // VOLVER ATRÁS / RESTAURACIÓN DEL NAVEGADOR
-    // =========================================================================
-
     window.addEventListener(
         "pageshow",
         () => {
@@ -1184,17 +1895,6 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
     );
-
-    // =========================================================================
-    // ESTADO INICIAL DEL DESPACHO
-    // =========================================================================
-
-    if (despachoListoParaCotizar()) {
-        programarCotizacionEnvio();
-
-    } else {
-        mostrarEnvioPendiente();
-    }
 
     // =========================================================================
     // MÉTODOS DE PAGO
@@ -1230,6 +1930,62 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // =========================================================================
+    // ESTADO INICIAL
+    // =========================================================================
+
+    actualizarTiempoEntrega();
+
+    aplicarFormatoMonetario();
+
+    if (
+        despachoListoParaCotizar()
+    ) {
+        programarCotizacionEnvio();
+
+    } else {
+        mostrarEnvioPendiente();
+    }
+
+    // =========================================================================
+    // MUTATION OBSERVER
+    // =========================================================================
+    //
+    // Mantiene el formato CLP después de actualizaciones
+    // AJAX del resumen.
+    // =========================================================================
+
+    let formatoPendiente = false;
+
+    const observer = new MutationObserver(
+        () => {
+            if (formatoPendiente) {
+                return;
+            }
+
+            formatoPendiente = true;
+
+            window.requestAnimationFrame(
+                () => {
+                    aplicarFormatoMonetario();
+
+                    actualizarTiempoEntrega();
+
+                    formatoPendiente = false;
+                }
+            );
+        }
+    );
+
+    observer.observe(
+        checkout,
+        {
+            childList: true,
+            subtree: true,
+            characterData: true,
+        }
+    );
+
+    // =========================================================================
     // ENVÍO FINAL DEL FORMULARIO
     // =========================================================================
 
@@ -1237,7 +1993,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "submit",
         (evento) => {
             // =================================================================
-            // NORMALIZAR CÓDIGO
+            // CÓDIGO
             // =================================================================
 
             if (inputCupon) {
@@ -1249,13 +2005,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // NORMALIZAR RUT
+            // RUT
             // =================================================================
             //
-            // No comprobamos matemáticamente el RUT aquí.
+            // Solo formateamos.
             //
-            // Django / CheckoutForm hará la validación
-            // definitiva del RUT.
+            // Django valida su autenticidad.
             // =================================================================
 
             if (campoRut) {
@@ -1265,7 +2020,53 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // REGIÓN OBLIGATORIA
+            // TELÉFONO
+            // =================================================================
+
+            if (telefonoInput) {
+                const digitosTelefono = (
+                    obtenerDigitosTelefono(
+                        telefonoInput.value
+                    )
+                );
+
+                if (
+                    digitosTelefono.length
+                    !== 9
+                ) {
+                    evento.preventDefault();
+
+                    telefonoInput.setCustomValidity(
+                        (
+                            "Ingresa un número de "
+                            + "teléfono válido de "
+                            + "9 dígitos."
+                        )
+                    );
+
+                    telefonoInput.reportValidity();
+
+                    telefonoInput.focus();
+
+                    return;
+                }
+
+                telefonoInput.setCustomValidity(
+                    ""
+                );
+
+                /*
+                 * Django recibe solamente
+                 * los 9 dígitos nacionales.
+                 */
+
+                telefonoInput.value = (
+                    digitosTelefono
+                );
+            }
+
+            // =================================================================
+            // REGIÓN
             // =================================================================
 
             if (
@@ -1280,7 +2081,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // COMUNA OBLIGATORIA
+            // COMUNA
             // =================================================================
 
             if (
@@ -1298,7 +2099,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // DIRECCIÓN OBLIGATORIA
+            // DIRECCIÓN
             // =================================================================
 
             if (
@@ -1316,7 +2117,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // NÚMERO DE DIRECCIÓN OBLIGATORIO
+            // NÚMERO
             // =================================================================
 
             if (
@@ -1336,16 +2137,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // =================================================================
             // VALIDACIÓN HTML
             // =================================================================
-            //
-            // Si el campo RUT tiene required en CheckoutForm,
-            // aquí seguirá siendo obligatorio para FINALIZAR
-            // la compra.
-            //
-            // Lo que ya no ocurre es que sea obligatorio
-            // para utilizar el botón "Aplicar".
-            // =================================================================
 
-            if (!formulario.checkValidity()) {
+            if (
+                !formulario.checkValidity()
+            ) {
                 evento.preventDefault();
 
                 formulario.reportValidity();
@@ -1354,7 +2149,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // =================================================================
-            // ESTADO DE PROCESAMIENTO
+            // PROCESANDO PEDIDO
             // =================================================================
 
             if (!botonConfirmar) {
