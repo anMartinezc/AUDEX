@@ -150,7 +150,6 @@ Finalizar compra | Audex
         margin-top: 16px;
 
         display: inline-flex;
-
         align-items: center;
 
         gap: 6px;
@@ -193,13 +192,19 @@ Finalizar compra | Audex
                 Inicio
             </a>
 
-            <i class="bi bi-chevron-right"></i>
+            <i
+                class="bi bi-chevron-right"
+                aria-hidden="true"
+            ></i>
 
             <a href="{% url 'core:carrito_completo' %}">
                 Carrito
             </a>
 
-            <i class="bi bi-chevron-right"></i>
+            <i
+                class="bi bi-chevron-right"
+                aria-hidden="true"
+            ></i>
 
             <span>
                 Checkout
@@ -237,7 +242,10 @@ Finalizar compra | Audex
                 class="checkout-volver"
             >
 
-                <i class="bi bi-arrow-left"></i>
+                <i
+                    class="bi bi-arrow-left"
+                    aria-hidden="true"
+                ></i>
 
                 Volver al carrito
 
@@ -260,7 +268,12 @@ Finalizar compra | Audex
             >
 
                 <span>
-                    <i class="bi bi-check-lg"></i>
+
+                    <i
+                        class="bi bi-check-lg"
+                        aria-hidden="true"
+                    ></i>
+
                 </span>
 
                 <div>
@@ -362,7 +375,10 @@ Finalizar compra | Audex
 
                     <div class="checkout-error-general">
 
-                        <i class="bi bi-exclamation-circle"></i>
+                        <i
+                            class="bi bi-exclamation-circle"
+                            aria-hidden="true"
+                        ></i>
 
                         <div>
 
@@ -390,7 +406,12 @@ Finalizar compra | Audex
                     <div class="checkout-bloque__titulo">
 
                         <div>
-                            <i class="bi bi-person"></i>
+
+                            <i
+                                class="bi bi-person"
+                                aria-hidden="true"
+                            ></i>
+
                         </div>
 
                         <div>
@@ -445,7 +466,12 @@ Finalizar compra | Audex
                     <div class="checkout-bloque__titulo">
 
                         <div>
-                            <i class="bi bi-geo-alt"></i>
+
+                            <i
+                                class="bi bi-geo-alt"
+                                aria-hidden="true"
+                            ></i>
+
                         </div>
 
                         <div>
@@ -512,7 +538,12 @@ Finalizar compra | Audex
                     <div class="checkout-bloque__titulo">
 
                         <div>
-                            <i class="bi bi-credit-card"></i>
+
+                            <i
+                                class="bi bi-credit-card"
+                                aria-hidden="true"
+                            ></i>
+
                         </div>
 
                         <div>
@@ -549,11 +580,17 @@ Finalizar compra | Audex
 
                                         {% if opcion.data.value == "webpay" %}
 
-                                            <i class="bi bi-credit-card"></i>
+                                            <i
+                                                class="bi bi-credit-card"
+                                                aria-hidden="true"
+                                            ></i>
 
                                         {% elif opcion.data.value == "mercadopago" %}
 
-                                            <i class="bi bi-wallet2"></i>
+                                            <i
+                                                class="bi bi-wallet2"
+                                                aria-hidden="true"
+                                            ></i>
 
                                         {% endif %}
 
@@ -583,7 +620,10 @@ Finalizar compra | Audex
                                     </span>
 
 
-                                    <i class="bi bi-check-circle-fill"></i>
+                                    <i
+                                        class="bi bi-check-circle-fill"
+                                        aria-hidden="true"
+                                    ></i>
 
                                 </label>
 
@@ -605,7 +645,12 @@ Finalizar compra | Audex
                     <div class="checkout-bloque__titulo">
 
                         <div>
-                            <i class="bi bi-chat-left-text"></i>
+
+                            <i
+                                class="bi bi-chat-left-text"
+                                aria-hidden="true"
+                            ></i>
+
                         </div>
 
                         <div>
@@ -674,6 +719,8 @@ Finalizar compra | Audex
                         <article class="checkout-producto">
 
 
+                            <!-- IMAGEN -->
+
                             <div class="checkout-producto__imagen">
 
                                 {% if item.imagen %}
@@ -706,6 +753,8 @@ Finalizar compra | Audex
 
                             </div>
 
+
+                            <!-- INFORMACIÓN -->
 
                             <div class="checkout-producto__informacion">
 
@@ -740,7 +789,9 @@ Finalizar compra | Audex
                                         {% if item.porcentaje_descuento %}
 
                                             <span class="checkout-producto__badge-descuento">
+
                                                 -{{ item.porcentaje_descuento }}%
+
                                             </span>
 
                                         {% endif %}
@@ -761,7 +812,9 @@ Finalizar compra | Audex
                                     {% else %}
 
                                         <strong class="checkout-producto__precio-normal">
+
                                             {{ item.precio_formateado }} CLP
+
                                         </strong>
 
                                     {% endif %}
@@ -773,8 +826,7 @@ Finalizar compra | Audex
 
                                     <small class="checkout-producto__precio-cada-uno">
 
-                                        {{ item.precio_formateado }} CLP
-                                        c/u
+                                        {{ item.precio_formateado }} CLP c/u
 
                                     </small>
 
@@ -783,18 +835,25 @@ Finalizar compra | Audex
                             </div>
 
 
+                            <!-- TOTAL PRODUCTO -->
+
                             <div class="checkout-producto__total">
 
                                 {% if item.en_oferta %}
 
                                     <span class="checkout-producto__total-original">
+
                                         {{ item.total_original_formateado }} CLP
+
                                     </span>
 
                                 {% endif %}
 
+
                                 <strong>
+
                                     {{ item.total_formateado }} CLP
+
                                 </strong>
 
                             </div>
@@ -813,7 +872,9 @@ Finalizar compra | Audex
                 <div class="checkout-cupon">
 
                     <label for="id_codigo_descuento">
+
                         Código de descuento
+
                     </label>
 
 
@@ -821,7 +882,9 @@ Finalizar compra | Audex
 
                         <input
                             type="text"
+
                             name="codigo_descuento"
+
                             id="id_codigo_descuento"
 
                             value="{{ form.codigo_descuento.value|default_if_none:'' }}"
@@ -888,6 +951,7 @@ Finalizar compra | Audex
 
                             {{ resumen.error_descuento }}
 
+
                         {% elif resumen.tiene_descuento_aplicado %}
 
                             Código
@@ -897,6 +961,7 @@ Finalizar compra | Audex
                             </strong>
 
                             aplicado:
+
 
                             {% if resumen.porcentaje_descuento > 0 %}
 
@@ -910,6 +975,7 @@ Finalizar compra | Audex
 
                             {% endif %}
 
+
                         {% else %}
 
                             Ingresa un código si dispones de uno.
@@ -922,7 +988,9 @@ Finalizar compra | Audex
                     {% for error in form.codigo_descuento.errors %}
 
                         <span class="checkout-error-campo">
+
                             {{ error }}
+
                         </span>
 
                     {% endfor %}
@@ -1027,92 +1095,91 @@ Finalizar compra | Audex
 
 
                     <!-- =========================================
-                         TOTAL PRODUCTOS
-                         SOLO SI EXISTEN OFERTAS
+                         DESCUENTOS PROPIOS DE PRODUCTOS
+
+                         IMPORTANTE:
+
+                         Solo mostramos:
+                         - Total productos
+                         - Ahorro en productos
+
+                         cuando realmente existe una oferta.
+
+                         Sin ofertas:
+                         solo mostramos Subtotal.
                     ========================================== -->
 
-                    <div
-                        class="
-                            checkout-valores__fila
-                            checkout-valores__fila--productos
-                        "
-                        id="checkoutFilaTotalProductos"
-
-                        {% if not carrito.tiene_ofertas %}
-                            hidden
-                        {% endif %}
-                    >
-
-                        <div>
-
-                            <span>
-                                Total productos
-                            </span>
-
-                            <small>
-                                Precio normal sin descuentos
-                            </small>
-
-                        </div>
+                    {% if carrito.tiene_ofertas %}
 
 
-                        <strong id="checkoutTotalProductosOriginal">
+                        <!-- TOTAL PRODUCTOS PRECIO LISTA -->
 
-                            {% if carrito.tiene_ofertas %}
+                        <div
+                            class="
+                                checkout-valores__fila
+                                checkout-valores__fila--productos
+                            "
+                            id="checkoutFilaTotalProductos"
+                        >
+
+                            <div>
+
+                                <span>
+                                    Total productos
+                                </span>
+
+                                <small>
+                                    Precio normal sin descuentos
+                                </small>
+
+                            </div>
+
+
+                            <strong id="checkoutTotalProductosOriginal">
 
                                 {{ carrito.subtotal_precio_lista_formateado }} CLP
 
-                            {% endif %}
-
-                        </strong>
-
-                    </div>
-
-
-                    <!-- =========================================
-                         AHORRO EN PRODUCTOS
-                         SOLO SI EXISTEN OFERTAS
-                    ========================================== -->
-
-                    <div
-                        class="
-                            checkout-valores__fila
-                            checkout-valores__fila--descuento
-                        "
-                        id="checkoutFilaAhorroOfertas"
-
-                        {% if not carrito.tiene_ofertas %}
-                            hidden
-                        {% endif %}
-                    >
-
-                        <div>
-
-                            <span>
-                                Ahorro en productos
-                            </span>
-
-                            <small>
-                                Descuentos incluidos en las ofertas
-                            </small>
+                            </strong>
 
                         </div>
 
 
-                        <strong
-                            class="checkout-valor-descuento"
-                            id="checkoutAhorroOfertas"
+                        <!-- AHORRO OFERTAS -->
+
+                        <div
+                            class="
+                                checkout-valores__fila
+                                checkout-valores__fila--descuento
+                            "
+                            id="checkoutFilaAhorroOfertas"
                         >
 
-                            {% if carrito.tiene_ofertas %}
+                            <div>
+
+                                <span>
+                                    Ahorro en productos
+                                </span>
+
+                                <small>
+                                    Descuentos incluidos en las ofertas
+                                </small>
+
+                            </div>
+
+
+                            <strong
+                                class="checkout-valor-descuento"
+                                id="checkoutAhorroOfertas"
+                            >
 
                                 -{{ carrito.ahorro_ofertas_formateado }} CLP
 
-                            {% endif %}
+                            </strong>
 
-                        </strong>
+                        </div>
 
-                    </div>
+
+                    {% endif %}
 
 
                     <!-- =========================================
@@ -1231,7 +1298,7 @@ Finalizar compra | Audex
 
 
                     <!-- =========================================
-                         SUBTOTAL CON CUPÓN
+                         SUBTOTAL DESPUÉS DEL CUPÓN
                     ========================================== -->
 
                     <div
@@ -1521,7 +1588,7 @@ Finalizar compra | Audex
                             </h4>
 
                             <p>
-                                Los envíos se realizan a través de
+                                Los envíos se realizan mediante
                                 Blue Express.
 
                                 Los plazos estimados de entrega
@@ -1585,7 +1652,10 @@ Finalizar compra | Audex
 
                                 Abrir página completa
 
-                                <i class="bi bi-box-arrow-up-right"></i>
+                                <i
+                                    class="bi bi-box-arrow-up-right"
+                                    aria-hidden="true"
+                                ></i>
 
                             </a>
 
@@ -1597,7 +1667,9 @@ Finalizar compra | Audex
                     {% for error in form.aceptar_terminos.errors %}
 
                         <span class="checkout-error-campo">
+
                             {{ error }}
+
                         </span>
 
                     {% endfor %}
@@ -1659,7 +1731,7 @@ Finalizar compra | Audex
 {% block extra_js %}
 
 <script
-    src="{% static 'core/js/checkout.js' %}?v=14"
+    src="{% static 'core/js/checkout.js' %}?v=15"
 ></script>
 
 {% endblock %}
