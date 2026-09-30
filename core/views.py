@@ -8992,9 +8992,6 @@ def actualizar_pedido_desde_pago(
 
 
 
-@login_required(
-    login_url="core:login"
-)
 @require_GET
 def comprobante_pago(
     request,
@@ -9016,12 +9013,52 @@ def comprobante_pago(
     # SEGURIDAD
     # =========================================================
 
+    autorizado = False
+
+    # ---------------------------------------------------------
+    # ADMINISTRADOR
+    # ---------------------------------------------------------
+
     if (
-        pedido.usuario_id
-        and pedido.usuario_id != request.user.pk
-        and not request.user.is_staff
+        request.user.is_authenticated
+        and request.user.is_staff
     ):
-        raise PermissionDenied
+        autorizado = True
+
+    # ---------------------------------------------------------
+    # PEDIDO ASOCIADO A UNA CUENTA
+    # ---------------------------------------------------------
+
+    elif pedido.usuario_id:
+
+        if (
+            request.user.is_authenticated
+            and pedido.usuario_id == request.user.pk
+        ):
+            autorizado = True
+
+    # ---------------------------------------------------------
+    # COMPRA COMO INVITADO
+    # ---------------------------------------------------------
+
+    else:
+
+        pedidos_autorizados = request.session.get(
+            "pedidos_comprobante_autorizados",
+            [],
+        )
+
+        if pedido.numero in pedidos_autorizados:
+            autorizado = True
+
+    # ---------------------------------------------------------
+    # SIN AUTORIZACIÓN
+    # ---------------------------------------------------------
+
+    if not autorizado:
+        raise PermissionDenied(
+            "No tienes autorización para ver este comprobante."
+        )
 
     # =========================================================
     # PEDIDO DEBE ESTAR APROBADO
@@ -9041,9 +9078,7 @@ def comprobante_pago(
     # =========================================================
 
     try:
-        comprobante = (
-            pedido.comprobante_pago
-        )
+        comprobante = pedido.comprobante_pago
 
     except ComprobantePago.DoesNotExist:
         comprobante = None
@@ -9053,6 +9088,10 @@ def comprobante_pago(
             "El comprobante de este pedido todavía no está disponible."
         )
 
+    # =========================================================
+    # RENDER
+    # =========================================================
+
     return render(
         request,
         "core/cuenta/comprobante_pago.html",
@@ -9061,8 +9100,6 @@ def comprobante_pago(
             "comprobante": comprobante,
         },
     )
-
-
 
 
 

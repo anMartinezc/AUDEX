@@ -1,11 +1,9 @@
 {% extends 'core/base.html' %}
 {% load static humanize %}
 
-
 {% block title %}
 Gestión de pedidos | Audex
 {% endblock %}
-
 
 {% block extra_css %}
 
@@ -21,448 +19,738 @@ Gestión de pedidos | Audex
 
 {% endblock %}
 
-
 {% block content %}
 
 <section class="gestion-pedidos">
 
-    <div class="contenedor gestion-pedidos__contenedor">
+<div class="contenedor gestion-pedidos__contenedor">
 
 
-        <!-- =====================================================
-             CABECERA
-        ====================================================== -->
+    <!-- =====================================================
+         CABECERA
+    ====================================================== -->
 
-        <header class="gestion-cabecera">
+    <header class="gestion-cabecera">
 
-            <div>
+        <div>
 
-                <span class="etiqueta-seccion">
+            <span class="etiqueta-seccion">
 
-                    <i class="bi bi-kanban"></i>
+                <i class="bi bi-kanban"></i>
 
-                    Administración
+                Administración
 
-                </span>
-
-
-                <h1>
-                    Gestión de pedidos
-                </h1>
+            </span>
 
 
-                <p>
-                    Controla las ventas confirmadas desde
-                    la aprobación del pago hasta la entrega.
-                </p>
+            <h1>
+                Gestión de pedidos
+            </h1>
+
+
+            <p>
+                Controla las ventas confirmadas desde
+                la aprobación del pago hasta la entrega.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             BUSCADOR
+        ================================================== -->
+
+        <form
+            method="get"
+            class="gestion-buscador"
+        >
+
+            {% if bandeja_actual %}
+
+                <input
+                    type="hidden"
+                    name="bandeja"
+                    value="{{ bandeja_actual }}"
+                >
+
+            {% endif %}
+
+
+            <i class="bi bi-search"></i>
+
+
+            <input
+                type="search"
+                name="q"
+                value="{{ busqueda }}"
+                placeholder="Pedido, cliente, RUT o correo"
+                autocomplete="off"
+            >
+
+
+            <button
+                type="submit"
+                aria-label="Buscar pedidos"
+            >
+                Buscar
+            </button>
+
+        </form>
+
+    </header>
+
+
+    <!-- =====================================================
+         RESUMEN OPERATIVO
+    ====================================================== -->
+
+    <div class="gestion-resumen">
+
+
+        <!-- NUEVOS -->
+
+        <a
+            href="{% url 'core:panel_pedidos' %}?bandeja=nuevos"
+            class="
+                gestion-resumen__tarjeta
+                {% if bandeja_actual == 'nuevos' %}
+                    gestion-resumen__tarjeta--activa
+                {% endif %}
+            "
+        >
+
+            <span>
+                Nuevos pagados
+            </span>
+
+            <strong>
+                {{ total_principal }}
+            </strong>
+
+        </a>
+
+
+        <!-- OPERACIÓN -->
+
+        <a
+            href="{% url 'core:panel_pedidos' %}?bandeja=operacion"
+            class="
+                gestion-resumen__tarjeta
+                {% if bandeja_actual == 'operacion' %}
+                    gestion-resumen__tarjeta--activa
+                {% endif %}
+            "
+        >
+
+            <span>
+                En operación
+            </span>
+
+            <strong>
+                {{ total_operacion }}
+            </strong>
+
+        </a>
+
+
+        <!-- DESPACHO -->
+
+        <a
+            href="{% url 'core:panel_pedidos' %}?bandeja=despacho"
+            class="
+                gestion-resumen__tarjeta
+                {% if bandeja_actual == 'despacho' %}
+                    gestion-resumen__tarjeta--activa
+                {% endif %}
+            "
+        >
+
+            <span>
+                En despacho
+            </span>
+
+            <strong>
+                {{ total_despacho }}
+            </strong>
+
+        </a>
+
+
+        <!-- FINALIZADOS -->
+
+        <a
+            href="{% url 'core:panel_pedidos' %}?bandeja=finalizados"
+            class="
+                gestion-resumen__tarjeta
+                {% if bandeja_actual == 'finalizados' %}
+                    gestion-resumen__tarjeta--activa
+                {% endif %}
+            "
+        >
+
+            <span>
+                Finalizados
+            </span>
+
+            <strong>
+                {{ total_cerrados }}
+            </strong>
+
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         ALERTAS ADMINISTRATIVAS
+    ====================================================== -->
+
+    <div class="gestion-alertas">
+
+
+        <!-- =================================================
+             PAGOS PENDIENTES - ÚLTIMAS 48 HORAS
+        ================================================== -->
+
+        {% if total_pendientes_recientes > 0 %}
+
+            <a
+                href="{% url 'core:panel_pedidos' %}?bandeja=pendientes"
+                class="
+                    gestion-pendientes
+                    gestion-pendientes--atencion
+                "
+            >
+
+                <div class="gestion-pendientes__icono">
+
+                    <i class="bi bi-clock-history"></i>
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+
+                        {{ total_pendientes_recientes }}
+
+                        pago{{ total_pendientes_recientes|pluralize }}
+
+                        pendiente{{ total_pendientes_recientes|pluralize }}
+
+                    </strong>
+
+
+                    <span>
+                        Pedido{{ total_pendientes_recientes|pluralize }}
+                        pendiente{{ total_pendientes_recientes|pluralize }}
+                        de pago creado{{ total_pendientes_recientes|pluralize }}
+                        durante las últimas 48 horas.
+                    </span>
+
+                </div>
+
+
+                <i class="bi bi-arrow-right"></i>
+
+            </a>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         BANDEJA COMPLETA
+    ====================================================== -->
+
+    {% if mostrar_bandeja %}
+
+        <section class="gestion-listado">
+
+
+            <!-- =================================================
+                 CABECERA BANDEJA
+            ================================================== -->
+
+            <header class="gestion-listado__cabecera">
+
+                <div>
+
+                    <a
+                        href="{% url 'core:panel_pedidos' %}"
+                        class="gestion-volver"
+                    >
+
+                        <i class="bi bi-arrow-left"></i>
+
+                        Volver al tablero
+
+                    </a>
+
+
+                    <h2>
+                        {{ titulo_bandeja }}
+                    </h2>
+
+
+                    <p>
+
+                        {{ page_obj.paginator.count }}
+
+                        pedido{{ page_obj.paginator.count|pluralize }}
+
+                        en esta bandeja.
+
+                    </p>
+
+                </div>
+
+            </header>
+
+
+            <!-- =================================================
+                 PEDIDOS
+            ================================================== -->
+
+            <div class="gestion-listado__pedidos">
+
+                {% for pedido in page_obj %}
+
+                    <div class="pedido-admin-item">
+
+
+                        <!-- =========================================
+                             DETALLE DEL PEDIDO
+                        ========================================== -->
+
+                        <a
+                            href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
+                            class="pedido-admin-fila"
+                        >
+
+
+                            <!-- PEDIDO -->
+
+                            <div class="pedido-admin-fila__numero">
+
+                                <span>
+                                    Pedido
+                                </span>
+
+                                <strong>
+                                    {{ pedido.numero }}
+                                </strong>
+
+                            </div>
+
+
+                            <!-- CLIENTE -->
+
+                            <div class="pedido-admin-fila__cliente">
+
+                                <span>
+                                    Cliente
+                                </span>
+
+                                <strong>
+
+                                    {{ pedido.nombre }}
+                                    {{ pedido.apellido }}
+
+                                </strong>
+
+                                <small>
+                                    {{ pedido.email }}
+                                </small>
+
+                            </div>
+
+
+                            <!-- ESTADO -->
+
+                            <div class="pedido-admin-fila__estado">
+
+                                <span>
+                                    Estado
+                                </span>
+
+                                <strong
+                                    class="
+                                        pedido-estado
+                                        pedido-estado--{{ pedido.estado }}
+                                    "
+                                >
+                                    {{ pedido.get_estado_display }}
+                                </strong>
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 PRODUCTO PRINCIPAL
+                            ====================================== -->
+
+                            <div class="pedido-admin-fila__productos">
+
+                                <span>
+                                    Productos
+                                </span>
+
+                                {% with primer_item=pedido.items.all.0 %}
+
+                                    {% if primer_item %}
+
+                                        <div class="pedido-admin-producto">
+
+
+                                            <!-- IMAGEN -->
+
+                                            <div class="pedido-admin-producto__imagen">
+
+                                                {% if primer_item.producto and primer_item.producto.imagen_mostrable %}
+
+                                                    <img
+                                                        src="{{ primer_item.producto.imagen_mostrable }}"
+                                                        alt="{{ primer_item.nombre_producto }}"
+                                                        loading="lazy"
+                                                    >
+
+                                                {% elif primer_item.producto and primer_item.producto.imagen %}
+
+                                                    <img
+                                                        src="{{ primer_item.producto.imagen.url }}"
+                                                        alt="{{ primer_item.nombre_producto }}"
+                                                        loading="lazy"
+                                                    >
+
+                                                {% else %}
+
+                                                    <i class="bi bi-image"></i>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <!-- INFORMACIÓN -->
+
+                                            <div class="pedido-admin-producto__info">
+
+                                                <strong class="pedido-admin-producto__nombre">
+
+                                                    {{ primer_item.nombre_producto }}
+
+                                                </strong>
+
+
+                                                <span class="pedido-admin-producto__cantidad">
+
+                                                    × {{ primer_item.cantidad }}
+
+                                                </span>
+
+
+                                                {% if pedido.items.count > 1 %}
+
+                                                    <small class="pedido-admin-producto__mas">
+
+                                                        +{{ pedido.items.count|add:"-1" }}
+
+                                                        producto{{ pedido.items.count|add:"-1"|pluralize }}
+
+                                                        más
+
+                                                    </small>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <small class="pedido-admin-producto__unidades-total">
+
+                                            {{ pedido.total_unidades|default:0 }}
+
+                                            unidad{{ pedido.total_unidades|default:0|pluralize }}
+
+                                            en total
+
+                                        </small>
+
+
+                                    {% else %}
+
+                                        <strong>
+                                            Sin productos
+                                        </strong>
+
+                                    {% endif %}
+
+                                {% endwith %}
+
+                            </div>
+
+
+                            <!-- ACTUALIZACIÓN -->
+
+                            <div class="pedido-admin-fila__fecha">
+
+                                <span>
+                                    Recibido
+                                </span>
+
+                                <strong>
+                                    {{ pedido.creado|date:"d/m/Y H:i" }}
+                                </strong>
+
+                            </div>
+
+
+                            <!-- TOTAL -->
+
+                            <div class="pedido-admin-fila__total">
+
+                                <span>
+                                    Total
+                                </span>
+
+                                <strong>
+                                    ${{ pedido.total|floatformat:0|intcomma }} CLP
+                                </strong>
+
+                            </div>
+
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+
+                        <!-- =========================================
+                             COMPROBANTE DE PAGO
+                        ========================================== -->
+
+                        {% if pedido.pago_aprobado %}
+
+                            <div class="pedido-admin-item__documentos">
+
+                                {% if pedido.comprobante_pago %}
+
+                                    <a
+                                        href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                        class="boton boton--secundario"
+                                        title="Ver comprobante de pago"
+                                    >
+
+                                        <i class="bi bi-receipt-cutoff"></i>
+
+                                        Ver comprobante
+
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="pedido-admin-boleta">
+
+                                        <i class="bi bi-hourglass-split"></i>
+
+                                        Comprobante en preparación
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                {% empty %}
+
+                    <div class="bandeja-vacia">
+
+                        {% if bandeja_actual == "pendientes" %}
+
+                            No existen pagos pendientes.
+
+                        {% else %}
+
+                            No hay pedidos en esta bandeja.
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
 
             </div>
 
 
             <!-- =================================================
-                 BUSCADOR
+                 PAGINACIÓN
             ================================================== -->
 
-            <form
-                method="get"
-                class="gestion-buscador"
-            >
+            {% if page_obj.paginator.num_pages > 1 %}
 
-                {% if bandeja_actual %}
-
-                    <input
-                        type="hidden"
-                        name="bandeja"
-                        value="{{ bandeja_actual }}"
-                    >
-
-                {% endif %}
-
-
-                <i class="bi bi-search"></i>
-
-
-                <input
-                    type="search"
-                    name="q"
-                    value="{{ busqueda }}"
-                    placeholder="Pedido, cliente, RUT o correo"
-                    autocomplete="off"
+                <nav
+                    class="paginacion"
+                    aria-label="Paginación de pedidos"
                 >
 
-
-                <button
-                    type="submit"
-                    aria-label="Buscar pedidos"
-                >
-                    Buscar
-                </button>
-
-            </form>
-
-        </header>
-
-
-        <!-- =====================================================
-             RESUMEN OPERATIVO
-        ====================================================== -->
-
-        <div class="gestion-resumen">
-
-
-            <!-- NUEVOS -->
-
-            <a
-                href="{% url 'core:panel_pedidos' %}?bandeja=nuevos"
-                class="
-                    gestion-resumen__tarjeta
-                    {% if bandeja_actual == 'nuevos' %}
-                        gestion-resumen__tarjeta--activa
-                    {% endif %}
-                "
-            >
-
-                <span>
-                    Nuevos pagados
-                </span>
-
-                <strong>
-                    {{ total_principal }}
-                </strong>
-
-            </a>
-
-
-            <!-- OPERACIÓN -->
-
-            <a
-                href="{% url 'core:panel_pedidos' %}?bandeja=operacion"
-                class="
-                    gestion-resumen__tarjeta
-                    {% if bandeja_actual == 'operacion' %}
-                        gestion-resumen__tarjeta--activa
-                    {% endif %}
-                "
-            >
-
-                <span>
-                    En operación
-                </span>
-
-                <strong>
-                    {{ total_operacion }}
-                </strong>
-
-            </a>
-
-
-            <!-- DESPACHO -->
-
-            <a
-                href="{% url 'core:panel_pedidos' %}?bandeja=despacho"
-                class="
-                    gestion-resumen__tarjeta
-                    {% if bandeja_actual == 'despacho' %}
-                        gestion-resumen__tarjeta--activa
-                    {% endif %}
-                "
-            >
-
-                <span>
-                    En despacho
-                </span>
-
-                <strong>
-                    {{ total_despacho }}
-                </strong>
-
-            </a>
-
-
-            <!-- FINALIZADOS -->
-
-            <a
-                href="{% url 'core:panel_pedidos' %}?bandeja=finalizados"
-                class="
-                    gestion-resumen__tarjeta
-                    {% if bandeja_actual == 'finalizados' %}
-                        gestion-resumen__tarjeta--activa
-                    {% endif %}
-                "
-            >
-
-                <span>
-                    Finalizados
-                </span>
-
-                <strong>
-                    {{ total_cerrados }}
-                </strong>
-
-            </a>
-
-        </div>
-
-
-        <!-- =====================================================
-             ALERTAS ADMINISTRATIVAS
-        ====================================================== -->
-
-        <div class="gestion-alertas">
-
-
-            <!-- =================================================
-                 PAGOS PENDIENTES - ÚLTIMAS 48 HORAS
-            ================================================== -->
-
-            {% if total_pendientes_recientes > 0 %}
-
-                <a
-                    href="{% url 'core:panel_pedidos' %}?bandeja=pendientes"
-                    class="
-                        gestion-pendientes
-                        gestion-pendientes--atencion
-                    "
-                >
-
-                    <div class="gestion-pendientes__icono">
-
-                        <i class="bi bi-clock-history"></i>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-
-                            {{ total_pendientes_recientes }}
-
-                            pago{{ total_pendientes_recientes|pluralize }}
-
-                            pendiente{{ total_pendientes_recientes|pluralize }}
-
-                        </strong>
-
-
-                        <span>
-                            Pedido{{ total_pendientes_recientes|pluralize }}
-                            pendiente{{ total_pendientes_recientes|pluralize }}
-                            de pago creado{{ total_pendientes_recientes|pluralize }}
-                            durante las últimas 48 horas.
-                        </span>
-
-                    </div>
-
-
-                    <i class="bi bi-arrow-right"></i>
-
-                </a>
-
-            {% endif %}
-
-
-            <!-- =================================================
-                 NUBOX PENDIENTE
-            ================================================== -->
-
-            {% if total_boletas_pendientes > 0 %}
-
-                <a
-                    href="{% url 'core:panel_pedidos' %}?bandeja=boletas"
-                    class="gestion-pendientes"
-                >
-
-                    <div class="gestion-pendientes__icono">
-
-                        <i class="bi bi-receipt-cutoff"></i>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-
-                            {{ total_boletas_pendientes }}
-
-                            boleta{{ total_boletas_pendientes|pluralize }}
-
-                            pendiente{{ total_boletas_pendientes|pluralize }}
-
-                        </strong>
-
-
-                        <span>
-                            Ventas pagadas que todavía no registran
-                            una boleta electrónica emitida.
-                        </span>
-
-                    </div>
-
-
-                    <i class="bi bi-arrow-right"></i>
-
-                </a>
-
-            {% endif %}
-
-        </div>
-
-
-        <!-- =====================================================
-             BANDEJA COMPLETA
-        ====================================================== -->
-
-        {% if mostrar_bandeja %}
-
-            <section class="gestion-listado">
-
-
-                <!-- =================================================
-                     CABECERA BANDEJA
-                ================================================== -->
-
-                <header class="gestion-listado__cabecera">
-
-                    <div>
+                    {% if page_obj.has_previous %}
 
                         <a
-                            href="{% url 'core:panel_pedidos' %}"
-                            class="gestion-volver"
+                            href="?bandeja={{ bandeja_actual|urlencode }}&page={{ page_obj.previous_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                            rel="prev"
                         >
 
                             <i class="bi bi-arrow-left"></i>
 
-                            Volver al tablero
+                            Anterior
 
                         </a>
 
-
-                        <h2>
-                            {{ titulo_bandeja }}
-                        </h2>
+                    {% endif %}
 
 
-                        <p>
+                    <span>
 
-                            {{ page_obj.paginator.count }}
+                        Página
 
-                            pedido{{ page_obj.paginator.count|pluralize }}
+                        <strong>
+                            {{ page_obj.number }}
+                        </strong>
 
-                            en esta bandeja.
+                        de
 
-                        </p>
+                        <strong>
+                            {{ page_obj.paginator.num_pages }}
+                        </strong>
 
-                    </div>
-
-                </header>
+                    </span>
 
 
-                <!-- =================================================
-                     PEDIDOS
-                ================================================== -->
+                    {% if page_obj.has_next %}
 
-                <div class="gestion-listado__pedidos">
-
-                    {% for pedido in page_obj %}
-
-                        <div
-                            class="pedido-admin-item"
-                            data-nubox-pedido
-                            data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
-                            data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
-                            data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
+                        <a
+                            href="?bandeja={{ bandeja_actual|urlencode }}&page={{ page_obj.next_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                            rel="next"
                         >
 
+                            Siguiente
 
-                            <!-- =========================================
-                                 DETALLE DEL PEDIDO
-                            ========================================== -->
+                            <i class="bi bi-arrow-right"></i>
 
-                            <a
-                                href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
-                                class="pedido-admin-fila"
-                            >
+                        </a>
 
+                    {% endif %}
 
-                                <!-- PEDIDO -->
+                </nav>
 
-                                <div class="pedido-admin-fila__numero">
+            {% endif %}
 
-                                    <span>
-                                        Pedido
-                                    </span>
-
-                                    <strong>
-                                        {{ pedido.numero }}
-                                    </strong>
-
-                                </div>
+        </section>
 
 
-                                <!-- CLIENTE -->
+    <!-- =====================================================
+         TABLERO GENERAL
+    ====================================================== -->
 
-                                <div class="pedido-admin-fila__cliente">
+    {% else %}
 
-                                    <span>
-                                        Cliente
-                                    </span>
+        <div class="tablero-pedidos">
 
-                                    <strong>
+            {% for bandeja in bandejas %}
+
+                <section class="bandeja-pedidos">
+
+
+                    <!-- =========================================
+                         CABECERA
+                    ========================================== -->
+
+                    <header class="bandeja-pedidos__cabecera">
+
+                        <div>
+
+                            <i class="bi {{ bandeja.icono }}"></i>
+
+                            <h2>
+                                {{ bandeja.nombre }}
+                            </h2>
+
+                        </div>
+
+
+                        <span>
+                            {{ bandeja.total }}
+                        </span>
+
+                    </header>
+
+
+                    <!-- =========================================
+                         CONTENIDO
+                    ========================================== -->
+
+                    <div class="bandeja-pedidos__contenido">
+
+                        {% for pedido in bandeja.pedidos %}
+
+                            <div class="tarjeta-pedido-admin-wrap">
+
+                                <a
+                                    href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
+                                    class="tarjeta-pedido-admin"
+                                >
+
+
+                                    <!-- SUPERIOR -->
+
+                                    <div class="tarjeta-pedido-admin__superior">
+
+                                        <strong>
+                                            {{ pedido.numero }}
+                                        </strong>
+
+
+                                        <span>
+                                            {{ pedido.get_estado_display }}
+                                        </span>
+
+                                    </div>
+
+
+                                    <!-- CLIENTE -->
+
+                                    <h3>
 
                                         {{ pedido.nombre }}
                                         {{ pedido.apellido }}
 
-                                    </strong>
-
-                                    <small>
-                                        {{ pedido.email }}
-                                    </small>
-
-                                </div>
+                                    </h3>
 
 
-                                <!-- ESTADO -->
-
-                                <div class="pedido-admin-fila__estado">
-
-                                    <span>
-                                        Estado
-                                    </span>
-
-                                    <strong
-                                        class="
-                                            pedido-estado
-                                            pedido-estado--{{ pedido.estado }}
-                                        "
-                                    >
-                                        {{ pedido.get_estado_display }}
-                                    </strong>
-
-                                </div>
-
-
-                                <!-- =====================================
-                                     PRODUCTO PRINCIPAL
-                                ====================================== -->
-
-                                <div class="pedido-admin-fila__productos">
-
-                                    <span>
-                                        Productos
-                                    </span>
+                                    <!-- =================================
+                                         PRODUCTO PRINCIPAL
+                                    ================================== -->
 
                                     {% with primer_item=pedido.items.all.0 %}
 
                                         {% if primer_item %}
 
-                                            <div class="pedido-admin-producto">
+                                            <div class="tarjeta-pedido-admin__producto">
 
 
                                                 <!-- IMAGEN -->
 
-                                                <div class="pedido-admin-producto__imagen">
+                                                <div class="tarjeta-pedido-admin__producto-imagen">
 
                                                     {% if primer_item.producto and primer_item.producto.imagen_mostrable %}
 
@@ -491,25 +779,25 @@ Gestión de pedidos | Audex
 
                                                 <!-- INFORMACIÓN -->
 
-                                                <div class="pedido-admin-producto__info">
+                                                <div class="tarjeta-pedido-admin__producto-info">
 
-                                                    <strong class="pedido-admin-producto__nombre">
+                                                    <span class="tarjeta-pedido-admin__producto-nombre">
 
                                                         {{ primer_item.nombre_producto }}
-
-                                                    </strong>
-
-
-                                                    <span class="pedido-admin-producto__cantidad">
-
-                                                        × {{ primer_item.cantidad }}
 
                                                     </span>
 
 
+                                                    <strong class="tarjeta-pedido-admin__producto-cantidad">
+
+                                                        × {{ primer_item.cantidad }}
+
+                                                    </strong>
+
+
                                                     {% if pedido.items.count > 1 %}
 
-                                                        <small class="pedido-admin-producto__mas">
+                                                        <small class="tarjeta-pedido-admin__producto-mas">
 
                                                             +{{ pedido.items.count|add:"-1" }}
 
@@ -526,7 +814,7 @@ Gestión de pedidos | Audex
                                             </div>
 
 
-                                            <small class="pedido-admin-producto__unidades-total">
+                                            <p class="tarjeta-pedido-admin__unidades">
 
                                                 {{ pedido.total_unidades|default:0 }}
 
@@ -534,444 +822,23 @@ Gestión de pedidos | Audex
 
                                                 en total
 
-                                            </small>
+                                            </p>
 
 
                                         {% else %}
 
-                                            <strong>
+                                            <p class="tarjeta-pedido-admin__unidades">
+
                                                 Sin productos
-                                            </strong>
+
+                                            </p>
 
                                         {% endif %}
 
                                     {% endwith %}
 
-                                </div>
 
-
-                                <!-- ACTUALIZACIÓN -->
-
-                                <div class="pedido-admin-fila__fecha">
-
-                                    <span>
-                                        Recibido
-                                    </span>
-
-                                    <strong>
-                                        {{ pedido.creado|date:"d/m/Y H:i" }}
-                                    </strong>
-
-                                </div>
-
-
-                                <!-- TOTAL -->
-
-                                <div class="pedido-admin-fila__total">
-
-                                    <span>
-                                        Total
-                                    </span>
-
-                                    <strong>
-                                        ${{ pedido.total|floatformat:0|intcomma }} CLP
-                                    </strong>
-
-                                </div>
-
-
-                                <i class="bi bi-chevron-right"></i>
-
-                            </a>
-
-
-                            <!-- =========================================
-                                 DOCUMENTOS
-                            ========================================== -->
-
-                            {% if pedido.pago_aprobado %}
-
-                                <div class="pedido-admin-item__documentos">
-
-                                    {% if pedido.nubox_disponible and pedido.nubox_url_pdf %}
-
-                                        <a
-                                            href="{{ pedido.nubox_url_pdf }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="boton boton--secundario"
-                                            title="Descargar boleta electrónica"
-                                        >
-
-                                            <i class="bi bi-download"></i>
-
-                                            Descargar boleta
-
-                                            {% if pedido.nubox_folio %}
-
-                                                N.º {{ pedido.nubox_folio }}
-
-                                            {% endif %}
-
-                                        </a>
-
-
-                                    {% elif pedido.nubox_disponible %}
-
-                                        <span
-                                            class="boton boton--secundario"
-                                        >
-
-                                            <i class="bi bi-receipt"></i>
-
-                                            Boleta emitida
-
-                                            {% if pedido.nubox_folio %}
-
-                                                N.º {{ pedido.nubox_folio }}
-
-                                            {% endif %}
-
-                                        </span>
-
-
-                                    {% elif pedido.nubox_en_proceso %}
-
-                                        <span class="pedido-admin-boleta">
-
-                                            <i class="bi bi-hourglass-split"></i>
-
-                                            <span data-nubox-estado>
-
-                                                {% if pedido.nubox_estado %}
-
-                                                    {{ pedido.nubox_estado }}
-
-                                                {% else %}
-
-                                                    Boleta procesando
-
-                                                {% endif %}
-
-                                            </span>
-
-                                        </span>
-
-
-                                    {% elif pedido.nubox_tiene_error %}
-
-                                        <span
-                                            class="
-                                                pedido-admin-boleta
-                                                pedido-admin-boleta--error
-                                            "
-                                        >
-
-                                            <i class="bi bi-exclamation-triangle"></i>
-
-                                            Error de emisión Nubox
-
-                                        </span>
-
-
-                                    {% else %}
-
-                                        <span class="pedido-admin-boleta">
-
-                                            <i class="bi bi-hourglass-split"></i>
-
-                                            Boleta pendiente
-
-                                        </span>
-
-                                    {% endif %}
-
-                                </div>
-
-                            {% endif %}
-
-                        </div>
-
-
-                    {% empty %}
-
-                        <div class="bandeja-vacia">
-
-                            {% if bandeja_actual == "pendientes" %}
-
-                                No existen pagos pendientes.
-
-                            {% elif bandeja_actual == "boletas" %}
-
-                                Todas las ventas pagadas tienen
-                                su boleta electrónica.
-
-                            {% else %}
-
-                                No hay pedidos en esta bandeja.
-
-                            {% endif %}
-
-                        </div>
-
-                    {% endfor %}
-
-                </div>
-
-
-                <!-- =================================================
-                     PAGINACIÓN
-                ================================================== -->
-
-                {% if page_obj.paginator.num_pages > 1 %}
-
-                    <nav
-                        class="paginacion"
-                        aria-label="Paginación de pedidos"
-                    >
-
-                        {% if page_obj.has_previous %}
-
-                            <a
-                                href="?bandeja={{ bandeja_actual|urlencode }}&page={{ page_obj.previous_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
-                                rel="prev"
-                            >
-
-                                <i class="bi bi-arrow-left"></i>
-
-                                Anterior
-
-                            </a>
-
-                        {% endif %}
-
-
-                        <span>
-
-                            Página
-
-                            <strong>
-                                {{ page_obj.number }}
-                            </strong>
-
-                            de
-
-                            <strong>
-                                {{ page_obj.paginator.num_pages }}
-                            </strong>
-
-                        </span>
-
-
-                        {% if page_obj.has_next %}
-
-                            <a
-                                href="?bandeja={{ bandeja_actual|urlencode }}&page={{ page_obj.next_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
-                                rel="next"
-                            >
-
-                                Siguiente
-
-                                <i class="bi bi-arrow-right"></i>
-
-                            </a>
-
-                        {% endif %}
-
-                    </nav>
-
-                {% endif %}
-
-            </section>
-
-
-        <!-- =====================================================
-             TABLERO GENERAL
-        ====================================================== -->
-
-        {% else %}
-
-            <div class="tablero-pedidos">
-
-                {% for bandeja in bandejas %}
-
-                    <section class="bandeja-pedidos">
-
-
-                        <!-- =========================================
-                             CABECERA
-                        ========================================== -->
-
-                        <header class="bandeja-pedidos__cabecera">
-
-                            <div>
-
-                                <i class="bi {{ bandeja.icono }}"></i>
-
-                                <h2>
-                                    {{ bandeja.nombre }}
-                                </h2>
-
-                            </div>
-
-
-                            <span>
-                                {{ bandeja.total }}
-                            </span>
-
-                        </header>
-
-
-                        <!-- =========================================
-                             CONTENIDO
-                        ========================================== -->
-
-                        <div class="bandeja-pedidos__contenido">
-
-                            {% for pedido in bandeja.pedidos %}
-
-                                <div
-                                    class="tarjeta-pedido-admin-wrap"
-                                    data-nubox-pedido
-                                    data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
-                                    data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
-                                    data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
-                                >
-
-                                    <a
-                                        href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
-                                        class="tarjeta-pedido-admin"
-                                    >
-
-
-                                        <!-- SUPERIOR -->
-
-                                        <div class="tarjeta-pedido-admin__superior">
-
-                                            <strong>
-                                                {{ pedido.numero }}
-                                            </strong>
-
-
-                                            <span>
-                                                {{ pedido.get_estado_display }}
-                                            </span>
-
-                                        </div>
-
-
-                                        <!-- CLIENTE -->
-
-                                        <h3>
-
-                                            {{ pedido.nombre }}
-                                            {{ pedido.apellido }}
-
-                                        </h3>
-
-
-                                        <!-- =================================
-                                             PRODUCTO PRINCIPAL
-                                        ================================== -->
-
-                                        {% with primer_item=pedido.items.all.0 %}
-
-                                            {% if primer_item %}
-
-                                                <div class="tarjeta-pedido-admin__producto">
-
-
-                                                    <!-- IMAGEN -->
-
-                                                    <div class="tarjeta-pedido-admin__producto-imagen">
-
-                                                        {% if primer_item.producto and primer_item.producto.imagen_mostrable %}
-
-                                                            <img
-                                                                src="{{ primer_item.producto.imagen_mostrable }}"
-                                                                alt="{{ primer_item.nombre_producto }}"
-                                                                loading="lazy"
-                                                            >
-
-                                                        {% elif primer_item.producto and primer_item.producto.imagen %}
-
-                                                            <img
-                                                                src="{{ primer_item.producto.imagen.url }}"
-                                                                alt="{{ primer_item.nombre_producto }}"
-                                                                loading="lazy"
-                                                            >
-
-                                                        {% else %}
-
-                                                            <i class="bi bi-image"></i>
-
-                                                        {% endif %}
-
-                                                    </div>
-
-
-                                                    <!-- INFORMACIÓN -->
-
-                                                    <div class="tarjeta-pedido-admin__producto-info">
-
-                                                        <span class="tarjeta-pedido-admin__producto-nombre">
-
-                                                            {{ primer_item.nombre_producto }}
-
-                                                        </span>
-
-
-                                                        <strong class="tarjeta-pedido-admin__producto-cantidad">
-
-                                                            × {{ primer_item.cantidad }}
-
-                                                        </strong>
-
-
-                                                        {% if pedido.items.count > 1 %}
-
-                                                            <small class="tarjeta-pedido-admin__producto-mas">
-
-                                                                +{{ pedido.items.count|add:"-1" }}
-
-                                                                producto{{ pedido.items.count|add:"-1"|pluralize }}
-
-                                                                más
-
-                                                            </small>
-
-                                                        {% endif %}
-
-                                                    </div>
-
-                                                </div>
-
-
-                                                <p class="tarjeta-pedido-admin__unidades">
-
-                                                    {{ pedido.total_unidades|default:0 }}
-
-                                                    unidad{{ pedido.total_unidades|default:0|pluralize }}
-
-                                                    en total
-
-                                                </p>
-
-
-                                            {% else %}
-
-                                                <p class="tarjeta-pedido-admin__unidades">
-
-                                                    Sin productos
-
-                                                </p>
-
-                                            {% endif %}
-
-                                        {% endwith %}
-
-
-                                        <!-- PIE -->
+                                    <!-- PIE -->
 
                                     <footer>
 
@@ -988,175 +855,109 @@ Gestión de pedidos | Audex
 
                                     </footer>
 
-                                    </a>
+                                </a>
 
 
-                                    <!-- =====================================
-                                         BOLETA RÁPIDA
-                                    ====================================== -->
+                                <!-- =====================================
+                                     COMPROBANTE DE PAGO RÁPIDO
+                                ====================================== -->
 
-                                    {% if pedido.nubox_disponible and pedido.nubox_url_pdf %}
+                                {% if pedido.pago_aprobado %}
+
+                                    {% if pedido.comprobante_pago %}
 
                                         <a
-                                            href="{{ pedido.nubox_url_pdf }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                            href="{% url 'core:comprobante_pago' pedido.numero %}"
                                             class="tarjeta-pedido-admin__boleta"
-                                            title="Descargar boleta electrónica"
+                                            title="Ver comprobante de pago"
                                         >
 
-                                            <i class="bi bi-receipt"></i>
+                                            <i class="bi bi-receipt-cutoff"></i>
 
-                                            Boleta
+                                            Ver comprobante
 
-                                            {% if pedido.nubox_folio %}
-
-                                                N.º {{ pedido.nubox_folio }}
-
-                                            {% endif %}
-
-                                            <i class="bi bi-download"></i>
+                                            <i class="bi bi-arrow-right"></i>
 
                                         </a>
 
-
-                                    {% elif pedido.nubox_disponible %}
-
-                                        <span
-                                            class="tarjeta-pedido-admin__boleta"
-                                            title="Boleta electrónica emitida"
-                                        >
-
-                                            <i class="bi bi-receipt"></i>
-
-                                            Boleta
-
-                                            {% if pedido.nubox_folio %}
-
-                                                N.º {{ pedido.nubox_folio }}
-
-                                            {% endif %}
-
-                                        </span>
-
-
-                                    {% elif pedido.nubox_en_proceso %}
-
-                                        <span
-                                            class="tarjeta-pedido-admin__boleta"
-                                        >
-
-                                            <i class="bi bi-hourglass-split"></i>
-
-                                            <span data-nubox-estado>
-
-                                                {% if pedido.nubox_estado %}
-
-                                                    {{ pedido.nubox_estado }}
-
-                                                {% else %}
-
-                                                    Procesando
-
-                                                {% endif %}
-
-                                            </span>
-
-                                        </span>
-
-
-                                    {% elif pedido.nubox_tiene_error %}
-
-                                        <span
-                                            class="
-                                                tarjeta-pedido-admin__boleta
-                                                pedido-admin-boleta--error
-                                            "
-                                            title="Error de emisión Nubox"
-                                        >
-
-                                            <i class="bi bi-exclamation-triangle"></i>
-
-                                            Error Nubox
-
-                                        </span>
-
-
-                                    {% elif pedido.pago_aprobado %}
-
-                                        <span
-                                            class="tarjeta-pedido-admin__boleta"
-                                        >
-
-                                            <i class="bi bi-hourglass-split"></i>
-
-                                            Boleta pendiente
-
-                                        </span>
-
-                                    {% endif %}
-
-                                </div>
-
-
-                            {% empty %}
-
-                                <p class="bandeja-vacia">
-                                    No hay pedidos.
-                                </p>
-
-                            {% endfor %}
-
-                        </div>
-
-
-                        <!-- =========================================
-                             PIE
-                        ========================================== -->
-
-                        {% if bandeja.total > 0 %}
-
-                            <footer class="bandeja-pedidos__pie">
-
-                                <a
-                                    href="{% url 'core:panel_pedidos' %}?bandeja={{ bandeja.clave }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
-                                >
-
-                                    {% if bandeja.hay_mas %}
-
-                                        Ver los
-                                        {{ bandeja.total }}
-                                        pedidos
-
                                     {% else %}
 
-                                        Ver bandeja
+                                        <span
+                                            class="tarjeta-pedido-admin__boleta"
+                                            title="El comprobante todavía no está disponible"
+                                        >
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            Comprobante en preparación
+
+                                        </span>
 
                                     {% endif %}
 
+                                {% endif %}
 
-                                    <i class="bi bi-arrow-right"></i>
+                            </div>
 
-                                </a>
 
-                            </footer>
+                        {% empty %}
 
-                        {% endif %}
+                            <p class="bandeja-vacia">
+                                No hay pedidos.
+                            </p>
 
-                    </section>
+                        {% endfor %}
 
-                {% endfor %}
+                    </div>
 
-            </div>
 
-        {% endif %}
+                    <!-- =========================================
+                         PIE
+                    ========================================== -->
 
-    </div>
+                    {% if bandeja.total > 0 %}
+
+                        <footer class="bandeja-pedidos__pie">
+
+                            <a
+                                href="{% url 'core:panel_pedidos' %}?bandeja={{ bandeja.clave }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}"
+                            >
+
+                                {% if bandeja.hay_mas %}
+
+                                    Ver los
+                                    {{ bandeja.total }}
+                                    pedidos
+
+                                {% else %}
+
+                                    Ver bandeja
+
+                                {% endif %}
+
+
+                                <i class="bi bi-arrow-right"></i>
+
+                            </a>
+
+                        </footer>
+
+                    {% endif %}
+
+                </section>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
 
 </section>
 
 {% endblock %}
-
 
 {% block extra_js %}
 
@@ -1173,9 +974,7 @@ document.addEventListener(
 
 
         // =========================================================
-        // =========================================================
         // ACTUALIZACIÓN AUTOMÁTICA DEL ESTADO DE LOS PEDIDOS
-        // =========================================================
         // =========================================================
         //
         // Este proceso consulta una versión liviana del tablero.
@@ -1488,423 +1287,11 @@ document.addEventListener(
 
 
         // =========================================================
-        // =========================================================
-        // MONITOREO DE BOLETAS
-        // =========================================================
-        // =========================================================
-
-        const pedidos = Array.from(
-            document.querySelectorAll(
-                "[data-nubox-pedido]"
-            )
-        );
-
-
-        // =========================================================
-        // BOLETAS PENDIENTES
-        // =========================================================
-
-        const pendientesNubox = (
-            pedidos.filter(
-                (pedido) => {
-
-                    const documentId = (
-                        pedido.dataset
-                            .nuboxDocumentId
-                        || ""
-                    ).trim();
-
-
-                    const emitido = (
-                        pedido.dataset
-                            .nuboxEmitido
-                        === "true"
-                    );
-
-
-                    const statusUrl = (
-                        pedido.dataset
-                            .nuboxStatusUrl
-                        || ""
-                    ).trim();
-
-
-                    return (
-                        Boolean(
-                            documentId
-                        )
-                        && !emitido
-                        && Boolean(
-                            statusUrl
-                        )
-                    );
-                },
-            )
-        );
-
-
-        // =========================================================
-        // CONFIGURACIÓN NUBOX
-        // =========================================================
-
-        const INTERVALO_NUBOX_MS = 5000;
-        const PRIMERA_CONSULTA_NUBOX_MS = 1500;
-        const MAX_INTENTOS_NUBOX = 24;
-
-        let intentosNubox = 0;
-
-        let consultaNuboxEnCurso = false;
-
-        let detenerNubox = (
-            pendientesNubox.length === 0
-        );
-
-        let temporizadorNubox = null;
-
-
-        // =========================================================
-        // ACTUALIZAR TEXTO VISUAL
-        // =========================================================
-
-        const actualizarEstadoVisualNubox = (
-            pedido,
-            estado,
-        ) => {
-
-            if (!estado) {
-                return;
-            }
-
-
-            pedido
-                .querySelectorAll(
-                    "[data-nubox-estado]"
-                )
-                .forEach(
-                    (elemento) => {
-
-                        elemento.textContent = (
-                            estado
-                        );
-
-                    },
-                );
-        };
-
-
-        // =========================================================
-        // CONSULTAR UNA BOLETA
-        // =========================================================
-
-        const consultarPedidoNubox = async (
-            pedido,
-        ) => {
-
-            const statusUrl = (
-                pedido.dataset
-                    .nuboxStatusUrl
-                || ""
-            ).trim();
-
-
-            if (!statusUrl) {
-
-                return false;
-
-            }
-
-
-            const response = await fetch(
-                statusUrl,
-                {
-                    method: "GET",
-
-                    headers: {
-                        "X-Requested-With": (
-                            "XMLHttpRequest"
-                        ),
-
-                        "Accept": (
-                            "application/json"
-                        ),
-                    },
-
-                    credentials: (
-                        "same-origin"
-                    ),
-
-                    cache: "no-store",
-                },
-            );
-
-
-            // -----------------------------------------------------
-            // YA NO TIENE ACCESO O EL PEDIDO DESAPARECIÓ
-            // -----------------------------------------------------
-
-            if (
-                response.status === 403
-                || response.status === 404
-            ) {
-
-                pedido.dataset.nuboxEmitido = (
-                    "true"
-                );
-
-                return false;
-            }
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    `HTTP ${response.status}`
-                );
-
-            }
-
-
-            const data = (
-                await response.json()
-            );
-
-
-            // -----------------------------------------------------
-            // ACTUALIZAR ESTADO EN PANTALLA
-            // -----------------------------------------------------
-
-            if (
-                data.estado
-            ) {
-
-                actualizarEstadoVisualNubox(
-                    pedido,
-                    data.estado,
-                );
-
-            }
-
-
-            // -----------------------------------------------------
-            // BOLETA EMITIDA
-            // -----------------------------------------------------
-
-            if (
-                data.emitido
-            ) {
-
-                pedido.dataset.nuboxEmitido = (
-                    "true"
-                );
-
-                return true;
-            }
-
-
-            return false;
-        };
-
-
-        // =========================================================
-        // PROGRAMAR CONSULTA NUBOX
-        // =========================================================
-
-        const programarConsultaNubox = (
-            retraso = INTERVALO_NUBOX_MS,
-        ) => {
-
-            if (
-                paginaRecargando
-                || detenerNubox
-                || intentosNubox >= MAX_INTENTOS_NUBOX
-            ) {
-
-                return;
-
-            }
-
-
-            if (
-                temporizadorNubox
-            ) {
-
-                window.clearTimeout(
-                    temporizadorNubox
-                );
-
-            }
-
-
-            temporizadorNubox = (
-                window.setTimeout(
-                    consultarPendientesNubox,
-                    retraso,
-                )
-            );
-        };
-
-
-        // =========================================================
-        // CONSULTAR TODAS LAS BOLETAS PENDIENTES
-        // =========================================================
-
-        const consultarPendientesNubox = async () => {
-
-            if (
-                paginaRecargando
-                || detenerNubox
-                || consultaNuboxEnCurso
-            ) {
-
-                return;
-
-            }
-
-
-            if (
-                document.hidden
-            ) {
-
-                programarConsultaNubox();
-
-                return;
-
-            }
-
-
-            consultaNuboxEnCurso = true;
-
-            intentosNubox += 1;
-
-
-            try {
-
-                const activos = (
-                    pendientesNubox.filter(
-                        (pedido) => (
-                            pedido.dataset
-                                .nuboxEmitido
-                            !== "true"
-                        ),
-                    )
-                );
-
-
-                if (
-                    !activos.length
-                ) {
-
-                    detenerNubox = true;
-
-                    return;
-
-                }
-
-
-                const resultados = (
-                    await Promise.allSettled(
-                        activos.map(
-                            (pedido) => (
-                                consultarPedidoNubox(
-                                    pedido
-                                )
-                            ),
-                        ),
-                    )
-                );
-
-
-                const algunaBoletaEmitida = (
-                    resultados.some(
-                        (resultado) => (
-                            resultado.status
-                            === "fulfilled"
-                            && resultado.value
-                            === true
-                        ),
-                    )
-                );
-
-
-                // -------------------------------------------------
-                // UNA BOLETA ACABA DE ESTAR DISPONIBLE
-                // -------------------------------------------------
-
-                if (
-                    algunaBoletaEmitida
-                ) {
-
-                    paginaRecargando = true;
-
-                    detenerNubox = true;
-
-                    window.location.reload();
-
-                    return;
-
-                }
-
-
-                // -------------------------------------------------
-                // LOG DE ERRORES SIN ROMPER EL PANEL
-                // -------------------------------------------------
-
-                resultados.forEach(
-                    (resultado) => {
-
-                        if (
-                            resultado.status
-                            === "rejected"
-                        ) {
-
-                            console.warn(
-                                "No fue posible consultar "
-                                + "el estado de una boleta:",
-                                resultado.reason,
-                            );
-
-                        }
-                    },
-                );
-
-            } finally {
-
-                consultaNuboxEnCurso = false;
-
-            }
-
-
-            // -----------------------------------------------------
-            // SIGUIENTE CONSULTA
-            // -----------------------------------------------------
-
-            programarConsultaNubox();
-        };
-
-
-        // =========================================================
-        // INICIAR NUBOX SOLAMENTE SI HAY PENDIENTES
-        // =========================================================
-
-        if (
-            !detenerNubox
-        ) {
-
-            programarConsultaNubox(
-                PRIMERA_CONSULTA_NUBOX_MS
-            );
-
-        }
-
-
-        // =========================================================
         // VISIBILIDAD DE LA PESTAÑA
         // =========================================================
         //
-        // Al volver al panel comprobamos rápidamente:
-        //
-        // - estado operativo de pedidos;
-        // - boletas pendientes.
+        // Al volver al panel comprobamos rápidamente
+        // si cambió el estado operativo de los pedidos.
         // =========================================================
 
         document.addEventListener(
@@ -1921,37 +1308,16 @@ document.addEventListener(
                 }
 
 
-                // -------------------------------------------------
-                // PEDIDOS
-                // -------------------------------------------------
-
                 programarConsultaPanel(
                     250
                 );
-
-
-                // -------------------------------------------------
-                // NUBOX
-                // -------------------------------------------------
-
-                if (
-                    !detenerNubox
-                    && intentosNubox
-                    < MAX_INTENTOS_NUBOX
-                ) {
-
-                    programarConsultaNubox(
-                        400
-                    );
-
-                }
 
             },
         );
 
 
         // =========================================================
-        // LIMPIAR TEMPORIZADORES AL SALIR
+        // LIMPIAR TEMPORIZADOR AL SALIR
         // =========================================================
 
         window.addEventListener(
@@ -1964,17 +1330,6 @@ document.addEventListener(
 
                     window.clearTimeout(
                         temporizadorPanel
-                    );
-
-                }
-
-
-                if (
-                    temporizadorNubox
-                ) {
-
-                    window.clearTimeout(
-                        temporizadorNubox
                     );
 
                 }

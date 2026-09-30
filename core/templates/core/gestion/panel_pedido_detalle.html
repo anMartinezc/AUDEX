@@ -1,1236 +1,462 @@
 {% extends 'core/base.html' %}
 {% load static humanize %}
 
-
 {% block title %}
-    {{ pedido.numero }} | Gestión Audex
+{{ pedido.numero }} | Gestión Audex
 {% endblock %}
-
 
 {% block extra_css %}
 
-    <link
-        rel="stylesheet"
-        href="{% static 'core/css/pedidos.css' %}?v=10"
-    >
+
+<link
+    rel="stylesheet"
+    href="{% static 'core/css/pedidos.css' %}?v=10"
+>
+
 
 {% endblock %}
-
 
 {% block content %}
 
 <section class="gestion-pedidos detalle-admin">
 
-    <div class="contenedor">
 
-        <!-- =====================================================
-             VOLVER
-        ====================================================== -->
+<div class="contenedor">
 
-        <a
-            href="{% url 'core:panel_pedidos' %}"
-            class="gestion-volver"
-        >
-            <i class="bi bi-arrow-left"></i>
+    <!-- =====================================================
+         VOLVER
+    ====================================================== -->
 
-            Volver a las bandejas
-        </a>
+    <a
+        href="{% url 'core:panel_pedidos' %}"
+        class="gestion-volver"
+    >
+        <i class="bi bi-arrow-left"></i>
 
-
-        <!-- =====================================================
-             CABECERA
-        ====================================================== -->
-
-        <header class="detalle-admin__cabecera">
-
-            <div>
-
-                <span class="etiqueta-seccion">
-
-                    <i class="bi bi-box-seam"></i>
-
-                    Pedido
-
-                </span>
+        Volver a las bandejas
+    </a>
 
 
-                <h1>
-                    {{ pedido.numero }}
-                </h1>
+    <!-- =====================================================
+         CABECERA
+    ====================================================== -->
+
+    <header class="detalle-admin__cabecera">
+
+        <div>
+
+            <span class="etiqueta-seccion">
+
+                <i class="bi bi-box-seam"></i>
+
+                Pedido
+
+            </span>
 
 
-                <p>
-                    {{ pedido.nombre }}
-                    {{ pedido.apellido }}
-                </p>
-
-            </div>
+            <h1>
+                {{ pedido.numero }}
+            </h1>
 
 
-            <div class="detalle-admin__cabecera-estado">
+            <p>
+                {{ pedido.nombre }}
+                {{ pedido.apellido }}
+            </p>
+
+        </div>
+
+
+        <div class="detalle-admin__cabecera-estado">
+
+            <span
+                class="
+                    pedido-estado
+                    pedido-estado--{{ pedido.estado }}
+                "
+            >
+                {{ pedido.get_estado_display }}
+            </span>
+
+
+            {% if pago_aprobado %}
 
                 <span
                     class="
-                        pedido-estado
-                        pedido-estado--{{ pedido.estado }}
+                        detalle-admin__pago
+                        detalle-admin__pago--ok
                     "
                 >
-                    {{ pedido.get_estado_display }}
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                    Pago confirmado
+
                 </span>
+
+            {% else %}
+
+                <span class="detalle-admin__pago">
+
+                    <i class="bi bi-clock-history"></i>
+
+                    {{ pedido.get_estado_pago_display }}
+
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         GRID
+    ====================================================== -->
+
+    <div class="detalle-admin__grid">
+
+        <!-- =================================================
+             COLUMNA PRINCIPAL
+        ================================================== -->
+
+        <div class="detalle-admin__principal">
+
+            <!-- =================================================
+                 PRODUCTOS
+            ================================================== -->
+
+            <article class="seguimiento-tarjeta">
+
+                <div class="detalle-admin__seccion-cabecera">
+
+                    <div>
+
+                        <span class="detalle-admin__eyebrow">
+                            Compra
+                        </span>
+
+                        <h2>
+                            Productos
+                        </h2>
+
+                    </div>
+
+
+                    <span class="detalle-admin__contador">
+
+                        {{ pedido.items.count }}
+
+                        línea{{ pedido.items.count|pluralize }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="detalle-admin__productos">
+
+                    {% for item in pedido.items.all %}
+
+                        <div class="seguimiento-producto">
+
+                            <!-- =====================================
+                                 PRODUCTO + IMAGEN
+                            ====================================== -->
+
+                            <div class="seguimiento-producto__contenido">
+
+                                <!-- =================================
+                                     IMAGEN
+                                ================================== -->
+
+                                <div class="seguimiento-producto__imagen">
+
+                                    {% if item.producto and item.producto.imagen_mostrable %}
+
+                                        <img
+                                            src="{{ item.producto.imagen_mostrable }}"
+                                            alt="{{ item.nombre_producto }}"
+                                            loading="lazy"
+                                        >
+
+                                    {% elif item.producto and item.producto.imagen %}
+
+                                        <img
+                                            src="{{ item.producto.imagen.url }}"
+                                            alt="{{ item.nombre_producto }}"
+                                            loading="lazy"
+                                        >
+
+                                    {% else %}
+
+                                        <div class="seguimiento-producto__sin-imagen">
+
+                                            <i class="bi bi-box-seam"></i>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <!-- =================================
+                                     INFORMACIÓN
+                                ================================== -->
+
+                                <div class="seguimiento-producto__info">
+
+                                    <span class="seguimiento-producto__nombre">
+
+                                        {{ item.nombre_producto }}
+
+                                    </span>
+
+
+                                    <small>
+
+                                        Cantidad
+
+                                        <strong>
+                                            × {{ item.cantidad }}
+                                        </strong>
+
+                                    </small>
+
+
+                                    {% if item.producto and item.producto.sku %}
+
+                                        <span class="seguimiento-producto__sku">
+
+                                            SKU:
+                                            {{ item.producto.sku }}
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 PRECIO
+                            ====================================== -->
+
+                            <strong class="seguimiento-producto__precio">
+
+                                ${{ item.total_final|default:item.total|floatformat:0|intcomma }} CLP
+
+                            </strong>
+
+                        </div>
+
+                    {% empty %}
+
+                        <p>
+                            Este pedido no tiene productos registrados.
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- =================================================
+                     TOTAL
+                ================================================== -->
+
+                <div class="seguimiento-total">
+
+                    <span>
+
+                        {% if pago_aprobado %}
+
+                            Total pagado
+
+                        {% else %}
+
+                            Total del pedido
+
+                        {% endif %}
+
+                    </span>
+
+                    <strong>
+                        ${{ pedido.total|floatformat:0|intcomma }} CLP
+                    </strong>
+
+                </div>
+
+            </article>
+
+
+            <!-- =================================================
+                 DOCUMENTOS / COMPROBANTE
+            ================================================== -->
+
+            <article
+                class="
+                    seguimiento-tarjeta
+                    detalle-admin__documentos
+                "
+            >
+
+                <div class="detalle-admin__seccion-cabecera">
+
+                    <div>
+
+                        <span class="detalle-admin__eyebrow">
+                            Documentos
+                        </span>
+
+                        <h2>
+                            Comprobante de pago
+                        </h2>
+
+                    </div>
+
+
+                    {% if not pago_aprobado %}
+
+                        <span class="detalle-admin__documento-estado">
+
+                            <i class="bi bi-lock"></i>
+
+                            No disponible
+
+                        </span>
+
+
+                    {% elif pedido.comprobante_pago %}
+
+                        <span
+                            class="
+                                detalle-admin__documento-estado
+                                detalle-admin__documento-estado--ok
+                            "
+                        >
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            Disponible
+
+                        </span>
+
+
+                    {% else %}
+
+                        <span class="detalle-admin__documento-estado">
+
+                            <i class="bi bi-hourglass-split"></i>
+
+                            En preparación
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
 
 
                 {% if pago_aprobado %}
 
-                    <span
-                        class="
-                            detalle-admin__pago
-                            detalle-admin__pago--ok
-                        "
-                    >
-
-                        <i class="bi bi-check-circle-fill"></i>
-
-                        Pago confirmado
-
-                    </span>
-
-                {% else %}
-
-                    <span class="detalle-admin__pago">
-
-                        <i class="bi bi-clock-history"></i>
-
-                        {{ pedido.get_estado_pago_display }}
-
-                    </span>
-
-                {% endif %}
-
-            </div>
-
-        </header>
-
-
-        <!-- =====================================================
-             GRID
-        ====================================================== -->
-
-        <div class="detalle-admin__grid">
-
-            <!-- =================================================
-                 COLUMNA PRINCIPAL
-            ================================================== -->
-
-            <div class="detalle-admin__principal">
-
-                <!-- =================================================
-                     PRODUCTOS
-                ================================================== -->
-
-                <article class="seguimiento-tarjeta">
-
-                    <div class="detalle-admin__seccion-cabecera">
-
-                        <div>
-
-                            <span class="detalle-admin__eyebrow">
-                                Compra
-                            </span>
-
-                            <h2>
-                                Productos
-                            </h2>
-
-                        </div>
-
-
-                        <span class="detalle-admin__contador">
-
-                            {{ pedido.items.count }}
-
-                            línea{{ pedido.items.count|pluralize }}
-
-                        </span>
-
-                    </div>
-
-
-                    <div class="detalle-admin__productos">
-
-                        {% for item in pedido.items.all %}
-
-                            <div class="seguimiento-producto">
-
-                                <!-- =====================================
-                                     PRODUCTO + IMAGEN
-                                ====================================== -->
-
-                                <div class="seguimiento-producto__contenido">
-
-                                    <!-- =================================
-                                         IMAGEN
-                                    ================================== -->
-
-                                    <div class="seguimiento-producto__imagen">
-
-                                        {% if item.producto and item.producto.imagen_mostrable %}
-
-                                            <img
-                                                src="{{ item.producto.imagen_mostrable }}"
-                                                alt="{{ item.nombre_producto }}"
-                                                loading="lazy"
-                                            >
-
-                                        {% elif item.producto and item.producto.imagen %}
-
-                                            <img
-                                                src="{{ item.producto.imagen.url }}"
-                                                alt="{{ item.nombre_producto }}"
-                                                loading="lazy"
-                                            >
-
-                                        {% else %}
-
-                                            <div class="seguimiento-producto__sin-imagen">
-
-                                                <i class="bi bi-box-seam"></i>
-
-                                            </div>
-
-                                        {% endif %}
-
-                                    </div>
-
-
-                                    <!-- =================================
-                                         INFORMACIÓN
-                                    ================================== -->
-
-                                    <div class="seguimiento-producto__info">
-
-                                        <span class="seguimiento-producto__nombre">
-
-                                            {{ item.nombre_producto }}
-
-                                        </span>
-
-
-                                        <small>
-
-                                            Cantidad
-
-                                            <strong>
-                                                × {{ item.cantidad }}
-                                            </strong>
-
-                                        </small>
-
-
-                                        {% if item.producto and item.producto.sku %}
-
-                                            <span class="seguimiento-producto__sku">
-
-                                                SKU:
-                                                {{ item.producto.sku }}
-
-                                            </span>
-
-                                        {% endif %}
-
-                                    </div>
-
-                                </div>
-
-
-                                <!-- =====================================
-                                     PRECIO
-                                ====================================== -->
-
-                                <strong class="seguimiento-producto__precio">
-
-                                    ${{ item.total_final|default:item.total|floatformat:0|intcomma }} CLP
-
-                                </strong>
-
-                            </div>
-
-                        {% empty %}
-
-                            <p>
-                                Este pedido no tiene productos registrados.
-                            </p>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- =================================================
-                         TOTAL
-                    ================================================== -->
-
-                    <div class="seguimiento-total">
-
-                        <span>
-
-                            {% if pago_aprobado %}
-
-                                Total pagado
-
-                            {% else %}
-
-                                Total del pedido
-
-                            {% endif %}
-
-                        </span>
-
-                        <strong>
-                            ${{ pedido.total|floatformat:0|intcomma }} CLP
-                        </strong>
-
-                    </div>
-
-                </article>
-
-
-                <!-- =================================================
-                     DOCUMENTOS / BOLETA
-                ================================================== -->
-
-                <article
-                    id="nubox-admin-documento"
-                    class="
-                        seguimiento-tarjeta
-                        detalle-admin__documentos
-                    "
-                    data-nubox-status-url="{% url 'core:estado_boleta_nubox' numero=pedido.numero %}"
-                    data-nubox-emitido="{{ pedido.nubox_emitido|yesno:'true,false' }}"
-                    data-nubox-document-id="{{ pedido.nubox_document_id|default:'' }}"
-                    data-pago-aprobado="{{ pago_aprobado|yesno:'true,false' }}"
-                >
-
-                    <div class="detalle-admin__seccion-cabecera">
-
-                        <div>
-
-                            <span class="detalle-admin__eyebrow">
-                                Documentos
-                            </span>
-
-                            <h2>
-                                Boleta electrónica
-                            </h2>
-
-                        </div>
-
-
-                        {% if not pago_aprobado %}
-
-                            <span class="detalle-admin__documento-estado">
-
-                                <i class="bi bi-lock"></i>
-
-                                No disponible
-
-                            </span>
-
-
-                        {% elif pedido.nubox_disponible %}
-
-                            <span
-                                class="
-                                    detalle-admin__documento-estado
-                                    detalle-admin__documento-estado--ok
-                                "
-                            >
-
-                                <i class="bi bi-check-circle-fill"></i>
-
-                                Emitida
-
-                            </span>
-
-
-                        {% elif pedido.nubox_en_proceso %}
-
-                            <span class="detalle-admin__documento-estado">
-
-                                <i class="bi bi-hourglass-split"></i>
-
-                                <span data-nubox-estado>
-
-                                    {% if pedido.nubox_estado %}
-
-                                        {{ pedido.nubox_estado }}
-
-                                    {% else %}
-
-                                        Procesando
-
-                                    {% endif %}
-
-                                </span>
-
-                            </span>
-
-
-                        {% elif pedido.nubox_tiene_error %}
-
-                            <span
-                                class="
-                                    detalle-admin__documento-estado
-                                    detalle-admin__documento-estado--error
-                                "
-                            >
-
-                                <i class="bi bi-exclamation-triangle-fill"></i>
-
-                                Error
-
-                            </span>
-
-
-                        {% else %}
-
-                            <span class="detalle-admin__documento-estado">
-
-                                <i class="bi bi-hourglass-split"></i>
-
-                                Pendiente
-
-                            </span>
-
-                        {% endif %}
-
-                    </div>
-
-
-                    {% if pago_aprobado %}
-
-                        {% if pedido.nubox_disponible %}
-
-                            <div class="detalle-admin__boleta">
-
-                                <div class="detalle-admin__boleta-icono">
-
-                                    <i class="bi bi-receipt"></i>
-
-                                </div>
-
-
-                                <div class="detalle-admin__boleta-info">
-
-                                    <span>
-                                        Documento tributario
-                                    </span>
-
-                                    <strong>
-
-                                        {% if pedido.nubox_folio %}
-
-                                            Boleta N.º
-                                            {{ pedido.nubox_folio }}
-
-                                        {% else %}
-
-                                            Boleta electrónica
-
-                                        {% endif %}
-
-                                    </strong>
-
-
-                                    {% if pedido.nubox_document_id %}
-
-                                        <small>
-                                            ID Nubox:
-                                            {{ pedido.nubox_document_id }}
-                                        </small>
-
-                                    {% endif %}
-
-
-                                    {% if pedido.nubox_estado %}
-
-                                        <small>
-                                            Estado:
-                                            {{ pedido.nubox_estado }}
-                                        </small>
-
-                                    {% endif %}
-
-
-                                    {% if pedido.nubox_emitido_en %}
-
-                                        <small>
-                                            Emitida:
-                                            {{ pedido.nubox_emitido_en|date:"d/m/Y H:i" }}
-                                        </small>
-
-                                    {% endif %}
-
-
-                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
-
-                                        <small>
-
-                                            Códigos territoriales:
-
-                                            {% if pedido.nubox_region_codigo %}
-
-                                                región
-                                                {{ pedido.nubox_region_codigo }}
-
-                                            {% endif %}
-
-                                            {% if pedido.nubox_comuna_codigo %}
-
-                                                / comuna
-                                                {{ pedido.nubox_comuna_codigo }}
-
-                                            {% endif %}
-
-                                        </small>
-
-                                    {% endif %}
-
-                                </div>
-
-
-                                <div class="detalle-admin__boleta-acciones">
-
-                                    {% if pedido.nubox_url_pdf %}
-
-                                        <a
-                                            href="{{ pedido.nubox_url_pdf }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="
-                                                boton
-                                                boton--primario
-                                            "
-                                            title="Descargar boleta electrónica"
-                                        >
-
-                                            <i class="bi bi-download"></i>
-
-                                            Descargar boleta
-
-                                        </a>
-
-                                    {% else %}
-
-                                        <span
-                                            class="
-                                                boton
-                                                boton--secundario
-                                            "
-                                        >
-
-                                            <i class="bi bi-check-circle"></i>
-
-                                            Boleta emitida
-
-                                        </span>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-
-                        {% elif pedido.nubox_en_proceso %}
-
-                            <div class="detalle-admin__boleta-pendiente">
-
-                                <div class="detalle-admin__boleta-icono">
-
-                                    <i class="bi bi-hourglass-split"></i>
-
-                                </div>
-
-
-                                <div>
-
-                                    <strong>
-                                        Boleta en procesamiento
-                                    </strong>
-
-                                    <p>
-
-                                        Nubox recibió la solicitud de emisión
-                                        y el documento todavía se encuentra
-                                        procesando.
-
-                                        {% if pedido.nubox_estado %}
-
-                                            Estado actual:
-
-                                            <span data-nubox-estado>
-                                                {{ pedido.nubox_estado }}
-                                            </span>.
-
-                                        {% endif %}
-
-                                    </p>
-
-
-                                    {% if pedido.nubox_document_id %}
-
-                                        <small>
-                                            ID Nubox:
-                                            {{ pedido.nubox_document_id }}
-                                        </small>
-
-                                    {% endif %}
-
-
-                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
-
-                                        <small>
-
-                                            Códigos territoriales:
-
-                                            {% if pedido.nubox_region_codigo %}
-
-                                                región
-                                                {{ pedido.nubox_region_codigo }}
-
-                                            {% endif %}
-
-                                            {% if pedido.nubox_comuna_codigo %}
-
-                                                / comuna
-                                                {{ pedido.nubox_comuna_codigo }}
-
-                                            {% endif %}
-
-                                        </small>
-
-                                    {% endif %}
-
-                                </div>
-
-
-                                <div class="detalle-admin__boleta-acciones">
-
-                                    <a
-                                        href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
-                                        class="
-                                            boton
-                                            boton--secundario
-                                        "
-                                        title="Consultar nuevamente el estado en Nubox"
-                                    >
-
-                                        <i class="bi bi-arrow-clockwise"></i>
-
-                                        Consultar ahora
-
-                                    </a>
-
-                                </div>
-
-                            </div>
-
-
-                        {% elif pedido.nubox_tiene_error %}
-
-                            <div class="detalle-admin__boleta-error">
-
-                                <div>
-
-                                    <i class="bi bi-exclamation-triangle"></i>
-
-                                </div>
-
-
-                                <div>
-
-                                    <strong>
-                                        No fue posible emitir la boleta
-                                    </strong>
-
-                                    <p>
-                                        Nubox registró un problema durante
-                                        la solicitud de emisión. El pedido
-                                        permanece confirmado y el error se
-                                        conserva para revisión administrativa.
-                                    </p>
-
-
-                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
-
-                                        <small>
-
-                                            Códigos territoriales:
-
-                                            {% if pedido.nubox_region_codigo %}
-
-                                                región
-                                                {{ pedido.nubox_region_codigo }}
-
-                                            {% endif %}
-
-                                            {% if pedido.nubox_comuna_codigo %}
-
-                                                / comuna
-                                                {{ pedido.nubox_comuna_codigo }}
-
-                                            {% endif %}
-
-                                        </small>
-
-                                    {% endif %}
-
-
-                                    <details>
-
-                                        <summary>
-                                            Ver detalle técnico
-                                        </summary>
-
-                                        <pre>{{ pedido.nubox_ultimo_error }}</pre>
-
-                                    </details>
-
-                                </div>
-
-                            </div>
-
-
-                        {% else %}
-
-                            <div class="detalle-admin__boleta-pendiente">
-
-                                <div class="detalle-admin__boleta-icono">
-
-                                    <i class="bi bi-hourglass-split"></i>
-
-                                </div>
-
-
-                                <div>
-
-                                    <strong>
-                                        Boleta todavía no registrada en Nubox
-                                    </strong>
-
-                                    <p>
-                                        El pedido está pagado, pero todavía
-                                        no posee un identificador de documento
-                                        Nubox.
-                                    </p>
-
-
-                                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
-
-                                        <small>
-
-                                            Códigos territoriales:
-
-                                            {% if pedido.nubox_region_codigo %}
-
-                                                región
-                                                {{ pedido.nubox_region_codigo }}
-
-                                            {% endif %}
-
-                                            {% if pedido.nubox_comuna_codigo %}
-
-                                                / comuna
-                                                {{ pedido.nubox_comuna_codigo }}
-
-                                            {% endif %}
-
-                                        </small>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-                        {% endif %}
-
-
-                    {% else %}
-
-                        <div class="detalle-admin__boleta-bloqueada">
-
-                            <i class="bi bi-lock"></i>
-
-                            <div>
-
-                                <strong>
-                                    Boleta no disponible
-                                </strong>
-
-                                <p>
-                                    La boleta electrónica solo se genera
-                                    después de confirmar el pago.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    {% endif %}
-
-                </article>
-
-
-                <!-- =================================================
-                     HISTORIAL / TRAZABILIDAD
-                ================================================== -->
-
-                <article class="seguimiento-tarjeta">
-
-                    <div class="detalle-admin__seccion-cabecera">
-
-                        <div>
-
-                            <span class="detalle-admin__eyebrow">
-                                Trazabilidad
-                            </span>
-
-                            <h2>
-                                Historial del pedido
-                            </h2>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="timeline-pedido">
-
-                        {% for paso in timeline %}
-
-                            <div
-                                class="
-                                    timeline-paso
-
-                                    {% if paso.completado %}
-                                        timeline-paso--completado
-                                    {% endif %}
-
-                                    {% if paso.activo %}
-                                        timeline-paso--activo
-                                    {% endif %}
-                                "
-                            >
-
-                                <div class="timeline-paso__icono">
-
-                                    <i
-                                        class="
-                                            bi
-                                            {{ paso.icono }}
-                                        "
-                                        aria-hidden="true"
-                                    ></i>
-
-                                </div>
-
-
-                                <div class="timeline-paso__contenido">
-
-                                    <strong>
-                                        {{ paso.titulo }}
-                                    </strong>
-
-
-                                    <p>
-                                        {{ paso.descripcion }}
-                                    </p>
-
-
-                                    {% if paso.fecha %}
-
-                                        <time>
-                                            {{ paso.fecha|date:"d/m/Y H:i" }}
-                                        </time>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-                        {% empty %}
-
-                            <div class="detalle-admin__cerrado">
-
-                                <i class="bi bi-info-circle"></i>
-
-                                <p>
-                                    No existe información de seguimiento
-                                    para este pedido.
-                                </p>
-
-                            </div>
-
-                        {% endfor %}
-
-                    </div>
-
-                </article>
-
-            </div>
-
-
-            <!-- =================================================
-                 COLUMNA LATERAL
-            ================================================== -->
-
-            <aside class="detalle-admin__lateral">
-
-                <!-- =================================================
-                     ACTUALIZAR ESTADO
-                ================================================== -->
-
-                <article class="seguimiento-tarjeta">
-
-                    <span class="detalle-admin__eyebrow">
-                        Operación
-                    </span>
-
-                    <h2>
-                        Avanzar pedido
-                    </h2>
-
-
-                    {% if puede_avanzar_estado %}
-
-                        {% if form.nuevo_estado.field.choices %}
-
-                            <form
-                                method="post"
-                                class="form-admin"
-                            >
-
-                                {% csrf_token %}
-
-                                {{ form.non_field_errors }}
-
-
-                                <div class="campo">
-
-                                    {{ form.nuevo_estado.label_tag }}
-
-                                    {{ form.nuevo_estado }}
-
-                                    {{ form.nuevo_estado.errors }}
-
-                                </div>
-
-
-                                <div class="campo">
-
-                                    {{ form.comentario.label_tag }}
-
-                                    {{ form.comentario }}
-
-                                    {{ form.comentario.errors }}
-
-                                </div>
-
-
-                                <button
-                                    type="submit"
-                                    class="
-                                        boton
-                                        boton--primario
-                                        boton--completo
-                                    "
-                                >
-
-                                    <i class="bi bi-arrow-right-circle"></i>
-
-                                    Actualizar estado
-
-                                </button>
-
-                            </form>
-
-
-                        {% else %}
-
-                            <div class="detalle-admin__cerrado">
-
-                                <i class="bi bi-check2-circle"></i>
-
-                                <p>
-                                    Este pedido se encuentra cerrado
-                                    y no tiene más fases disponibles.
-                                </p>
-
-                            </div>
-
-                        {% endif %}
-
-
-                    {% elif es_pago_pendiente %}
-
-                        <div class="detalle-admin__cerrado">
-
-                            <i class="bi bi-clock-history"></i>
-
-                            <p>
-                                Este pedido está pendiente de pago.
-                                El proceso del pedido se habilitará
-                                automáticamente cuando el pago sea confirmado.
-                            </p>
-
-                        </div>
-
-
-                    {% else %}
-
-                        <div class="detalle-admin__cerrado">
-
-                            <i class="bi bi-lock"></i>
-
-                            <p>
-                                El pago de este pedido no está confirmado.
-                                No es posible avanzar su estado operativo.
-                            </p>
-
-                        </div>
-
-                    {% endif %}
-
-                </article>
-
-
-                <!-- =================================================
-                     PAGO
-                ================================================== -->
-
-                <article class="seguimiento-tarjeta">
-
-                    <span class="detalle-admin__eyebrow">
-                        Transacción
-                    </span>
-
-                    <h2>
-                        Pago
-                    </h2>
-
-
-                    <div class="detalle-admin__datos">
+                    {% if pedido.comprobante_pago %}
 
                         <!-- =========================================
-                             ESTADO
+                             COMPROBANTE DISPONIBLE
                         ========================================== -->
-
-                        <div>
-
-                            <span>
-                                Estado
-                            </span>
-
-                            <strong>
-
-                                {% if pago_aprobado %}
-
-                                    <span class="detalle-admin__dato-ok">
-
-                                        <i class="bi bi-check-circle-fill"></i>
-
-                                        Confirmado
-
-                                    </span>
-
-                                {% else %}
-
-                                    {{ pedido.get_estado_pago_display }}
-
-                                {% endif %}
-
-                            </strong>
-
-                        </div>
-
-
-                        <!-- =========================================
-                             MÉTODO
-                        ========================================== -->
-
-                        <div>
-
-                            <span>
-                                Método
-                            </span>
-
-                            <strong>
-                                {{ pedido.get_metodo_pago_display }}
-                            </strong>
-
-                        </div>
-
-
-                        <!-- =========================================
-                             FECHA
-                        ========================================== -->
-
-                        {% if pedido.fecha_pago %}
-
-                            <div>
-
-                                <span>
-                                    Fecha
-                                </span>
-
-                                <strong>
-                                    {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
-                                </strong>
-
-                            </div>
-
-                        {% endif %}
-
-
-                        <!-- =========================================
-                             WEBPAY
-                        ========================================== -->
-
-                        {% if pedido.metodo_pago == "webpay" %}
-
-                            {% if pedido.webpay_authorization_code %}
-
-                                <div>
-
-                                    <span>
-                                        Autorización
-                                    </span>
-
-                                    <strong>
-                                        {{ pedido.webpay_authorization_code }}
-                                    </strong>
-
-                                </div>
-
-                            {% endif %}
-
-                        {% endif %}
-
-
-                        <!-- =========================================
-                             MERCADO PAGO
-                        ========================================== -->
-
-                        {% if pedido.metodo_pago == "mercadopago" %}
-
-                            {% if pedido.mercadopago_payment_id %}
-
-                                <div>
-
-                                    <span>
-                                        Payment ID
-                                    </span>
-
-                                    <strong>
-                                        {{ pedido.mercadopago_payment_id }}
-                                    </strong>
-
-                                </div>
-
-                            {% endif %}
-
-                        {% endif %}
-
-                    </div>
-
-
-                    <!-- =================================================
-                         COMPROBANTE DE PAGO
-                    ================================================== -->
-
-                    {% if pago_aprobado %}
 
                         <div class="detalle-admin__comprobante">
 
-                            {% if pedido.comprobante_pago %}
+                            <div class="detalle-admin__comprobante-info">
 
-                                <!-- =========================================
-                                     COMPROBANTE DISPONIBLE
-                                ========================================== -->
+                                <div class="detalle-admin__comprobante-icono">
 
-                                <div class="detalle-admin__comprobante-info">
-
-                                    <div class="detalle-admin__comprobante-icono">
-
-                                        <i class="bi bi-receipt"></i>
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <span>
-                                            Documento de pago
-                                        </span>
-
-                                        <strong>
-                                            Comprobante disponible
-                                        </strong>
-
-
-                                        {% if pedido.comprobante_pago.id_transaccion %}
-
-                                            <small>
-
-                                                ID:
-                                                {{ pedido.comprobante_pago.id_transaccion }}
-
-                                            </small>
-
-                                        {% endif %}
-
-
-                                        {% if pedido.comprobante_pago.proveedor %}
-
-                                            <small>
-
-                                                Medio:
-
-                                                {% if pedido.comprobante_pago.proveedor == "webpay" %}
-
-                                                    Webpay / Transbank
-
-                                                {% elif pedido.comprobante_pago.proveedor == "mercadopago" %}
-
-                                                    Mercado Pago
-
-                                                {% else %}
-
-                                                    {{ pedido.comprobante_pago.get_proveedor_display }}
-
-                                                {% endif %}
-
-                                            </small>
-
-                                        {% endif %}
-
-
-                                        {% if pedido.comprobante_pago.fecha_pago %}
-
-                                            <small>
-
-                                                Fecha:
-                                                {{ pedido.comprobante_pago.fecha_pago|date:"d/m/Y H:i" }}
-
-                                            </small>
-
-                                        {% endif %}
-
-                                    </div>
+                                    <i class="bi bi-receipt-cutoff"></i>
 
                                 </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Documento de pago
+                                    </span>
+
+
+                                    <strong>
+                                        Comprobante disponible
+                                    </strong>
+
+
+                                    {% if pedido.comprobante_pago.proveedor %}
+
+                                        <small>
+
+                                            Medio:
+
+                                            {% if pedido.comprobante_pago.proveedor == "webpay" %}
+
+                                                Webpay / Transbank
+
+                                            {% elif pedido.comprobante_pago.proveedor == "mercadopago" %}
+
+                                                Mercado Pago
+
+                                            {% else %}
+
+                                                {{ pedido.comprobante_pago.get_proveedor_display }}
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.comprobante_pago.id_transaccion %}
+
+                                        <small>
+
+                                            ID de transacción:
+                                            {{ pedido.comprobante_pago.id_transaccion }}
+
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.comprobante_pago.fecha_pago %}
+
+                                        <small>
+
+                                            Fecha:
+                                            {{ pedido.comprobante_pago.fecha_pago|date:"d/m/Y H:i" }}
+
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.comprobante_pago.monto %}
+
+                                        <small>
+
+                                            Monto:
+                                            ${{ pedido.comprobante_pago.monto|floatformat:0|intcomma }} CLP
+
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
 
                             <a
                                 href="{% url 'core:comprobante_pago' pedido.numero %}"
@@ -1241,87 +467,77 @@
                                 "
                                 title="Abrir comprobante de pago"
                             >
+
                                 <i class="bi bi-receipt"></i>
 
                                 Ver comprobante
+
                             </a>
 
-                            {% else %}
-
-                                <!-- =========================================
-                                     COMPROBANTE AÚN NO DISPONIBLE
-                                ========================================== -->
-
-                                <div
-                                    class="
-                                        detalle-admin__comprobante-info
-                                        detalle-admin__comprobante-info--pendiente
-                                    "
-                                >
-
-                                    <div class="detalle-admin__comprobante-icono">
-
-                                        <i class="bi bi-hourglass-split"></i>
-
-                                    </div>
+                        </div>
 
 
-                                    <div>
+                    {% else %}
 
-                                        <span>
-                                            Documento de pago
-                                        </span>
+                        <!-- =========================================
+                             COMPROBANTE EN PREPARACIÓN
+                        ========================================== -->
 
-                                        <strong>
-                                            Comprobante no disponible
-                                        </strong>
+                        <div
+                            class="
+                                detalle-admin__comprobante-info
+                                detalle-admin__comprobante-info--pendiente
+                            "
+                        >
 
-                                        <small>
-                                            El pago está aprobado, pero
-                                            todavía no existe un comprobante
-                                            asociado al pedido.
-                                        </small>
+                            <div class="detalle-admin__comprobante-icono">
 
-                                    </div>
+                                <i class="bi bi-hourglass-split"></i>
 
-                                </div>
+                            </div>
 
-                            {% endif %}
+
+                            <div>
+
+                                <span>
+                                    Documento de pago
+                                </span>
+
+
+                                <strong>
+                                    Comprobante en preparación
+                                </strong>
+
+
+                                <small>
+                                    El pago está aprobado, pero
+                                    todavía no existe un comprobante
+                                    asociado al pedido.
+                                </small>
+
+                            </div>
 
                         </div>
 
                     {% endif %}
 
-                </article>
 
+                {% else %}
 
-                <!-- =================================================
-                     CLIENTE
-                ================================================== -->
+                    <!-- =========================================
+                         PAGO NO APROBADO
+                    ========================================== -->
 
-                <article class="seguimiento-tarjeta">
+                    <div
+                        class="
+                            detalle-admin__comprobante-info
+                            detalle-admin__comprobante-info--pendiente
+                        "
+                    >
 
-                    <span class="detalle-admin__eyebrow">
-                        Comprador
-                    </span>
+                        <div class="detalle-admin__comprobante-icono">
 
-                    <h2>
-                        Cliente
-                    </h2>
-
-
-                    <div class="detalle-admin__datos">
-
-                        <div>
-
-                            <span>
-                                Nombre
-                            </span>
-
-                            <strong>
-                                {{ pedido.nombre }}
-                                {{ pedido.apellido }}
-                            </strong>
+                            <i class="bi bi-lock"></i>
 
                         </div>
 
@@ -1329,404 +545,676 @@
                         <div>
 
                             <span>
-                                RUT
+                                Documento de pago
                             </span>
 
-                            <strong>
-                                {{ pedido.rut }}
-                            </strong>
-
-                        </div>
-
-
-                        <div>
-
-                            <span>
-                                Correo
-                            </span>
 
                             <strong>
-                                {{ pedido.email }}
+                                Comprobante no disponible
                             </strong>
 
-                        </div>
 
-
-                        <div>
-
-                            <span>
-                                Teléfono
-                            </span>
-
-                            <strong>
-                                {{ pedido.telefono }}
-                            </strong>
+                            <small>
+                                El comprobante estará disponible
+                                una vez que el pago sea confirmado.
+                            </small>
 
                         </div>
 
                     </div>
 
-                </article>
+                {% endif %}
+
+            </article>
 
 
-                <!-- =================================================
-                     DESPACHO
-                ================================================== -->
+            <!-- =================================================
+                 HISTORIAL / TRAZABILIDAD
+            ================================================== -->
 
-                <article class="seguimiento-tarjeta">
+            <article class="seguimiento-tarjeta">
 
-                    <span class="detalle-admin__eyebrow">
-                        Entrega
-                    </span>
+                <div class="detalle-admin__seccion-cabecera">
 
-                    <h2>
-                        Despacho
-                    </h2>
+                    <div>
+
+                        <span class="detalle-admin__eyebrow">
+                            Trazabilidad
+                        </span>
+
+                        <h2>
+                            Historial del pedido
+                        </h2>
+
+                    </div>
+
+                </div>
 
 
-                    <div class="detalle-admin__direccion">
+                <div class="timeline-pedido">
 
-                        <i class="bi bi-geo-alt"></i>
+                    {% for paso in timeline %}
 
+                        <div
+                            class="
+                                timeline-paso
+
+                                {% if paso.completado %}
+                                    timeline-paso--completado
+                                {% endif %}
+
+                                {% if paso.activo %}
+                                    timeline-paso--activo
+                                {% endif %}
+                            "
+                        >
+
+                            <div class="timeline-paso__icono">
+
+                                <i
+                                    class="
+                                        bi
+                                        {{ paso.icono }}
+                                    "
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <div class="timeline-paso__contenido">
+
+                                <strong>
+                                    {{ paso.titulo }}
+                                </strong>
+
+
+                                <p>
+                                    {{ paso.descripcion }}
+                                </p>
+
+
+                                {% if paso.fecha %}
+
+                                    <time>
+                                        {{ paso.fecha|date:"d/m/Y H:i" }}
+                                    </time>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    {% empty %}
+
+                        <div class="detalle-admin__cerrado">
+
+                            <i class="bi bi-info-circle"></i>
+
+                            <p>
+                                No existe información de seguimiento
+                                para este pedido.
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </article>
+
+        </div>
+
+
+        <!-- =================================================
+             COLUMNA LATERAL
+        ================================================== -->
+
+        <aside class="detalle-admin__lateral">
+
+            <!-- =================================================
+                 ACTUALIZAR ESTADO
+            ================================================== -->
+
+            <article class="seguimiento-tarjeta">
+
+                <span class="detalle-admin__eyebrow">
+                    Operación
+                </span>
+
+                <h2>
+                    Avanzar pedido
+                </h2>
+
+
+                {% if puede_avanzar_estado %}
+
+                    {% if form.nuevo_estado.field.choices %}
+
+                        <form
+                            method="post"
+                            class="form-admin"
+                        >
+
+                            {% csrf_token %}
+
+                            {{ form.non_field_errors }}
+
+
+                            <div class="campo">
+
+                                {{ form.nuevo_estado.label_tag }}
+
+                                {{ form.nuevo_estado }}
+
+                                {{ form.nuevo_estado.errors }}
+
+                            </div>
+
+
+                            <div class="campo">
+
+                                {{ form.comentario.label_tag }}
+
+                                {{ form.comentario }}
+
+                                {{ form.comentario.errors }}
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="
+                                    boton
+                                    boton--primario
+                                    boton--completo
+                                "
+                            >
+
+                                <i class="bi bi-arrow-right-circle"></i>
+
+                                Actualizar estado
+
+                            </button>
+
+                        </form>
+
+
+                    {% else %}
+
+                        <div class="detalle-admin__cerrado">
+
+                            <i class="bi bi-check2-circle"></i>
+
+                            <p>
+                                Este pedido se encuentra cerrado
+                                y no tiene más fases disponibles.
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+
+                {% elif es_pago_pendiente %}
+
+                    <div class="detalle-admin__cerrado">
+
+                        <i class="bi bi-clock-history"></i>
 
                         <p>
-
-                            {{ pedido.direccion }}
-                            {{ pedido.numero_direccion }}
-
-
-                            {% if pedido.departamento %}
-
-                                , {{ pedido.departamento }}
-
-                            {% endif %}
-
-
-                            <br>
-
-
-                            {{ pedido.comuna }},
-                            {{ pedido.region }}
-
+                            Este pedido está pendiente de pago.
+                            El proceso del pedido se habilitará
+                            automáticamente cuando el pago sea confirmado.
                         </p>
 
                     </div>
 
 
-                    {% if pedido.referencia %}
+                {% else %}
 
-                        <div class="detalle-admin__referencia">
+                    <div class="detalle-admin__cerrado">
 
-                            <i class="bi bi-info-circle"></i>
+                        <i class="bi bi-lock"></i>
 
-                            {{ pedido.referencia }}
+                        <p>
+                            El pago de este pedido no está confirmado.
+                            No es posible avanzar su estado operativo.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </article>
+
+
+            <!-- =================================================
+                 PAGO
+            ================================================== -->
+
+            <article class="seguimiento-tarjeta">
+
+                <span class="detalle-admin__eyebrow">
+                    Transacción
+                </span>
+
+                <h2>
+                    Pago
+                </h2>
+
+
+                <div class="detalle-admin__datos">
+
+                    <!-- =========================================
+                         ESTADO
+                    ========================================== -->
+
+                    <div>
+
+                        <span>
+                            Estado
+                        </span>
+
+                        <strong>
+
+                            {% if pago_aprobado %}
+
+                                <span class="detalle-admin__dato-ok">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    Confirmado
+
+                                </span>
+
+                            {% else %}
+
+                                {{ pedido.get_estado_pago_display }}
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         MÉTODO
+                    ========================================== -->
+
+                    <div>
+
+                        <span>
+                            Método
+                        </span>
+
+                        <strong>
+                            {{ pedido.get_metodo_pago_display }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         FECHA
+                    ========================================== -->
+
+                    {% if pedido.fecha_pago %}
+
+                        <div>
+
+                            <span>
+                                Fecha
+                            </span>
+
+                            <strong>
+                                {{ pedido.fecha_pago|date:"d/m/Y H:i" }}
+                            </strong>
 
                         </div>
 
                     {% endif %}
 
 
-                    {% if pedido.nubox_region_codigo or pedido.nubox_comuna_codigo %}
+                    <!-- =========================================
+                         WEBPAY
+                    ========================================== -->
 
-                        <div class="detalle-admin__referencia">
+                    {% if pedido.metodo_pago == "webpay" %}
 
-                            <i class="bi bi-geo"></i>
+                        {% if pedido.webpay_authorization_code %}
 
-                            Nubox:
+                            <div>
 
-                            {% if pedido.nubox_region_codigo %}
+                                <span>
+                                    Autorización
+                                </span>
 
-                                región
-                                {{ pedido.nubox_region_codigo }}
+                                <strong>
+                                    {{ pedido.webpay_authorization_code }}
+                                </strong>
 
-                            {% endif %}
+                            </div>
 
-                            {% if pedido.nubox_comuna_codigo %}
-
-                                / comuna
-                                {{ pedido.nubox_comuna_codigo }}
-
-                            {% endif %}
-
-                        </div>
+                        {% endif %}
 
                     {% endif %}
 
-                </article>
 
-            </aside>
+                    <!-- =========================================
+                         MERCADO PAGO
+                    ========================================== -->
 
-        </div>
+                    {% if pedido.metodo_pago == "mercadopago" %}
+
+                        {% if pedido.mercadopago_payment_id %}
+
+                            <div>
+
+                                <span>
+                                    Payment ID
+                                </span>
+
+                                <strong>
+                                    {{ pedido.mercadopago_payment_id }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- =================================================
+                     COMPROBANTE DE PAGO
+                ================================================== -->
+
+                {% if pago_aprobado %}
+
+                    <div class="detalle-admin__comprobante">
+
+                        {% if pedido.comprobante_pago %}
+
+                            <div class="detalle-admin__comprobante-info">
+
+                                <div class="detalle-admin__comprobante-icono">
+
+                                    <i class="bi bi-receipt"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Documento de pago
+                                    </span>
+
+                                    <strong>
+                                        Comprobante disponible
+                                    </strong>
+
+
+                                    {% if pedido.comprobante_pago.id_transaccion %}
+
+                                        <small>
+
+                                            ID:
+                                            {{ pedido.comprobante_pago.id_transaccion }}
+
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.comprobante_pago.proveedor %}
+
+                                        <small>
+
+                                            Medio:
+
+                                            {% if pedido.comprobante_pago.proveedor == "webpay" %}
+
+                                                Webpay / Transbank
+
+                                            {% elif pedido.comprobante_pago.proveedor == "mercadopago" %}
+
+                                                Mercado Pago
+
+                                            {% else %}
+
+                                                {{ pedido.comprobante_pago.get_proveedor_display }}
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if pedido.comprobante_pago.fecha_pago %}
+
+                                        <small>
+
+                                            Fecha:
+                                            {{ pedido.comprobante_pago.fecha_pago|date:"d/m/Y H:i" }}
+
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <a
+                                href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                class="
+                                    boton
+                                    boton--primario
+                                    detalle-admin__comprobante-boton
+                                "
+                                title="Abrir comprobante de pago"
+                            >
+
+                                <i class="bi bi-receipt"></i>
+
+                                Ver comprobante
+
+                            </a>
+
+                        {% else %}
+
+                            <div
+                                class="
+                                    detalle-admin__comprobante-info
+                                    detalle-admin__comprobante-info--pendiente
+                                "
+                            >
+
+                                <div class="detalle-admin__comprobante-icono">
+
+                                    <i class="bi bi-hourglass-split"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Documento de pago
+                                    </span>
+
+                                    <strong>
+                                        Comprobante no disponible
+                                    </strong>
+
+                                    <small>
+                                        El pago está aprobado, pero
+                                        todavía no existe un comprobante
+                                        asociado al pedido.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </article>
+
+
+            <!-- =================================================
+                 CLIENTE
+            ================================================== -->
+
+            <article class="seguimiento-tarjeta">
+
+                <span class="detalle-admin__eyebrow">
+                    Comprador
+                </span>
+
+                <h2>
+                    Cliente
+                </h2>
+
+
+                <div class="detalle-admin__datos">
+
+                    <div>
+
+                        <span>
+                            Nombre
+                        </span>
+
+                        <strong>
+                            {{ pedido.nombre }}
+                            {{ pedido.apellido }}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            RUT
+                        </span>
+
+                        <strong>
+                            {{ pedido.rut }}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Correo
+                        </span>
+
+                        <strong>
+                            {{ pedido.email }}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Teléfono
+                        </span>
+
+                        <strong>
+                            {{ pedido.telefono }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- =================================================
+                 DESPACHO
+            ================================================== -->
+
+            <article class="seguimiento-tarjeta">
+
+                <span class="detalle-admin__eyebrow">
+                    Entrega
+                </span>
+
+                <h2>
+                    Despacho
+                </h2>
+
+
+                <div class="detalle-admin__direccion">
+
+                    <i class="bi bi-geo-alt"></i>
+
+
+                    <p>
+
+                        {{ pedido.direccion }}
+                        {{ pedido.numero_direccion }}
+
+
+                        {% if pedido.departamento %}
+
+                            , {{ pedido.departamento }}
+
+                        {% endif %}
+
+
+                        <br>
+
+
+                        {{ pedido.comuna }},
+                        {{ pedido.region }}
+
+                    </p>
+
+                </div>
+
+
+                {% if pedido.referencia %}
+
+                    <div class="detalle-admin__referencia">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        {{ pedido.referencia }}
+
+                    </div>
+
+                {% endif %}
+
+            </article>
+
+        </aside>
 
     </div>
 
+</div>
+
+
 </section>
-
-{% endblock %}
-
-
-{% block extra_js %}
-
-<!-- =========================================================
-     POLLING NUBOX
-========================================================= -->
-
-<script>
-    document.addEventListener(
-        "DOMContentLoaded",
-        () => {
-
-            const documento = document.getElementById(
-                "nubox-admin-documento"
-            );
-
-            if (!documento) {
-                return;
-            }
-
-
-            const pagoAprobado = (
-                documento.dataset.pagoAprobado === "true"
-            );
-
-
-            const yaEmitido = (
-                documento.dataset.nuboxEmitido === "true"
-            );
-
-
-            const documentId = (
-                documento.dataset.nuboxDocumentId || ""
-            ).trim();
-
-
-            const statusUrl = (
-                documento.dataset.nuboxStatusUrl || ""
-            ).trim();
-
-
-            /*
-             * Solo hacemos polling cuando:
-             *
-             * - Nubox ya recibió el documento;
-             * - existe nubox_document_id;
-             * - la boleta todavía no está emitida.
-             *
-             * Si no existe document_id, esta pantalla no
-             * intenta volver a emitir la boleta.
-             */
-
-            if (
-                !pagoAprobado
-                || yaEmitido
-                || !documentId
-                || !statusUrl
-            ) {
-                return;
-            }
-
-
-            let intentos = 0;
-
-            const MAX_INTENTOS = 40;
-            const INTERVALO_MS = 3000;
-            const PRIMERA_CONSULTA_MS = 1500;
-
-            let consultaEnCurso = false;
-            let detenerPolling = false;
-
-
-            const actualizarEstadoVisual = (
-                estado
-            ) => {
-
-                if (!estado) {
-                    return;
-                }
-
-
-                const elementos = (
-                    documento.querySelectorAll(
-                        "[data-nubox-estado]"
-                    )
-                );
-
-
-                elementos.forEach(
-                    (elemento) => {
-
-                        elemento.textContent = estado;
-
-                    },
-                );
-            };
-
-
-            const consultarEstadoNubox = async () => {
-
-                if (
-                    detenerPolling
-                    || consultaEnCurso
-                    || document.hidden
-                ) {
-                    return;
-                }
-
-
-                intentos += 1;
-                consultaEnCurso = true;
-
-
-                try {
-
-                    const response = await fetch(
-                        statusUrl,
-                        {
-                            method: "GET",
-
-                            headers: {
-                                "X-Requested-With": (
-                                    "XMLHttpRequest"
-                                ),
-
-                                "Accept": (
-                                    "application/json"
-                                ),
-                            },
-
-                            credentials: "same-origin",
-
-                            cache: "no-store",
-                        },
-                    );
-
-
-                    /*
-                     * 403:
-                     * la sesión ya no tiene acceso.
-                     *
-                     * 404:
-                     * el pedido ya no existe.
-                     *
-                     * En ambos casos detenemos el polling.
-                     */
-
-                    if (
-                        response.status === 403
-                        || response.status === 404
-                    ) {
-
-                        detenerPolling = true;
-
-                        return;
-                    }
-
-
-                    if (!response.ok) {
-
-                        throw new Error(
-                            `HTTP ${response.status}`
-                        );
-                    }
-
-
-                    const data = (
-                        await response.json()
-                    );
-
-
-                    if (
-                        data.estado
-                    ) {
-
-                        actualizarEstadoVisual(
-                            data.estado
-                        );
-                    }
-
-
-                    /*
-                     * Cuando Nubox finalmente confirma
-                     * la emisión, recargamos una sola vez.
-                     *
-                     * Django volverá a renderizar:
-                     *
-                     * - nubox_emitido=True
-                     * - folio
-                     * - fecha de emisión
-                     * - botón de descarga
-                     */
-
-                    if (
-                        data.emitido
-                    ) {
-
-                        detenerPolling = true;
-
-                        window.location.reload();
-
-                        return;
-                    }
-
-                } catch (error) {
-
-                    console.warn(
-                        "No fue posible consultar "
-                        + "el estado Nubox:",
-                        error,
-                    );
-
-                } finally {
-
-                    consultaEnCurso = false;
-                }
-
-
-                if (
-                    !detenerPolling
-                    && intentos < MAX_INTENTOS
-                ) {
-
-                    window.setTimeout(
-                        consultarEstadoNubox,
-                        INTERVALO_MS,
-                    );
-
-                }
-            };
-
-
-            /*
-             * Si el administrador vuelve a esta pestaña,
-             * hacemos una consulta inmediata.
-             */
-
-            document.addEventListener(
-                "visibilitychange",
-                () => {
-
-                    if (
-                        !document.hidden
-                        && !detenerPolling
-                        && intentos < MAX_INTENTOS
-                    ) {
-
-                        window.setTimeout(
-                            consultarEstadoNubox,
-                            250,
-                        );
-
-                    }
-                },
-            );
-
-
-            window.setTimeout(
-                consultarEstadoNubox,
-                PRIMERA_CONSULTA_MS,
-            );
-        },
-    );
-</script>
 
 {% endblock %}
