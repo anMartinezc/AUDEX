@@ -1,0 +1,38 @@
+{% load humanize %}
+¡TU PEDIDO FUE ENTREGADO! | AUDEX
+
+Hola {{ pedido.nombre }},
+
+Tu pedido {{ pedido.numero }} fue marcado como entregado correctamente.
+
+El proceso de este pedido ha finalizado exitosamente.
+
+
+TU COMPRA
+
+{% for item in pedido.items.all %}
+- {{ item.nombre_producto }}
+  Cantidad: {{ item.cantidad }}
+  Total: ${{ item.total_final|default:item.total|floatformat:0|intcomma }} CLP
+{% empty %}
+No se encontraron productos asociados al pedido.
+{% endfor %}
+
+
+TOTAL PAGADO
+
+${{ pedido.total|floatformat:0|intcomma }} CLP
+
+
+Muchas gracias por elegir Audex.
+
+Esperamos que disfrutes tu compra y que tus productos cumplan con tus expectativas.
+
+Puedes conocer nuestros productos en:
+
+https://audex.cl{% url 'core:productos' %}
+
+
+Gracias por confiar en nosotros.
+
+Audex

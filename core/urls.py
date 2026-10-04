@@ -99,13 +99,7 @@ urlpatterns = [
     path("mis-compras/<str:numero>/comprobante/", views.comprobante_pago, name="comprobante_pago"),
 
 
-    # =========================================================================
-    # NUBOX / BOLETA ELECTRÓNICA
-    # =========================================================================
-
-    path("pedido/<str:numero>/nubox/estado/", views_pedidos.estado_boleta_nubox, name="estado_boleta_nubox"),
-    path("pedidos/<str:numero>/boleta/", views_pedidos.descargar_boleta_nubox, name="descargar_boleta_nubox"),
-
+ 
 
     # =========================================================================
     # SEGUIMIENTO DE PEDIDOS

@@ -441,7 +441,6 @@ class PedidoHistorialEstadoInline(
 # ============================================================
 # PEDIDOS
 # ============================================================
-
 @admin.register(Pedido)
 class PedidoAdmin(AudexModelAdmin):
     list_display = (
@@ -452,7 +451,8 @@ class PedidoAdmin(AudexModelAdmin):
         "estado_pago",
         "pagado",
         "estado",
-        "nubox_emitido",
+        "correo_despacho_enviado",
+        "correo_entrega_enviado",
         "creado",
     )
 
@@ -461,11 +461,11 @@ class PedidoAdmin(AudexModelAdmin):
         "estado_pago",
         "pagado",
         "metodo_pago",
-        "nubox_emitido",
-        "nubox_estado",
         "tipo_descuento",
         "stock_descontado",
         "correo_confirmacion_enviado",
+        "correo_despacho_enviado",
+        "correo_entrega_enviado",
         "creado",
     )
 
@@ -481,8 +481,6 @@ class PedidoAdmin(AudexModelAdmin):
         "webpay_authorization_code",
         "mercadopago_payment_id",
         "mercadopago_preference_id",
-        "nubox_document_id",
-        "=nubox_folio",
         "codigo_descuento",
     )
 
@@ -519,15 +517,6 @@ class PedidoAdmin(AudexModelAdmin):
         "mercadopago_payment_type",
         "mercadopago_transaction_amount",
 
-        # Nubox
-        "nubox_document_id",
-        "nubox_folio",
-        "nubox_idempotence_id",
-        "nubox_estado",
-        "nubox_emitido",
-        "nubox_emitido_en",
-        "nubox_ultimo_error",
-
         # Descuentos
         "codigo_descuento_obj",
         "codigo_descuento",
@@ -537,8 +526,14 @@ class PedidoAdmin(AudexModelAdmin):
 
         # Procesamiento
         "stock_descontado",
+
+        # Correos
         "correo_confirmacion_enviado",
         "fecha_correo_confirmacion",
+        "correo_despacho_enviado",
+        "fecha_correo_despacho",
+        "correo_entrega_enviado",
+        "fecha_correo_entrega",
 
         # Auditoría
         "creado",
@@ -610,16 +605,6 @@ class PedidoAdmin(AudexModelAdmin):
                     ),
                     "departamento",
                     "referencia",
-                ),
-            },
-        ),
-
-        (
-            "Códigos territoriales Nubox / SII",
-            {
-                "fields": (
-                    "nubox_region_codigo",
-                    "nubox_comuna_codigo",
                 ),
             },
         ),
@@ -700,16 +685,10 @@ class PedidoAdmin(AudexModelAdmin):
         ),
 
         (
-            "Nubox",
+            "Procesamiento interno",
             {
                 "fields": (
-                    "nubox_document_id",
-                    "nubox_folio",
-                    "nubox_idempotence_id",
-                    "nubox_estado",
-                    "nubox_emitido",
-                    "nubox_emitido_en",
-                    "nubox_ultimo_error",
+                    "stock_descontado",
                 ),
                 "classes": (
                     "collapse",
@@ -718,12 +697,21 @@ class PedidoAdmin(AudexModelAdmin):
         ),
 
         (
-            "Procesamiento interno",
+            "Correos automáticos",
             {
                 "fields": (
-                    "stock_descontado",
-                    "correo_confirmacion_enviado",
-                    "fecha_correo_confirmacion",
+                    (
+                        "correo_confirmacion_enviado",
+                        "fecha_correo_confirmacion",
+                    ),
+                    (
+                        "correo_despacho_enviado",
+                        "fecha_correo_despacho",
+                    ),
+                    (
+                        "correo_entrega_enviado",
+                        "fecha_correo_entrega",
+                    ),
                 ),
                 "classes": (
                     "collapse",
@@ -762,8 +750,6 @@ class PedidoAdmin(AudexModelAdmin):
         obj,
     ):
         return obj.nombre_completo
-
-
 # ============================================================
 # HISTORIAL DE ESTADOS
 # ============================================================

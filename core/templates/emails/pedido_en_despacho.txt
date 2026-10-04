@@ -1,0 +1,55 @@
+{% load humanize %}
+TU PEDIDO VA EN CAMINO | AUDEX
+
+Hola {{ pedido.nombre }},
+
+Tu pedido {{ pedido.numero }} ya comenzó su proceso de despacho.
+
+ESTADO
+En despacho
+
+Tu pedido fue preparado correctamente y comenzó la etapa de entrega hacia la dirección registrada en tu compra.
+
+
+PRODUCTOS
+
+{% for item in pedido.items.all %}
+- {{ item.nombre_producto }}
+  Cantidad: {{ item.cantidad }}
+  Total: ${{ item.total_final|default:item.total|floatformat:0|intcomma }} CLP
+{% empty %}
+No se encontraron productos asociados al pedido.
+{% endfor %}
+
+
+TOTAL PAGADO
+
+${{ pedido.total|floatformat:0|intcomma }} CLP
+
+
+DIRECCIÓN DE DESPACHO
+
+{{ pedido.nombre_completo }}
+{{ pedido.direccion_completa }}
+{% if pedido.referencia %}
+Referencia: {{ pedido.referencia }}
+{% endif %}
+
+
+SEGUIMIENTO
+
+Puedes consultar el estado de tu pedido en:
+
+https://audex.cl{% url 'core:seguimiento_pedido' %}
+
+Ingresa tu número de pedido:
+
+{{ pedido.numero }}
+
+y el mismo RUT utilizado durante la compra.
+
+
+Gracias por comprar en Audex.
+
+Audex
+Seguimiento de tu compra

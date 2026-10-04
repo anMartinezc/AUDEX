@@ -1233,6 +1233,9 @@ class TarifaBlueExpress(models.Model):
             f"${self.precio:,}"
         )
 
+
+
+
 class Pedido(models.Model):
     # -------------------------------------------------------------------------
     # ESTADOS DEL PEDIDO
@@ -1465,34 +1468,6 @@ class Pedido(models.Model):
     )
 
     # -------------------------------------------------------------------------
-    # CÓDIGOS TERRITORIALES NUBOX / SII
-    # -------------------------------------------------------------------------
-
-    nubox_region_codigo = models.CharField(
-        max_length=2,
-        blank=True,
-        verbose_name=(
-            "Código región Nubox/SII"
-        ),
-        help_text=(
-            "Código territorial de región "
-            "utilizado para emitir DTE en Nubox."
-        ),
-    )
-
-    nubox_comuna_codigo = models.CharField(
-        max_length=5,
-        blank=True,
-        verbose_name=(
-            "Código comuna Nubox/SII"
-        ),
-        help_text=(
-            "Código territorial de comuna "
-            "utilizado para emitir DTE en Nubox."
-        ),
-    )
-
-    # -------------------------------------------------------------------------
     # ESTADO Y MÉTODO DE PAGO
     # -------------------------------------------------------------------------
 
@@ -1538,6 +1513,10 @@ class Pedido(models.Model):
         )
     )
 
+    # -------------------------------------------------------------------------
+    # CORREO DE CONFIRMACIÓN DE COMPRA
+    # -------------------------------------------------------------------------
+
     correo_confirmacion_enviado = (
         models.BooleanField(
             default=False,
@@ -1546,6 +1525,42 @@ class Pedido(models.Model):
     )
 
     fecha_correo_confirmacion = (
+        models.DateTimeField(
+            null=True,
+            blank=True,
+        )
+    )
+
+    # -------------------------------------------------------------------------
+    # CORREO DE INICIO DE DESPACHO
+    # -------------------------------------------------------------------------
+
+    correo_despacho_enviado = (
+        models.BooleanField(
+            default=False,
+            db_index=True,
+        )
+    )
+
+    fecha_correo_despacho = (
+        models.DateTimeField(
+            null=True,
+            blank=True,
+        )
+    )
+
+    # -------------------------------------------------------------------------
+    # CORREO DE ENTREGA
+    # -------------------------------------------------------------------------
+
+    correo_entrega_enviado = (
+        models.BooleanField(
+            default=False,
+            db_index=True,
+        )
+    )
+
+    fecha_correo_entrega = (
         models.DateTimeField(
             null=True,
             blank=True,
@@ -1656,71 +1671,6 @@ class Pedido(models.Model):
     )
 
     # -------------------------------------------------------------------------
-    # NUBOX
-    # -------------------------------------------------------------------------
-
-    nubox_document_id = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        unique=True,
-        verbose_name=(
-            "ID documento Nubox"
-        ),
-    )
-
-    nubox_folio = models.BigIntegerField(
-        null=True,
-        blank=True,
-        db_index=True,
-        verbose_name=(
-            "Folio Nubox"
-        ),
-    )
-
-    nubox_idempotence_id = models.UUIDField(
-        null=True,
-        blank=True,
-        unique=True,
-        editable=False,
-        verbose_name=(
-            "ID de idempotencia Nubox"
-        ),
-    )
-
-    nubox_estado = models.CharField(
-        max_length=100,
-        blank=True,
-        db_index=True,
-        verbose_name=(
-            "Estado documento Nubox"
-        ),
-    )
-
-    nubox_emitido = models.BooleanField(
-        default=False,
-        db_index=True,
-        verbose_name=(
-            "Boleta Nubox emitida"
-        ),
-    )
-
-    nubox_emitido_en = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name=(
-            "Fecha emisión Nubox"
-        ),
-    )
-
-    nubox_ultimo_error = models.TextField(
-        blank=True,
-        verbose_name=(
-            "Último error Nubox"
-        ),
-    )
-
-    # -------------------------------------------------------------------------
     # DESCUENTOS
     # -------------------------------------------------------------------------
 
@@ -1825,6 +1775,10 @@ class Pedido(models.Model):
         auto_now=True,
     )
 
+    # -------------------------------------------------------------------------
+    # CONFIGURACIÓN DEL MODELO
+    # -------------------------------------------------------------------------
+
     class Meta:
         ordering = [
             "-creado",
@@ -1871,26 +1825,6 @@ class Pedido(models.Model):
                 ],
                 name=(
                     "pedido_fidelidad_idx"
-                ),
-            ),
-
-            models.Index(
-                fields=[
-                    "nubox_emitido",
-                    "creado",
-                ],
-                name=(
-                    "pedido_nubox_emitido_idx"
-                ),
-            ),
-
-            models.Index(
-                fields=[
-                    "nubox_estado",
-                    "creado",
-                ],
-                name=(
-                    "pedido_nubox_estado_idx"
                 ),
             ),
         ]
@@ -1971,77 +1905,6 @@ class Pedido(models.Model):
                 parte
                 and str(parte).strip()
             )
-        )
-
-    # -------------------------------------------------------------------------
-    # ESTADO Y URL DE NUBOX
-    # -------------------------------------------------------------------------
-
-    @property
-    def nubox_url_pdf(self):
-        """
-        URL interna de AUDEX para descargar
-        la boleta electrónica.
-
-        Solo se expone cuando:
-
-        - existe nubox_document_id;
-        - Nubox confirmó que la boleta
-          está efectivamente emitida.
-
-        Las credenciales de Nubox permanecen
-        exclusivamente en el backend.
-        """
-
-        if (
-            not self.nubox_document_id
-            or not self.nubox_emitido
-        ):
-            return ""
-
-        return reverse(
-            "core:descargar_boleta_nubox",
-            kwargs={
-                "numero": self.numero,
-            },
-        )
-
-    @property
-    def nubox_en_proceso(self):
-        """
-        Nubox ya recibió el documento,
-        pero todavía no confirmó la emisión.
-        """
-
-        return bool(
-            self.nubox_document_id
-            and not self.nubox_emitido
-        )
-
-    @property
-    def nubox_disponible(self):
-        """
-        Indica si la boleta se encuentra
-        completamente emitida y disponible.
-        """
-
-        return bool(
-            self.nubox_document_id
-            and self.nubox_emitido
-        )
-
-    @property
-    def nubox_tiene_error(self):
-        """
-        Indica si existe un error Nubox
-        registrado para el pedido.
-        """
-
-        return bool(
-            str(
-                self.nubox_ultimo_error
-                or ""
-            ).strip()
         )
 
     # -------------------------------------------------------------------------
@@ -2175,28 +2038,12 @@ class Pedido(models.Model):
                 .upper()
             )
 
-        if self.nubox_region_codigo:
-            self.nubox_region_codigo = (
-                str(
-                    self.nubox_region_codigo
-                )
-                .strip()
-                .zfill(2)
-            )
-
-        if self.nubox_comuna_codigo:
-            self.nubox_comuna_codigo = (
-                str(
-                    self.nubox_comuna_codigo
-                )
-                .strip()
-                .zfill(5)
-            )
-
         super().save(
             *args,
             **kwargs,
         )
+
+
 
     # -------------------------------------------------------------------------
     # GENERAR NÚMERO DE PEDIDO

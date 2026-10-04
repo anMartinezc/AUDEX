@@ -20,6 +20,49 @@
 {% block content %}
 
 
+
+<!-- =====================================================
+     BANNER CYBERDAY
+===================================================== -->
+
+<section class="cyberday-banner" aria-label="CyberDay Audex">
+
+    <a
+        href="{% url 'core:productos' %}"
+        class="cyberday-banner__enlace"
+        aria-label="Ver ofertas CyberDay"
+    >
+
+        <picture>
+
+            <!-- Imagen para celular -->
+            <source
+                media="(max-width: 767px)"
+                srcset="{% static 'core/img/CyberTelefono.png' %}"
+            >
+
+            <!-- Imagen para PC / Tablet -->
+            <img
+                src="{% static 'core/img/CyberPc.png' %}"
+                alt="CyberDay Audex - Descubre nuestras ofertas"
+                class="cyberday-banner__imagen"
+                fetchpriority="high"
+                decoding="async"
+            >
+
+        </picture>
+
+    </a>
+
+</section>
+
+
+
+
+
+
+
+
 <!-- =====================================================
      HERO PRINCIPAL
 ===================================================== -->
