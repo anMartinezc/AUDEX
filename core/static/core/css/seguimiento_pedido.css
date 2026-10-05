@@ -84,6 +84,7 @@
 
 .buscar-pedido__icono {
     width: 82px;
+
     height: 82px;
 
     margin:
@@ -91,6 +92,7 @@
         24px;
 
     display: grid;
+
     place-items: center;
 
     color:
@@ -465,6 +467,59 @@
 
 
 /* =========================================================
+   BOTÓN SECUNDARIO
+========================================================= */
+
+.seguimiento-pagina .boton--secundario {
+    color:
+        var(--color-blanco);
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.11
+        );
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+
+    box-shadow: none;
+
+    cursor: pointer;
+}
+
+
+.seguimiento-pagina .boton--secundario:hover {
+    color:
+        var(--color-azul-claro);
+
+    border-color:
+        rgba(
+            54,
+            169,
+            214,
+            0.30
+        );
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.065
+        );
+}
+
+
+/* =========================================================
    CABECERA DE SEGUIMIENTO
 ========================================================= */
 
@@ -721,6 +776,23 @@
 }
 
 
+/* =========================================================
+   COLUMNA PRINCIPAL
+========================================================= */
+
+.seguimiento-grid > div {
+    min-width: 0;
+
+    display: grid;
+
+    gap: 18px;
+}
+
+
+/* =========================================================
+   COLUMNA LATERAL
+========================================================= */
+
 .seguimiento-lateral {
     min-width: 0;
 
@@ -781,7 +853,10 @@
 
 
 .seguimiento-tarjeta h2 {
-    margin-bottom: 22px;
+    margin:
+        0
+        0
+        22px;
 
     font-family:
         "Montserrat",
@@ -915,7 +990,10 @@
 .timeline-paso p {
     max-width: 540px;
 
-    margin-top: 6px;
+    margin:
+        6px
+        0
+        0;
 
     color:
         var(--color-gris);
@@ -949,8 +1027,7 @@
 
 .timeline-paso--completado
 .timeline-paso__icono {
-    color:
-        #041017;
+    color: #041017;
 
     border-color:
         transparent;
@@ -986,12 +1063,6 @@
 /* =========================================================
    TIMELINE ACTUAL
 ========================================================= */
-/*
- * La etapa ACTUAL queda completamente celeste.
- *
- * Se diferencia de una etapa completada mediante
- * un halo un poco más marcado.
- */
 
 .timeline-paso--activo {
     opacity: 1;
@@ -1000,8 +1071,7 @@
 
 .timeline-paso--activo
 .timeline-paso__icono {
-    color:
-        #041017;
+    color: #041017;
 
     border-color:
         transparent;
@@ -1052,13 +1122,6 @@
 /* =========================================================
    PRÓXIMA ETAPA
 ========================================================= */
-/*
- * La etapa inmediatamente posterior a la actual
- * aparece delineada en celeste.
- *
- * También cubre el caso en que no exista una etapa
- * marcada como "activo", pero haya pasos completados.
- */
 
 .timeline-paso--activo
 +
@@ -1114,18 +1177,6 @@ strong {
 }
 
 
-/*
- * Si el backend tiene todos los pasos anteriores
- * completados pero ninguno marcado como activo,
- * destacamos igualmente el primer paso pendiente.
- *
- * Ejemplo:
- *
- * Pedido recibido     ✓
- * Pago confirmado     ✓
- * En preparación      borde celeste
- */
-
 .timeline-paso--completado
 +
 .timeline-paso:not(
@@ -1170,6 +1221,384 @@ strong {
             214,
             0.035
         );
+}
+
+
+/* =========================================================
+   BLUE EXPRESS
+========================================================= */
+
+.seguimiento-bluexpress {
+    position: relative;
+
+    overflow: hidden;
+
+    border-color:
+        rgba(
+            54,
+            169,
+            214,
+            0.20
+        );
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                54,
+                169,
+                214,
+                0.045
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.008
+            )
+        ),
+        var(--color-fondo-secundario);
+}
+
+
+.seguimiento-bluexpress::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--color-azul-claro),
+            rgba(
+                54,
+                169,
+                214,
+                0.05
+            )
+        );
+}
+
+
+/* =========================================================
+   CABECERA BLUE EXPRESS
+========================================================= */
+
+.seguimiento-bluexpress__cabecera {
+    margin-bottom: 22px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+
+.seguimiento-bluexpress__cabecera > div:last-child {
+    min-width: 0;
+}
+
+
+.seguimiento-bluexpress__cabecera
+.etiqueta-seccion {
+    margin-bottom: 7px;
+}
+
+
+.seguimiento-bluexpress__cabecera h2 {
+    margin: 0;
+
+    font-size: 1.15rem;
+
+    line-height: 1.25;
+}
+
+
+.seguimiento-bluexpress__icono {
+    width: 48px;
+
+    height: 48px;
+
+    min-width: 48px;
+
+    display: grid;
+
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 1.1rem;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.24
+        );
+
+    border-radius: 13px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.075
+        );
+
+    box-shadow:
+        0
+        0
+        22px
+        rgba(
+            54,
+            169,
+            214,
+            0.035
+        );
+}
+
+
+/* =========================================================
+   CONTENIDO BLUE EXPRESS
+========================================================= */
+
+.seguimiento-bluexpress__contenido {
+    display: grid;
+
+    gap: 12px;
+}
+
+
+/* =========================================================
+   DATOS BLUE EXPRESS
+========================================================= */
+
+.seguimiento-bluexpress__dato {
+    min-width: 0;
+
+    padding:
+        14px
+        15px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 18px;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
+
+    border-radius: 11px;
+
+    background:
+        rgba(
+            2,
+            8,
+            12,
+            0.32
+        );
+}
+
+
+.seguimiento-bluexpress__dato span {
+    color:
+        var(--color-gris);
+
+    font-size: 0.69rem;
+
+    font-weight: 600;
+
+    line-height: 1.4;
+}
+
+
+.seguimiento-bluexpress__dato strong {
+    min-width: 0;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.79rem;
+
+    font-weight: 900;
+
+    line-height: 1.4;
+
+    text-align: right;
+
+    overflow-wrap:
+        anywhere;
+}
+
+
+.seguimiento-bluexpress__dato
+#numero-seguimiento-bluexpress {
+    color:
+        var(--color-azul-claro);
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: 0.92rem;
+
+    letter-spacing: 0.025em;
+}
+
+
+/* =========================================================
+   ACCIONES BLUE EXPRESS
+========================================================= */
+
+.seguimiento-bluexpress__acciones {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 10px;
+
+    margin-top: 3px;
+}
+
+
+.seguimiento-bluexpress__acciones
+.boton {
+    min-width: 0;
+
+    min-height: 46px;
+
+    padding:
+        0
+        14px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    font-size: 0.71rem;
+
+    font-weight: 900;
+
+    line-height: 1.25;
+
+    text-align: center;
+
+    text-decoration: none;
+}
+
+
+.seguimiento-bluexpress__acciones
+.boton i {
+    flex-shrink: 0;
+
+    font-size: 0.9rem;
+}
+
+
+/* =========================================================
+   AYUDA BLUE EXPRESS
+========================================================= */
+
+.seguimiento-bluexpress__ayuda {
+    margin-top: 2px;
+
+    padding:
+        12px
+        13px;
+
+    display: grid;
+
+    grid-template-columns:
+        20px
+        minmax(0, 1fr);
+
+    align-items: start;
+
+    gap: 9px;
+
+    color:
+        var(--color-gris);
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.11
+        );
+
+    border-radius: 10px;
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.025
+        );
+}
+
+
+.seguimiento-bluexpress__ayuda > i {
+    margin-top: 1px;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.8rem;
+
+    line-height: 1.3;
+}
+
+
+.seguimiento-bluexpress__ayuda p {
+    margin: 0;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.67rem;
+
+    font-weight: 500;
+
+    line-height: 1.55;
+}
+
+
+.seguimiento-bluexpress__ayuda strong {
+    color:
+        var(--color-gris-claro);
+
+    font-weight: 900;
 }
 
 
@@ -1254,8 +1683,7 @@ strong {
 
     border-radius: 12px;
 
-    background:
-        #ffffff;
+    background: #ffffff;
 }
 
 
@@ -1282,8 +1710,7 @@ strong {
 
     border: 0;
 
-    background:
-        #ffffff;
+    background: #ffffff;
 }
 
 
@@ -1348,7 +1775,8 @@ strong {
 
     line-height: 1.35;
 
-    overflow-wrap: anywhere;
+    overflow-wrap:
+        anywhere;
 }
 
 
@@ -1560,12 +1988,140 @@ strong {
 
     line-height: 1.65;
 
-    overflow-wrap: anywhere;
+    overflow-wrap:
+        anywhere;
 }
 
 
 /* =========================================================
-   BOLETA ELECTRÓNICA
+   REFERENCIA DIRECCIÓN
+========================================================= */
+
+.seguimiento-direccion__referencia {
+    margin-top: 14px;
+
+    padding:
+        10px
+        11px;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 8px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.66rem;
+
+    line-height: 1.5;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius: 9px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.012
+        );
+}
+
+
+.seguimiento-direccion__referencia i {
+    margin-top: 1px;
+
+    color:
+        var(--color-azul-claro);
+}
+
+
+/* =========================================================
+   INFORMACIÓN DE DESPACHO
+========================================================= */
+
+.seguimiento-despacho-info {
+    display: grid;
+
+    gap: 0;
+}
+
+
+.seguimiento-despacho-info > div {
+    min-width: 0;
+
+    padding:
+        12px
+        0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    border-bottom:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.055
+        );
+}
+
+
+.seguimiento-despacho-info > div:first-child {
+    padding-top: 0;
+}
+
+
+.seguimiento-despacho-info > div:last-child {
+    padding-bottom: 0;
+
+    border-bottom: 0;
+}
+
+
+.seguimiento-despacho-info span {
+    color:
+        var(--color-gris);
+
+    font-size: 0.68rem;
+
+    line-height: 1.4;
+}
+
+
+.seguimiento-despacho-info strong {
+    min-width: 0;
+
+    color:
+        var(--color-blanco);
+
+    font-size: 0.72rem;
+
+    font-weight: 900;
+
+    line-height: 1.4;
+
+    text-align: right;
+
+    overflow-wrap:
+        anywhere;
+}
+
+
+/* =========================================================
+   COMPROBANTE DE PAGO
+   Se conservan nombres de clase antiguos por compatibilidad
 ========================================================= */
 
 .seguimiento-boleta {
@@ -1578,7 +2134,7 @@ strong {
 
 
 /* =========================================================
-   ESTADO BOLETA
+   ESTADO COMPROBANTE
 ========================================================= */
 
 .seguimiento-boleta__estado {
@@ -1597,7 +2153,7 @@ strong {
 
 
 /* =========================================================
-   ICONO BOLETA
+   ICONO COMPROBANTE
 ========================================================= */
 
 .seguimiento-boleta__icono {
@@ -1649,7 +2205,7 @@ strong {
 
 
 /* =========================================================
-   INFORMACIÓN BOLETA
+   INFORMACIÓN COMPROBANTE
 ========================================================= */
 
 .seguimiento-boleta__info {
@@ -1692,14 +2248,30 @@ strong {
 }
 
 
+.seguimiento-boleta__info small {
+    display: block;
+
+    margin-top: 6px;
+
+    color:
+        var(--color-gris-claro);
+
+    font-size: 0.64rem;
+
+    line-height: 1.45;
+
+    overflow-wrap:
+        anywhere;
+}
+
+
 /* =========================================================
-   BOLETA PENDIENTE
+   COMPROBANTE PENDIENTE
 ========================================================= */
 
 .seguimiento-boleta--pendiente
 .seguimiento-boleta__icono {
-    color:
-        #f4c95d;
+    color: #f4c95d;
 
     border-color:
         rgba(
@@ -1738,7 +2310,7 @@ strong {
 
 
 /* =========================================================
-   BOTÓN DESCARGAR BOLETA
+   BOTÓN COMPROBANTE
 ========================================================= */
 
 .seguimiento-boleta
@@ -1858,9 +2430,11 @@ strong {
     ====================================================== */
 
     .seguimiento-cabecera {
-        align-items: flex-start;
+        align-items:
+            flex-start;
 
-        flex-direction: column;
+        flex-direction:
+            column;
 
         gap: 18px;
     }
@@ -1884,6 +2458,52 @@ strong {
         padding:
             22px
             19px;
+    }
+
+
+    /* =====================================================
+       BLUE EXPRESS
+    ====================================================== */
+
+    .seguimiento-bluexpress__cabecera {
+        margin-bottom: 18px;
+
+        gap: 12px;
+    }
+
+
+    .seguimiento-bluexpress__icono {
+        width: 44px;
+
+        height: 44px;
+
+        min-width: 44px;
+
+        border-radius: 11px;
+    }
+
+
+    .seguimiento-bluexpress__cabecera h2 {
+        font-size: 1rem;
+    }
+
+
+    .seguimiento-bluexpress__dato {
+        padding:
+            12px
+            13px;
+    }
+
+
+    .seguimiento-bluexpress__acciones {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .seguimiento-bluexpress__acciones
+    .boton {
+        min-height: 45px;
     }
 
 
@@ -1924,7 +2544,7 @@ strong {
 
 
     /* =====================================================
-       BOLETA
+       COMPROBANTE
     ====================================================== */
 
     .seguimiento-boleta {
@@ -2037,8 +2657,7 @@ strong {
     ====================================================== */
 
     .buscar-pedido__seguridad {
-        padding:
-            10px;
+        padding: 10px;
 
         gap: 8px;
 
@@ -2077,6 +2696,108 @@ strong {
         top: 44px;
 
         left: 21px;
+    }
+
+
+    /* =====================================================
+       BLUE EXPRESS
+    ====================================================== */
+
+    .seguimiento-bluexpress {
+        padding:
+            20px
+            17px;
+    }
+
+
+    .seguimiento-bluexpress__cabecera {
+        align-items: flex-start;
+    }
+
+
+    .seguimiento-bluexpress__icono {
+        width: 40px;
+
+        height: 40px;
+
+        min-width: 40px;
+
+        font-size: 0.95rem;
+    }
+
+
+    .seguimiento-bluexpress__cabecera h2 {
+        font-size: 0.95rem;
+
+        line-height: 1.3;
+    }
+
+
+    .seguimiento-bluexpress__dato {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 4px;
+
+        padding:
+            11px
+            12px;
+    }
+
+
+    .seguimiento-bluexpress__dato span {
+        font-size: 0.64rem;
+    }
+
+
+    .seguimiento-bluexpress__dato strong {
+        font-size: 0.75rem;
+
+        text-align: left;
+    }
+
+
+    .seguimiento-bluexpress__dato
+    #numero-seguimiento-bluexpress {
+        font-size: 0.88rem;
+    }
+
+
+    .seguimiento-bluexpress__acciones {
+        gap: 8px;
+    }
+
+
+    .seguimiento-bluexpress__acciones
+    .boton {
+        min-height: 44px;
+
+        padding:
+            0
+            11px;
+
+        font-size: 0.68rem;
+    }
+
+
+    .seguimiento-bluexpress__ayuda {
+        padding:
+            10px
+            11px;
+
+        grid-template-columns:
+            18px
+            minmax(0, 1fr);
+
+        gap: 7px;
+    }
+
+
+    .seguimiento-bluexpress__ayuda p {
+        font-size: 0.63rem;
+
+        line-height: 1.5;
     }
 
 
@@ -2188,8 +2909,31 @@ strong {
     }
 
 
+    .seguimiento-direccion__referencia {
+        font-size: 0.63rem;
+    }
+
+
     /* =====================================================
-       BOLETA
+       DESPACHO
+    ====================================================== */
+
+    .seguimiento-despacho-info > div {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 4px;
+    }
+
+
+    .seguimiento-despacho-info strong {
+        text-align: left;
+    }
+
+
+    /* =====================================================
+       COMPROBANTE
     ====================================================== */
 
     .seguimiento-boleta {
@@ -2230,6 +2974,11 @@ strong {
         font-size: 0.67rem;
 
         line-height: 1.5;
+    }
+
+
+    .seguimiento-boleta__info small {
+        font-size: 0.61rem;
     }
 
 

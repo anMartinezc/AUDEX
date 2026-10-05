@@ -3,99 +3,242 @@
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
-    <meta name="supported-color-schemes" content="light dark">
-    <meta name="x-apple-disable-message-reformatting" content="yes">
-    <meta name="theme-color" content="#070c11">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="color-scheme"
+        content="light dark"
+    >
+
+    <meta
+        name="supported-color-schemes"
+        content="light dark"
+    >
+
+    <meta
+        name="x-apple-disable-message-reformatting"
+        content="yes"
+    >
+
+    <meta
+        name="theme-color"
+        content="#070c11"
+    >
 
     <title>
         Pedido entregado · {{ pedido.numero }}
     </title>
 
+
     <style>
+
+        /* =====================================================
+           COLOR SCHEME
+        ====================================================== */
+
         :root {
-            color-scheme: light dark !important;
-            supported-color-schemes: light dark !important;
+            color-scheme:
+                light dark !important;
+
+            supported-color-schemes:
+                light dark !important;
         }
 
-        html, body {
-            width: 100% !important;
-            min-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
 
-            background-color: #070c11 !important;
-            background: linear-gradient(
-                #070c11,
-                #070c11
-            ) !important;
+        /* =====================================================
+           RESET
+        ====================================================== */
 
-            background-image: linear-gradient(
-                #070c11,
-                #070c11
-            ) !important;
+        html,
+        body {
+
+            width:
+                100% !important;
+
+            min-width:
+                100% !important;
+
+            margin:
+                0 !important;
+
+            padding:
+                0 !important;
+
+            background-color:
+                #070c11 !important;
+
+            background:
+                linear-gradient(
+                    #070c11,
+                    #070c11
+                ) !important;
+
+            background-image:
+                linear-gradient(
+                    #070c11,
+                    #070c11
+                ) !important;
         }
+
 
         body {
-            color: #ffffff !important;
+
+            color:
+                #ffffff !important;
+
+            -webkit-text-fill-color:
+                #ffffff;
 
             font-family:
                 Arial,
                 Helvetica,
                 sans-serif;
 
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust:
+                100%;
+
+            -ms-text-size-adjust:
+                100%;
         }
+
 
         table {
-            border-spacing: 0;
-            border-collapse: separate;
-            max-width: 100%;
+
+            border-spacing:
+                0;
+
+            border-collapse:
+                separate;
+
+            max-width:
+                100%;
         }
+
 
         td {
-            border-collapse: collapse;
+
+            border-collapse:
+                collapse;
         }
+
 
         img {
-            display: block;
-            max-width: 100%;
-            border: 0;
-            outline: none;
+
+            display:
+                block;
+
+            max-width:
+                100%;
+
+            border:
+                0;
+
+            outline:
+                none;
         }
 
-        /* =================================================
+
+        /* =====================================================
+           FORZAR TEXTO BLANCO
+           Gmail iPhone / dark mode
+        ====================================================== */
+
+        .texto-blanco,
+        .texto-claro,
+        .texto-secundario,
+        .texto-etiqueta,
+        .texto-azul,
+        .texto-forzado-blanco {
+
+            color:
+                #ffffff !important;
+
+            -webkit-text-fill-color:
+                #ffffff !important;
+        }
+
+
+        .texto-blanco *,
+        .texto-claro *,
+        .texto-secundario *,
+        .texto-etiqueta *,
+        .texto-azul *,
+        .texto-forzado-blanco * {
+
+            color:
+                #ffffff !important;
+
+            -webkit-text-fill-color:
+                #ffffff !important;
+        }
+
+
+        /* =====================================================
            GMAIL
-        ================================================== */
+        ====================================================== */
 
         u + .body {
-            width: 100% !important;
-            min-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
+
+            width:
+                100% !important;
+
+            min-width:
+                100% !important;
+
+            margin:
+                0 !important;
+
+            padding:
+                0 !important;
 
             background-color:
                 #070c11 !important;
         }
+
 
         u + .body .email-wrapper,
         u + .body .email-fondo {
-            width: 100% !important;
-            min-width: 100% !important;
+
+            width:
+                100% !important;
+
+            min-width:
+                100% !important;
 
             background-color:
                 #070c11 !important;
         }
 
-        /* =================================================
+
+        u + .body .texto-blanco,
+        u + .body .texto-claro,
+        u + .body .texto-secundario,
+        u + .body .texto-etiqueta,
+        u + .body .texto-azul,
+        u + .body .texto-forzado-blanco {
+
+            color:
+                #ffffff !important;
+
+            -webkit-text-fill-color:
+                #ffffff !important;
+        }
+
+
+        /* =====================================================
            BLEND MODE GMAIL
-        ================================================== */
+        ====================================================== */
 
         u + .body .gmail-blend-screen {
+
             background:
                 #000000 !important;
 
@@ -103,7 +246,9 @@
                 screen !important;
         }
 
+
         u + .body .gmail-blend-difference {
+
             background:
                 #000000 !important;
 
@@ -111,44 +256,24 @@
                 difference !important;
         }
 
-        /* =================================================
-           TEXTOS
-        ================================================== */
 
-        .texto-blanco,
-        .texto-claro,
-        .texto-secundario,
-        .texto-etiqueta,
-        .texto-azul {
-            color:
-                #ffffff !important;
-
-            -webkit-text-fill-color:
-                #ffffff !important;
-        }
-
-        u + .body .texto-blanco,
-        u + .body .texto-claro,
-        u + .body .texto-secundario,
-        u + .body .texto-etiqueta,
-        u + .body .texto-azul {
-            color:
-                #ffffff !important;
-
-            -webkit-text-fill-color:
-                #ffffff !important;
-        }
-
-        /* =================================================
+        /* =====================================================
            FONDOS
-        ================================================== */
+        ====================================================== */
 
         .email-wrapper {
-            width: 100% !important;
-            min-width: 100% !important;
 
-            margin: 0 !important;
-            padding: 0 !important;
+            width:
+                100% !important;
+
+            min-width:
+                100% !important;
+
+            margin:
+                0 !important;
+
+            padding:
+                0 !important;
 
             background-color:
                 #070c11 !important;
@@ -165,8 +290,10 @@
                     #070c11
                 ) !important;
         }
+
 
         .email-fondo {
+
             background-color:
                 #070c11 !important;
 
@@ -183,7 +310,9 @@
                 ) !important;
         }
 
+
         .email-tarjeta {
+
             background-color:
                 #0d1720 !important;
 
@@ -200,7 +329,9 @@
                 ) !important;
         }
 
+
         .email-hero {
+
             background-color:
                 #102b3a !important;
 
@@ -212,7 +343,9 @@
                 ) !important;
         }
 
+
         .email-panel {
+
             background-color:
                 #132a38 !important;
 
@@ -229,7 +362,28 @@
                 ) !important;
         }
 
+
+        .email-seguimiento {
+
+            background-color:
+                #102c3b !important;
+
+            background:
+                linear-gradient(
+                    #102c3b,
+                    #102c3b
+                ) !important;
+
+            background-image:
+                linear-gradient(
+                    #102c3b,
+                    #102c3b
+                ) !important;
+        }
+
+
         .email-aviso {
+
             background-color:
                 #102631 !important;
 
@@ -246,7 +400,9 @@
                 ) !important;
         }
 
+
         .email-footer {
+
             background-color:
                 #05090d !important;
 
@@ -263,62 +419,87 @@
                 ) !important;
         }
 
-        /* =================================================
+
+        /* =====================================================
            OUTLOOK
-        ================================================== */
+        ====================================================== */
 
         [data-ogsc] .email-wrapper,
         [data-ogsc] .email-fondo {
+
             background-color:
                 #070c11 !important;
         }
 
+
         [data-ogsc] .email-tarjeta {
+
             background-color:
                 #0d1720 !important;
         }
 
+
         [data-ogsc] .email-hero {
+
             background-color:
                 #102b3a !important;
         }
 
+
         [data-ogsc] .email-panel {
+
             background-color:
                 #132a38 !important;
         }
 
+
+        [data-ogsc] .email-seguimiento {
+
+            background-color:
+                #102c3b !important;
+        }
+
+
         [data-ogsc] .email-aviso {
+
             background-color:
                 #102631 !important;
         }
 
+
         [data-ogsc] .email-footer {
+
             background-color:
                 #05090d !important;
         }
+
 
         [data-ogsc] .texto-blanco,
         [data-ogsc] .texto-claro,
         [data-ogsc] .texto-secundario,
         [data-ogsc] .texto-etiqueta,
-        [data-ogsc] .texto-azul {
+        [data-ogsc] .texto-azul,
+        [data-ogsc] .texto-forzado-blanco {
+
             color:
                 #ffffff !important;
         }
 
-        /* =================================================
+
+        /* =====================================================
            DARK MODE
-        ================================================== */
+        ====================================================== */
 
         @media (
             prefers-color-scheme: dark
         ) {
 
             :root {
+
                 color-scheme:
                     dark !important;
             }
+
 
             html,
             body,
@@ -341,7 +522,27 @@
                     ) !important;
             }
 
+
+            body,
+            p,
+            div,
+            span,
+            strong,
+            h1,
+            h2,
+            h3,
+            td {
+
+                color:
+                    #ffffff !important;
+
+                -webkit-text-fill-color:
+                    #ffffff !important;
+            }
+
+
             .email-tarjeta {
+
                 background-color:
                     #0d1720 !important;
 
@@ -350,15 +551,11 @@
                         #0d1720,
                         #0d1720
                     ) !important;
-
-                background-image:
-                    linear-gradient(
-                        #0d1720,
-                        #0d1720
-                    ) !important;
             }
 
+
             .email-hero {
+
                 background-color:
                     #102b3a !important;
 
@@ -370,62 +567,41 @@
                     ) !important;
             }
 
+
             .email-panel {
+
                 background-color:
                     #132a38 !important;
-
-                background:
-                    linear-gradient(
-                        #132a38,
-                        #132a38
-                    ) !important;
-
-                background-image:
-                    linear-gradient(
-                        #132a38,
-                        #132a38
-                    ) !important;
             }
+
+
+            .email-seguimiento {
+
+                background-color:
+                    #102c3b !important;
+            }
+
 
             .email-aviso {
+
                 background-color:
                     #102631 !important;
-
-                background:
-                    linear-gradient(
-                        #102631,
-                        #102631
-                    ) !important;
-
-                background-image:
-                    linear-gradient(
-                        #102631,
-                        #102631
-                    ) !important;
             }
+
 
             .email-footer {
+
                 background-color:
                     #05090d !important;
-
-                background:
-                    linear-gradient(
-                        #05090d,
-                        #05090d
-                    ) !important;
-
-                background-image:
-                    linear-gradient(
-                        #05090d,
-                        #05090d
-                    ) !important;
             }
+
 
             .texto-blanco,
             .texto-claro,
             .texto-secundario,
             .texto-etiqueta,
-            .texto-azul {
+            .texto-azul,
+            .texto-forzado-blanco {
 
                 color:
                     #ffffff !important;
@@ -433,11 +609,13 @@
                 -webkit-text-fill-color:
                     #ffffff !important;
             }
+
         }
 
-        /* =================================================
+
+        /* =====================================================
            RESPONSIVE
-        ================================================== */
+        ====================================================== */
 
         @media only screen and (
             max-width: 640px
@@ -445,6 +623,7 @@
 
             html,
             body {
+
                 margin:
                     0 !important;
 
@@ -453,79 +632,40 @@
 
                 background-color:
                     #070c11 !important;
-
-                background:
-                    linear-gradient(
-                        #070c11,
-                        #070c11
-                    ) !important;
-
-                background-image:
-                    linear-gradient(
-                        #070c11,
-                        #070c11
-                    ) !important;
             }
+
 
             .email-wrapper,
             .email-fondo {
+
                 width:
                     100% !important;
 
                 min-width:
                     100% !important;
-
-                margin:
-                    0 !important;
-
-                background-color:
-                    #070c11 !important;
-
-                background:
-                    linear-gradient(
-                        #070c11,
-                        #070c11
-                    ) !important;
-
-                background-image:
-                    linear-gradient(
-                        #070c11,
-                        #070c11
-                    ) !important;
             }
 
+
             .email-exterior {
+
                 padding:
                     18px
                     0
-                    30px
-                    !important;
-
-                background-color:
-                    #070c11 !important;
-
-                background:
-                    linear-gradient(
-                        #070c11,
-                        #070c11
-                    ) !important;
-
-                background-image:
-                    linear-gradient(
-                        #070c11,
-                        #070c11
-                    ) !important;
+                    30px !important;
             }
 
+
             .email-cabecera {
+
                 padding:
                     22px
                     18px
-                    16px
-                    !important;
+                    16px !important;
             }
 
+
             .email-seccion {
+
                 padding-left:
                     18px !important;
 
@@ -533,14 +673,17 @@
                     18px !important;
             }
 
+
             .email-hero-contenido {
+
                 padding:
                     30px
-                    22px
-                    !important;
+                    22px !important;
             }
 
+
             .email-titulo {
+
                 font-size:
                     31px !important;
 
@@ -551,52 +694,81 @@
                     -0.6px !important;
             }
 
+
             .email-logo-nombre {
+
                 font-size:
                     21px !important;
             }
 
+
             .email-badge {
+
                 padding:
                     7px
-                    10px
-                    !important;
+                    10px !important;
 
                 font-size:
                     9px !important;
-
-                letter-spacing:
-                    0.4px !important;
             }
 
+
             .email-total {
+
                 font-size:
                     22px !important;
             }
 
+
             .email-panel-celda {
+
                 padding:
-                    18px
-                    18px
-                    !important;
+                    18px !important;
             }
 
+
             .email-producto-nombre {
+
                 font-size:
                     15px !important;
             }
+
+
+            .email-os {
+
+                font-size:
+                    21px !important;
+            }
+
+
+            .email-boton-seguimiento {
+
+                display:
+                    block !important;
+
+                width:
+                    auto !important;
+
+                text-align:
+                    center !important;
+            }
+
         }
+
 
         @media only screen and (
             max-width: 430px
         ) {
 
             .email-logo-subtitulo {
+
                 letter-spacing:
                     1.4px !important;
             }
 
+
             .email-badge {
+
                 max-width:
                     96px !important;
 
@@ -607,12 +779,17 @@
                     center !important;
             }
 
+
             .email-titulo {
+
                 font-size:
                     29px !important;
             }
+
         }
+
     </style>
+
 </head>
 
 
@@ -620,29 +797,19 @@
     class="body email-fondo"
     bgcolor="#070c11"
     style="
-        width: 100%;
-        min-width: 100%;
-        margin: 0;
-        padding: 0;
+        width:100%;
+        min-width:100%;
+        margin:0;
+        padding:0;
 
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff;
+        color:#ffffff !important;
+        -webkit-text-fill-color:#ffffff;
 
-        background-color: #070c11 !important;
-        background: linear-gradient(
-            #070c11,
-            #070c11
-        ) !important;
+        background-color:#070c11 !important;
+        background:linear-gradient(#070c11,#070c11) !important;
+        background-image:linear-gradient(#070c11,#070c11) !important;
 
-        background-image: linear-gradient(
-            #070c11,
-            #070c11
-        ) !important;
-
-        font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
+        font-family:Arial, Helvetica, sans-serif;
     "
 >
 
@@ -650,61 +817,55 @@
 <div
     class="email-wrapper"
     style="
-        width: 100%;
-        min-width: 100%;
-        margin: 0;
-        padding: 0;
+        width:100%;
+        min-width:100%;
+        margin:0;
+        padding:0;
 
-        background-color:
-            #070c11 !important;
-
-        background:
-            linear-gradient(
-                #070c11,
-                #070c11
-            ) !important;
-
-        background-image:
-            linear-gradient(
-                #070c11,
-                #070c11
-            ) !important;
+        background-color:#070c11 !important;
+        background:linear-gradient(#070c11,#070c11) !important;
+        background-image:linear-gradient(#070c11,#070c11) !important;
     "
 >
 
 
-    <!-- ================================================= -->
-    <!-- PREHEADER                                         -->
-    <!-- ================================================= -->
+    <!-- =================================================
+         PREHEADER
+    ================================================== -->
 
     <div
         style="
-            display: none;
-            visibility: hidden;
-            opacity: 0;
+            display:none;
+            visibility:hidden;
+            opacity:0;
 
-            width: 0;
-            height: 0;
+            width:0;
+            height:0;
 
-            max-width: 0;
-            max-height: 0;
+            max-width:0;
+            max-height:0;
 
-            overflow: hidden;
+            overflow:hidden;
 
-            color: transparent;
+            color:transparent;
 
-            font-size: 1px;
-            line-height: 1px;
+            font-size:1px;
+            line-height:1px;
         "
     >
         Tu pedido {{ pedido.numero }}
         fue entregado correctamente.
+
+        {% if pedido.numero_seguimiento %}
+            Seguimiento Blue Express:
+            {{ pedido.numero_seguimiento }}.
+        {% endif %}
     </div>
 
 
-    <!-- ================================================= -->
-    <!-- FONDO GENERAL                                     -->
-    <!-- ================================================= -->
+    <!-- =================================================
+         FONDO GENERAL
+    ================================================== -->
 
     <table
         role="presentation"
@@ -715,26 +876,14 @@
         bgcolor="#070c11"
         class="email-fondo"
         style="
-            width: 100%;
-            min-width: 100%;
+            width:100%;
+            min-width:100%;
 
-            margin: 0;
-            padding: 0;
+            margin:0;
+            padding:0;
 
-            background-color:
-                #070c11 !important;
-
-            background:
-                linear-gradient(
-                    #070c11,
-                    #070c11
-                ) !important;
-
-            background-image:
-                linear-gradient(
-                    #070c11,
-                    #070c11
-                ) !important;
+            background-color:#070c11 !important;
+            background:linear-gradient(#070c11,#070c11) !important;
         "
     >
 
@@ -745,29 +894,10 @@
                 bgcolor="#070c11"
                 class="email-fondo"
                 style="
-                    padding: 0;
-
-                    background-color:
-                        #070c11 !important;
-
-                    background:
-                        linear-gradient(
-                            #070c11,
-                            #070c11
-                        ) !important;
-
-                    background-image:
-                        linear-gradient(
-                            #070c11,
-                            #070c11
-                        ) !important;
+                    padding:0;
+                    background-color:#070c11 !important;
                 "
             >
-
-
-                <!-- ================================================= -->
-                <!-- ÁREA EXTERIOR                                     -->
-                <!-- ================================================= -->
 
                 <table
                     role="presentation"
@@ -777,28 +907,6 @@
                     border="0"
                     bgcolor="#070c11"
                     class="email-fondo"
-                    style="
-                        width: 100%;
-                        min-width: 100%;
-
-                        margin: 0;
-                        padding: 0;
-
-                        background-color:
-                            #070c11 !important;
-
-                        background:
-                            linear-gradient(
-                                #070c11,
-                                #070c11
-                            ) !important;
-
-                        background-image:
-                            linear-gradient(
-                                #070c11,
-                                #070c11
-                            ) !important;
-                    "
                 >
 
                     <tr>
@@ -818,25 +926,13 @@
 
                                 background-color:
                                     #070c11 !important;
-
-                                background:
-                                    linear-gradient(
-                                        #070c11,
-                                        #070c11
-                                    ) !important;
-
-                                background-image:
-                                    linear-gradient(
-                                        #070c11,
-                                        #070c11
-                                    ) !important;
                             "
                         >
 
 
-                            <!-- ================================================= -->
-                            <!-- TARJETA PRINCIPAL                                  -->
-                            <!-- ================================================= -->
+                            <!-- =================================================
+                                 TARJETA PRINCIPAL
+                            ================================================== -->
 
                             <table
                                 role="presentation"
@@ -847,13 +943,12 @@
                                 bgcolor="#0d1720"
                                 class="email-tarjeta"
                                 style="
-                                    width: 100%;
-                                    max-width: 620px;
+                                    width:100%;
+                                    max-width:620px;
 
-                                    table-layout: fixed;
+                                    table-layout:fixed;
 
-                                    background-color:
-                                        #0d1720 !important;
+                                    background-color:#0d1720 !important;
 
                                     background:
                                         linear-gradient(
@@ -861,29 +956,21 @@
                                             #0d1720
                                         ) !important;
 
-                                    background-image:
-                                        linear-gradient(
-                                            #0d1720,
-                                            #0d1720
-                                        ) !important;
-
                                     border:
-                                        1px
-                                        solid
+                                        1px solid
                                         #29404d;
 
                                     border-radius:
                                         26px;
 
-                                    overflow:
-                                        hidden;
+                                    overflow:hidden;
                                 "
                             >
 
 
-                                <!-- ================================================= -->
-                                <!-- CABECERA                                          -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     CABECERA
+                                ================================================== -->
 
                                 <tr>
 
@@ -898,21 +985,6 @@
                                                 28px
                                                 28px
                                                 18px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -923,21 +995,18 @@
                                             cellpadding="0"
                                             border="0"
                                             style="
-                                                width: 100%;
-                                                table-layout: fixed;
+                                                width:100%;
+                                                table-layout:fixed;
                                             "
                                         >
 
                                             <tr>
 
-
-                                                <!-- LOGO -->
-
                                                 <td
                                                     valign="middle"
                                                     style="
-                                                        width: 62%;
-                                                        padding-right: 10px;
+                                                        width:62%;
+                                                        padding-right:10px;
                                                     "
                                                 >
 
@@ -953,8 +1022,7 @@
                                                             <td
                                                                 valign="middle"
                                                                 style="
-                                                                    padding-right:
-                                                                        12px;
+                                                                    padding-right:12px;
                                                                 "
                                                             >
 
@@ -963,66 +1031,45 @@
                                                                     alt="Audex"
                                                                     width="56"
                                                                     height="56"
-                                                                    class="email-logo-img"
                                                                     style="
-                                                                        display: block;
-
-                                                                        width:
-                                                                            56px;
-
-                                                                        height:
-                                                                            56px;
-
-                                                                        border:
-                                                                            0;
-
-                                                                        outline:
-                                                                            none;
-
-                                                                        border-radius:
-                                                                            14px;
+                                                                        display:block;
+                                                                        width:56px;
+                                                                        height:56px;
+                                                                        border:0;
+                                                                        outline:none;
+                                                                        border-radius:14px;
                                                                     "
                                                                 >
 
                                                             </td>
 
 
-                                                            <td
-                                                                valign="middle"
-                                                            >
+                                                            <td valign="middle">
 
                                                                 <div
                                                                     class="
                                                                         email-logo-nombre
-                                                                        texto-azul
+                                                                        texto-forzado-blanco
                                                                     "
                                                                     style="
-                                                                        color:
-                                                                            #ffffff !important;
+                                                                        color:#ffffff !important;
+                                                                        -webkit-text-fill-color:#ffffff !important;
 
-                                                                        -webkit-text-fill-color:
-                                                                            #ffffff !important;
-
-                                                                        font-size:
-                                                                            24px;
-
-                                                                        line-height:
-                                                                            1;
-
-                                                                        font-weight:
-                                                                            800;
-
-                                                                        letter-spacing:
-                                                                            -0.5px;
+                                                                        font-size:24px;
+                                                                        line-height:1;
+                                                                        font-weight:800;
+                                                                        letter-spacing:-0.5px;
                                                                     "
                                                                 >
 
                                                                     <div class="gmail-blend-screen">
+
                                                                         <div class="gmail-blend-difference">
 
                                                                             Audex
 
                                                                         </div>
+
                                                                     </div>
 
                                                                 </div>
@@ -1031,38 +1078,29 @@
                                                                 <div
                                                                     class="
                                                                         email-logo-subtitulo
-                                                                        texto-secundario
+                                                                        texto-forzado-blanco
                                                                     "
                                                                     style="
-                                                                        margin-top:
-                                                                            6px;
+                                                                        margin-top:6px;
 
-                                                                        color:
-                                                                            #ffffff !important;
+                                                                        color:#ffffff !important;
+                                                                        -webkit-text-fill-color:#ffffff !important;
 
-                                                                        -webkit-text-fill-color:
-                                                                            #ffffff !important;
-
-                                                                        font-size:
-                                                                            9px;
-
-                                                                        line-height:
-                                                                            1.3;
-
-                                                                        letter-spacing:
-                                                                            2.2px;
-
-                                                                        text-transform:
-                                                                            uppercase;
+                                                                        font-size:9px;
+                                                                        line-height:1.3;
+                                                                        letter-spacing:2.2px;
+                                                                        text-transform:uppercase;
                                                                     "
                                                                 >
 
                                                                     <div class="gmail-blend-screen">
+
                                                                         <div class="gmail-blend-difference">
 
                                                                             Contigo a todas
 
                                                                         </div>
+
                                                                     </div>
 
                                                                 </div>
@@ -1076,41 +1114,32 @@
                                                 </td>
 
 
-                                                <!-- BADGE -->
-
                                                 <td
                                                     align="right"
                                                     valign="middle"
                                                     style="
-                                                        width:
-                                                            38%;
+                                                        width:38%;
                                                     "
                                                 >
 
                                                     <span
                                                         class="
                                                             email-badge
-                                                            texto-azul
+                                                            texto-forzado-blanco
                                                         "
                                                         style="
-                                                            display:
-                                                                inline-block;
+                                                            display:inline-block;
 
-                                                            max-width:
-                                                                125px;
+                                                            max-width:125px;
 
                                                             padding:
                                                                 9px
                                                                 13px;
 
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            background-color:
-                                                                #102b38 !important;
+                                                            background-color:#102b38 !important;
 
                                                             background:
                                                                 linear-gradient(
@@ -1118,15 +1147,8 @@
                                                                     #102b38
                                                                 ) !important;
 
-                                                            background-image:
-                                                                linear-gradient(
-                                                                    #102b38,
-                                                                    #102b38
-                                                                ) !important;
-
                                                             border:
-                                                                1px
-                                                                solid
+                                                                1px solid
                                                                 #3e6273;
 
                                                             border-radius:
@@ -1144,8 +1166,7 @@
                                                             letter-spacing:
                                                                 0.7px;
 
-                                                            text-align:
-                                                                center;
+                                                            text-align:center;
 
                                                             text-transform:
                                                                 uppercase;
@@ -1153,11 +1174,13 @@
                                                     >
 
                                                         <span class="gmail-blend-screen">
+
                                                             <span class="gmail-blend-difference">
 
                                                                 Entregado
 
                                                             </span>
+
                                                         </span>
 
                                                     </span>
@@ -1173,9 +1196,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- HERO                                              -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     HERO
+                                ================================================== -->
 
                                 <tr>
 
@@ -1190,21 +1213,6 @@
                                                 8px
                                                 28px
                                                 28px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -1240,20 +1248,16 @@
                                                             ) !important;
 
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3a6174;
 
                                                         border-radius:
                                                             22px;
 
-                                                        overflow-wrap:
-                                                            anywhere;
+                                                        overflow-wrap:anywhere;
                                                     "
                                                 >
 
-
-                                                    <!-- CHECK -->
 
                                                     <table
                                                         role="presentation"
@@ -1269,52 +1273,28 @@
                                                                 valign="middle"
                                                                 bgcolor="#36a9d6"
                                                                 style="
-                                                                    width:
-                                                                        60px;
+                                                                    width:60px;
+                                                                    height:60px;
 
-                                                                    height:
-                                                                        60px;
+                                                                    color:#ffffff !important;
+                                                                    -webkit-text-fill-color:#ffffff !important;
 
-                                                                    color:
-                                                                        #0d1720 !important;
-
-                                                                    -webkit-text-fill-color:
-                                                                        #0d1720 !important;
-
-                                                                    background-color:
-                                                                        #36a9d6 !important;
-
-                                                                    background:
-                                                                        linear-gradient(
-                                                                            #36a9d6,
-                                                                            #36a9d6
-                                                                        ) !important;
-
-                                                                    background-image:
-                                                                        linear-gradient(
-                                                                            #36a9d6,
-                                                                            #36a9d6
-                                                                        ) !important;
+                                                                    background-color:#36a9d6 !important;
 
                                                                     border:
-                                                                        7px
-                                                                        solid
+                                                                        7px solid
                                                                         #1b465a;
 
-                                                                    border-radius:
-                                                                        50%;
+                                                                    border-radius:50%;
 
-                                                                    font-size:
-                                                                        32px;
-
-                                                                    font-weight:
-                                                                        800;
-
-                                                                    line-height:
-                                                                        60px;
+                                                                    font-size:32px;
+                                                                    font-weight:800;
+                                                                    line-height:60px;
                                                                 "
                                                             >
+
                                                                 ✓
+
                                                             </td>
 
                                                         </tr>
@@ -1322,12 +1302,10 @@
                                                     </table>
 
 
-                                                    <!-- TÍTULO -->
-
                                                     <h1
                                                         class="
                                                             email-titulo
-                                                            texto-blanco
+                                                            texto-forzado-blanco
                                                         "
                                                         style="
                                                             margin:
@@ -1335,72 +1313,52 @@
                                                                 0
                                                                 14px;
 
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                37px;
-
-                                                            line-height:
-                                                                1.16;
-
-                                                            font-weight:
-                                                                800;
-
-                                                            letter-spacing:
-                                                                -1px;
+                                                            font-size:37px;
+                                                            line-height:1.16;
+                                                            font-weight:800;
+                                                            letter-spacing:-1px;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 ¡Tu pedido fue entregado!
 
                                                             </div>
+
                                                         </div>
 
                                                     </h1>
 
 
-                                                    <!-- MENSAJE -->
-
-                                                    <p
-                                                        class="texto-claro"
+                                                    <div
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            margin:
-                                                                0;
+                                                            margin:0;
 
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                16px;
-
-                                                            line-height:
-                                                                1.72;
+                                                            font-size:16px;
+                                                            line-height:1.72;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 Hola
 
                                                                 <strong
-                                                                    class="texto-blanco"
                                                                     style="
-                                                                        color:
-                                                                            #ffffff !important;
-
-                                                                        -webkit-text-fill-color:
-                                                                            #ffffff !important;
+                                                                        color:#ffffff !important;
+                                                                        -webkit-text-fill-color:#ffffff !important;
                                                                     "
                                                                 >
                                                                     {{ pedido.nombre_completo }}
@@ -1413,9 +1371,10 @@
                                                                 tus productos Audex.
 
                                                             </div>
+
                                                         </div>
 
-                                                    </p>
+                                                    </div>
 
                                                 </td>
 
@@ -1428,9 +1387,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- NÚMERO PEDIDO                                     -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     NÚMERO DE PEDIDO
+                                ================================================== -->
 
                                 <tr>
 
@@ -1445,21 +1404,6 @@
                                                 0
                                                 28px
                                                 16px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -1487,21 +1431,8 @@
                                                         background-color:
                                                             #132a38 !important;
 
-                                                        background:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
-                                                        background-image:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3a5664;
 
                                                         border-radius:
@@ -1510,74 +1441,55 @@
                                                 >
 
                                                     <div
-                                                        class="texto-etiqueta"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            margin-bottom:
-                                                                7px;
+                                                            margin-bottom:7px;
 
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                11px;
-
-                                                            font-weight:
-                                                                800;
-
-                                                            line-height:
-                                                                1.3;
-
-                                                            letter-spacing:
-                                                                1.2px;
-
-                                                            text-transform:
-                                                                uppercase;
+                                                            font-size:11px;
+                                                            font-weight:800;
+                                                            line-height:1.3;
+                                                            letter-spacing:1.2px;
+                                                            text-transform:uppercase;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 Número de pedido
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
 
 
                                                     <div
-                                                        class="texto-azul"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                23px;
-
-                                                            font-weight:
-                                                                800;
-
-                                                            line-height:
-                                                                1.3;
-
-                                                            overflow-wrap:
-                                                                anywhere;
+                                                            font-size:23px;
+                                                            font-weight:800;
+                                                            line-height:1.3;
+                                                            overflow-wrap:anywhere;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 {{ pedido.numero }}
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
@@ -1593,9 +1505,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- ESTADO                                            -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     ESTADO
+                                ================================================== -->
 
                                 <tr>
 
@@ -1610,21 +1522,6 @@
                                                 0
                                                 28px
                                                 12px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -1652,21 +1549,8 @@
                                                         background-color:
                                                             #132a38 !important;
 
-                                                        background:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
-                                                        background-image:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3a5664;
 
                                                         border-radius:
@@ -1675,71 +1559,53 @@
                                                 >
 
                                                     <div
-                                                        class="texto-etiqueta"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            margin-bottom:
-                                                                7px;
+                                                            margin-bottom:7px;
 
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                11px;
-
-                                                            font-weight:
-                                                                800;
-
-                                                            line-height:
-                                                                1.3;
-
-                                                            letter-spacing:
-                                                                1.2px;
-
-                                                            text-transform:
-                                                                uppercase;
+                                                            font-size:11px;
+                                                            font-weight:800;
+                                                            letter-spacing:1.2px;
+                                                            text-transform:uppercase;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 Estado del pedido
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
 
 
                                                     <div
-                                                        class="texto-claro"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                16px;
-
-                                                            font-weight:
-                                                                700;
-
-                                                            line-height:
-                                                                1.45;
+                                                            font-size:16px;
+                                                            font-weight:700;
+                                                            line-height:1.45;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 Entregado correctamente
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
@@ -1755,9 +1621,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- FECHA ENTREGA                                     -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     FECHA ENTREGA
+                                ================================================== -->
 
                                 <tr>
 
@@ -1771,22 +1637,7 @@
                                             padding:
                                                 0
                                                 28px
-                                                28px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
+                                                16px;
                                         "
                                     >
 
@@ -1814,21 +1665,8 @@
                                                         background-color:
                                                             #132a38 !important;
 
-                                                        background:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
-                                                        background-image:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3a5664;
 
                                                         border-radius:
@@ -1837,79 +1675,53 @@
                                                 >
 
                                                     <div
-                                                        class="texto-etiqueta"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            margin-bottom:
-                                                                7px;
+                                                            margin-bottom:7px;
 
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                11px;
-
-                                                            font-weight:
-                                                                800;
-
-                                                            line-height:
-                                                                1.3;
-
-                                                            letter-spacing:
-                                                                1.2px;
-
-                                                            text-transform:
-                                                                uppercase;
+                                                            font-size:11px;
+                                                            font-weight:800;
+                                                            letter-spacing:1.2px;
+                                                            text-transform:uppercase;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 Fecha de entrega
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
 
 
                                                     <div
-                                                        class="texto-claro"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                16px;
-
-                                                            font-weight:
-                                                                700;
-
-                                                            line-height:
-                                                                1.45;
+                                                            font-size:16px;
+                                                            font-weight:700;
+                                                            line-height:1.45;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
-                                                                {% if pedido.fecha_correo_entrega %}
-
-                                                                    {{ pedido.fecha_correo_entrega|date:"d/m/Y H:i" }}
-
-                                                                {% else %}
-
-                                                                    Entregado
-
-                                                                {% endif %}
+                                                                {{ pedido.actualizado|date:"d/m/Y H:i" }}
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
@@ -1925,9 +1737,348 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- RESUMEN                                           -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     BLUE EXPRESS
+                                ================================================== -->
+
+                                {% if pedido.numero_seguimiento %}
+
+                                    <tr>
+
+                                        <td
+                                            bgcolor="#0d1720"
+                                            class="
+                                                email-tarjeta
+                                                email-seccion
+                                            "
+                                            style="
+                                                padding:
+                                                    0
+                                                    28px
+                                                    28px;
+                                            "
+                                        >
+
+                                            <table
+                                                role="presentation"
+                                                width="100%"
+                                                cellspacing="0"
+                                                cellpadding="0"
+                                                border="0"
+                                            >
+
+                                                <tr>
+
+                                                    <td
+                                                        bgcolor="#102c3b"
+                                                        class="
+                                                            email-seguimiento
+                                                            email-panel-celda
+                                                        "
+                                                        style="
+                                                            padding:
+                                                                23px
+                                                                21px;
+
+                                                            background-color:
+                                                                #102c3b !important;
+
+                                                            background:
+                                                                linear-gradient(
+                                                                    #102c3b,
+                                                                    #102c3b
+                                                                ) !important;
+
+                                                            border:
+                                                                1px solid
+                                                                #3f7188;
+
+                                                            border-radius:
+                                                                18px;
+                                                        "
+                                                    >
+
+
+                                                        <div
+                                                            class="texto-forzado-blanco"
+                                                            style="
+                                                                margin-bottom:6px;
+
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
+
+                                                                font-size:11px;
+                                                                font-weight:800;
+                                                                letter-spacing:1.2px;
+                                                                text-transform:uppercase;
+                                                            "
+                                                        >
+
+                                                            <div class="gmail-blend-screen">
+
+                                                                <div class="gmail-blend-difference">
+
+                                                                    Seguimiento del despacho
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <div
+                                                            class="texto-forzado-blanco"
+                                                            style="
+                                                                margin-bottom:17px;
+
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
+
+                                                                font-size:17px;
+                                                                line-height:1.5;
+                                                                font-weight:800;
+                                                            "
+                                                        >
+
+                                                            <div class="gmail-blend-screen">
+
+                                                                <div class="gmail-blend-difference">
+
+                                                                    {% if pedido.nombre_transportista %}
+
+                                                                        {{ pedido.nombre_transportista }}
+
+                                                                    {% else %}
+
+                                                                        Blue Express
+
+                                                                    {% endif %}
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <div
+                                                            class="texto-forzado-blanco"
+                                                            style="
+                                                                margin-bottom:5px;
+
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
+
+                                                                font-size:11px;
+                                                                font-weight:800;
+                                                                letter-spacing:1.2px;
+                                                                text-transform:uppercase;
+                                                            "
+                                                        >
+
+                                                            <div class="gmail-blend-screen">
+
+                                                                <div class="gmail-blend-difference">
+
+                                                                    N.º de seguimiento / OS
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <div
+                                                            class="
+                                                                email-os
+                                                                texto-forzado-blanco
+                                                            "
+                                                            style="
+                                                                margin-bottom:19px;
+
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
+
+                                                                font-size:25px;
+                                                                line-height:1.25;
+                                                                font-weight:800;
+                                                                letter-spacing:0.6px;
+                                                                overflow-wrap:anywhere;
+                                                            "
+                                                        >
+
+                                                            <div class="gmail-blend-screen">
+
+                                                                <div class="gmail-blend-difference">
+
+                                                                    {{ pedido.numero_seguimiento }}
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <div
+                                                            class="texto-forzado-blanco"
+                                                            style="
+                                                                margin-bottom:20px;
+
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
+
+                                                                font-size:13px;
+                                                                line-height:1.65;
+                                                            "
+                                                        >
+
+                                                            <div class="gmail-blend-screen">
+
+                                                                <div class="gmail-blend-difference">
+
+                                                                    Tu pedido ya fue entregado.
+                                                                    Si necesitas revisar el
+                                                                    historial del despacho,
+                                                                    puedes consultar el seguimiento
+                                                                    registrado en Blue Express.
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <!-- BOTÓN BLUE EXPRESS -->
+
+                                                        <table
+                                                            role="presentation"
+                                                            cellspacing="0"
+                                                            cellpadding="0"
+                                                            border="0"
+                                                        >
+
+                                                            <tr>
+
+                                                                <td
+                                                                    align="center"
+                                                                    bgcolor="#36a9d6"
+                                                                    style="
+                                                                        background-color:
+                                                                            #36a9d6 !important;
+
+                                                                        border-radius:
+                                                                            12px;
+                                                                    "
+                                                                >
+
+                                                                    <a
+                                                                        href="https://www.blue.cl/enviar/seguimiento?n_seguimiento={{ pedido.numero_seguimiento|urlencode }}"
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        class="
+                                                                            email-boton-seguimiento
+                                                                            texto-forzado-blanco
+                                                                        "
+                                                                        style="
+                                                                            display:inline-block;
+
+                                                                            padding:
+                                                                                14px
+                                                                                20px;
+
+                                                                            color:#ffffff !important;
+                                                                            -webkit-text-fill-color:#ffffff !important;
+
+                                                                            font-family:
+                                                                                Arial,
+                                                                                Helvetica,
+                                                                                sans-serif;
+
+                                                                            font-size:14px;
+                                                                            font-weight:800;
+                                                                            line-height:1.3;
+
+                                                                            text-decoration:none;
+
+                                                                            border-radius:12px;
+
+                                                                            background-color:
+                                                                                #36a9d6 !important;
+                                                                        "
+                                                                    >
+
+                                                                        <span
+                                                                            style="
+                                                                                color:#ffffff !important;
+                                                                                -webkit-text-fill-color:#ffffff !important;
+                                                                            "
+                                                                        >
+                                                                            Ver seguimiento en Blue Express →
+                                                                        </span>
+
+                                                                    </a>
+
+                                                                </td>
+
+                                                            </tr>
+
+                                                        </table>
+
+
+                                                        <div
+                                                            class="texto-forzado-blanco"
+                                                            style="
+                                                                margin-top:15px;
+
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
+
+                                                                font-size:11px;
+                                                                line-height:1.55;
+                                                            "
+                                                        >
+
+                                                            <div class="gmail-blend-screen">
+
+                                                                <div class="gmail-blend-difference">
+
+                                                                    Seguimiento asociado al OS:
+
+                                                                    <strong
+                                                                        style="
+                                                                            color:#ffffff !important;
+                                                                            -webkit-text-fill-color:#ffffff !important;
+                                                                        "
+                                                                    >
+                                                                        {{ pedido.numero_seguimiento }}
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            </table>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endif %}
+
+
+                                <!-- =================================================
+                                     RESUMEN
+                                ================================================== -->
 
                                 <tr>
 
@@ -1942,56 +2093,32 @@
                                                 0
                                                 28px
                                                 14px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
                                         <h2
-                                            class="texto-blanco"
+                                            class="texto-forzado-blanco"
                                             style="
-                                                margin:
-                                                    0;
+                                                margin:0;
 
-                                                color:
-                                                    #ffffff !important;
+                                                color:#ffffff !important;
+                                                -webkit-text-fill-color:#ffffff !important;
 
-                                                -webkit-text-fill-color:
-                                                    #ffffff !important;
-
-                                                font-size:
-                                                    24px;
-
-                                                line-height:
-                                                    1.3;
-
-                                                font-weight:
-                                                    800;
-
-                                                letter-spacing:
-                                                    -0.4px;
+                                                font-size:24px;
+                                                line-height:1.3;
+                                                font-weight:800;
+                                                letter-spacing:-0.4px;
                                             "
                                         >
 
                                             <div class="gmail-blend-screen">
+
                                                 <div class="gmail-blend-difference">
 
                                                     Resumen del pedido
 
                                                 </div>
+
                                             </div>
 
                                         </h2>
@@ -2001,9 +2128,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- PRODUCTOS                                         -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     PRODUCTOS
+                                ================================================== -->
 
                                 <tr>
 
@@ -2018,21 +2145,6 @@
                                                 0
                                                 28px
                                                 24px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -2057,31 +2169,15 @@
                                                             4px
                                                             20px;
 
-                                                        background-color:
-                                                            #132a38 !important;
-
-                                                        background:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
-                                                        background-image:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
+                                                        background-color:#132a38 !important;
 
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3a5664;
 
-                                                        border-radius:
-                                                            18px;
+                                                        border-radius:18px;
                                                     "
                                                 >
-
 
                                                     {% for item in pedido.items.all %}
 
@@ -2092,16 +2188,12 @@
                                                             cellpadding="0"
                                                             border="0"
                                                             style="
-                                                                width:
-                                                                    100%;
-
-                                                                table-layout:
-                                                                    fixed;
+                                                                width:100%;
+                                                                table-layout:fixed;
 
                                                                 {% if not forloop.last %}
                                                                     border-bottom:
-                                                                        1px
-                                                                        solid
+                                                                        1px solid
                                                                         #38505d;
                                                                 {% endif %}
                                                             "
@@ -2112,8 +2204,7 @@
                                                                 <td
                                                                     valign="middle"
                                                                     style="
-                                                                        width:
-                                                                            68%;
+                                                                        width:68%;
 
                                                                         padding:
                                                                             18px
@@ -2125,59 +2216,47 @@
 
                                                                     <div
                                                                         class="
-                                                                            texto-blanco
+                                                                            texto-forzado-blanco
                                                                             email-producto-nombre
                                                                         "
                                                                         style="
-                                                                            color:
-                                                                                #ffffff !important;
+                                                                            color:#ffffff !important;
+                                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                                            -webkit-text-fill-color:
-                                                                                #ffffff !important;
-
-                                                                            font-size:
-                                                                                16px;
-
-                                                                            font-weight:
-                                                                                700;
-
-                                                                            line-height:
-                                                                                1.45;
+                                                                            font-size:16px;
+                                                                            font-weight:700;
+                                                                            line-height:1.45;
                                                                         "
                                                                     >
 
                                                                         <div class="gmail-blend-screen">
+
                                                                             <div class="gmail-blend-difference">
 
                                                                                 {{ item.nombre_producto }}
 
                                                                             </div>
+
                                                                         </div>
 
                                                                     </div>
 
 
                                                                     <div
-                                                                        class="texto-secundario"
+                                                                        class="texto-forzado-blanco"
                                                                         style="
-                                                                            margin-top:
-                                                                                7px;
+                                                                            margin-top:7px;
 
-                                                                            color:
-                                                                                #ffffff !important;
+                                                                            color:#ffffff !important;
+                                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                                            -webkit-text-fill-color:
-                                                                                #ffffff !important;
-
-                                                                            font-size:
-                                                                                14px;
-
-                                                                            line-height:
-                                                                                1.5;
+                                                                            font-size:14px;
+                                                                            line-height:1.5;
                                                                         "
                                                                     >
 
                                                                         <div class="gmail-blend-screen">
+
                                                                             <div class="gmail-blend-difference">
 
                                                                                 {{ item.cantidad }}
@@ -2186,6 +2265,7 @@
                                                                                 CLP
 
                                                                             </div>
+
                                                                         </div>
 
                                                                     </div>
@@ -2197,8 +2277,7 @@
                                                                     align="right"
                                                                     valign="middle"
                                                                     style="
-                                                                        width:
-                                                                            32%;
+                                                                        width:32%;
 
                                                                         padding:
                                                                             18px
@@ -2206,35 +2285,30 @@
                                                                             18px
                                                                             8px;
 
-                                                                        white-space:
-                                                                            nowrap;
+                                                                        white-space:nowrap;
                                                                     "
                                                                 >
 
                                                                     <strong
-                                                                        class="texto-blanco"
+                                                                        class="texto-forzado-blanco"
                                                                         style="
-                                                                            color:
-                                                                                #ffffff !important;
+                                                                            color:#ffffff !important;
+                                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                                            -webkit-text-fill-color:
-                                                                                #ffffff !important;
-
-                                                                            font-size:
-                                                                                16px;
-
-                                                                            font-weight:
-                                                                                800;
+                                                                            font-size:16px;
+                                                                            font-weight:800;
                                                                         "
                                                                     >
 
                                                                         <span class="gmail-blend-screen">
+
                                                                             <span class="gmail-blend-difference">
 
-                                                                                ${{ item.total|floatformat:0|intcomma }}
+                                                                                ${{ item.total_final|default:item.total|floatformat:0|intcomma }}
                                                                                 CLP
 
                                                                             </span>
+
                                                                         </span>
 
                                                                     </strong>
@@ -2248,42 +2322,35 @@
 
                                                     {% empty %}
 
-
                                                         <div
-                                                            class="texto-secundario"
+                                                            class="texto-forzado-blanco"
                                                             style="
                                                                 padding:
                                                                     20px
                                                                     0;
 
-                                                                color:
-                                                                    #ffffff !important;
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
 
-                                                                -webkit-text-fill-color:
-                                                                    #ffffff !important;
-
-                                                                font-size:
-                                                                    14px;
-
-                                                                line-height:
-                                                                    1.6;
+                                                                font-size:14px;
+                                                                line-height:1.6;
                                                             "
                                                         >
 
                                                             <div class="gmail-blend-screen">
+
                                                                 <div class="gmail-blend-difference">
 
                                                                     No se encontraron productos
                                                                     asociados a este pedido.
 
                                                                 </div>
+
                                                             </div>
 
                                                         </div>
 
-
                                                     {% endfor %}
-
 
                                                 </td>
 
@@ -2296,9 +2363,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- TOTALES                                           -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     TOTALES
+                                ================================================== -->
 
                                 <tr>
 
@@ -2313,21 +2380,6 @@
                                                 0
                                                 28px
                                                 24px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -2348,31 +2400,15 @@
                                                         email-panel-celda
                                                     "
                                                     style="
-                                                        padding:
-                                                            21px;
+                                                        padding:21px;
 
-                                                        background-color:
-                                                            #132a38 !important;
-
-                                                        background:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
-                                                        background-image:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
+                                                        background-color:#132a38 !important;
 
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3a5664;
 
-                                                        border-radius:
-                                                            18px;
+                                                        border-radius:18px;
                                                     "
                                                 >
 
@@ -2390,67 +2426,55 @@
                                                         <tr>
 
                                                             <td
-                                                                class="texto-secundario"
+                                                                class="texto-forzado-blanco"
                                                                 style="
-                                                                    width:
-                                                                        58%;
+                                                                    width:58%;
+                                                                    padding:7px 0;
 
-                                                                    padding:
-                                                                        7px
-                                                                        0;
+                                                                    color:#ffffff !important;
+                                                                    -webkit-text-fill-color:#ffffff !important;
 
-                                                                    color:
-                                                                        #ffffff !important;
-
-                                                                    -webkit-text-fill-color:
-                                                                        #ffffff !important;
-
-                                                                    font-size:
-                                                                        14px;
+                                                                    font-size:14px;
                                                                 "
                                                             >
 
-                                                                <div class="gmail-blend-screen">
-                                                                    <div class="gmail-blend-difference">
+                                                                <span class="gmail-blend-screen">
+
+                                                                    <span class="gmail-blend-difference">
 
                                                                         Subtotal
 
-                                                                    </div>
-                                                                </div>
+                                                                    </span>
+
+                                                                </span>
 
                                                             </td>
 
 
                                                             <td
                                                                 align="right"
-                                                                class="texto-claro"
+                                                                class="texto-forzado-blanco"
                                                                 style="
-                                                                    width:
-                                                                        42%;
+                                                                    width:42%;
+                                                                    padding:7px 0;
 
-                                                                    padding:
-                                                                        7px
-                                                                        0;
+                                                                    color:#ffffff !important;
+                                                                    -webkit-text-fill-color:#ffffff !important;
 
-                                                                    color:
-                                                                        #ffffff !important;
-
-                                                                    -webkit-text-fill-color:
-                                                                        #ffffff !important;
-
-                                                                    font-size:
-                                                                        14px;
+                                                                    font-size:14px;
                                                                 "
                                                             >
 
-                                                                <div class="gmail-blend-screen">
-                                                                    <div class="gmail-blend-difference">
+                                                                <span class="gmail-blend-screen">
+
+                                                                    <span class="gmail-blend-difference">
 
                                                                         ${{ pedido.subtotal|floatformat:0|intcomma }}
                                                                         CLP
 
-                                                                    </div>
-                                                                </div>
+                                                                    </span>
+
+                                                                </span>
 
                                                             </td>
 
@@ -2464,64 +2488,54 @@
                                                             <tr>
 
                                                                 <td
-                                                                    class="texto-secundario"
+                                                                    class="texto-forzado-blanco"
                                                                     style="
-                                                                        padding:
-                                                                            7px
-                                                                            0;
+                                                                        padding:7px 0;
 
-                                                                        color:
-                                                                            #ffffff !important;
+                                                                        color:#ffffff !important;
+                                                                        -webkit-text-fill-color:#ffffff !important;
 
-                                                                        -webkit-text-fill-color:
-                                                                            #ffffff !important;
-
-                                                                        font-size:
-                                                                            14px;
+                                                                        font-size:14px;
                                                                     "
                                                                 >
 
-                                                                    <div class="gmail-blend-screen">
-                                                                        <div class="gmail-blend-difference">
+                                                                    <span class="gmail-blend-screen">
+
+                                                                        <span class="gmail-blend-difference">
 
                                                                             Descuento
 
-                                                                        </div>
-                                                                    </div>
+                                                                        </span>
+
+                                                                    </span>
 
                                                                 </td>
 
 
                                                                 <td
                                                                     align="right"
-                                                                    class="texto-azul"
+                                                                    class="texto-forzado-blanco"
                                                                     style="
-                                                                        padding:
-                                                                            7px
-                                                                            0;
+                                                                        padding:7px 0;
 
-                                                                        color:
-                                                                            #ffffff !important;
+                                                                        color:#ffffff !important;
+                                                                        -webkit-text-fill-color:#ffffff !important;
 
-                                                                        -webkit-text-fill-color:
-                                                                            #ffffff !important;
-
-                                                                        font-size:
-                                                                            14px;
-
-                                                                        font-weight:
-                                                                            700;
+                                                                        font-size:14px;
+                                                                        font-weight:700;
                                                                     "
                                                                 >
 
-                                                                    <div class="gmail-blend-screen">
-                                                                        <div class="gmail-blend-difference">
+                                                                    <span class="gmail-blend-screen">
+
+                                                                        <span class="gmail-blend-difference">
 
                                                                             -${{ pedido.descuento|floatformat:0|intcomma }}
                                                                             CLP
 
-                                                                        </div>
-                                                                    </div>
+                                                                        </span>
+
+                                                                    </span>
 
                                                                 </td>
 
@@ -2535,57 +2549,52 @@
                                                         <tr>
 
                                                             <td
-                                                                class="texto-secundario"
+                                                                class="texto-forzado-blanco"
                                                                 style="
                                                                     padding:
                                                                         7px
                                                                         0
                                                                         15px;
 
-                                                                    color:
-                                                                        #ffffff !important;
+                                                                    color:#ffffff !important;
+                                                                    -webkit-text-fill-color:#ffffff !important;
 
-                                                                    -webkit-text-fill-color:
-                                                                        #ffffff !important;
-
-                                                                    font-size:
-                                                                        14px;
+                                                                    font-size:14px;
                                                                 "
                                                             >
 
-                                                                <div class="gmail-blend-screen">
-                                                                    <div class="gmail-blend-difference">
+                                                                <span class="gmail-blend-screen">
+
+                                                                    <span class="gmail-blend-difference">
 
                                                                         Despacho
 
-                                                                    </div>
-                                                                </div>
+                                                                    </span>
+
+                                                                </span>
 
                                                             </td>
 
 
                                                             <td
                                                                 align="right"
-                                                                class="texto-claro"
+                                                                class="texto-forzado-blanco"
                                                                 style="
                                                                     padding:
                                                                         7px
                                                                         0
                                                                         15px;
 
-                                                                    color:
-                                                                        #ffffff !important;
+                                                                    color:#ffffff !important;
+                                                                    -webkit-text-fill-color:#ffffff !important;
 
-                                                                    -webkit-text-fill-color:
-                                                                        #ffffff !important;
-
-                                                                    font-size:
-                                                                        14px;
+                                                                    font-size:14px;
                                                                 "
                                                             >
 
-                                                                <div class="gmail-blend-screen">
-                                                                    <div class="gmail-blend-difference">
+                                                                <span class="gmail-blend-screen">
+
+                                                                    <span class="gmail-blend-difference">
 
                                                                         {% if pedido.despacho > 0 %}
 
@@ -2598,8 +2607,9 @@
 
                                                                         {% endif %}
 
-                                                                    </div>
-                                                                </div>
+                                                                    </span>
+
+                                                                </span>
 
                                                             </td>
 
@@ -2618,35 +2628,30 @@
                                                                         0;
 
                                                                     border-top:
-                                                                        1px
-                                                                        solid
+                                                                        1px solid
                                                                         #496572;
                                                                 "
                                                             >
 
                                                                 <strong
-                                                                    class="texto-blanco"
+                                                                    class="texto-forzado-blanco"
                                                                     style="
-                                                                        color:
-                                                                            #ffffff !important;
+                                                                        color:#ffffff !important;
+                                                                        -webkit-text-fill-color:#ffffff !important;
 
-                                                                        -webkit-text-fill-color:
-                                                                            #ffffff !important;
-
-                                                                        font-size:
-                                                                            18px;
-
-                                                                        font-weight:
-                                                                            800;
+                                                                        font-size:18px;
+                                                                        font-weight:800;
                                                                     "
                                                                 >
 
                                                                     <span class="gmail-blend-screen">
+
                                                                         <span class="gmail-blend-difference">
 
                                                                             Total pagado
 
                                                                         </span>
+
                                                                     </span>
 
                                                                 </strong>
@@ -2657,7 +2662,7 @@
                                                             <td
                                                                 align="right"
                                                                 class="
-                                                                    texto-azul
+                                                                    texto-forzado-blanco
                                                                     email-total
                                                                 "
                                                                 style="
@@ -2666,36 +2671,29 @@
                                                                         0
                                                                         0;
 
-                                                                    color:
-                                                                        #ffffff !important;
-
-                                                                    -webkit-text-fill-color:
-                                                                        #ffffff !important;
+                                                                    color:#ffffff !important;
+                                                                    -webkit-text-fill-color:#ffffff !important;
 
                                                                     border-top:
-                                                                        1px
-                                                                        solid
+                                                                        1px solid
                                                                         #496572;
 
-                                                                    font-size:
-                                                                        24px;
-
-                                                                    font-weight:
-                                                                        800;
-
-                                                                    white-space:
-                                                                        nowrap;
+                                                                    font-size:24px;
+                                                                    font-weight:800;
+                                                                    white-space:nowrap;
                                                                 "
                                                             >
 
-                                                                <div class="gmail-blend-screen">
-                                                                    <div class="gmail-blend-difference">
+                                                                <span class="gmail-blend-screen">
+
+                                                                    <span class="gmail-blend-difference">
 
                                                                         ${{ pedido.total|floatformat:0|intcomma }}
                                                                         CLP
 
-                                                                    </div>
-                                                                </div>
+                                                                    </span>
+
+                                                                </span>
 
                                                             </td>
 
@@ -2714,9 +2712,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- DIRECCIÓN                                         -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     DIRECCIÓN
+                                ================================================== -->
 
                                 <tr>
 
@@ -2731,21 +2729,6 @@
                                                 0
                                                 28px
                                                 24px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -2766,92 +2749,61 @@
                                                         email-panel-celda
                                                     "
                                                     style="
-                                                        padding:
-                                                            21px;
+                                                        padding:21px;
 
-                                                        background-color:
-                                                            #132a38 !important;
-
-                                                        background:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
-
-                                                        background-image:
-                                                            linear-gradient(
-                                                                #132a38,
-                                                                #132a38
-                                                            ) !important;
+                                                        background-color:#132a38 !important;
 
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3a5664;
 
-                                                        border-radius:
-                                                            18px;
+                                                        border-radius:18px;
 
-                                                        overflow-wrap:
-                                                            anywhere;
+                                                        overflow-wrap:anywhere;
                                                     "
                                                 >
 
                                                     <div
-                                                        class="texto-blanco"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            margin-bottom:
-                                                                11px;
+                                                            margin-bottom:11px;
 
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                17px;
-
-                                                            font-weight:
-                                                                800;
-
-                                                            line-height:
-                                                                1.4;
+                                                            font-size:17px;
+                                                            font-weight:800;
+                                                            line-height:1.4;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 Dirección de entrega
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
 
 
                                                     <div
-                                                        class="texto-claro"
+                                                        class="texto-forzado-blanco"
                                                         style="
-                                                            color:
-                                                                #ffffff !important;
+                                                            color:#ffffff !important;
+                                                            -webkit-text-fill-color:#ffffff !important;
 
-                                                            -webkit-text-fill-color:
-                                                                #ffffff !important;
-
-                                                            font-size:
-                                                                14px;
-
-                                                            line-height:
-                                                                1.75;
-
-                                                            overflow-wrap:
-                                                                anywhere;
+                                                            font-size:14px;
+                                                            line-height:1.75;
+                                                            overflow-wrap:anywhere;
                                                         "
                                                     >
 
                                                         <div class="gmail-blend-screen">
+
                                                             <div class="gmail-blend-difference">
 
                                                                 {{ pedido.nombre_completo }}
@@ -2861,6 +2813,7 @@
                                                                 {{ pedido.direccion_completa }}
 
                                                             </div>
+
                                                         </div>
 
                                                     </div>
@@ -2869,32 +2822,27 @@
                                                     {% if pedido.referencia %}
 
                                                         <div
-                                                            class="texto-secundario"
+                                                            class="texto-forzado-blanco"
                                                             style="
-                                                                margin-top:
-                                                                    11px;
+                                                                margin-top:11px;
 
-                                                                color:
-                                                                    #ffffff !important;
+                                                                color:#ffffff !important;
+                                                                -webkit-text-fill-color:#ffffff !important;
 
-                                                                -webkit-text-fill-color:
-                                                                    #ffffff !important;
-
-                                                                font-size:
-                                                                    13px;
-
-                                                                line-height:
-                                                                    1.65;
+                                                                font-size:13px;
+                                                                line-height:1.65;
                                                             "
                                                         >
 
                                                             <div class="gmail-blend-screen">
+
                                                                 <div class="gmail-blend-difference">
 
                                                                     Referencia:
                                                                     {{ pedido.referencia }}
 
                                                                 </div>
+
                                                             </div>
 
                                                         </div>
@@ -2912,9 +2860,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- AVISO                                             -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     AVISO
+                                ================================================== -->
 
                                 <tr>
 
@@ -2929,21 +2877,6 @@
                                                 0
                                                 28px
                                                 32px;
-
-                                            background-color:
-                                                #0d1720 !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #0d1720,
-                                                    #0d1720
-                                                ) !important;
                                         "
                                     >
 
@@ -2963,54 +2896,32 @@
                                                     class="
                                                         email-aviso
                                                         email-panel-celda
-                                                        texto-claro
+                                                        texto-forzado-blanco
                                                     "
                                                     style="
                                                         padding:
                                                             19px
                                                             20px;
 
-                                                        color:
-                                                            #ffffff !important;
+                                                        color:#ffffff !important;
+                                                        -webkit-text-fill-color:#ffffff !important;
 
-                                                        -webkit-text-fill-color:
-                                                            #ffffff !important;
-
-                                                        background-color:
-                                                            #102631 !important;
-
-                                                        background:
-                                                            linear-gradient(
-                                                                #102631,
-                                                                #102631
-                                                            ) !important;
-
-                                                        background-image:
-                                                            linear-gradient(
-                                                                #102631,
-                                                                #102631
-                                                            ) !important;
+                                                        background-color:#102631 !important;
 
                                                         border:
-                                                            1px
-                                                            solid
+                                                            1px solid
                                                             #3b6477;
 
-                                                        border-radius:
-                                                            17px;
+                                                        border-radius:17px;
 
-                                                        font-size:
-                                                            14px;
-
-                                                        line-height:
-                                                            1.72;
-
-                                                        text-align:
-                                                            center;
+                                                        font-size:14px;
+                                                        line-height:1.72;
+                                                        text-align:center;
                                                     "
                                                 >
 
                                                     <div class="gmail-blend-screen">
+
                                                         <div class="gmail-blend-difference">
 
                                                             Muchas gracias por elegir Audex.
@@ -3022,6 +2933,7 @@
                                                             haya sido satisfactoria.
 
                                                         </div>
+
                                                     </div>
 
                                                 </td>
@@ -3035,9 +2947,9 @@
                                 </tr>
 
 
-                                <!-- ================================================= -->
-                                <!-- FOOTER                                            -->
-                                <!-- ================================================= -->
+                                <!-- =================================================
+                                     FOOTER
+                                ================================================== -->
 
                                 <tr>
 
@@ -3051,94 +2963,65 @@
                                                 28px
                                                 28px;
 
-                                            background-color:
-                                                #05090d !important;
-
-                                            background:
-                                                linear-gradient(
-                                                    #05090d,
-                                                    #05090d
-                                                ) !important;
-
-                                            background-image:
-                                                linear-gradient(
-                                                    #05090d,
-                                                    #05090d
-                                                ) !important;
+                                            background-color:#05090d !important;
 
                                             border-top:
-                                                1px
-                                                solid
+                                                1px solid
                                                 #172630;
 
-                                            text-align:
-                                                center;
+                                            text-align:center;
                                         "
                                     >
 
                                         <strong
-                                            class="texto-azul"
+                                            class="texto-forzado-blanco"
                                             style="
-                                                display:
-                                                    block;
+                                                display:block;
 
-                                                margin-bottom:
-                                                    6px;
+                                                margin-bottom:6px;
 
-                                                color:
-                                                    #ffffff !important;
+                                                color:#ffffff !important;
+                                                -webkit-text-fill-color:#ffffff !important;
 
-                                                -webkit-text-fill-color:
-                                                    #ffffff !important;
-
-                                                font-size:
-                                                    19px;
-
-                                                font-weight:
-                                                    800;
+                                                font-size:19px;
+                                                font-weight:800;
                                             "
                                         >
 
                                             <span class="gmail-blend-screen">
+
                                                 <span class="gmail-blend-difference">
 
                                                     Audex
 
                                                 </span>
+
                                             </span>
 
                                         </strong>
 
 
                                         <span
-                                            class="texto-secundario"
+                                            class="texto-forzado-blanco"
                                             style="
-                                                color:
-                                                    #ffffff !important;
+                                                color:#ffffff !important;
+                                                -webkit-text-fill-color:#ffffff !important;
 
-                                                -webkit-text-fill-color:
-                                                    #ffffff !important;
-
-                                                font-size:
-                                                    10px;
-
-                                                line-height:
-                                                    1.6;
-
-                                                letter-spacing:
-                                                    1.8px;
-
-                                                text-transform:
-                                                    uppercase;
+                                                font-size:10px;
+                                                line-height:1.6;
+                                                letter-spacing:1.8px;
+                                                text-transform:uppercase;
                                             "
                                         >
 
                                             <span class="gmail-blend-screen">
+
                                                 <span class="gmail-blend-difference">
 
                                                     Contigo a todas
 
                                                 </span>
+
                                             </span>
 
                                         </span>
@@ -3150,15 +3033,14 @@
                             </table>
 
 
-                            <!-- ================================================= -->
-                            <!-- TEXTO EXTERIOR                                    -->
-                            <!-- ================================================= -->
+                            <!-- =================================================
+                                 TEXTO EXTERIOR
+                            ================================================== -->
 
-                            <p
-                                class="texto-etiqueta"
+                            <div
+                                class="texto-forzado-blanco"
                                 style="
-                                    max-width:
-                                        590px;
+                                    max-width:590px;
 
                                     margin:
                                         16px
@@ -3169,24 +3051,17 @@
                                         0
                                         18px;
 
-                                    color:
-                                        #ffffff !important;
+                                    color:#ffffff !important;
+                                    -webkit-text-fill-color:#ffffff !important;
 
-                                    -webkit-text-fill-color:
-                                        #ffffff !important;
-
-                                    font-size:
-                                        11px;
-
-                                    line-height:
-                                        1.6;
-
-                                    text-align:
-                                        center;
+                                    font-size:11px;
+                                    line-height:1.6;
+                                    text-align:center;
                                 "
                             >
 
                                 <div class="gmail-blend-screen">
+
                                     <div class="gmail-blend-difference">
 
                                         Este mensaje fue enviado porque
@@ -3194,9 +3069,10 @@
                                         fue marcado como entregado.
 
                                     </div>
+
                                 </div>
 
-                            </p>
+                            </div>
 
                         </td>
 
@@ -3213,4 +3089,5 @@
 </div>
 
 </body>
+
 </html>

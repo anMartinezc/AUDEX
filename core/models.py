@@ -1237,13 +1237,13 @@ class TarifaBlueExpress(models.Model):
 
 
 class Pedido(models.Model):
+
     # -------------------------------------------------------------------------
     # ESTADOS DEL PEDIDO
     # -------------------------------------------------------------------------
 
-    class EstadoPedido(
-        models.TextChoices
-    ):
+    class EstadoPedido(models.TextChoices):
+
         PENDIENTE = (
             "pendiente",
             "Pendiente de pago",
@@ -1280,12 +1280,22 @@ class Pedido(models.Model):
         )
 
     # -------------------------------------------------------------------------
+    # TRANSPORTISTAS
+    # -------------------------------------------------------------------------
+
+    class Transportista(models.TextChoices):
+
+        BLUEXPRESS = (
+            "bluexpress",
+            "Blue Express",
+        )
+
+    # -------------------------------------------------------------------------
     # MÉTODOS DE PAGO
     # -------------------------------------------------------------------------
 
-    class MetodoPago(
-        models.TextChoices
-    ):
+    class MetodoPago(models.TextChoices):
+
         WEBPAY = (
             "webpay",
             "Webpay",
@@ -1305,9 +1315,8 @@ class Pedido(models.Model):
     # ESTADOS DEL PAGO
     # -------------------------------------------------------------------------
 
-    class EstadoPago(
-        models.TextChoices
-    ):
+    class EstadoPago(models.TextChoices):
+
         PENDIENTE = (
             "pendiente",
             "Pendiente",
@@ -1347,9 +1356,8 @@ class Pedido(models.Model):
     # TIPOS DE DESCUENTO
     # -------------------------------------------------------------------------
 
-    class TipoDescuento(
-        models.TextChoices
-    ):
+    class TipoDescuento(models.TextChoices):
+
         NINGUNO = (
             "ninguno",
             "Sin descuento",
@@ -1375,6 +1383,7 @@ class Pedido(models.Model):
     # -------------------------------------------------------------------------
 
     ESTADOS = EstadoPedido.choices
+    TRANSPORTISTAS = Transportista.choices
     METODOS_PAGO = MetodoPago.choices
     ESTADOS_PAGO = EstadoPago.choices
 
@@ -1468,6 +1477,29 @@ class Pedido(models.Model):
     )
 
     # -------------------------------------------------------------------------
+    # DESPACHO Y SEGUIMIENTO
+    # -------------------------------------------------------------------------
+
+    transportista = models.CharField(
+        max_length=30,
+        choices=Transportista.choices,
+        blank=True,
+        db_index=True,
+        verbose_name="Transportista",
+    )
+
+    numero_seguimiento = models.CharField(
+        max_length=100,
+        blank=True,
+        db_index=True,
+        verbose_name="Número de seguimiento",
+        help_text=(
+            "Número de OS o seguimiento "
+            "entregado por el transportista."
+        ),
+    )
+
+    # -------------------------------------------------------------------------
     # ESTADO Y MÉTODO DE PAGO
     # -------------------------------------------------------------------------
 
@@ -1506,65 +1538,51 @@ class Pedido(models.Model):
         blank=True,
     )
 
-    stock_descontado = (
-        models.BooleanField(
-            default=False,
-            db_index=True,
-        )
+    stock_descontado = models.BooleanField(
+        default=False,
+        db_index=True,
     )
 
     # -------------------------------------------------------------------------
     # CORREO DE CONFIRMACIÓN DE COMPRA
     # -------------------------------------------------------------------------
 
-    correo_confirmacion_enviado = (
-        models.BooleanField(
-            default=False,
-            db_index=True,
-        )
+    correo_confirmacion_enviado = models.BooleanField(
+        default=False,
+        db_index=True,
     )
 
-    fecha_correo_confirmacion = (
-        models.DateTimeField(
-            null=True,
-            blank=True,
-        )
+    fecha_correo_confirmacion = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     # -------------------------------------------------------------------------
     # CORREO DE INICIO DE DESPACHO
     # -------------------------------------------------------------------------
 
-    correo_despacho_enviado = (
-        models.BooleanField(
-            default=False,
-            db_index=True,
-        )
+    correo_despacho_enviado = models.BooleanField(
+        default=False,
+        db_index=True,
     )
 
-    fecha_correo_despacho = (
-        models.DateTimeField(
-            null=True,
-            blank=True,
-        )
+    fecha_correo_despacho = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     # -------------------------------------------------------------------------
     # CORREO DE ENTREGA
     # -------------------------------------------------------------------------
 
-    correo_entrega_enviado = (
-        models.BooleanField(
-            default=False,
-            db_index=True,
-        )
+    correo_entrega_enviado = models.BooleanField(
+        default=False,
+        db_index=True,
     )
 
-    fecha_correo_entrega = (
-        models.DateTimeField(
-            null=True,
-            blank=True,
-        )
+    fecha_correo_entrega = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     # -------------------------------------------------------------------------
@@ -1577,114 +1595,88 @@ class Pedido(models.Model):
         db_index=True,
     )
 
-    webpay_buy_order = (
-        models.CharField(
-            max_length=100,
-            blank=True,
-            db_index=True,
-        )
+    webpay_buy_order = models.CharField(
+        max_length=100,
+        blank=True,
+        db_index=True,
     )
 
-    webpay_authorization_code = (
-        models.CharField(
-            max_length=100,
-            blank=True,
-        )
+    webpay_authorization_code = models.CharField(
+        max_length=100,
+        blank=True,
     )
 
-    webpay_response_code = (
-        models.IntegerField(
-            null=True,
-            blank=True,
-        )
+    webpay_response_code = models.IntegerField(
+        null=True,
+        blank=True,
     )
 
-    webpay_payment_type_code = (
-        models.CharField(
-            max_length=20,
-            blank=True,
-        )
+    webpay_payment_type_code = models.CharField(
+        max_length=20,
+        blank=True,
     )
 
-    webpay_installments_number = (
-        models.PositiveIntegerField(
-            null=True,
-            blank=True,
-        )
+    webpay_installments_number = models.PositiveIntegerField(
+        null=True,
+        blank=True,
     )
 
-    webpay_transaction_date = (
-        models.DateTimeField(
-            null=True,
-            blank=True,
-        )
+    webpay_transaction_date = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     # -------------------------------------------------------------------------
     # MERCADO PAGO
     # -------------------------------------------------------------------------
 
-    mercadopago_preference_id = (
-        models.CharField(
-            max_length=150,
-            blank=True,
-            db_index=True,
-        )
+    mercadopago_preference_id = models.CharField(
+        max_length=150,
+        blank=True,
+        db_index=True,
     )
 
-    mercadopago_payment_id = (
-        models.CharField(
-            max_length=100,
-            blank=True,
-            db_index=True,
-        )
+    mercadopago_payment_id = models.CharField(
+        max_length=100,
+        blank=True,
+        db_index=True,
     )
 
-    mercadopago_status = (
-        models.CharField(
-            max_length=50,
-            blank=True,
-        )
+    mercadopago_status = models.CharField(
+        max_length=50,
+        blank=True,
     )
 
-    mercadopago_status_detail = (
-        models.CharField(
-            max_length=100,
-            blank=True,
-        )
+    mercadopago_status_detail = models.CharField(
+        max_length=100,
+        blank=True,
     )
 
-    mercadopago_payment_type = (
-        models.CharField(
-            max_length=50,
-            blank=True,
-        )
+    mercadopago_payment_type = models.CharField(
+        max_length=50,
+        blank=True,
     )
 
-    mercadopago_transaction_amount = (
-        models.DecimalField(
-            max_digits=12,
-            decimal_places=0,
-            null=True,
-            blank=True,
-        )
+    mercadopago_transaction_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        null=True,
+        blank=True,
     )
 
     # -------------------------------------------------------------------------
     # DESCUENTOS
     # -------------------------------------------------------------------------
 
-    codigo_descuento_obj = (
-        models.ForeignKey(
-            "CodigoDescuento",
-            on_delete=models.SET_NULL,
-            null=True,
-            blank=True,
-            related_name="pedidos",
-            verbose_name=(
-                "Código de descuento aplicado"
-            ),
-        )
+    codigo_descuento_obj = models.ForeignKey(
+        "CodigoDescuento",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos",
+        verbose_name=(
+            "Código de descuento aplicado"
+        ),
     )
 
     codigo_descuento = models.CharField(
@@ -1693,40 +1685,30 @@ class Pedido(models.Model):
         db_index=True,
     )
 
-    tipo_descuento = (
-        models.CharField(
-            max_length=20,
-            choices=(
-                TipoDescuento.choices
-            ),
-            default=(
-                TipoDescuento.NINGUNO
-            ),
-            db_index=True,
-        )
+    tipo_descuento = models.CharField(
+        max_length=20,
+        choices=TipoDescuento.choices,
+        default=TipoDescuento.NINGUNO,
+        db_index=True,
     )
 
-    porcentaje_descuento = (
-        models.DecimalField(
-            max_digits=5,
-            decimal_places=2,
-            default=0,
-            validators=[
-                MinValueValidator(
-                    Decimal("0")
-                ),
-                MaxValueValidator(
-                    Decimal("100")
-                ),
-            ],
-        )
+    porcentaje_descuento = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        validators=[
+            MinValueValidator(
+                Decimal("0")
+            ),
+            MaxValueValidator(
+                Decimal("100")
+            ),
+        ],
     )
 
-    fidelidad_contabilizada = (
-        models.BooleanField(
-            default=False,
-            db_index=True,
-        )
+    fidelidad_contabilizada = models.BooleanField(
+        default=False,
+        db_index=True,
     )
 
     # -------------------------------------------------------------------------
@@ -1780,6 +1762,7 @@ class Pedido(models.Model):
     # -------------------------------------------------------------------------
 
     class Meta:
+
         ordering = [
             "-creado",
         ]
@@ -1788,14 +1771,13 @@ class Pedido(models.Model):
         verbose_name_plural = "Pedidos"
 
         indexes = [
+
             models.Index(
                 fields=[
                     "estado_pago",
                     "creado",
                 ],
-                name=(
-                    "pedido_pago_creado_idx"
-                ),
+                name="pedido_pago_creado_idx",
             ),
 
             models.Index(
@@ -1803,9 +1785,7 @@ class Pedido(models.Model):
                     "metodo_pago",
                     "estado_pago",
                 ],
-                name=(
-                    "pedido_metodo_pago_idx"
-                ),
+                name="pedido_metodo_pago_idx",
             ),
 
             models.Index(
@@ -1813,9 +1793,7 @@ class Pedido(models.Model):
                     "tipo_descuento",
                     "creado",
                 ],
-                name=(
-                    "pedido_desc_tipo_idx"
-                ),
+                name="pedido_desc_tipo_idx",
             ),
 
             models.Index(
@@ -1823,47 +1801,38 @@ class Pedido(models.Model):
                     "usuario",
                     "fidelidad_contabilizada",
                 ],
-                name=(
-                    "pedido_fidelidad_idx"
-                ),
+                name="pedido_fidelidad_idx",
             ),
         ]
 
         constraints = [
+
             models.CheckConstraint(
                 condition=Q(
                     subtotal__gte=0,
                 ),
-                name=(
-                    "pedido_subtotal_gte_0"
-                ),
+                name="pedido_subtotal_gte_0",
             ),
 
             models.CheckConstraint(
                 condition=Q(
                     descuento__gte=0,
                 ),
-                name=(
-                    "pedido_descuento_gte_0"
-                ),
+                name="pedido_descuento_gte_0",
             ),
 
             models.CheckConstraint(
                 condition=Q(
                     despacho__gte=0,
                 ),
-                name=(
-                    "pedido_despacho_gte_0"
-                ),
+                name="pedido_despacho_gte_0",
             ),
 
             models.CheckConstraint(
                 condition=Q(
                     total__gte=0,
                 ),
-                name=(
-                    "pedido_total_gte_0"
-                ),
+                name="pedido_total_gte_0",
             ),
         ]
 
@@ -1872,6 +1841,7 @@ class Pedido(models.Model):
     # -------------------------------------------------------------------------
 
     def __str__(self):
+
         return (
             f"{self.numero} - "
             f"{self.nombre_completo}"
@@ -1883,6 +1853,7 @@ class Pedido(models.Model):
 
     @property
     def nombre_completo(self):
+
         return (
             f"{self.nombre} "
             f"{self.apellido}"
@@ -1890,6 +1861,7 @@ class Pedido(models.Model):
 
     @property
     def direccion_completa(self):
+
         partes = [
             self.direccion,
             self.numero_direccion,
@@ -1908,11 +1880,46 @@ class Pedido(models.Model):
         )
 
     # -------------------------------------------------------------------------
+    # SEGUIMIENTO DEL DESPACHO
+    # -------------------------------------------------------------------------
+
+    @property
+    def tiene_seguimiento(self):
+
+        return bool(
+            self.transportista
+            and self.numero_seguimiento
+        )
+
+    @property
+    def url_seguimiento(self):
+
+        if (
+            self.transportista
+            == self.Transportista.BLUEXPRESS
+        ):
+            return "https://www.blue.cl/"
+
+        return ""
+
+    @property
+    def nombre_transportista(self):
+
+        if not self.transportista:
+            return ""
+
+        try:
+            return self.get_transportista_display()
+        except Exception:
+            return self.transportista
+
+    # -------------------------------------------------------------------------
     # ESTADO DEL PAGO
     # -------------------------------------------------------------------------
 
     @property
     def pago_aprobado(self):
+
         return (
             self.estado_pago
             == self.EstadoPago.APROBADO
@@ -1921,6 +1928,7 @@ class Pedido(models.Model):
 
     @property
     def puede_confirmarse(self):
+
         return (
             self.estado
             != self.EstadoPedido.CANCELADO
@@ -1935,6 +1943,7 @@ class Pedido(models.Model):
 
     @property
     def tiene_descuento(self):
+
         return (
             self.descuento > 0
             and self.tipo_descuento
@@ -1947,6 +1956,7 @@ class Pedido(models.Model):
 
     @property
     def email_usuario(self):
+
         if not self.usuario_id:
             return ""
 
@@ -1960,6 +1970,7 @@ class Pedido(models.Model):
 
     @property
     def emails_confirmacion(self):
+
         emails = []
         emails_vistos = set()
 
@@ -1969,6 +1980,7 @@ class Pedido(models.Model):
         ]
 
         for candidato in candidatos:
+
             email_normalizado = (
                 self.normalizar_email(
                     candidato
@@ -1996,6 +2008,7 @@ class Pedido(models.Model):
 
     @staticmethod
     def normalizar_email(email):
+
         if not email:
             return ""
 
@@ -2014,17 +2027,21 @@ class Pedido(models.Model):
         *args,
         **kwargs,
     ):
+
         if not self.numero:
+
             self.numero = (
                 self._generar_numero_unico()
             )
 
         if self.email:
+
             self.email = (
                 self.email.strip()
             )
 
         if self.rut:
+
             self.rut = (
                 str(self.rut)
                 .strip()
@@ -2032,8 +2049,33 @@ class Pedido(models.Model):
             )
 
         if self.codigo_descuento:
+
             self.codigo_descuento = (
                 self.codigo_descuento
+                .strip()
+                .upper()
+            )
+
+        # ---------------------------------------------------------------------
+        # NORMALIZAR TRANSPORTISTA
+        # ---------------------------------------------------------------------
+
+        if self.transportista:
+
+            self.transportista = (
+                str(self.transportista)
+                .strip()
+                .lower()
+            )
+
+        # ---------------------------------------------------------------------
+        # NORMALIZAR NÚMERO DE SEGUIMIENTO
+        # ---------------------------------------------------------------------
+
+        if self.numero_seguimiento:
+
+            self.numero_seguimiento = (
+                str(self.numero_seguimiento)
                 .strip()
                 .upper()
             )
@@ -2043,15 +2085,15 @@ class Pedido(models.Model):
             **kwargs,
         )
 
-
-
     # -------------------------------------------------------------------------
     # GENERAR NÚMERO DE PEDIDO
     # -------------------------------------------------------------------------
 
     @classmethod
     def _generar_numero_unico(cls):
+
         while True:
+
             codigo = (
                 uuid.uuid4()
                 .hex[:8]
@@ -2072,9 +2114,6 @@ class Pedido(models.Model):
 
             if not existe:
                 return numero
-
-
-
 
 
             

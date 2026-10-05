@@ -1,9 +1,12 @@
 {% extends 'core/base.html' %}
+
 {% load static humanize %}
 
 
 {% block title %}
+
     Seguimiento de pedido | Audex
+
 {% endblock %}
 
 
@@ -11,7 +14,7 @@
 
     <link
         rel="stylesheet"
-        href="{% static 'core/css/seguimiento_pedido.css' %}?v=5"
+        href="{% static 'core/css/seguimiento_pedido.css' %}?v=7"
     >
 
 {% endblock %}
@@ -39,21 +42,29 @@
 
 
                 <span class="etiqueta-seccion">
+
                     Seguimiento Audex
+
                 </span>
 
 
                 <h1>
+
                     ¿Dónde está tu pedido?
+
                 </h1>
 
 
                 <p>
+
                     Ingresa el número de tu pedido y el
+
                     <strong>
                         RUT utilizado al realizar la compra
                     </strong>
+
                     para consultar su estado y seguimiento.
+
                 </p>
 
 
@@ -122,7 +133,7 @@
 
 
                     <!-- =============================================
-                         RUT UTILIZADO EN LA COMPRA
+                         RUT
                     ============================================== -->
 
                     <div class="campo">
@@ -169,7 +180,7 @@
 
 
                     <!-- =============================================
-                         AVISO DE SEGURIDAD
+                         SEGURIDAD
                     ============================================== -->
 
                     <div class="buscar-pedido__seguridad">
@@ -177,9 +188,11 @@
                         <i class="bi bi-shield-check"></i>
 
                         <span>
+
                             Por seguridad, verificaremos que el
                             número de pedido y el RUT correspondan
                             a la misma compra.
+
                         </span>
 
                     </div>
@@ -234,8 +247,10 @@
 
 
                     <p>
+
                         Pedido realizado el
                         {{ pedido.creado|date:"d/m/Y H:i" }}.
+
                     </p>
 
                 </div>
@@ -261,81 +276,255 @@
 
             <div class="seguimiento-grid">
 
+
                 <!-- =================================================
-                     ESTADO DEL PEDIDO
+                     COLUMNA PRINCIPAL
                 ================================================== -->
 
-                <article class="seguimiento-tarjeta">
-
-                    <h2>
-                        Estado de tu pedido
-                    </h2>
+                <div>
 
 
-                    <div class="timeline-pedido">
+                    <!-- =============================================
+                         ESTADO DEL PEDIDO
+                    ============================================== -->
 
-                        {% for paso in timeline %}
+                    <article class="seguimiento-tarjeta">
 
-                            <div
-                                class="
-                                    timeline-paso
+                        <h2>
+                            Estado de tu pedido
+                        </h2>
 
-                                    {% if paso.completado %}
-                                        timeline-paso--completado
-                                    {% endif %}
 
-                                    {% if paso.activo %}
-                                        timeline-paso--activo
-                                    {% endif %}
-                                "
-                            >
+                        <div class="timeline-pedido">
 
-                                <!-- =================================
-                                     ICONO
-                                ================================== -->
+                            {% for paso in timeline %}
 
-                                <div class="timeline-paso__icono">
+                                <div
+                                    class="
+                                        timeline-paso
 
-                                    <i class="bi {{ paso.icono }}"></i>
+                                        {% if paso.completado %}
+                                            timeline-paso--completado
+                                        {% endif %}
+
+                                        {% if paso.activo %}
+                                            timeline-paso--activo
+                                        {% endif %}
+                                    "
+                                >
+
+                                    <!-- =================================
+                                         ICONO
+                                    ================================== -->
+
+                                    <div class="timeline-paso__icono">
+
+                                        <i class="bi {{ paso.icono }}"></i>
+
+                                    </div>
+
+
+                                    <!-- =================================
+                                         INFORMACIÓN
+                                    ================================== -->
+
+                                    <div>
+
+                                        <strong>
+                                            {{ paso.titulo }}
+                                        </strong>
+
+
+                                        <p>
+                                            {{ paso.descripcion }}
+                                        </p>
+
+
+                                        {% if paso.fecha %}
+
+                                            <time>
+
+                                                {{ paso.fecha|date:"d/m/Y H:i" }}
+
+                                            </time>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            {% empty %}
+
+                                <p>
+                                    Todavía no existe información
+                                    de seguimiento para este pedido.
+                                </p>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- =================================================
+                         BLUE EXPRESS
+                    ================================================== -->
+
+                    {% if pedido.numero_seguimiento %}
+
+                        <article
+                            class="
+                                seguimiento-tarjeta
+                                seguimiento-bluexpress
+                            "
+                        >
+
+                            <div class="seguimiento-bluexpress__cabecera">
+
+                                <div class="seguimiento-bluexpress__icono">
+
+                                    <i class="bi bi-truck"></i>
 
                                 </div>
 
 
-                                <!-- =================================
-                                     INFORMACIÓN
-                                ================================== -->
-
                                 <div>
 
-                                    <strong>
-                                        {{ paso.titulo }}
-                                    </strong>
+                                    <span class="etiqueta-seccion">
+                                        Transporte
+                                    </span>
 
-
-                                    <p>
-                                        {{ paso.descripcion }}
-                                    </p>
-
-
-                                    {% if paso.fecha %}
-
-                                        <time>
-
-                                            {{ paso.fecha|date:"d/m/Y H:i" }}
-
-                                        </time>
-
-                                    {% endif %}
+                                    <h2>
+                                        Seguimiento Blue Express
+                                    </h2>
 
                                 </div>
 
                             </div>
 
-                        {% endfor %}
 
-                    </div>
+                            <div class="seguimiento-bluexpress__contenido">
 
-                </article>
+
+                                <!-- =================================
+                                     PEDIDO AUDEX
+                                ================================== -->
+
+                                <div class="seguimiento-bluexpress__dato">
+
+                                    <span>
+                                        Número de pedido Audex
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.numero }}
+                                    </strong>
+
+                                </div>
+
+
+                                <!-- =================================
+                                     OS BLUE EXPRESS
+                                ================================== -->
+
+                                <div class="seguimiento-bluexpress__dato">
+
+                                    <span>
+                                        N.º de seguimiento / OS
+                                    </span>
+
+                                    <strong
+                                        id="numero-seguimiento-bluexpress"
+                                    >
+                                        {{ pedido.numero_seguimiento }}
+                                    </strong>
+
+                                </div>
+
+
+                                <!-- =================================
+                                     ACCIONES
+                                ================================== -->
+
+                                <div class="seguimiento-bluexpress__acciones">
+
+                                    <button
+                                        type="button"
+                                        class="
+                                            boton
+                                            boton--secundario
+                                            boton--completo
+                                        "
+                                        id="copiar-seguimiento-bluexpress"
+                                        data-seguimiento="{{ pedido.numero_seguimiento }}"
+                                    >
+
+                                        <i class="bi bi-copy"></i>
+
+                                        <span>
+                                            Copiar N.º de seguimiento
+                                        </span>
+
+                                    </button>
+
+
+                                    <a
+                                        href="https://www.blue.cl/enviar/seguimiento?n_seguimiento={{ pedido.numero_seguimiento|urlencode }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="
+                                            boton
+                                            boton--primario
+                                            boton--completo
+                                        "
+                                        title="Seguir envío {{ pedido.numero_seguimiento }} en Blue Express"
+                                    >
+
+                                        <i class="bi bi-box-arrow-up-right"></i>
+
+                                        Seguir en Blue Express
+
+                                    </a>
+
+                                </div>
+
+
+                                <!-- =================================
+                                     AYUDA
+                                ================================== -->
+
+                                <div class="seguimiento-bluexpress__ayuda">
+
+                                    <i class="bi bi-info-circle"></i>
+
+                                    <p>
+
+                                        Tu número de seguimiento es
+
+                                        <strong>
+                                            {{ pedido.numero_seguimiento }}
+                                        </strong>.
+
+                                        Presiona
+                                        <strong>
+                                            Seguir en Blue Express
+                                        </strong>
+                                        para consultar directamente
+                                        el estado de tu envío.
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    {% endif %}
+
+                </div>
 
 
                 <!-- =================================================
@@ -344,8 +533,9 @@
 
                 <aside class="seguimiento-lateral">
 
+
                     <!-- =============================================
-                         RESUMEN DEL PEDIDO
+                         RESUMEN
                     ============================================== -->
 
                     <article class="seguimiento-tarjeta">
@@ -360,6 +550,7 @@
                             {% for item in pedido.items.all %}
 
                                 <div class="seguimiento-producto">
+
 
                                     <!-- =================================
                                          IMAGEN
@@ -424,7 +615,8 @@
 
                                     <strong class="seguimiento-producto__precio">
 
-                                        ${{ item.total|floatformat:0|intcomma }} CLP
+                                        ${{ item.total_final|default:item.total|floatformat:0|intcomma }}
+                                        CLP
 
                                     </strong>
 
@@ -456,7 +648,8 @@
 
                             <strong>
 
-                                ${{ pedido.total|floatformat:0|intcomma }} CLP
+                                ${{ pedido.total|floatformat:0|intcomma }}
+                                CLP
 
                             </strong>
 
@@ -504,7 +697,99 @@
 
                         </div>
 
+
+                        {% if pedido.referencia %}
+
+                            <div class="seguimiento-direccion__referencia">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                <span>
+                                    {{ pedido.referencia }}
+                                </span>
+
+                            </div>
+
+                        {% endif %}
+
                     </article>
+
+
+                    <!-- =============================================
+                         INFORMACIÓN DE DESPACHO
+                    ============================================== -->
+
+                    {% if pedido.numero_seguimiento %}
+
+                        <article class="seguimiento-tarjeta">
+
+                            <h2>
+                                Despacho
+                            </h2>
+
+
+                            <div class="seguimiento-despacho-info">
+
+                                <div>
+
+                                    <span>
+                                        Transportista
+                                    </span>
+
+                                    <strong>
+
+                                        {% if pedido.nombre_transportista %}
+
+                                            {{ pedido.nombre_transportista }}
+
+                                        {% else %}
+
+                                            Blue Express
+
+                                        {% endif %}
+
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Número de seguimiento
+                                    </span>
+
+                                    <strong>
+                                        {{ pedido.numero_seguimiento }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <a
+                                href="https://www.blue.cl/enviar/seguimiento?n_seguimiento={{ pedido.numero_seguimiento|urlencode }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="
+                                    boton
+                                    boton--primario
+                                    boton--completo
+                                "
+                                title="Seguir envío {{ pedido.numero_seguimiento }} en Blue Express"
+                                style="margin-top: 18px;"
+                            >
+
+                                <i class="bi bi-box-arrow-up-right"></i>
+
+                                Seguir en Blue Express
+
+                            </a>
+
+                        </article>
+
+                    {% endif %}
 
 
                     <!-- =============================================
@@ -569,8 +854,10 @@
                                             {% if pedido.comprobante_pago.id_transaccion %}
 
                                                 <small>
+
                                                     ID de transacción:
                                                     {{ pedido.comprobante_pago.id_transaccion }}
+
                                                 </small>
 
                                             {% endif %}
@@ -633,9 +920,11 @@
 
 
                                             <span>
+
                                                 Tu pago está confirmado,
                                                 pero el comprobante todavía
                                                 no se encuentra disponible.
+
                                             </span>
 
                                         </div>
@@ -666,12 +955,13 @@
 ============================================================== -->
 
 <script>
+
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
         // =====================================================
-        // OBTENER CAMPO RUT
+        // CAMPO RUT
         // =====================================================
 
         const campoRut =
@@ -683,204 +973,248 @@ document.addEventListener(
             );
 
 
-        // =====================================================
-        // SI EL FORMULARIO NO ESTÁ PRESENTE
-        // =====================================================
+        if (campoRut) {
 
-        if (!campoRut) {
-            return;
-        }
+            // =================================================
+            // CONFIGURACIÓN
+            // =================================================
 
+            campoRut.setAttribute(
+                "maxlength",
+                "12"
+            );
 
-        // =====================================================
-        // CONFIGURACIÓN
-        // =====================================================
+            campoRut.setAttribute(
+                "autocomplete",
+                "off"
+            );
 
-        campoRut.setAttribute(
-            "maxlength",
-            "12"
-        );
-
-        campoRut.setAttribute(
-            "autocomplete",
-            "off"
-        );
-
-        campoRut.setAttribute(
-            "spellcheck",
-            "false"
-        );
-
-
-        // =====================================================
-        // FORMATEAR RUT
-        // =====================================================
-
-        function formatearRut(valor) {
-
-            // -------------------------------------------------
-            // SABER SI EL ÚLTIMO CARÁCTER INGRESADO ES K
-            // -------------------------------------------------
-
-            const terminaEnK = /k$/i.test(
-                valor.trim()
+            campoRut.setAttribute(
+                "spellcheck",
+                "false"
             );
 
 
-            // -------------------------------------------------
-            // LIMPIAR VALOR
-            // -------------------------------------------------
+            // =================================================
+            // FORMATEAR RUT
+            // =================================================
 
-            let limpio = valor
-                .replace(
-                    /[^0-9kK]/g,
+            function formatearRut(valor) {
+
+                const terminaEnK =
+                    /k$/i.test(
+                        valor.trim()
+                    );
+
+
+                let limpio = valor
+                    .replace(
+                        /[^0-9kK]/g,
+                        ""
+                    )
+                    .toUpperCase();
+
+
+                limpio = limpio.replace(
+                    /K/g,
                     ""
-                )
-                .toUpperCase();
+                );
 
 
-            // -------------------------------------------------
-            // LA K SOLO PUEDE SER DÍGITO VERIFICADOR
-            // -------------------------------------------------
+                if (terminaEnK) {
 
-            limpio = limpio.replace(
-                /K/g,
-                ""
-            );
+                    limpio = limpio.slice(
+                        0,
+                        8
+                    );
+
+                    limpio += "K";
+
+                } else {
+
+                    limpio = limpio.slice(
+                        0,
+                        9
+                    );
+
+                }
 
 
-            // -------------------------------------------------
-            // MÁXIMO 9 CARACTERES SIN FORMATO
-            // -------------------------------------------------
+                if (!limpio) {
 
-            if (terminaEnK) {
+                    return "";
 
-                limpio = limpio.slice(
+                }
+
+
+                if (limpio.length === 1) {
+
+                    return limpio;
+
+                }
+
+
+                const dv = limpio.slice(
+                    -1
+                );
+
+
+                let cuerpo = limpio.slice(
+                    0,
+                    -1
+                );
+
+
+                cuerpo = cuerpo.replace(
+                    /\D/g,
+                    ""
+                );
+
+
+                cuerpo = cuerpo.slice(
                     0,
                     8
                 );
 
-                limpio += "K";
 
-            } else {
+                cuerpo = cuerpo.replace(
+                    /\B(?=(\d{3})+(?!\d))/g,
+                    "."
+                );
 
-                limpio = limpio.slice(
-                    0,
-                    9
+
+                return (
+                    cuerpo
+                    + "-"
+                    + dv
                 );
 
             }
 
 
-            // -------------------------------------------------
-            // VACÍO
-            // -------------------------------------------------
+            // =================================================
+            // INPUT
+            // =================================================
 
-            if (!limpio) {
-                return "";
+            campoRut.addEventListener(
+                "input",
+                function () {
+
+                    campoRut.value =
+                        formatearRut(
+                            campoRut.value
+                        );
+
+                }
+            );
+
+
+            // =================================================
+            // VALOR INICIAL
+            // =================================================
+
+            if (campoRut.value) {
+
+                campoRut.value =
+                    formatearRut(
+                        campoRut.value
+                    );
+
             }
 
-
-            // -------------------------------------------------
-            // UN SOLO CARÁCTER
-            // -------------------------------------------------
-
-            if (limpio.length === 1) {
-                return limpio;
-            }
-
-
-            // -------------------------------------------------
-            // SEPARAR CUERPO Y DV
-            // -------------------------------------------------
-
-            const dv = limpio.slice(
-                -1
-            );
-
-
-            let cuerpo = limpio.slice(
-                0,
-                -1
-            );
-
-
-            // -------------------------------------------------
-            // SOLO NÚMEROS EN EL CUERPO
-            // -------------------------------------------------
-
-            cuerpo = cuerpo.replace(
-                /\D/g,
-                ""
-            );
-
-
-            // -------------------------------------------------
-            // MÁXIMO 8 DÍGITOS
-            // -------------------------------------------------
-
-            cuerpo = cuerpo.slice(
-                0,
-                8
-            );
-
-
-            // -------------------------------------------------
-            // AGREGAR PUNTOS
-            // -------------------------------------------------
-
-            cuerpo = cuerpo.replace(
-                /\B(?=(\d{3})+(?!\d))/g,
-                "."
-            );
-
-
-            // -------------------------------------------------
-            // RESULTADO
-            // -------------------------------------------------
-
-            return (
-                cuerpo
-                + "-"
-                + dv
-            );
         }
 
 
         // =====================================================
-        // AL ESCRIBIR
+        // COPIAR SEGUIMIENTO BLUE EXPRESS
         // =====================================================
 
-        campoRut.addEventListener(
-            "input",
-            function () {
-
-                campoRut.value = (
-                    formatearRut(
-                        campoRut.value
-                    )
-                );
-
-            }
-        );
+        const botonCopiar =
+            document.getElementById(
+                "copiar-seguimiento-bluexpress"
+            );
 
 
-        // =====================================================
-        // AL PEGAR / AUTOCOMPLETAR
-        // =====================================================
+        if (botonCopiar) {
 
-        if (campoRut.value) {
+            botonCopiar.addEventListener(
+                "click",
+                async function () {
 
-            campoRut.value = (
-                formatearRut(
-                    campoRut.value
-                )
+                    const numero =
+                        (
+                            botonCopiar.dataset
+                            .seguimiento
+                            || ""
+                        ).trim();
+
+
+                    if (!numero) {
+
+                        return;
+
+                    }
+
+
+                    const texto =
+                        botonCopiar.querySelector(
+                            "span"
+                        );
+
+
+                    const textoOriginal =
+                        texto
+                        ? texto.textContent.trim()
+                        : "Copiar N.º de seguimiento";
+
+
+                    try {
+
+                        await navigator.clipboard.writeText(
+                            numero
+                        );
+
+
+                        if (texto) {
+
+                            texto.textContent =
+                                "Número copiado";
+
+                        }
+
+
+                        window.setTimeout(
+                            function () {
+
+                                if (texto) {
+
+                                    texto.textContent =
+                                        textoOriginal;
+
+                                }
+
+                            },
+                            1800
+                        );
+
+
+                    } catch (error) {
+
+                        console.warn(
+                            "No fue posible copiar el número de seguimiento.",
+                            error
+                        );
+
+                    }
+
+                }
             );
 
         }
 
     }
 );
+
 </script>
 
 {% endblock %}

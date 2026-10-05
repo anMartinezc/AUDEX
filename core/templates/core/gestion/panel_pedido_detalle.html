@@ -1,25 +1,28 @@
 {% extends 'core/base.html' %}
+
 {% load static humanize %}
 
+
 {% block title %}
+
 {{ pedido.numero }} | Gestión Audex
+
 {% endblock %}
+
 
 {% block extra_css %}
 
-
 <link
     rel="stylesheet"
-    href="{% static 'core/css/pedidos.css' %}?v=10"
+    href="{% static 'core/css/pedidos.css' %}?v=11"
 >
 
-
 {% endblock %}
+
 
 {% block content %}
 
 <section class="gestion-pedidos detalle-admin">
-
 
 <div class="contenedor">
 
@@ -117,11 +120,13 @@
 
     <div class="detalle-admin__grid">
 
+
         <!-- =================================================
              COLUMNA PRINCIPAL
         ================================================== -->
 
         <div class="detalle-admin__principal">
+
 
             <!-- =================================================
                  PRODUCTOS
@@ -161,11 +166,13 @@
 
                         <div class="seguimiento-producto">
 
+
                             <!-- =====================================
                                  PRODUCTO + IMAGEN
                             ====================================== -->
 
                             <div class="seguimiento-producto__contenido">
+
 
                                 <!-- =================================
                                      IMAGEN
@@ -248,7 +255,8 @@
 
                             <strong class="seguimiento-producto__precio">
 
-                                ${{ item.total_final|default:item.total|floatformat:0|intcomma }} CLP
+                                ${{ item.total_final|default:item.total|floatformat:0|intcomma }}
+                                CLP
 
                             </strong>
 
@@ -284,6 +292,7 @@
                         {% endif %}
 
                     </span>
+
 
                     <strong>
                         ${{ pedido.total|floatformat:0|intcomma }} CLP
@@ -330,7 +339,6 @@
 
                         </span>
 
-
                     {% elif pedido.comprobante_pago %}
 
                         <span
@@ -345,7 +353,6 @@
                             Disponible
 
                         </span>
-
 
                     {% else %}
 
@@ -447,7 +454,8 @@
                                         <small>
 
                                             Monto:
-                                            ${{ pedido.comprobante_pago.monto|floatformat:0|intcomma }} CLP
+                                            ${{ pedido.comprobante_pago.monto|floatformat:0|intcomma }}
+                                            CLP
 
                                         </small>
 
@@ -674,6 +682,7 @@
 
         <aside class="detalle-admin__lateral">
 
+
             <!-- =================================================
                  ACTUALIZAR ESTADO
             ================================================== -->
@@ -696,12 +705,17 @@
                         <form
                             method="post"
                             class="form-admin"
+                            id="form-actualizar-pedido"
                         >
 
                             {% csrf_token %}
 
                             {{ form.non_field_errors }}
 
+
+                            <!-- =====================================
+                                 NUEVO ESTADO
+                            ====================================== -->
 
                             <div class="campo">
 
@@ -714,6 +728,64 @@
                             </div>
 
 
+                            <!-- =====================================
+                                 BLUE EXPRESS
+                            ====================================== -->
+
+                            <div
+                                class="campo"
+                                id="campo-seguimiento-bluexpress"
+                                style="display: none;"
+                            >
+
+                                <label
+                                    for="{{ form.numero_seguimiento.id_for_label }}"
+                                >
+
+                                    <i class="bi bi-truck"></i>
+
+                                    Número de seguimiento Blue Express
+
+                                </label>
+
+
+                                {{ form.numero_seguimiento }}
+
+
+                                {% if form.numero_seguimiento.help_text %}
+
+                                    <small>
+                                        {{ form.numero_seguimiento.help_text }}
+                                    </small>
+
+                                {% endif %}
+
+
+                                {{ form.numero_seguimiento.errors }}
+
+
+                                <div>
+
+                                    <i class="bi bi-info-circle"></i>
+
+                                    <span>
+
+                                        Ingresa el N.º de OS entregado
+                                        por Blue Express. Este número se
+                                        enviará automáticamente al cliente
+                                        en el correo de despacho.
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 COMENTARIO
+                            ====================================== -->
+
                             <div class="campo">
 
                                 {{ form.comentario.label_tag }}
@@ -724,6 +796,10 @@
 
                             </div>
 
+
+                            <!-- =====================================
+                                 BOTÓN
+                            ====================================== -->
 
                             <button
                                 type="submit"
@@ -809,6 +885,7 @@
 
                 <div class="detalle-admin__datos">
 
+
                     <!-- =========================================
                          ESTADO
                     ========================================== -->
@@ -818,6 +895,7 @@
                         <span>
                             Estado
                         </span>
+
 
                         <strong>
 
@@ -1031,6 +1109,7 @@
 
                             </a>
 
+
                         {% else %}
 
                             <div
@@ -1165,6 +1244,10 @@
                 </h2>
 
 
+                <!-- =================================================
+                     DIRECCIÓN
+                ================================================== -->
+
                 <div class="detalle-admin__direccion">
 
                     <i class="bi bi-geo-alt"></i>
@@ -1175,16 +1258,13 @@
                         {{ pedido.direccion }}
                         {{ pedido.numero_direccion }}
 
-
                         {% if pedido.departamento %}
 
                             , {{ pedido.departamento }}
 
                         {% endif %}
 
-
                         <br>
-
 
                         {{ pedido.comuna }},
                         {{ pedido.region }}
@@ -1206,6 +1286,140 @@
 
                 {% endif %}
 
+
+                <!-- =================================================
+                     SEGUIMIENTO BLUE EXPRESS
+                ================================================== -->
+
+                {% if pedido.numero_seguimiento %}
+
+                    <div
+                        class="detalle-admin__referencia"
+                        style="
+                            margin-top: 14px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: stretch;
+                            gap: 10px;
+                        "
+                    >
+
+                        <!-- =========================================
+                             CABECERA
+                        ========================================== -->
+
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                            "
+                        >
+
+                            <i class="bi bi-truck"></i>
+
+
+                            <strong>
+                                Seguimiento del despacho
+                            </strong>
+
+                        </div>
+
+
+                        <!-- =========================================
+                             TRANSPORTISTA
+                        ========================================== -->
+
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: 12px;
+                            "
+                        >
+
+                            <span>
+                                Transportista
+                            </span>
+
+
+                            <strong>
+
+                                {% if pedido.nombre_transportista %}
+
+                                    {{ pedido.nombre_transportista }}
+
+                                {% else %}
+
+                                    Blue Express
+
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- =========================================
+                             NÚMERO DE SEGUIMIENTO
+                        ========================================== -->
+
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: 12px;
+                            "
+                        >
+
+                            <span>
+                                N.º de seguimiento / OS
+                            </span>
+
+
+                            <strong
+                                style="
+                                    color: var(--color-azul-claro);
+                                    font-size: 0.78rem;
+                                    letter-spacing: 0.03em;
+                                "
+                            >
+                                {{ pedido.numero_seguimiento }}
+                            </strong>
+
+                        </div>
+
+
+                        <!-- =========================================
+                             BLUE EXPRESS
+                        ========================================== -->
+
+                        <a
+                            href="https://www.blue.cl/enviar/seguimiento?n_seguimiento={{ pedido.numero_seguimiento|urlencode }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="boton boton--primario"
+                            title="Abrir seguimiento {{ pedido.numero_seguimiento }} en Blue Express"
+                            style="
+                                width: 100%;
+                                margin-top: 3px;
+                                justify-content: center;
+                                text-decoration: none;
+                            "
+                        >
+
+                            <i class="bi bi-box-arrow-up-right"></i>
+
+                            Abrir seguimiento Blue Express
+
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
             </article>
 
         </aside>
@@ -1214,7 +1428,157 @@
 
 </div>
 
-
 </section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        // =============================================================
+        // ELEMENTOS
+        // =============================================================
+
+        const selectEstado =
+            document.getElementById(
+                "id_nuevo_estado"
+            );
+
+        const campoSeguimiento =
+            document.getElementById(
+                "campo-seguimiento-bluexpress"
+            );
+
+        const inputSeguimiento =
+            document.getElementById(
+                "id_numero_seguimiento"
+            );
+
+
+        // =============================================================
+        // EL FORMULARIO PUEDE NO EXISTIR SI EL PEDIDO ESTÁ CERRADO
+        // =============================================================
+
+        if (
+            !selectEstado
+            || !campoSeguimiento
+            || !inputSeguimiento
+        ) {
+            return;
+        }
+
+
+        // =============================================================
+        // MOSTRAR / OCULTAR CAMPO
+        // =============================================================
+
+        function actualizarCampoSeguimiento() {
+
+            const estadoSeleccionado = (
+                selectEstado.value || ""
+            )
+                .trim()
+                .toLowerCase();
+
+
+            const esEnviado = (
+                estadoSeleccionado === "enviado"
+            );
+
+
+            if (esEnviado) {
+
+                campoSeguimiento.style.display = "";
+
+                inputSeguimiento.required = true;
+
+                inputSeguimiento.setAttribute(
+                    "aria-required",
+                    "true"
+                );
+
+            } else {
+
+                campoSeguimiento.style.display = "none";
+
+                inputSeguimiento.required = false;
+
+                inputSeguimiento.removeAttribute(
+                    "aria-required"
+                );
+
+            }
+
+        }
+
+
+        // =============================================================
+        // CAMBIO DE ESTADO
+        // =============================================================
+
+        selectEstado.addEventListener(
+            "change",
+            function () {
+
+                actualizarCampoSeguimiento();
+
+
+                if (
+                    (
+                        selectEstado.value
+                        || ""
+                    ).trim().toLowerCase() === "enviado"
+                    && !inputSeguimiento.value.trim()
+                ) {
+
+                    window.setTimeout(
+                        function () {
+
+                            inputSeguimiento.focus();
+
+                        },
+                        100
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =============================================================
+        // NORMALIZAR NÚMERO DE SEGUIMIENTO
+        // =============================================================
+
+        inputSeguimiento.addEventListener(
+            "input",
+            function () {
+
+                this.value = (
+                    this.value
+                    .toUpperCase()
+                    .replace(/\s+/g, "")
+                );
+
+            }
+        );
+
+
+        // =============================================================
+        // ESTADO INICIAL
+        // =============================================================
+
+        actualizarCampoSeguimiento();
+
+    }
+);
+
+</script>
 
 {% endblock %}

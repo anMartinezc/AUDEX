@@ -1,23 +1,29 @@
 {% extends 'core/base.html' %}
+
 {% load static humanize %}
 
+
 {% block title %}
+
 Gestión de pedidos | Audex
+
 {% endblock %}
+
 
 {% block extra_css %}
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/pedidos.css' %}?v=8"
+    href="{% static 'core/css/pedidos.css' %}?v=12"
 >
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/panel_pedidos.css' %}?v=4"
+    href="{% static 'core/css/panel_pedidos.css' %}?v=7"
 >
 
 {% endblock %}
+
 
 {% block content %}
 
@@ -113,6 +119,7 @@ Gestión de pedidos | Audex
             href="{% url 'core:panel_pedidos' %}?bandeja=nuevos"
             class="
                 gestion-resumen__tarjeta
+
                 {% if bandeja_actual == 'nuevos' %}
                     gestion-resumen__tarjeta--activa
                 {% endif %}
@@ -136,6 +143,7 @@ Gestión de pedidos | Audex
             href="{% url 'core:panel_pedidos' %}?bandeja=operacion"
             class="
                 gestion-resumen__tarjeta
+
                 {% if bandeja_actual == 'operacion' %}
                     gestion-resumen__tarjeta--activa
                 {% endif %}
@@ -159,6 +167,7 @@ Gestión de pedidos | Audex
             href="{% url 'core:panel_pedidos' %}?bandeja=despacho"
             class="
                 gestion-resumen__tarjeta
+
                 {% if bandeja_actual == 'despacho' %}
                     gestion-resumen__tarjeta--activa
                 {% endif %}
@@ -182,6 +191,7 @@ Gestión de pedidos | Audex
             href="{% url 'core:panel_pedidos' %}?bandeja=finalizados"
             class="
                 gestion-resumen__tarjeta
+
                 {% if bandeja_actual == 'finalizados' %}
                     gestion-resumen__tarjeta--activa
                 {% endif %}
@@ -206,11 +216,6 @@ Gestión de pedidos | Audex
     ====================================================== -->
 
     <div class="gestion-alertas">
-
-
-        <!-- =================================================
-             PAGOS PENDIENTES - ÚLTIMAS 48 HORAS
-        ================================================== -->
 
         {% if total_pendientes_recientes > 0 %}
 
@@ -243,10 +248,15 @@ Gestión de pedidos | Audex
 
 
                     <span>
+
                         Pedido{{ total_pendientes_recientes|pluralize }}
+
                         pendiente{{ total_pendientes_recientes|pluralize }}
+
                         de pago creado{{ total_pendientes_recientes|pluralize }}
+
                         durante las últimas 48 horas.
+
                     </span>
 
                 </div>
@@ -322,7 +332,7 @@ Gestión de pedidos | Audex
 
 
                         <!-- =========================================
-                             DETALLE DEL PEDIDO
+                             DETALLE PEDIDO
                         ========================================== -->
 
                         <a
@@ -355,10 +365,8 @@ Gestión de pedidos | Audex
                                 </span>
 
                                 <strong>
-
                                     {{ pedido.nombre }}
                                     {{ pedido.apellido }}
-
                                 </strong>
 
                                 <small>
@@ -376,6 +384,7 @@ Gestión de pedidos | Audex
                                     Estado
                                 </span>
 
+
                                 <strong
                                     class="
                                         pedido-estado
@@ -384,6 +393,43 @@ Gestión de pedidos | Audex
                                 >
                                     {{ pedido.get_estado_display }}
                                 </strong>
+
+
+                                <!-- =================================
+                                     BLUE EXPRESS
+                                ================================== -->
+
+                                {% if pedido.numero_seguimiento %}
+
+                                    <div class="pedido-admin-fila__tracking">
+
+                                        <span class="pedido-admin-fila__tracking-etiqueta">
+
+                                            <i class="bi bi-truck"></i>
+
+                                            {% if pedido.nombre_transportista %}
+
+                                                {{ pedido.nombre_transportista }}
+
+                                            {% else %}
+
+                                                Blue Express
+
+                                            {% endif %}
+
+                                        </span>
+
+
+                                        <strong class="pedido-admin-fila__tracking-numero">
+
+                                            OS:
+                                            {{ pedido.numero_seguimiento }}
+
+                                        </strong>
+
+                                    </div>
+
+                                {% endif %}
 
                             </div>
 
@@ -397,6 +443,7 @@ Gestión de pedidos | Audex
                                 <span>
                                     Productos
                                 </span>
+
 
                                 {% with primer_item=pedido.items.all.0 %}
 
@@ -495,7 +542,7 @@ Gestión de pedidos | Audex
                             </div>
 
 
-                            <!-- ACTUALIZACIÓN -->
+                            <!-- FECHA -->
 
                             <div class="pedido-admin-fila__fecha">
 
@@ -519,7 +566,10 @@ Gestión de pedidos | Audex
                                 </span>
 
                                 <strong>
-                                    ${{ pedido.total|floatformat:0|intcomma }} CLP
+
+                                    ${{ pedido.total|floatformat:0|intcomma }}
+                                    CLP
+
                                 </strong>
 
                             </div>
@@ -531,36 +581,90 @@ Gestión de pedidos | Audex
 
 
                         <!-- =========================================
-                             COMPROBANTE DE PAGO
+                             ACCIONES / DOCUMENTOS / TRACKING
                         ========================================== -->
 
-                        {% if pedido.pago_aprobado %}
+                        {% if pedido.pago_aprobado or pedido.numero_seguimiento %}
 
                             <div class="pedido-admin-item__documentos">
 
-                                {% if pedido.comprobante_pago %}
 
-                                    <a
-                                        href="{% url 'core:comprobante_pago' pedido.numero %}"
-                                        class="boton boton--secundario"
-                                        title="Ver comprobante de pago"
+                                <!-- =================================
+                                     BLUE EXPRESS
+                                ================================== -->
+
+                                {% if pedido.numero_seguimiento %}
+
+                                    <div
+                                        class="
+                                            pedido-admin-boleta
+                                            pedido-admin-seguimiento
+                                        "
                                     >
 
-                                        <i class="bi bi-receipt-cutoff"></i>
+                                        <i class="bi bi-truck"></i>
 
-                                        Ver comprobante
+
+                                        <span>
+                                            Blue Express:
+                                        </span>
+
+
+                                        <strong>
+                                            {{ pedido.numero_seguimiento }}
+                                        </strong>
+
+                                    </div>
+
+
+                                    <a
+                                        href="https://www.blue.cl/enviar/seguimiento?n_seguimiento={{ pedido.numero_seguimiento|urlencode }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="boton boton--primario"
+                                        title="Abrir seguimiento {{ pedido.numero_seguimiento }} en Blue Express"
+                                    >
+
+                                        <i class="bi bi-box-arrow-up-right"></i>
+
+                                        Abrir seguimiento
 
                                     </a>
 
-                                {% else %}
+                                {% endif %}
 
-                                    <span class="pedido-admin-boleta">
 
-                                        <i class="bi bi-hourglass-split"></i>
+                                <!-- =================================
+                                     COMPROBANTE
+                                ================================== -->
 
-                                        Comprobante en preparación
+                                {% if pedido.pago_aprobado %}
 
-                                    </span>
+                                    {% if pedido.comprobante_pago %}
+
+                                        <a
+                                            href="{% url 'core:comprobante_pago' pedido.numero %}"
+                                            class="boton boton--secundario"
+                                            title="Ver comprobante de pago"
+                                        >
+
+                                            <i class="bi bi-receipt-cutoff"></i>
+
+                                            Ver comprobante
+
+                                        </a>
+
+                                    {% else %}
+
+                                        <span class="pedido-admin-boleta">
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            Comprobante en preparación
+
+                                        </span>
+
+                                    {% endif %}
 
                                 {% endif %}
 
@@ -705,6 +809,11 @@ Gestión de pedidos | Audex
 
                             <div class="tarjeta-pedido-admin-wrap">
 
+
+                                <!-- =====================================
+                                     TARJETA PRINCIPAL
+                                ====================================== -->
+
                                 <a
                                     href="{% url 'core:panel_pedido_detalle' pedido.numero %}"
                                     class="tarjeta-pedido-admin"
@@ -735,6 +844,52 @@ Gestión de pedidos | Audex
                                         {{ pedido.apellido }}
 
                                     </h3>
+
+
+                                    <!-- =================================
+                                         BLUE EXPRESS
+                                    ================================== -->
+
+                                    {% if pedido.numero_seguimiento %}
+
+                                        <div class="tarjeta-pedido-admin__seguimiento">
+
+                                            <div class="tarjeta-pedido-admin__seguimiento-icono">
+
+                                                <i class="bi bi-truck"></i>
+
+                                            </div>
+
+
+                                            <div class="tarjeta-pedido-admin__seguimiento-info">
+
+                                                <span>
+
+                                                    {% if pedido.nombre_transportista %}
+
+                                                        {{ pedido.nombre_transportista }}
+
+                                                    {% else %}
+
+                                                        Blue Express
+
+                                                    {% endif %}
+
+                                                </span>
+
+
+                                                <strong>
+
+                                                    OS:
+                                                    {{ pedido.numero_seguimiento }}
+
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endif %}
 
 
                                     <!-- =================================
@@ -846,11 +1001,17 @@ Gestión de pedidos | Audex
                                             datetime="{{ pedido.creado|date:'c' }}"
                                             title="Pedido recibido el {{ pedido.creado|date:'d/m/Y H:i' }}"
                                         >
+
                                             {{ pedido.creado|date:"d/m H:i" }}
+
                                         </time>
 
+
                                         <strong>
-                                            ${{ pedido.total|floatformat:0|intcomma }} CLP
+
+                                            ${{ pedido.total|floatformat:0|intcomma }}
+                                            CLP
+
                                         </strong>
 
                                     </footer>
@@ -859,7 +1020,44 @@ Gestión de pedidos | Audex
 
 
                                 <!-- =====================================
-                                     COMPROBANTE DE PAGO RÁPIDO
+                                     TRACKING RÁPIDO BLUE EXPRESS
+                                ====================================== -->
+
+                                {% if pedido.numero_seguimiento %}
+
+                                    <a
+                                        href="https://www.blue.cl/enviar/seguimiento?n_seguimiento={{ pedido.numero_seguimiento|urlencode }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="
+                                            tarjeta-pedido-admin__boleta
+                                            tarjeta-pedido-admin__tracking
+                                        "
+                                        title="Abrir seguimiento {{ pedido.numero_seguimiento }} en Blue Express"
+                                    >
+
+                                        <i class="bi bi-truck"></i>
+
+
+                                        <span>
+                                            Seguimiento:
+                                        </span>
+
+
+                                        <strong>
+                                            {{ pedido.numero_seguimiento }}
+                                        </strong>
+
+
+                                        <i class="bi bi-box-arrow-up-right"></i>
+
+                                    </a>
+
+                                {% endif %}
+
+
+                                <!-- =====================================
+                                     COMPROBANTE
                                 ====================================== -->
 
                                 {% if pedido.pago_aprobado %}
@@ -954,14 +1152,15 @@ Gestión de pedidos | Audex
 
 </div>
 
-
 </section>
 
 {% endblock %}
 
+
 {% block extra_js %}
 
 <script>
+
 document.addEventListener(
     "DOMContentLoaded",
     () => {
@@ -974,40 +1173,7 @@ document.addEventListener(
 
 
         // =========================================================
-        // ACTUALIZACIÓN AUTOMÁTICA DEL ESTADO DE LOS PEDIDOS
-        // =========================================================
-        //
-        // Este proceso consulta una versión liviana del tablero.
-        //
-        // Cuando un pedido cambia, por ejemplo:
-        //
-        // CONFIRMADO
-        //     -> PREPARACION
-        //
-        // el backend cambia version_panel.
-        //
-        // El navegador detecta la diferencia y recarga
-        // la página una sola vez.
-        //
-        // Esto hace que el pedido se mueva automáticamente:
-        //
-        // CONFIRMADO
-        //     -> Nuevos
-        //
-        // PREPARACION / LISTO
-        //     -> En operación
-        //
-        // ENVIADO
-        //     -> En despacho
-        //
-        // ENTREGADO / CANCELADO
-        //     -> Finalizados
-        //
-        // =========================================================
-
-
-        // =========================================================
-        // VERSIÓN ACTUAL
+        // VERSIÓN ACTUAL DEL PANEL
         // =========================================================
 
         let versionPanel = (
@@ -1020,25 +1186,16 @@ document.addEventListener(
         // =========================================================
 
         const INTERVALO_PANEL_MS = 5000;
+
         const PRIMERA_CONSULTA_PANEL_MS = 2500;
 
         let consultaPanelEnCurso = false;
+
         let temporizadorPanel = null;
 
 
         // =========================================================
-        // URL PARA CONSULTA LIVIANA
-        // =========================================================
-        //
-        // Conservamos:
-        //
-        // - bandeja;
-        // - búsqueda;
-        // - página;
-        //
-        // y solamente añadimos:
-        //
-        // actualizar_panel=1
+        // CREAR URL PARA CONSULTA LIVIANA
         // =========================================================
 
         const crearUrlEstadoPanel = () => {
@@ -1047,17 +1204,20 @@ document.addEventListener(
                 window.location.href
             );
 
+
             url.searchParams.set(
                 "actualizar_panel",
                 "1"
             );
 
+
             return url.toString();
+
         };
 
 
         // =========================================================
-        // ¿USUARIO ESTÁ ESCRIBIENDO?
+        // DETECTAR SI EL USUARIO ESTÁ ESCRIBIENDO
         // =========================================================
 
         const usuarioEstaEscribiendo = () => {
@@ -1066,29 +1226,30 @@ document.addEventListener(
                 document.activeElement
             );
 
+
             if (!activo) {
                 return false;
             }
+
 
             return (
                 activo.tagName === "INPUT"
                 || activo.tagName === "TEXTAREA"
                 || activo.tagName === "SELECT"
             );
+
         };
 
 
         // =========================================================
-        // PROGRAMAR SIGUIENTE CONSULTA
+        // PROGRAMAR CONSULTA
         // =========================================================
 
         const programarConsultaPanel = (
             retraso = INTERVALO_PANEL_MS,
         ) => {
 
-            if (
-                paginaRecargando
-            ) {
+            if (paginaRecargando) {
                 return;
             }
 
@@ -1108,11 +1269,12 @@ document.addEventListener(
                     retraso,
                 )
             );
+
         };
 
 
         // =========================================================
-        // CONSULTAR ESTADO GENERAL
+        // CONSULTAR ESTADO DEL PANEL
         // =========================================================
 
         const consultarEstadoPanel = async () => {
@@ -1134,11 +1296,12 @@ document.addEventListener(
                 programarConsultaPanel();
 
                 return;
+
             }
 
 
             // -----------------------------------------------------
-            // NO MOLESTAR MIENTRAS SE ESCRIBE EN EL BUSCADOR
+            // USUARIO ESCRIBIENDO
             // -----------------------------------------------------
 
             if (usuarioEstaEscribiendo()) {
@@ -1146,6 +1309,7 @@ document.addEventListener(
                 programarConsultaPanel();
 
                 return;
+
             }
 
 
@@ -1160,34 +1324,39 @@ document.addEventListener(
                         method: "GET",
 
                         headers: {
-                            "X-Requested-With": (
-                                "XMLHttpRequest"
-                            ),
 
-                            "Accept": (
-                                "application/json"
-                            ),
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+
+                            "Accept":
+                                "application/json",
+
                         },
 
-                        credentials: "same-origin",
+                        credentials:
+                            "same-origin",
 
-                        cache: "no-store",
+                        cache:
+                            "no-store",
                     },
                 );
 
 
                 // -------------------------------------------------
-                // SESIÓN CADUCADA / SIN PERMISO
+                // SIN PERMISOS
                 // -------------------------------------------------
 
                 if (
                     response.status === 401
                     || response.status === 403
                 ) {
-
                     return;
                 }
 
+
+                // -------------------------------------------------
+                // ERROR HTTP
+                // -------------------------------------------------
 
                 if (!response.ok) {
 
@@ -1207,7 +1376,6 @@ document.addEventListener(
                     !data
                     || !data.ok
                 ) {
-
                     return;
                 }
 
@@ -1219,7 +1387,7 @@ document.addEventListener(
 
 
                 // -------------------------------------------------
-                // EL TABLERO CAMBIÓ
+                // EL PANEL CAMBIÓ
                 // -------------------------------------------------
 
                 if (
@@ -1233,16 +1401,15 @@ document.addEventListener(
                     window.location.reload();
 
                     return;
+
                 }
 
 
                 // -------------------------------------------------
-                // PRIMERA VERSIÓN
+                // GUARDAR VERSIÓN
                 // -------------------------------------------------
 
-                if (
-                    nuevaVersion
-                ) {
+                if (nuevaVersion) {
 
                     versionPanel = (
                         nuevaVersion
@@ -1265,20 +1432,17 @@ document.addEventListener(
             }
 
 
-            // -----------------------------------------------------
-            // SIGUIENTE CONSULTA
-            // -----------------------------------------------------
-
             if (!paginaRecargando) {
 
                 programarConsultaPanel();
 
             }
+
         };
 
 
         // =========================================================
-        // INICIAR MONITOREO DEL PANEL
+        // INICIAR MONITOREO
         // =========================================================
 
         programarConsultaPanel(
@@ -1287,11 +1451,7 @@ document.addEventListener(
 
 
         // =========================================================
-        // VISIBILIDAD DE LA PESTAÑA
-        // =========================================================
-        //
-        // Al volver al panel comprobamos rápidamente
-        // si cambió el estado operativo de los pedidos.
+        // AL VOLVER A LA PESTAÑA
         // =========================================================
 
         document.addEventListener(
@@ -1302,9 +1462,7 @@ document.addEventListener(
                     document.hidden
                     || paginaRecargando
                 ) {
-
                     return;
-
                 }
 
 
@@ -1324,9 +1482,7 @@ document.addEventListener(
             "pagehide",
             () => {
 
-                if (
-                    temporizadorPanel
-                ) {
+                if (temporizadorPanel) {
 
                     window.clearTimeout(
                         temporizadorPanel
@@ -1339,6 +1495,7 @@ document.addEventListener(
 
     },
 );
+
 </script>
 
 {% endblock %}

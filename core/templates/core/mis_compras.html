@@ -1,9 +1,12 @@
 {% extends 'core/base.html' %}
+
 {% load static humanize %}
 
 
 {% block title %}
+
 Mis compras | Audex
+
 {% endblock %}
 
 
@@ -16,7 +19,7 @@ Mis compras | Audex
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/mis_compras.css' %}?v=5"
+    href="{% static 'core/css/mis_compras.css' %}?v=6"
 >
 
 {% endblock %}
@@ -27,6 +30,7 @@ Mis compras | Audex
 <section class="pedidos-pagina mis-compras">
 
     <div class="contenedor">
+
 
         <!-- =====================================================
              CABECERA PRINCIPAL
@@ -84,6 +88,7 @@ Mis compras | Audex
         {% if total_compras > 0 %}
 
             <div class="mis-compras-controles">
+
 
                 <!-- =============================================
                      RESUMEN
@@ -243,6 +248,7 @@ Mis compras | Audex
 
                 <article class="pedido-historial">
 
+
                     <!-- =================================================
                          SUPERIOR
                     ================================================== -->
@@ -280,6 +286,7 @@ Mis compras | Audex
                     ================================================== -->
 
                     <div class="pedido-historial__datos">
+
 
                         <!-- =============================================
                              FECHA
@@ -360,6 +367,152 @@ Mis compras | Audex
 
 
                     <!-- =================================================
+                         SEGUIMIENTO BLUE EXPRESS
+                    ================================================== -->
+
+                    {% if pedido.numero_seguimiento %}
+
+                        <div class="pedido-historial__seguimiento">
+
+
+                            <!-- =========================================
+                                 CABECERA TRACKING
+                            ========================================== -->
+
+                            <div class="pedido-historial__seguimiento-cabecera">
+
+                                <div class="pedido-historial__seguimiento-icono">
+
+                                    <i class="bi bi-truck"></i>
+
+                                </div>
+
+
+                                <div class="pedido-historial__seguimiento-titulo">
+
+                                    <span>
+                                        Seguimiento del despacho
+                                    </span>
+
+
+                                    <strong>
+
+                                        {% if pedido.nombre_transportista %}
+
+                                            {{ pedido.nombre_transportista }}
+
+                                        {% else %}
+
+                                            Blue Express
+
+                                        {% endif %}
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =========================================
+                                 NÚMERO DE SEGUIMIENTO
+                            ========================================== -->
+
+                            <div class="pedido-historial__seguimiento-numero">
+
+                                <span>
+                                    N.º de seguimiento / OS
+                                </span>
+
+
+                                <strong>
+                                    {{ pedido.numero_seguimiento }}
+                                </strong>
+
+                            </div>
+
+
+                            <!-- =========================================
+                                 ACCIONES TRACKING
+                            ========================================== -->
+
+                            <div class="pedido-historial__seguimiento-acciones">
+
+                                <button
+                                    type="button"
+                                    class="
+                                        boton
+                                        boton--secundario
+                                        js-copiar-seguimiento
+                                    "
+                                    data-seguimiento="{{ pedido.numero_seguimiento }}"
+                                >
+
+                                    <i class="bi bi-copy"></i>
+
+                                    <span>
+                                        Copiar OS
+                                    </span>
+
+                                </button>
+
+
+                                <a
+                                    href="https://www.blue.cl/enviar/seguimiento?n_seguimiento={{ pedido.numero_seguimiento|urlencode }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="
+                                        boton
+                                        boton--primario
+                                    "
+                                    title="Seguir envío {{ pedido.numero_seguimiento }} en Blue Express"
+                                >
+
+                                    <i class="bi bi-box-arrow-up-right"></i>
+
+                                    Seguir en Blue Express
+
+                                </a>
+
+                            </div>
+
+
+                            <!-- =========================================
+                                 AYUDA
+                            ========================================== -->
+
+                            <div class="pedido-historial__seguimiento-ayuda">
+
+                                <i class="bi bi-info-circle"></i>
+
+
+                                <span>
+
+                                    Tu número de seguimiento es
+
+                                    <strong>
+                                        {{ pedido.numero_seguimiento }}
+                                    </strong>.
+
+                                    Presiona
+
+                                    <strong>
+                                        Seguir en Blue Express
+                                    </strong>
+
+                                    para abrir directamente el seguimiento
+                                    de tu envío.
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =================================================
                          PRODUCTOS
                     ================================================== -->
 
@@ -368,6 +521,7 @@ Mis compras | Audex
                         {% for item in pedido.items.all|slice:":3" %}
 
                             <div class="pedido-producto-chip">
+
 
                                 <!-- =====================================
                                      IMAGEN
@@ -481,8 +635,9 @@ Mis compras | Audex
 
                     <div class="pedido-historial__acciones">
 
+
                         <!-- =============================================
-                             SEGUIMIENTO
+                             SEGUIMIENTO AUDEX
                         ============================================== -->
 
                         <a
@@ -544,6 +699,7 @@ Mis compras | Audex
 
                             <i class="bi bi-shield-check"></i>
 
+
                             <span>
 
                                 Comprobante de pago disponible
@@ -568,6 +724,7 @@ Mis compras | Audex
 
 
             {% empty %}
+
 
                 <!-- =====================================================
                      ESTADO VACÍO
@@ -734,5 +891,117 @@ Mis compras | Audex
     src="{% static 'core/js/mis_compras.js' %}?v=1"
     defer
 ></script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        // =========================================================
+        // COPIAR NÚMERO DE SEGUIMIENTO BLUE EXPRESS
+        // =========================================================
+
+        const botonesCopiar = (
+            document.querySelectorAll(
+                ".js-copiar-seguimiento"
+            )
+        );
+
+
+        botonesCopiar.forEach(
+            function (boton) {
+
+                boton.addEventListener(
+                    "click",
+                    async function () {
+
+                        const numero = (
+                            boton.dataset.seguimiento
+                            || ""
+                        ).trim();
+
+
+                        if (!numero) {
+                            return;
+                        }
+
+
+                        const texto = (
+                            boton.querySelector(
+                                "span"
+                            )
+                        );
+
+
+                        const textoOriginal = (
+                            texto
+                            ? texto.textContent.trim()
+                            : "Copiar OS"
+                        );
+
+
+                        try {
+
+                            await navigator.clipboard.writeText(
+                                numero
+                            );
+
+
+                            if (texto) {
+
+                                texto.textContent = (
+                                    "OS copiado"
+                                );
+
+                            }
+
+
+                            boton.classList.add(
+                                "seguimiento-copiado"
+                            );
+
+
+                            window.setTimeout(
+                                function () {
+
+                                    if (texto) {
+
+                                        texto.textContent = (
+                                            textoOriginal
+                                        );
+
+                                    }
+
+
+                                    boton.classList.remove(
+                                        "seguimiento-copiado"
+                                    );
+
+                                },
+                                1600
+                            );
+
+
+                        } catch (error) {
+
+                            console.warn(
+                                "No fue posible copiar el número de seguimiento.",
+                                error
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+</script>
 
 {% endblock %}

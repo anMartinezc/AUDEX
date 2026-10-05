@@ -1769,9 +1769,12 @@ def panel_pedidos(request):
     )
 
 
+
+
 # ==========================================================================
 # DETALLE Y ADMINISTRACIÓN DE UN PEDIDO
 # ==========================================================================
+
 @staff_member_required
 @require_http_methods([
     "GET",
@@ -1793,12 +1796,21 @@ def panel_pedido_detalle(
        - Puede abrirse desde el panel administrativo.
        - No puede avanzar de estado.
 
-    3. NOTIFICACIONES
-       - Al pasar a ENVIADO se envía el correo de despacho.
-       - Al pasar a ENTREGADO se envía el correo de entrega.
-       - Los servicios de correo evitan envíos duplicados.
+    3. PEDIDO ENVIADO
+       - Requiere número de seguimiento.
+       - Se asigna automáticamente Blue Express.
+       - Se guarda el número de seguimiento antes
+         de completar el cambio de estado.
+       - Se envía correo de despacho después
+         de guardar correctamente.
 
-    4. El acceso es exclusivo para staff.
+    4. PEDIDO ENTREGADO
+       - Se envía correo de entrega.
+
+    5. NOTIFICACIONES
+       - Los servicios de correo evitan duplicados.
+
+    6. El acceso es exclusivo para staff.
     """
 
     # =========================================================================
@@ -1886,11 +1898,19 @@ def panel_pedido_detalle(
 
         elif form.is_valid():
 
+            # =================================================================
+            # NUEVO ESTADO
+            # =================================================================
+
             nuevo_estado = (
                 form.cleaned_data[
                     "nuevo_estado"
                 ]
             )
+
+            # =================================================================
+            # COMENTARIO
+            # =================================================================
 
             comentario = (
                 form.cleaned_data.get(
@@ -1901,6 +1921,30 @@ def panel_pedido_detalle(
             ).strip()
 
             # =================================================================
+            # NÚMERO DE SEGUIMIENTO
+            # =================================================================
+
+            numero_seguimiento = (
+                form.cleaned_data.get(
+                    "numero_seguimiento",
+                    "",
+                )
+                or ""
+            ).strip()
+
+            # =================================================================
+            # NORMALIZAR NÚMERO DE SEGUIMIENTO
+            # =================================================================
+
+            if numero_seguimiento:
+
+                numero_seguimiento = (
+                    numero_seguimiento
+                    .strip()
+                    .upper()
+                )
+
+            # =================================================================
             # GUARDAR ESTADO ANTERIOR
             # =================================================================
 
@@ -1908,121 +1952,238 @@ def panel_pedido_detalle(
                 pedido.estado
             )
 
-            try:
+            # =================================================================
+            # VALIDAR BLUE EXPRESS ANTES DE ENVIAR
+            # =================================================================
 
-                pedido_actualizado = (
-                    cambiar_estado_pedido(
-                        pedido=pedido,
-                        nuevo_estado=nuevo_estado,
-                        comentario=comentario,
-                        usuario=request.user,
-                    )
-                )
-
-            except ValidationError as error:
-
-                errores = getattr(
-                    error,
-                    "messages",
-                    [
-                        str(error),
-                    ],
-                )
-
-                for mensaje_error in errores:
-
-                    form.add_error(
-                        None,
-                        mensaje_error,
-                    )
-
-            except Exception as error:
-
-                logger.exception(
-                    (
-                        "Error inesperado actualizando "
-                        "estado operativo del pedido. "
-                        "Pedido=%s Estado=%s Error=%s"
-                    ),
-                    pedido.numero,
-                    nuevo_estado,
-                    error,
-                )
+            if (
+                nuevo_estado
+                == Pedido.EstadoPedido.ENVIADO
+                and not numero_seguimiento
+            ):
 
                 form.add_error(
-                    None,
+                    "numero_seguimiento",
                     (
-                        "No fue posible actualizar el estado "
-                        "del pedido. Intenta nuevamente."
+                        "Debes ingresar el número de "
+                        "seguimiento de Blue Express "
+                        "antes de marcar el pedido "
+                        "como enviado."
                     ),
                 )
 
             else:
 
-                # =============================================================
-                # NOTIFICACIONES POR CORREO
-                # =============================================================
-                #
-                # Solo reaccionamos cuando efectivamente hubo
-                # un cambio de estado.
-                # =============================================================
-
-                if (
-                    estado_anterior
-                    != pedido_actualizado.estado
-                ):
+                try:
 
                     # =========================================================
-                    # PEDIDO ENVIADO
+                    # TRANSACCIÓN
                     # =========================================================
+
+                    with transaction.atomic():
+
+                        # =====================================================
+                        # BLUE EXPRESS
+                        # =====================================================
+
+                        if (
+                            nuevo_estado
+                            == Pedido.EstadoPedido.ENVIADO
+                        ):
+
+                            # =================================================
+                            # GUARDAR TRANSPORTISTA
+                            # =================================================
+
+                            pedido.transportista = (
+                                Pedido.Transportista.BLUEXPRESS
+                            )
+
+                            # =================================================
+                            # GUARDAR NÚMERO DE SEGUIMIENTO
+                            # =================================================
+
+                            pedido.numero_seguimiento = (
+                                numero_seguimiento
+                            )
+
+                            pedido.save(
+                                update_fields=[
+                                    "transportista",
+                                    "numero_seguimiento",
+                                    "actualizado",
+                                ]
+                            )
+
+                        # =====================================================
+                        # CAMBIAR ESTADO
+                        # =====================================================
+
+                        pedido_actualizado = (
+                            cambiar_estado_pedido(
+                                pedido=pedido,
+                                nuevo_estado=nuevo_estado,
+                                comentario=comentario,
+                                usuario=request.user,
+                            )
+                        )
+
+                        # =====================================================
+                        # COMPROBAR CAMBIO REAL
+                        # =====================================================
+
+                        cambio_estado = (
+                            estado_anterior
+                            != pedido_actualizado.estado
+                        )
+
+                        # =====================================================
+                        # CORREO DE DESPACHO
+                        # =====================================================
+
+                        if (
+                            cambio_estado
+                            and pedido_actualizado.estado
+                            == Pedido.EstadoPedido.ENVIADO
+                        ):
+
+                            pedido_id = (
+                                pedido_actualizado.pk
+                            )
+
+                            transaction.on_commit(
+                                lambda pedido_id=pedido_id:
+                                enviar_correo_despacho(
+                                    Pedido.objects.get(
+                                        pk=pedido_id
+                                    )
+                                )
+                            )
+
+                        # =====================================================
+                        # CORREO DE ENTREGA
+                        # =====================================================
+
+                        elif (
+                            cambio_estado
+                            and pedido_actualizado.estado
+                            == Pedido.EstadoPedido.ENTREGADO
+                        ):
+
+                            pedido_id = (
+                                pedido_actualizado.pk
+                            )
+
+                            transaction.on_commit(
+                                lambda pedido_id=pedido_id:
+                                enviar_correo_entrega(
+                                    Pedido.objects.get(
+                                        pk=pedido_id
+                                    )
+                                )
+                            )
+
+                # =================================================================
+                # ERROR DE VALIDACIÓN
+                # =================================================================
+
+                except ValidationError as error:
+
+                    errores = getattr(
+                        error,
+                        "messages",
+                        [
+                            str(error),
+                        ],
+                    )
+
+                    for mensaje_error in errores:
+
+                        form.add_error(
+                            None,
+                            mensaje_error,
+                        )
+
+                # =================================================================
+                # ERROR INESPERADO
+                # =================================================================
+
+                except Exception as error:
+
+                    logger.exception(
+                        (
+                            "Error inesperado actualizando "
+                            "estado operativo del pedido. "
+                            "Pedido=%s "
+                            "Estado=%s "
+                            "Seguimiento=%s "
+                            "Error=%s"
+                        ),
+                        pedido.numero,
+                        nuevo_estado,
+                        numero_seguimiento,
+                        error,
+                    )
+
+                    form.add_error(
+                        None,
+                        (
+                            "No fue posible actualizar el estado "
+                            "del pedido. Intenta nuevamente."
+                        ),
+                    )
+
+                # =================================================================
+                # TODO CORRECTO
+                # =================================================================
+
+                else:
+
+                    # =============================================================
+                    # MENSAJE ESPECIAL SI FUE ENVIADO
+                    # =============================================================
 
                     if (
                         pedido_actualizado.estado
                         == Pedido.EstadoPedido.ENVIADO
                     ):
 
-                        transaction.on_commit(
-                            lambda pedido_email=pedido_actualizado:
-                            enviar_correo_despacho(
-                                pedido_email
-                            )
+                        messages.success(
+                            request,
+                            (
+                                "El pedido "
+                                f"{pedido_actualizado.numero} "
+                                "fue marcado como enviado. "
+                                "Número de seguimiento Blue Express: "
+                                f"{pedido_actualizado.numero_seguimiento}"
+                            ),
                         )
 
-                    # =========================================================
-                    # PEDIDO ENTREGADO
-                    # =========================================================
+                    # =============================================================
+                    # MENSAJE NORMAL
+                    # =============================================================
 
-                    elif (
-                        pedido_actualizado.estado
-                        == Pedido.EstadoPedido.ENTREGADO
-                    ):
+                    else:
 
-                        transaction.on_commit(
-                            lambda pedido_email=pedido_actualizado:
-                            enviar_correo_entrega(
-                                pedido_email
-                            )
+                        messages.success(
+                            request,
+                            (
+                                "El pedido "
+                                f"{pedido_actualizado.numero} "
+                                "fue actualizado correctamente."
+                            ),
                         )
 
-                # =============================================================
-                # MENSAJE DE ÉXITO
-                # =============================================================
+                    # =============================================================
+                    # REDIRECCIÓN
+                    # =============================================================
 
-                messages.success(
-                    request,
-                    (
-                        "El pedido "
-                        f"{pedido_actualizado.numero} "
-                        "fue actualizado correctamente."
-                    ),
-                )
-
-                return redirect(
-                    "core:panel_pedido_detalle",
-                    numero=(
-                        pedido_actualizado.numero
-                    ),
-                )
+                    return redirect(
+                        "core:panel_pedido_detalle",
+                        numero=(
+                            pedido_actualizado.numero
+                        ),
+                    )
 
     # =========================================================================
     # HISTORIAL
@@ -2072,33 +2233,60 @@ def panel_pedido_detalle(
         request,
         "core/gestion/panel_pedido_detalle.html",
         {
+            # =================================================================
+            # PEDIDO
+            # =================================================================
+
             "pedido": (
                 pedido
             ),
+
+            # =================================================================
+            # FORMULARIO
+            # =================================================================
 
             "form": (
                 form
             ),
 
+            # =================================================================
+            # TIMELINE
+            # =================================================================
+
             "timeline": (
                 timeline
             ),
+
+            # =================================================================
+            # HISTORIAL
+            # =================================================================
 
             "historial": (
                 historial
             ),
 
+            # =================================================================
+            # PAGO
+            # =================================================================
+
             "pago_aprobado": (
                 pago_aprobado
             ),
 
+            # =================================================================
+            # PAGO PENDIENTE
+            # =================================================================
+
             "es_pago_pendiente": (
                 es_pago_pendiente
             ),
+
+            # =================================================================
+            # PUEDE AVANZAR
+            # =================================================================
 
             "puede_avanzar_estado": (
                 puede_avanzar_estado
             ),
         },
     )
-

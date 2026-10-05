@@ -914,6 +914,437 @@
 
 
 /* =========================================================
+   BLUE EXPRESS / SEGUIMIENTO DEL DESPACHO
+========================================================= */
+
+.pedido-historial__seguimiento {
+    position: relative;
+
+    margin:
+        0
+        0
+        22px;
+
+    padding: 18px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr);
+
+    gap: 15px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.22
+        );
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                54,
+                169,
+                214,
+                0.085
+            ),
+            rgba(
+                54,
+                169,
+                214,
+                0.025
+            )
+        ),
+        rgba(
+            4,
+            17,
+            24,
+            0.4
+        );
+
+    box-shadow:
+        inset
+        0
+        1px
+        0
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+}
+
+
+/* LÍNEA SUPERIOR */
+
+.pedido-historial__seguimiento::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(
+                54,
+                169,
+                214,
+                0.82
+            ),
+            transparent
+        );
+}
+
+
+/* =========================================================
+   CABECERA BLUE EXPRESS
+========================================================= */
+
+.pedido-historial__seguimiento-cabecera {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 0;
+}
+
+.pedido-historial__seguimiento-icono {
+    width: 42px;
+    height: 42px;
+
+    min-width: 42px;
+
+    display: grid;
+    place-items: center;
+
+    color:
+        var(--color-azul-claro);
+
+    border:
+        1px solid
+        rgba(
+            54,
+            169,
+            214,
+            0.26
+        );
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                54,
+                169,
+                214,
+                0.15
+            ),
+            rgba(
+                54,
+                169,
+                214,
+                0.045
+            )
+        );
+
+    box-shadow:
+        0
+        0
+        24px
+        rgba(
+            54,
+            169,
+            214,
+            0.06
+        );
+}
+
+.pedido-historial__seguimiento-icono i {
+    font-size: 1rem;
+}
+
+.pedido-historial__seguimiento-titulo {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.pedido-historial__seguimiento-titulo span {
+    color:
+        var(--color-gris);
+
+    font-size: 0.66rem;
+    font-weight: 700;
+
+    line-height: 1.35;
+
+    letter-spacing: 0.04em;
+
+    text-transform: uppercase;
+}
+
+.pedido-historial__seguimiento-titulo strong {
+    color:
+        var(--color-blanco);
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: 0.95rem;
+    font-weight: 800;
+
+    line-height: 1.25;
+}
+
+
+/* =========================================================
+   NÚMERO DE SEGUIMIENTO
+========================================================= */
+
+.pedido-historial__seguimiento-numero {
+    padding:
+        13px
+        14px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.055
+        );
+
+    border-radius: 12px;
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.12
+        );
+}
+
+.pedido-historial__seguimiento-numero span {
+    color:
+        var(--color-gris);
+
+    font-size: 0.65rem;
+    font-weight: 700;
+
+    letter-spacing: 0.035em;
+
+    text-transform: uppercase;
+}
+
+.pedido-historial__seguimiento-numero strong {
+    color:
+        var(--color-azul-claro);
+
+    font-family:
+        "Montserrat",
+        sans-serif;
+
+    font-size: 1.05rem;
+    font-weight: 900;
+
+    line-height: 1.3;
+
+    letter-spacing: 0.025em;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   BOTONES BLUE EXPRESS
+========================================================= */
+
+.pedido-historial__seguimiento-acciones {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 0.85fr)
+        minmax(0, 1.35fr);
+
+    gap: 9px;
+}
+
+.pedido-historial__seguimiento-acciones
+.boton {
+    width: 100%;
+
+    min-width: 0;
+    min-height: 44px;
+
+    padding:
+        0
+        14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    border-radius: 11px;
+
+    font-size: 0.73rem;
+    font-weight: 900;
+
+    line-height: 1.25;
+
+    white-space: nowrap;
+}
+
+.pedido-historial__seguimiento-acciones
+.boton i {
+    flex-shrink: 0;
+
+    font-size: 0.88rem;
+}
+
+.pedido-historial__seguimiento-acciones
+.boton--secundario {
+    color:
+        var(--color-blanco);
+
+    border-color:
+        rgba(
+            255,
+            255,
+            255,
+            0.12
+        );
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+}
+
+.pedido-historial__seguimiento-acciones
+.boton--secundario:hover {
+    color:
+        var(--color-azul-claro);
+
+    border-color:
+        rgba(
+            54,
+            169,
+            214,
+            0.28
+        );
+
+    background:
+        rgba(
+            54,
+            169,
+            214,
+            0.06
+        );
+}
+
+
+/* =========================================================
+   COPIADO
+========================================================= */
+
+.pedido-historial__seguimiento-acciones
+.seguimiento-copiado {
+    color: #75e3a0 !important;
+
+    border-color:
+        rgba(
+            37,
+            211,
+            102,
+            0.28
+        ) !important;
+
+    background:
+        rgba(
+            37,
+            211,
+            102,
+            0.07
+        ) !important;
+}
+
+
+/* =========================================================
+   AYUDA BLUE EXPRESS
+========================================================= */
+
+.pedido-historial__seguimiento-ayuda {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 8px;
+
+    color:
+        var(--color-gris);
+
+    font-size: 0.69rem;
+
+    line-height: 1.6;
+}
+
+.pedido-historial__seguimiento-ayuda > i {
+    flex-shrink: 0;
+
+    margin-top: 2px;
+
+    color:
+        var(--color-azul-claro);
+
+    font-size: 0.8rem;
+}
+
+.pedido-historial__seguimiento-ayuda span {
+    min-width: 0;
+}
+
+.pedido-historial__seguimiento-ayuda strong {
+    color:
+        var(--color-gris-claro);
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
    PRODUCTOS
 ========================================================= */
 
@@ -1281,7 +1712,6 @@
 
 /* =========================================================
    ESTADO VACÍO
-   Esta era la parte que faltaba estilizar.
 ========================================================= */
 
 .pedidos-lista--compras
@@ -1289,10 +1719,11 @@
     grid-column:
         1 / -1;
 
-    width: min(
-        680px,
-        100%
-    );
+    width:
+        min(
+            680px,
+            100%
+        );
 
     min-height: 430px;
 
@@ -1554,16 +1985,14 @@
 .pedidos-lista--compras
 > .pedidos-vacio
 > h2
-+
-p {
++ p {
     margin-top: 16px;
 }
 
 .pedidos-lista--compras
 > .pedidos-vacio
 > p
-+
-.boton {
++ .boton {
     margin-top: 28px;
 }
 
@@ -1685,6 +2114,7 @@ p {
         grid-template-columns: 1fr;
     }
 
+
     .mis-compras-hero {
         grid-template-columns: 1fr;
 
@@ -1692,6 +2122,7 @@ p {
 
         gap: 24px;
     }
+
 
     .mis-compras-hero__acciones {
         justify-content: flex-start;
@@ -1710,6 +2141,7 @@ p {
 
     .mis-compras {
         padding-top: 44px;
+
         padding-bottom: 95px;
     }
 
@@ -1722,6 +2154,7 @@ p {
         gap: 21px;
     }
 
+
     .mis-compras-hero__contenido h1 {
         font-size:
             clamp(
@@ -1731,13 +2164,16 @@ p {
             );
     }
 
+
     .mis-compras-hero__contenido p {
         font-size: 0.84rem;
     }
 
+
     .mis-compras-hero__acciones {
         width: 100%;
     }
+
 
     .mis-compras-hero__acciones
     .boton {
@@ -1756,6 +2192,7 @@ p {
         border-radius: 17px;
     }
 
+
     .mis-compras-controles__superior {
         align-items: flex-start;
 
@@ -1763,6 +2200,7 @@ p {
 
         gap: 15px;
     }
+
 
     .mis-compras__contador {
         align-self: flex-start;
@@ -1788,6 +2226,34 @@ p {
     }
 
 
+    /* BLUE EXPRESS */
+
+    .pedido-historial__seguimiento {
+        padding: 16px;
+
+        gap: 13px;
+
+        border-radius: 14px;
+    }
+
+
+    .pedido-historial__seguimiento-acciones {
+        grid-template-columns: 1fr 1.35fr;
+
+        gap: 8px;
+    }
+
+
+    .pedido-historial__seguimiento-acciones
+    .boton {
+        padding:
+            0
+            12px;
+
+        font-size: 0.7rem;
+    }
+
+
     /* PRODUCTOS */
 
     .pedidos-lista--compras
@@ -1803,10 +2269,13 @@ p {
         gap: 9px;
     }
 
+
     .pedido-producto-chip {
         width: 100%;
+
         max-width: none;
     }
+
 
     .pedido-producto-chip__nombre {
         max-width: none;
@@ -1819,6 +2288,7 @@ p {
     .pedido-historial__acciones {
         justify-content: stretch;
     }
+
 
     .pedidos-lista--compras
     .pedido-historial__acciones
@@ -1838,16 +2308,19 @@ p {
             24px;
     }
 
+
     .pedidos-lista--compras
     > .pedidos-vacio
     > i {
         width: 76px;
+
         height: 76px;
 
         margin-bottom: 22px;
 
         font-size: 1.8rem;
     }
+
 
     .pedidos-lista--compras
     > .pedidos-vacio
@@ -1860,6 +2333,7 @@ p {
             );
     }
 
+
     .pedidos-lista--compras
     > .pedidos-vacio
     > p {
@@ -1867,6 +2341,7 @@ p {
 
         font-size: 0.78rem;
     }
+
 
     .pedidos-lista--compras
     > .pedidos-vacio
@@ -1925,6 +2400,62 @@ p {
     }
 
 
+    /* BLUE EXPRESS */
+
+    .pedido-historial__seguimiento {
+        margin-bottom: 18px;
+
+        padding: 15px;
+    }
+
+
+    .pedido-historial__seguimiento-icono {
+        width: 40px;
+        height: 40px;
+
+        min-width: 40px;
+
+        border-radius: 10px;
+    }
+
+
+    .pedido-historial__seguimiento-titulo strong {
+        font-size: 0.88rem;
+    }
+
+
+    .pedido-historial__seguimiento-numero {
+        padding:
+            12px
+            13px;
+    }
+
+
+    .pedido-historial__seguimiento-numero strong {
+        font-size: 0.98rem;
+    }
+
+
+    .pedido-historial__seguimiento-acciones {
+        grid-template-columns: 1fr;
+    }
+
+
+    .pedido-historial__seguimiento-acciones
+    .boton {
+        width: 100%;
+
+        min-height: 46px;
+
+        font-size: 0.72rem;
+    }
+
+
+    .pedido-historial__seguimiento-ayuda {
+        font-size: 0.67rem;
+    }
+
+
     /* PRODUCTOS */
 
     .pedidos-lista--compras
@@ -1932,9 +2463,11 @@ p {
         grid-template-columns: 1fr;
     }
 
+
     .pedido-producto-chip {
         min-height: 60px;
     }
+
 
     .pedido-producto-chip__imagen {
         width: 46px;
@@ -1949,8 +2482,10 @@ p {
         flex-basis: 46px;
     }
 
+
     .pedido-producto-chip__imagen img {
         max-width: 46px !important;
+
         max-height: 46px !important;
     }
 
@@ -1962,12 +2497,14 @@ p {
         flex-direction: column;
     }
 
+
     .pedidos-lista--compras
     .pedido-historial__acciones
     .boton,
     .pedido-boleta-pendiente {
         width: 100%;
     }
+
 
     .pedido-boleta-pendiente {
         justify-content: center;
@@ -1987,16 +2524,19 @@ p {
         border-radius: 17px;
     }
 
+
     .pedidos-lista--compras
     > .pedidos-vacio
     > i {
         width: 68px;
+
         height: 68px;
 
         margin-bottom: 20px;
 
         font-size: 1.55rem;
     }
+
 
     .pedidos-lista--compras
     > .pedidos-vacio
@@ -2007,6 +2547,7 @@ p {
 
         line-height: 1.2;
     }
+
 
     .pedidos-lista--compras
     > .pedidos-vacio
@@ -2019,6 +2560,7 @@ p {
 
         line-height: 1.6;
     }
+
 
     .pedidos-lista--compras
     > .pedidos-vacio
@@ -2034,15 +2576,18 @@ p {
     .mis-compras
     .paginacion {
         margin-top: 42px;
+
         margin-bottom: 40px;
 
         gap: 10px;
     }
 
+
     .mis-compras
     .paginacion a {
         flex: 1;
     }
+
 
     .mis-compras
     .paginacion > span {

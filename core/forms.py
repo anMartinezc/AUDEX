@@ -1638,11 +1638,51 @@ class BuscarPedidoForm(forms.Form):
 
         return f"{cuerpo}-{dv}"
     
+
+
+
 class ActualizarEstadoPedidoForm(forms.Form):
+
+    # =========================================================================
+    # NUEVO ESTADO
+    # =========================================================================
+
     nuevo_estado = forms.ChoiceField(
         label="Nuevo estado",
         choices=(),
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
     )
+
+    # =========================================================================
+    # NÚMERO DE SEGUIMIENTO BLUE EXPRESS
+    # =========================================================================
+
+    numero_seguimiento = forms.CharField(
+        label="Número de seguimiento Blue Express",
+        required=False,
+        max_length=100,
+        help_text=(
+            "Ingresa el N.º de OS entregado por Blue Express. "
+            "Este número será enviado al cliente en el correo "
+            "de despacho."
+        ),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "Ej: 123456789",
+                "autocomplete": "off",
+                "spellcheck": "false",
+                "class": "form-control",
+            }
+        ),
+    )
+
+    # =========================================================================
+    # COMENTARIO
+    # =========================================================================
 
     comentario = forms.CharField(
         label="Comentario interno",
@@ -1654,9 +1694,14 @@ class ActualizarEstadoPedidoForm(forms.Form):
                     "Ejemplo: pedido embalado "
                     "y listo para retiro."
                 ),
+                "class": "form-control",
             }
         ),
     )
+
+    # =========================================================================
+    # INICIALIZACIÓN
+    # =========================================================================
 
     def __init__(
         self,
@@ -1664,25 +1709,148 @@ class ActualizarEstadoPedidoForm(forms.Form):
         pedido: Pedido,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
-
-        etiquetas = dict(Pedido.ESTADOS)
-
-        permitidos = estados_permitidos(
-            pedido
+        super().__init__(
+            *args,
+            **kwargs,
         )
+
+        # ---------------------------------------------------------------------
+        # GUARDAR PEDIDO EN EL FORMULARIO
+        # ---------------------------------------------------------------------
+
+        self.pedido = pedido
+
+        # ---------------------------------------------------------------------
+        # ETIQUETAS DE ESTADOS
+        # ---------------------------------------------------------------------
+
+        etiquetas = dict(
+            Pedido.ESTADOS
+        )
+
+        # ---------------------------------------------------------------------
+        # ESTADOS PERMITIDOS
+        # ---------------------------------------------------------------------
+
+        permitidos = (
+            estados_permitidos(
+                pedido
+            )
+        )
+
+        # ---------------------------------------------------------------------
+        # OPCIONES DEL SELECT
+        # ---------------------------------------------------------------------
 
         self.fields[
             "nuevo_estado"
         ].choices = [
             (
                 estado,
-                etiquetas.get(estado, estado),
+                etiquetas.get(
+                    estado,
+                    estado,
+                ),
             )
-            for estado in permitidos
+            for estado
+            in permitidos
         ]
 
+        # ---------------------------------------------------------------------
+        # NÚMERO DE SEGUIMIENTO EXISTENTE
+        # ---------------------------------------------------------------------
+        #
+        # Si por algún motivo el pedido ya tiene número de seguimiento,
+        # lo mostramos como valor inicial.
+        # ---------------------------------------------------------------------
 
+        if (
+            pedido
+            and pedido.numero_seguimiento
+            and not self.is_bound
+        ):
+
+            self.fields[
+                "numero_seguimiento"
+            ].initial = (
+                pedido.numero_seguimiento
+            )
+
+    # =========================================================================
+    # VALIDACIÓN GENERAL
+    # =========================================================================
+
+    def clean(self):
+
+        cleaned_data = (
+            super().clean()
+        )
+
+        # ---------------------------------------------------------------------
+        # NUEVO ESTADO
+        # ---------------------------------------------------------------------
+
+        nuevo_estado = (
+            cleaned_data.get(
+                "nuevo_estado"
+            )
+        )
+
+        # ---------------------------------------------------------------------
+        # NÚMERO DE SEGUIMIENTO
+        # ---------------------------------------------------------------------
+
+        numero_seguimiento = (
+            cleaned_data.get(
+                "numero_seguimiento",
+                "",
+            )
+            or ""
+        )
+
+        numero_seguimiento = (
+            str(
+                numero_seguimiento
+            )
+            .strip()
+            .upper()
+        )
+
+        # ---------------------------------------------------------------------
+        # GUARDAR VALOR NORMALIZADO
+        # ---------------------------------------------------------------------
+
+        cleaned_data[
+            "numero_seguimiento"
+        ] = (
+            numero_seguimiento
+        )
+
+        # ---------------------------------------------------------------------
+        # VALIDAR BLUE EXPRESS
+        # ---------------------------------------------------------------------
+        #
+        # Para pasar el pedido a ENVIADO debe existir obligatoriamente
+        # un número de seguimiento.
+        # ---------------------------------------------------------------------
+
+        if (
+            nuevo_estado
+            == Pedido.EstadoPedido.ENVIADO
+        ):
+
+            if not numero_seguimiento:
+
+                self.add_error(
+                    "numero_seguimiento",
+                    (
+                        "Debes ingresar el número de seguimiento "
+                        "de Blue Express antes de marcar el pedido "
+                        "como enviado."
+                    ),
+                )
+
+        return cleaned_data
 
 
 
