@@ -1,14 +1,9 @@
 {% extends 'core/base.html' %}
-
 {% load static %}
-
 {% load humanize %}
 
-
 {% block title %}
-
     Audex | Descubre EarFun en Chile
-
 {% endblock %}
 
 
@@ -16,107 +11,13 @@
 
 <link
     rel="stylesheet"
-    href="{% static 'core/css/inicio.css' %}?v=9"
+    href="{% static 'core/css/inicio.css' %}?v=8"
 >
 
 {% endblock %}
 
 
 {% block content %}
-
-
-
-<!-- =====================================================
-     POPUP CYBERDAY
-===================================================== -->
-
-<div
-    class="cyber-popup"
-    id="cyberPopup"
-    role="dialog"
-    aria-modal="true"
-    aria-label="CyberDay Audex"
-    aria-hidden="true"
->
-
-    <!-- =================================================
-         FONDO OSCURO
-    ================================================== -->
-
-    <div
-        class="cyber-popup__overlay"
-        data-cyber-close
-    ></div>
-
-
-    <!-- =================================================
-         CONTENEDOR
-    ================================================== -->
-
-    <div class="cyber-popup__contenedor">
-
-
-        <!-- =================================================
-             BOTÓN CERRAR
-        ================================================== -->
-
-        <button
-            type="button"
-            class="cyber-popup__cerrar"
-            id="cyberPopupCerrar"
-            aria-label="Cerrar promoción CyberDay"
-        >
-
-            <i class="bi bi-x-lg"></i>
-
-        </button>
-
-
-        <!-- =================================================
-             IMAGEN / ENLACE
-        ================================================== -->
-
-        <a
-            href="{% url 'core:productos' %}"
-            class="cyber-popup__enlace"
-            aria-label="Ver ofertas CyberDay"
-        >
-
-            <picture>
-
-
-                <!-- =================================================
-                     CELULAR
-                ================================================== -->
-
-                <source
-                    media="(max-width: 767px)"
-                    srcset="{% static 'core/img/CyberTelefono2.png' %}"
-                >
-
-
-                <!-- =================================================
-                     PC / TABLET
-                ================================================== -->
-
-                <img
-                    src="{% static 'core/img/CyberPc.png' %}"
-                    alt="CyberDay Audex - Descuentos de hasta 30%"
-                    class="cyber-popup__imagen"
-                    decoding="async"
-                >
-
-
-            </picture>
-
-        </a>
-
-    </div>
-
-</div>
-
-
-
 
 
 <!-- =====================================================
@@ -347,8 +248,6 @@
 
 
 
-
-
 <!-- =====================================================
      BENEFICIOS AUDEX
 ===================================================== -->
@@ -487,8 +386,6 @@
     </div>
 
 </section>
-
-
 
 
 
@@ -676,10 +573,14 @@
 
 
 
-
-
 <!-- =====================================================
      PRODUCTOS DESTACADOS POR CATEGORÍA
+
+     Se muestra:
+     1 producto In Ear
+     1 producto Open Ear
+     1 producto Over Ear
+     1 producto Parlantes
 ===================================================== -->
 
 <section
@@ -1036,168 +937,6 @@
     </div>
 
 </section>
-
-
-
-
-
-<!-- =====================================================
-     JAVASCRIPT POPUP CYBERDAY
-===================================================== -->
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    /* =====================================================
-       ELEMENTOS
-    ===================================================== */
-
-    const popup = document.getElementById("cyberPopup");
-    const cerrar = document.getElementById("cyberPopupCerrar");
-
-    if (!popup) {
-        return;
-    }
-
-    const overlay = popup.querySelector("[data-cyber-close]");
-
-
-    /* =====================================================
-       CONFIGURACIÓN
-    ===================================================== */
-
-    const STORAGE_KEY = "cyberPopupCerrado";
-
-    const RETARDO_APERTURA = 700;
-
-
-    /* =====================================================
-       ABRIR POPUP
-    ===================================================== */
-
-    function abrirPopup() {
-
-        popup.classList.add("is-visible");
-
-        popup.setAttribute(
-            "aria-hidden",
-            "false"
-        );
-
-        document.body.style.overflow = "hidden";
-
-
-        if (cerrar) {
-
-            cerrar.focus();
-
-        }
-
-    }
-
-
-    /* =====================================================
-       CERRAR POPUP
-    ===================================================== */
-
-    function cerrarPopup() {
-
-        popup.classList.remove("is-visible");
-
-        popup.setAttribute(
-            "aria-hidden",
-            "true"
-        );
-
-        document.body.style.overflow = "";
-
-
-        /* =================================================
-           RECORDAR DURANTE LA SESIÓN
-        ================================================== */
-
-        sessionStorage.setItem(
-            STORAGE_KEY,
-            "1"
-        );
-
-    }
-
-
-    /* =====================================================
-       COMPROBAR SI YA FUE CERRADO
-    ===================================================== */
-
-    const popupCerrado = sessionStorage.getItem(
-        STORAGE_KEY
-    );
-
-
-    /* =====================================================
-       MOSTRAR POPUP
-    ===================================================== */
-
-    if (!popupCerrado) {
-
-        setTimeout(function () {
-
-            abrirPopup();
-
-        }, RETARDO_APERTURA);
-
-    }
-
-
-    /* =====================================================
-       BOTÓN CERRAR
-    ===================================================== */
-
-    if (cerrar) {
-
-        cerrar.addEventListener(
-            "click",
-            cerrarPopup
-        );
-
-    }
-
-
-    /* =====================================================
-       CLIC EN FONDO
-    ===================================================== */
-
-    if (overlay) {
-
-        overlay.addEventListener(
-            "click",
-            cerrarPopup
-        );
-
-    }
-
-
-    /* =====================================================
-       ESC
-    ===================================================== */
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (
-                event.key === "Escape" &&
-                popup.classList.contains("is-visible")
-            ) {
-
-                cerrarPopup();
-
-            }
-
-        }
-    );
-
-});
-</script>
 
 
 {% endblock %}
